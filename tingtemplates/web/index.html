@@ -1,0 +1,89 @@
+{% extends '../web/navbar.html' %}
+{% load staticfiles %}
+{% block body %}
+
+<section class="banner-area relative" data-parallax="scroll" data-image-src="{% static 'imgs/food.jpg' %}">
+	<div class="overlay-bg overlay"></div>
+	<div class="container">
+		<div class="row fullscreen  d-flex align-items-center justify-content-end">
+			<div class="banner-content col-lg-6 col-md-12" style="text-align: center; display: none;">
+				<img src="{% static 'imgs/logo.png' %}" style="width: 80px;">
+				<h1><span class="ting-secondary-color">Ting</span><span class="ting-primary-color">.com</span></h1>
+			</div>
+			<div class="banner-content col-lg-6 col-md-12">
+				<h1>Find Affordable <br><b class="ting-bold">Restaurant</b>, <br>Be served <br>your favourite <b class="ting-bold">Meal</b></h1>
+				<a href="" class="primary-btn2 header-btn text-uppercase">Find Restaurants Now</a>
+			</div>												
+		</div>
+	</div>
+</section>
+
+<section class="service-area pt-100 pb-150">
+	<div class="container">
+		<div class="row d-flex justify-content-center">
+			<div class="menu-content pb-70 col-lg-8">
+				<div class="title text-center">
+					<span class="lnr lnr-layers" style="font-size: 38px; margin-bottom: 25px; display: block;"></span>
+					<h1 class="mb-10">Our Services</h1>
+					<p>Here are some of the services offered by <span class="ting-secondary-color">Ting</span><span class="ting-primary-color">.com</span></p>
+				</div>
+			</div>
+		</div>	
+		<div class="row">
+			<div class="sigle-service col-lg-3 col-md-6">
+				<span class="lnr lnr-magnifier"></span>
+				<h4>Find Restaurant</h4>
+				<p>
+					Find and order food at any restaurants near you or at any other location, find their menus and special offers any time, any place.
+				</p>
+				<a href="#" class="text-uppercase primary-btn2 primary-border circle">View Details</a>
+			</div>
+			<div class="sigle-service col-lg-3 col-md-6">
+				<span class="lnr lnr-rocket"></span>
+				<h4>Advertise Restaurants</h4>
+				<p>
+					Get updates of your favourite restaurants, their new meals and offers anytime posted through notifications or emails.
+				</p>
+				<a href="#" class="text-uppercase primary-btn2 primary-border circle">View Details</a>
+			</div>
+			<div class="sigle-service col-lg-3 col-md-6">
+				<span class="lnr lnr-book"></span>
+				<h4>Online Booking</h4>
+				<p>
+					Book a place in your favourite restaurants and choose a confortable seat by viewing the inside of restaurant in 3D.
+				</p>
+				<a href="#" class="text-uppercase primary-btn2 primary-border circle">View Details</a>
+			</div>
+			<div class="sigle-service col-lg-3 col-md-6">
+				<span class="lnr lnr-database"></span>
+				<h4>Restaurant Managment</h4>
+				<p>
+					Manage your restaurant and all it content like meals, menus, drinks, bookings, tables, incomes even also employees.
+				</p>
+			    <a href="#" class="text-uppercase primary-btn2 primary-border circle">View Details</a>
+			</div>																		
+		</div>
+	</div>	
+</section>
+
+<section class="about-area">
+	<div class="container-fluid">
+		<div class="row justify-content-end align-items-center d-flex no-padding">
+			<div class="col-lg-6 about-left">
+				<h1>Quick Overview</h1>
+				<p style="color: #EEE;">
+					Discover restaurants near you or any other places and find their dishes and menus. Discover also what the inside of the restaurant looks like. Book your disired seat, single, for two or for many. Then when time comes, go to the restaurant and receive the best service using the Ting Mobile App
+				</p>
+				<div class="buttons" style="margin-bottom: 25px;">
+					<a href="#" class="about-btn text-uppercase primary-border circle">Download Ting App</a>
+					<a href="{% url 'ting_wb_adm_login' %}" class="about-btn text-uppercase  primary-border circle">Register Your Restaurant</a>
+				</div>
+			</div>
+			<div class="col-lg-6 about-right" style="padding: 0 !important;">
+				<img class="img-fluid" src="{% static 'imgs/computer.png' %}" alt="">
+			</div>
+		</div>
+	</div>	
+</section>
+
+{% endblock %}

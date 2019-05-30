@@ -1,0 +1,76 @@
+{% load staticfiles %}
+<div class="ui visible sidebar inverted vertical menu">
+    <div class="ting-menu-logo" style="margin-top:20px;">
+        <img src="{% static 'imgs/logo.png' %}" alt="Ting.com" style="margin-bottom: 15px;">
+        <h3><span class="ting-secondary-color">Ting</span><span class="ting-primary-color">.com</span></h3>
+    </div>
+    <div class="ting-side-menu">
+        <div class="ting-side-menu-items">
+            <div class="ting-menu-item active">
+                <a href="{% url 'ting_wb_adm_dashboard' %}">
+                    <div class="ting-menu-icon">
+                        <i class="home link icon"></i>
+                    </div>
+                    <div class="ting-menu-legend">
+                        <p>Dashboard</p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="ting-menu-item">
+                <a href="{% url 'ting_wb_adm_categories' %}">
+                    <div class="ting-menu-icon">
+                        <i class="boxes link icon"></i>
+                    </div>
+                    <div class="ting-menu-legend">
+                        <p>Categories</p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="ting-menu-item">
+                <a href="{% url 'ting_wb_adm_menu_food' %}">
+                    <div class="ting-menu-icon">
+                        <i class="utensils link icon"></i>
+                    </div>
+                    <div class="ting-menu-legend">
+                        <p>Menus</p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="ting-menu-item">
+                <a href="{% url 'ting_wb_adm_administrators' %}">
+                    <div class="ting-menu-icon">
+                        <i class="user link icon"></i>
+                    </div>
+                    <div class="ting-menu-legend">
+                        <p>Administrators</p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="ting-menu-item">
+                <a href="{% url 'ting_wb_adm_restaurant' %}">
+                    <div class="ting-menu-icon">
+                        <i class="map marker alternate link icon"></i>
+                    </div>
+                    <div class="ting-menu-legend">
+                        <p>Restaurant</p>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="ting-menu-item">
+                <a href="{% url 'ting_wb_adm_logout' %}">
+                    <div class="ting-menu-icon">
+                        <i class="sign out alternate link icon red"></i>
+                    </div>
+                    <div class="ting-menu-legend">
+                        <p style="color:red;">Logout</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

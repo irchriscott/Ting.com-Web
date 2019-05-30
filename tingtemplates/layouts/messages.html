@@ -1,0 +1,11 @@
+{% if messages %}
+    {% for message in messages %}
+        {% if message.tags == 'success' %}
+            <script>showSuccessMessage("{{message.tags}}", "{{message}}")</script>
+        {% elif message.tags == 'error' %}
+            <script>showErrorMessage("{{message.tags}}", "{{message}}")</script>
+        {% elif message.tags == 'info' %}
+        	<script>showInfoMessage("{{message.tags}}", "{{message}}")</script>
+        {% endif %}
+    {% endfor %}
+{% endif %}

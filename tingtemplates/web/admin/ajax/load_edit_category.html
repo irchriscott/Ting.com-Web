@@ -1,0 +1,25 @@
+{% load staticfiles %}
+<div class="content">
+    <div class="ting-search-place">
+        <form class="ui form" action="{% url 'ting_wb_update_category' category.slug %}" method="POST" id="ting-update-category-form" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="field">
+                <label>Enter Category Name :</label>
+                <input type="text" name="name" placeholder="Category Name" value="{{category.name}}" required autocomplete="off">
+            </div>
+            <div class="field">
+                <label>Enter Category Description :</label>
+                <textarea name="description" placeholder="Category Description" required>{{category.description}}</textarea>
+            </div>
+            <div class="field ting-file-input">
+                <span>Add Category Image</span>
+                <input type="file" name="image" id="ting-single-image-input-ajax" accept=".jpg, .png, .jpeg">
+            </div>
+            <div class="ting-item-images-preview"><img style="display: none;" id="ting-single-image-preview-ajax"></div>
+            <div class="ui indicating progress small ting-progress-form" style="display: none;" data-value="0" data-total="100">
+                <div class="bar"></div>
+            </div>
+        </form>
+    </div>
+</div>
+<script type="text/javascript">$("#ting-update-category-form").submitFormAjax();$("#ting-single-image-input-ajax").change(function(){ singleImagePreview(this, "ting-single-image-preview-ajax"); })</script>

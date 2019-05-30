@@ -1,0 +1,12 @@
+{% extends '../emails/header.html' %}
+{% block content %}
+<p>Hello {{restaurant}},</p>
+<p>Thank you registering to <span style="color:#908ced;">Ting</span><span style="color: #b56fe8;">.com</span>. We will make sure that we give you the best services that will help you grow with your business. We have registered you with a administrator account and here are the credintials : </p>
+<p><b>Email Address : </b> {{email}}, <b>Password : </b>{{password}}</p>
+<p>We have also created a Trial Key for you that will last for 14 days. You can adctivate it and desactivate it anytime you want when you want to use the system or not. Here is the Key</p>
+
+<div style="padding: 15px;background: #908ced; border-radius: 5px;">
+	<p style="font-size: 20px; font-weight: bold; text-align:center; color:#FFF; margin:0;">{{key}}</p>
+</div>
+<p>Regards</p>
+{% endblock %}

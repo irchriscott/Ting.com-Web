@@ -1,0 +1,288 @@
+{% extends '../../layouts/header.html' %}
+{% load staticfiles %}
+{% load ting_tags %}
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}">
+{% endblock %}
+{% block title %}
+    <title>Ting.com - Admin / Menus - Drinks</title>
+{% endblock %}
+{% block content %}
+{% include '../../web/admin/sidebar.html' %}
+<div class="pusher">
+    <div class="article ting-admin-container">
+        {% include '../../web/admin/navbar.html' %}
+        <div class="ui grid divided" style="margin-left: 10px;">
+            <div class="row">
+                <div class="twelve wide column">
+                    
+                    <div class="ui grid">
+                        <div class="row ting-data-container-header">
+                            <div class="twelve wide column">
+                                <div>
+                                    <h1 style="display: inline-block;">Menus - Drinks</h1>
+                                    <div class="ui dropdown item" style="margin-top: -10px !important; margin-left: 10px;">
+                                        <i class="icon chevron down"></i>
+                                        <div class="menu">
+                                            <div class="header">Menus</div>                    
+                                            <a class="item" href="{% url 'ting_wb_adm_menu_food' %}" style="align-self: flex-start; width: 100%"><i class="utensil spoon icon"></i> Food</a>
+                                            <a class="item" href="{% url 'ting_wb_adm_menu_drinks' %}" style="align-self: flex-start; width: 100%"><i class="glass martini icon"></i> Drinks</a>
+                                            <a class="item" href="{% url 'ting_wb_adm_menu_dishes' %}" style="align-self: flex-start; width: 100%"><i class="utensils icon"></i> Dishes</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% if admin.pk|has_p:"can_add_menu" == True %}
+                            <div class="four wide column ting-no-p-right">
+                                <button class="ui twitter button" style="float:right" id="ting-admin-add-new-administrator">
+                                <i class="plus icon"></i>
+                                    Add New Menu - Drink
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="ting-data-container">
+                        
+                        <table class="ui single line table">
+                            <thead>
+                                <tr>
+                                    <th>Badge</th>
+                                    <th>Image</th>
+                                    <th>Name</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Type</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if administrators.count > 0 %}
+                                    {% for administrator in administrators %}
+                                        <tr>
+                                            <td><div class="ui ribbon label">{{administrator.badge_number}}</div></td>
+                                            <td><img src="{{administrator.image.url}}"></td>
+                                            <td>{{administrator.name}}</td>
+                                            <td>{{administrator.username}}</td>
+                                            <td>{{administrator.email}}</td>
+                                            <td>{{administrator.admin_type_str}}</td>
+                                            <td>
+                                                <div class="ui small blue labeled icon button ting-open-ajax-modal" ting-modal-type="ajax" ting-data-url="{% url 'ting_wb_adm_load_admin_profile' administrator.token %}" ting-modal-target="ting-admin-load-profile">
+                                                    <i class="user icon"></i> Load
+                                                </div>
+                                                <div class="ui right dropdown item" style="margin-top: -10px !important;">
+                                                    <i class="icon chevron down"></i>
+                                                    <div class="menu">
+                                                        <div class="header">Options</div>
+                                                        {% if admin.pk|has_p:"can_update_admin" == True %}
+                                                        <a class="item ting-open-ajax-modal" ting-modal-type="ajax" ting-data-url="{% url 'ting_wb_adm_edit_admin_profile' administrator.token %}" ting-modal-target="ting-admin-load-edit-profile" style="align-self: flex-start; width: 100%"><i class="pencil alternate icon"></i> Edit</a>
+                                                        <a class="item ting-open-ajax-modal" ting-modal-type="ajax" ting-data-url="{% url 'ting_wb_adm_edit_admin_permissions' administrator.token %}" ting-modal-target="ting-admin-load-permissions" style="align-self: flex-start; width: 100%"><i class="clipboard list icon"></i>Permissions</a>
+                                                        {% endif %}
+                                                        {% if admin.pk|has_p:"can_disable_admin" == True %}
+                                                        <a class="item ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_disable_admin_profile_toggle' administrator.token %}" ting-modal-target="ting-admin-disable-account-toggle-{{administrator.id}}" style="align-self: flex-start; width: 100%">
+                                                            {% if administrator.is_disabled %}
+                                                            <i class="check icon"></i> Enable
+                                                            {% else %}
+                                                            <i class="times icon"></i> Disable
+                                                            {% endif %}
+                                                        </a>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% if admin.pk|has_p:"can_disable_admin" == True %}
+                                        <div class="ui modal mini" data-modal="ting-admin-disable-account-toggle-{{administrator.id}}">
+                                            <div class="header">
+                                                {% if administrator.is_disabled %}
+                                                    Enable Account
+                                                {% else %}
+                                                    Disable Account
+                                                {% endif %}
+                                            </div>
+                                            <div class="content">
+                                                <p>Do you really want to {% if administrator.is_disabled %} Enable {% else %} Disable {% endif %} this account ?</p>
+                                            </div>
+                                            <div class="actions">
+                                                <div class="ui positive button right labeled icon">
+                                                    Yes
+                                                    <i class="icon check"></i>
+                                                </div>
+                                                <div class="ui red deny button right labeled icon">
+                                                    No
+                                                    <i class="icon times"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <th colspan="9">
+                                            <p class="ting-error">No Added Administrator</p>
+                                        </th>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="9">
+                                        <div class="ui right floated pagination menu">
+                                            <a class="icon item">
+                                                <i class="left chevron icon"></i>
+                                            </a>
+                                            <a class="item">1</a>
+                                            <a class="item">2</a>
+                                            <a class="item">3</a>
+                                            <a class="item">4</a>
+                                            <a class="icon item">
+                                                <i class="right chevron icon"></i>
+                                            </a>
+                                        </div>
+                                    </th>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                    </div>
+
+                </div>
+                <div class="four wide column">
+                    {% include '../../web/admin/sideorders.html' %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="ui modal" data-modal="ting-admin-load-profile">
+    <div class="header">
+        Administrator Profile
+    </div>
+    <div class="content">
+        <div class="ting-data-content"></div>
+        <div class="ui right ting-loader" style="margin: auto; text-align: center;">
+            <img src="{% static 'imgs/loading.gif' %}">
+        </div>
+    </div>
+    <div class="actions">
+        <div class="ui red deny button left">
+            Close
+        </div>
+    </div>
+</div>
+
+
+<div class="ui modal" data-modal="ting-admin-load-permissions">
+    <div class="header">
+        Administrator Permissions
+    </div>
+    <div class="content">
+        <div class="ting-data-content"></div>
+        <div class="ui right ting-loader" style="margin: auto; text-align: center;">
+            <img src="{% static 'imgs/loading.gif' %}">
+        </div>
+    </div>
+    <div class="actions">
+        <div class="ui red deny button left">
+            Close
+        </div>
+    </div>
+</div>
+
+
+
+<div class="ui modal" data-modal="ting-admin-load-edit-profile">
+    <div class="header">
+        Edit Administrator Profile
+    </div>
+    <div class="content">
+        <div class="ting-data-content"></div>
+        <div class="ui right ting-loader" style="margin: auto; text-align: center;">
+            <img src="{% static 'imgs/loading.gif' %}">
+        </div>
+    </div>
+    <div class="actions">
+        <div class="ui red deny button left">
+            Close
+        </div>
+    </div>
+</div>
+
+
+
+
+{% if admin.admin_type|to_int == 1 %}
+
+<div class="ui modal" data-modal="ting-admin-add-new-administrator">
+    <div class="header">
+        Add Administrator
+    </div>
+    <div class="content">
+        <div class="ting-search-place">
+            <form class="ui form" action="{% url 'ting_wb_adm_add_new_admin' %}" method="POST" id="ting-add-administrator-profile-form" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="field">
+                    <label>Enter Administrator Name :</label>
+                    <input type="text" name="name" placeholder="Administrator Name" required autocomplete="off">
+                </div>
+                <div class="field">
+                    <label>Enter Administrator Username :</label>
+                    <input type="text" name="username" placeholder="Administrator Username" required autocomplete="off">
+                </div>
+                <div class="field">
+                    <label for="">Enter Administrator Email Address : </label>
+                    <div class="ui action input">
+                        <input type="text" name="email" placeholder="Administrator Email Address" required autocomplete="off">
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Select Administrator Type :</label>
+                            <select class="dropdown" name="admin_type">
+                                {% for type in types %}
+                                    <option value="{{type.0}}">{{type.1}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Enter Administrator Badge Number :</label>
+                            <input type="text" name="badge_number" placeholder="Admin Badge Number" autocomplete="off" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Enter Administrator Phone :</label>
+                    <input type="text" name="phone" placeholder="Administrator Phone" autocomplete="off" required>
+                </div>
+                <div class="field">
+                    <label>Enter Administrator Password (The Administrator Creating The Account) :</label>
+                    <input type="password" name="password" placeholder="Administrator Password" autocomplete="off" required>
+                </div>
+                <div class="ting-action-modal">
+                    <div class="actions">
+                        <div class="ui red deny button">
+                            Cancel
+                        </div>
+                    </div>
+                    <button type="submit" class="ui positive right labeled icon button">
+                        Save
+                        <i class="checkmark icon"></i>
+                    </button>
+                    <div class="ui right ting-loader ting-form-loader">
+                        <img src="{% static 'imgs/loading.gif' %}">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+
+{% endblock %}

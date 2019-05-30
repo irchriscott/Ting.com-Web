@@ -1,0 +1,148 @@
+{% extends '../layouts/header.html' %}
+{% load staticfiles %}
+{% block title %}
+    <title>Ting.com - Admin Packages</title>
+{% endblock %}
+{% block content %}
+{% include '../layouts/admin/sidebar.html' %}
+<div class="pusher">
+    <div class="article ting-admin-container">
+        {% include '../layouts/admin/menu.html' %}
+        <div class="ui grid">
+            <div class="row">
+                <div class="twelve wide column">
+                    <h1>Ting Packages</h1>
+                </div>
+                <div class="four wide column">
+                    <button class="ui twitter button" style="float:right" id="ting-add-new-package">
+                    <i class="plus icon"></i>
+                        Add New Package
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="ting-data-container">
+            <table class="ui single line table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Tables</th>
+                        <th>Menus</th>
+                        <th>Price</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if packages.count > 0 %}
+                        {% for package in packages %}
+                            <tr>
+                                <td><div class="ui ribbon label">{{package.pk}}</div></td>
+                                <td><img src="{{package.image.url}}"></td>
+                                <td>{{package.name}}</td>
+                                <td>{{package.tables}}</td>
+                                <td>{{package.menus}}</td>
+                                <td>{{package.amount}} {{package.currency}}</td>
+                                <td>
+                                    <div class="ui small green labeled icon button">
+                                        <i class="pencil alternate icon"></i> Edit
+                                    </div>
+                                    <div class="ui small red labeled icon button">
+                                        <i class="times icon"></i> Delete
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <th colspan="7">
+                                <p class="ting-error">No Added Package</p>
+                            </th>
+                        </tr>
+                    {% endif %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="7">
+                            <div class="ui right floated pagination menu">
+                                <a class="icon item">
+                                    <i class="left chevron icon"></i>
+                                </a>
+                                <a class="item">1</a>
+                                <a class="item">2</a>
+                                <a class="item">3</a>
+                                <a class="item">4</a>
+                                <a class="icon item">
+                                    <i class="right chevron icon"></i>
+                                </a>
+                            </div>
+                        </th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<div class="ui modal" data-modal="ting-add-new-package">
+    <div class="header">
+        Add Ting Package
+    </div>
+    <div class="content">
+        <div class="ting-search-place">
+            <form class="ui form" action="{% url 'ting_admin_add_package' %}" method="POST" id="ting-new-package-form" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="field">
+                    <label>Enter Package Name :</label>
+                    <input type="text" name="name" placeholder="Package Name" required autocomplete="off">
+                </div>
+                <div class="field">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Enter Number of Tables :</label>
+                            <input type="number" placeholder="Number Of Tables" name="tables" required>
+                        </div>
+                        <div class="field">
+                            <label>Enter Number of Menus :</label>
+                            <input type="number" name="menus" placeholder="Number Of Menus" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Enter Package Price :</label>
+                    <input type="number" name="amount" placeholder="Package Price" autocomplete="off">
+                </div>
+                <div class="field">
+                    <label>Select Package Currency :</label>
+                    <select class="dropdown" name="currency">
+                        {% for currency in currencies %}
+                            <option value="{{currency.0}}">{{currency.1}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field ting-file-input">
+                    <span>Add Package Image</span>
+                    <input type="file" name="image" required>
+                </div>
+                <div class="ting-action-modal">
+                    <div class="actions">
+                        <div class="ui red deny button">
+                            Cancel
+                        </div>
+                    </div>
+                    <button type="submit" class="ui positive right labeled icon button" id="ting-save-new-package">
+                        Save
+                        <i class="checkmark icon"></i>
+                    </button>
+                    <div class="ui right ting-loader ting-form-loader">
+                        <img src="{% static 'imgs/loading.gif' %}">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

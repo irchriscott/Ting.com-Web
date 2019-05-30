@@ -1,0 +1,116 @@
+{% extends '../../layouts/header.html' %}
+{% load staticfiles %}
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}">
+{% endblock %}
+{% block title %}
+    <title>Ting.com - Admin / Welcome</title>
+{% endblock %}
+{% block content %}
+<header class="default-header">
+    <nav class="navbar navbar-expand-lg  navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'ting_index' %}">
+                <h3 class="ting-app-name"><span class="ting-secondary-color">Ting</span><span class="ting-primary-color">.com</span></h3>
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end align-items-center" id="navbarSupportedContent">
+                <ul class="navbar-nav">
+                    <li>
+                        <a href="#" class="ting-menu-icon">
+                            <i class="lnr lnr-magnifier"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <div class="ting-menu-image">
+                            <a class="nav-link text-muted" data-id="nav" id="ting-nav-menu" title="{{admin.username}}">
+                                <img src="{{admin.image.url}}" alt="{{admin.username}}">
+                            </a>
+                        </div>
+                    </li>                                 
+                </ul>
+            </div>                      
+        </div>
+    </nav>
+</header>
+<div class="pusher">
+    <div class="container ting-admin-welcome">
+        <div class="row justify-content-end align-items-center d-flex no-padding">
+            <div class="col-lg-12">
+                <h1>Welcome to <span class="ting-secondary-color">Ting</span><span class="ting-primary-color">.com</span></h1>
+                <div class="ting-profile-image">
+                    <div class="ting-profile-image-container">
+                        <div class="box ting-session-profile-image">
+                            <div class="item light ting-session-profile-image">
+                                <a href="#"><img class="ting-session-profile-image-img" src="{{restaurant.logo.url}}" alt="{{restaurant.name}}" class="w-full" id="ting-profile-image"></a>
+                                <div id="ting-image-overlay" class="item-overlay black-overlay w-full">
+                                    <a href="#" id="ting-open-profile-img-input" class="center text-md">
+                                        <span id="ting-image-icon" class="lnr lnr-camera" style="font-size:45px; color:white;"></span>
+                                        <span id="ting-image-load" style="display:none;"><i class="fa circle-o-notch fa-spinner" style="font-size:45px; color:white;"></i></span>
+                                    </a>
+                                    <form id="ting-session-profile-image-update" method="POST" action="{% url 'ting_wb_adm_restaurant_update_logo' %}" data-image="{{restaurant.logo.url}}" enctype="multipart/form-data">
+                                        {% csrf_token %}
+                                        <input type="file" name="logo" id="ting-profile-img-input" accept="image/jpg, image/png, image/jpeg">
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h2>{{restaurant.full_name}}</h2>
+                <br>
+                <hr style="width: 50%; margin-bottom: 30px;">
+                <p>Thank you for registering your restaurant on <span class="ting-secondary-color">Ting</span><span class="ting-primary-color">.com</span>. <br> We will make sure to give you the best services that will help you to grow your business further.</p>
+                <p style="margin-bottom: 30px;">For you to continue, you are requested to enter the Licence key provided to you and agree to our terms and conditions</p>
+                <hr style="width: 50%">
+                <h3 style="margin-top: 20px;">Enter Licence Key</h3>
+                <form id="ting-activate-licence-key" method="POST" action="{% url 'ting_wb_adm_activate_licence_key' %}">
+                    {% csrf_token %}
+                    <div class="ui form ting-key-input">
+                        <div class="row">
+                            <div class="fields col-lg-2 wide"></div>
+                            <div class="fields col-lg-8 wide">
+                                <div class="five wide field">
+                                    <input type="text" name="key-1" maxlength="4" placeholder="XXXX" autocomplete="off" required>
+                                </div>
+                                <div class="five wide field">
+                                    <input type="text" name="key-2" maxlength="4" placeholder="XXXX" autocomplete="off" required>
+                                </div>
+                                <div class="six wide field">
+                                    <input type="text" name="key-3" maxlength="4" placeholder="XXXX" autocomplete="off" required>
+                                </div>
+                                <div class="five wide field">
+                                    <input type="text" name="key-4" maxlength="4" placeholder="XXXX" autocomplete="off" required>
+                                </div>
+                                <div class="five wide field">
+                                    <input type="text" name="key-5" maxlength="4" placeholder="XXXX" autocomplete="off" required>
+                                </div>
+                            </div>
+                            <div class="fields col-lg-2 wide"></div>
+                        </div>
+                        <div class="required field" style="margin-top: 10px;">
+                            <div class="ui checkbox">
+                                <input type="checkbox" name="accept" tabindex="0" required>
+                                <label style="line-height: 1.3 !important;">I agree to the terms and conditions</label>
+                            </div>
+                        </div>
+                        <div class="ting-btn-loading-center">
+                            <button type="submit" class="ui positive labeled icon button" style="margin-top: 10px;">
+                                Submit
+                                <i class="checkmark icon"></i>
+                            </button>
+                            <div class="ui right ting-loader" style="display: none;">
+                                <img src="{% static 'imgs/loading.gif' %}">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>    
+    </div>
+</div>
+
+{% endblock %}

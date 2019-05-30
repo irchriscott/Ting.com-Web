@@ -1,0 +1,554 @@
+/*  THIS STYLE SHEET BELONGS TO TING.COM
+    Author: Ir Christian Scott -> Code Pipes Solutions
+    Date : 23 April 2019
+*/
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+div,
+a,
+label,
+input,
+button,
+li, ol, ul,
+textarea{
+    font-family: Poppins, Lato, 'Helvetica Neue', Arial, Helvetica, sans-serif !important;
+    color: #666666;
+    font-weight: 300;
+    line-height: 1.625em;
+    position: relative;
+}
+
+a, input{
+    outline: none !important;
+}
+
+table thead tr th{
+    text-transform: uppercase !important;
+    text-align: center !important;
+}
+
+table tbody tr td{
+    text-align: center !important;
+}
+
+table tbody tr td img{
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid rgba(0, 0, 0, .1);
+}
+
+table{
+    white-space: normal !important;
+}
+
+textarea{
+    resize: none !important;
+}
+
+:root{
+    --primaryColor: #b56fe8;
+    --secondaryColor: #908ced;
+}
+
+.ting-app-name,
+.ting-app-name * {
+    font-size: 24px;
+    font-weight: normal;
+    padding: 0 !important;
+}
+
+.ting-link-header {
+    padding: 8px 25px !important;
+}
+
+.ting-link-header:hover {
+    color: white !important;
+}
+
+.ting-menu-icon i {
+    font-size: 18px;
+}
+
+.ting-bold{
+    font-size: inherit !important;
+    font-weight: bold !important;
+    color: inherit !important;
+}
+
+.ting-logo{
+    margin-top: 15px;
+}
+
+.ting-logo h1{
+    color: var(--secondaryColor);
+    font-size: 40px;
+}
+
+.ting-primary-bg{
+    background: var(--primaryColor) !important;
+}
+
+.ting-primary-color{
+    color: var(--primaryColor) !important;
+}
+
+.ting-secondary-bg{
+    background: var(--secondaryColor) !important;
+}
+
+.ting-secondary-color{
+    color: var(--secondaryColor) !important;
+}
+
+.ting-theme-bg{
+    background-image: -moz-linear-gradient(0deg, #908ced 0%, #b56fe8 100%);
+    background-image: -webkit-linear-gradient(0deg, #908ced 0%, #b56fe8 100%);
+    background-image: -ms-linear-gradient(0deg, #908ced 0%, #b56fe8 100%);
+}
+
+.ting-error{
+    color: red;
+    font-size: 17px;
+    text-align: center;
+    padding: 20px 0;
+    text-transform: uppercase;
+}
+
+.ting-data-container{
+    margin-top: 2.5rem;
+}
+
+.ting-data-container{
+    white-space: normal !important;
+}
+
+.ting-admin-container{
+    padding: 50px;
+    margin-left: 15rem;
+    padding-bottom: 0px;
+    padding-top: 10px;
+}
+
+.ting-menu-logo{
+    display: block;
+    position: relative;
+    padding: 10px;
+    text-align: center;
+}
+
+.ting-menu-logo img{
+    width: 50px;
+}
+
+.ting-menu-logo h3{
+    color: #ffffff;
+    margin-top: 8px;
+    font-size: 30px;
+    font-weight: 500;
+}
+
+.ting-side-menu{
+    display: block;
+    position: relative;
+    padding: 10px 0;
+    margin-top: 20px;
+}
+
+.ting-side-menu .ting-side-menu-items{
+    display: block;
+    position: relative;
+}
+
+.ting-side-menu .ting-side-menu-items .ting-menu-item{
+    display: block;
+    padding: 15px 10px;
+    cursor: pointer;
+}
+
+.ting-side-menu .ting-side-menu-items .ting-menu-item:hover{
+    background: #333333;
+}
+
+.ting-side-menu .ting-side-menu-items .ting-menu-item .ting-menu-icon{
+    float: left;
+    margin-right: 8px;
+}
+
+.ting-side-menu .ting-side-menu-items .ting-menu-item .ting-menu-icon i{
+    font-size: 26px;
+    color: #ffffff;
+}
+
+.ting-side-menu .ting-side-menu-items .ting-menu-item .ting-menu-legend p{
+    color: #ffffff;
+    font-size: 17px;
+}
+
+.ting-search-place{
+    width: 100%;
+}
+
+.ting-map-container{
+    width: 100%;
+    margin-top: 20px;
+}
+
+.ting-map-container .ting-restaurant-map-container {
+    width: calc(100% - 2px);
+    border: 1px solid rgba(0, 0, 0, .1);
+    width: 100%;
+    height: 400px;
+}
+
+.pac-item {
+    padding: 8px 6px !important;
+    font-size: 14px !important;
+    font-family: "Poppins" !important;
+}
+
+.pac-container {
+    margin-top: 5px !important;
+    z-index: 1000000000 !important;
+}
+
+.pac-logo::after {
+    display: none !important;
+}
+
+.ting-action-modal{
+    margin-top: 1.5rem;
+    height: 36px;
+    border-bottom-left-radius: .28571429rem;
+    border-bottom-right-radius: .28571429rem;
+}
+
+.ting-action-modal .actions{
+    width: 93px;
+    border-bottom-left-radius: .28571429rem;
+    border-bottom-right-radius: .28571429rem;
+}
+
+.ting-action-modal .actions .button{
+    margin: 0 !important;
+}
+
+.ting-action-modal button{
+    position: absolute;
+    left: 113px;
+    top: -36px;
+}
+
+.ting-file-input{
+    position: relative;
+}
+
+.ting-file-input span{
+    margin: 0;
+    outline: 0;
+    -webkit-appearance: none;
+    tap-highlight-color: rgba(255,255,255,0);
+    line-height: 1.21428571em;
+    padding: .67857143em 1em;
+    font-size: 1em;
+    background: #fff;
+    border: 1px solid rgba(34,36,38,.15);
+    color: rgba(0,0,0,.87);
+    border-radius: .28571429rem;
+    -webkit-box-shadow: 0 0 0 0 transparent inset;
+    box-shadow: 0 0 0 0 transparent inset;
+    -webkit-transition: color .1s ease,border-color .1s ease;
+    transition: color .1s ease,border-color .1s ease;
+    display: block;
+    text-align: center;
+    font-size: 17px;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.ting-file-input input{
+    position: absolute;
+    cursor: pointer;
+    top: 0px;
+    opacity: 0;
+}
+
+.fr-element {
+    min-height: 230px !important;
+}
+
+.fr-element ul{
+    list-style: initial !important;
+    margin-left: 15px !important;
+}
+
+.fr-element ol{
+    list-style: binary !important;
+    margin-left: 15px !important;
+}
+
+.fr-toolbar{
+    border-top: 2px solid #000000 !important;
+}
+
+.ting-loader img{
+    width: 20px;
+    height: 20px;
+}
+
+.ting-form-loader{
+    display: none;
+    position: absolute;
+    left: 243px;
+    margin-top: -63px;
+}
+
+.ting-form-loader-else{
+    position: absolute;
+    right: 250px;
+    margin-top: 3px;
+    display: none;
+}
+
+.ting-form-loader-submit{
+    display: none;
+    position: absolute;
+    left: 258px;
+    margin-top: -63px;
+}
+
+.ting-admin-welcome{
+    background: #FFF;
+    text-align: center;
+    padding-top: 50px;
+}
+
+.ting-admin-welcome h1{
+    font-size: 68px;
+    font-weight: 100;
+}
+
+.ting-admin-welcome h2{
+    font-weight: 100;
+    font-size: 40px;
+    margin-top: 20px;
+}
+
+.ting-menu-image {
+    width: 35px;
+    height: 35px;
+    position: absolute;
+    margin-top: -25px;
+}
+
+.ting-menu-image img {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: 2px solid #666666;
+}
+
+.ting-profile-image {
+  overflow: hidden;
+  width: 200px !important;
+  height: 200px !important;
+  border-radius: 50% !important;
+  border: 4px solid #FFF;
+  margin: auto;
+}
+
+.ting-profile-image img{
+    width: 100%;
+    text-align: center;
+}
+
+.ting-profile-image .ting-profile-image-container {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 50% !important;
+}
+
+.ting-profile-image form input[type=file]{
+    position: absolute; 
+    width: 100%; 
+    height: 100%; 
+    text-align: left; 
+    margin-left: -100px; 
+    opacity: 0; 
+    cursor: pointer;
+}
+
+.ting-key-input{
+    margin: auto;
+    margin-top: 20px;
+}
+
+.ting-key-input input{
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.ting-btn-loading-center{
+    position: relative;
+}
+
+.ting-btn-loading-center *{
+    display: inline-block;
+}
+
+.ting-profile-image-menu{
+    overflow: hidden;
+    position: relative;
+    display: block;
+}
+
+.ting-profile-image-menu img{
+    display: block;
+    position: relative;
+    width: 50px;
+    height: 50px;
+    border: 2px solid #DDD;
+    border-radius: 50%;
+}
+
+.ting-no-p-left{
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+}
+
+.ting-no-p-top{
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+.ting-no-p-right{
+    margin-right: 0 !important;
+    padding-right: 0 !important;
+}
+
+.ting-side-orders{
+    display: block;
+    position: relative;
+    height: calc(100vh - 100px);
+}
+
+.ting-side-orders h2{
+    font-weight: 100;
+    text-transform: uppercase;
+}
+
+.ting-restaurant-name{
+    position: relative;
+    display: block;
+}
+
+.ting-restaurant-name h2{
+    font-weight: 100;
+}
+
+.ting-restaurant-name p{
+    margin-top: -5px !important;
+}
+
+.ting-restaurant-about-mini{
+    border-bottom: 1px solid #DDD;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+}
+
+.ting-restaurant-about{
+    padding-left: 2rem;
+    margin-top: 40px;
+}
+
+.ting-restaurant-about h3{
+    font-weight: 100;
+}
+
+.ting-restaurant-about .ting-restaurant-about-data{
+    margin-top: 40px;
+    margin-bottom: 40px;
+}
+
+.ting-restaurant-about .ting-restaurant-about-data p{
+    font-size: 18px;
+}
+
+.ting-restaurant-about .ting-restaurant-about-data p i{
+    margin-right: 15px;
+}
+
+.ting-data-container-header h1{
+    font-weight: 100;
+    text-transform: uppercase;
+}
+
+.ting-item-images-preview{
+    width: 100%;
+    overflow: hidden;
+    text-align: center !important;
+    height: auto;
+}
+
+.ting-item-images-preview img{
+    margin-bottom: 15px;
+    margin-right: 7px;
+    height: 150px;
+    text-align: center;
+}
+
+.ting-item-images-preview img:last-child {
+    margin-right: 0;
+}
+
+.ting-form-data-images{
+    display: block;
+    width: 100%;
+    position: relative;
+    text-align: center;
+}
+
+.ting-form-data-images .ting-image-form{
+    margin-bottom: 1.5rem;
+    position: relative;
+    padding: 0 8px;
+    display: inline-block;
+    height: 180px;
+}
+
+.ting-form-data-images .ting-image-form img{
+    height: inherit;
+    width: auto;
+}
+
+.ting-form-data-images .ting-image-form .ting-delete-image{
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(0,0,0,.7);
+    text-align: center;
+    align-items: center;
+    display: flex;
+    top: 0;
+    right: 8px;
+}
+
+.ting-form-data-images .ting-image-form .ting-delete-image a{
+    color: #FFF;
+    text-decoration: none;
+    text-align: center;
+    display: block;
+}
+
+.ting-form-data-images .ting-image-form .ting-delete-image a i{
+    color: #FFF;
+    text-align: center;
+    margin-left: calc((30px - 1.18em) / 2);
+}

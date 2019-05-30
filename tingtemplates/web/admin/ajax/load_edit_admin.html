@@ -1,0 +1,55 @@
+{% load ting_tags %}
+{% load tz %}
+{% load staticfiles %}
+<div class="content">
+    <div class="content">
+        <div class="ting-search-place">
+            <form class="ui form" action="{% url 'ting_wb_adm_admin_update_profile' admin.token %}" method="POST" id="ting-admin-edit-profile-form" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="field">
+                    <label>Enter Name :</label>
+                    <input type="text" name="name" placeholder="Admin Name" value="{{admin.name}}" required autocomplete="off">
+                </div>
+                <div class="field">
+                    <label>Enter Username :</label>
+                    <input type="text" name="username" placeholder="Admin Username" value="{{admin.username}}" autocomplete="off">
+                </div>
+                <div class="field">
+                    <label for="">Enter Email Address : </label>
+                    <div class="ui action input">
+                        <input type="text" name="email" value="{{admin.email}}" placeholder="Admin Email Address" autocomplete="off">
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Select Admin Type :</label>
+                            <select class="dropdown" name="admin_type">
+                                {% for type in types %}
+                                    {% if admin.admin_type == type.0 %}
+                                        <option value="{{type.0}}" selected>{{type.1}}</option>
+                                    {% else %}
+                                        <option value="{{type.0}}">{{type.1}}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Enter Admin Badge Number :</label>
+                            <input type="text" name="badge_number" placeholder="Admin Badge Number" value="{{admin.badge_number|none}}" autocomplete="off" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Enter Administrator Phone :</label>
+                    <input type="text" name="phone" placeholder="Administrator Phone" value="{{admin.phone}}" autocomplete="off" required>
+                </div>
+                <div class="field">
+                    <label>Enter Administrator Password :</label>
+                    <input type="password" name="password" placeholder="Administrator Password" autocomplete="off" required>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">$("#ting-admin-edit-profile-form").submitFormAjax(); $("select.dropdown").dropdown();</script>

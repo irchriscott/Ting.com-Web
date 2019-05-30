@@ -1,0 +1,159 @@
+{% extends '../navbar.html' %}
+{% load staticfiles %}
+{% block body %}
+
+<section class="about-area">
+	<div class="container-fluid">
+		<div class="row justify-content-end align-items-center d-flex no-padding">
+			<div class="col-lg-6 about-left">
+				<h1>Register Your Restaurant</h1>
+				<p style="color: #EEE; text-align: left !important;">
+					It's not hard, It's very easy. What you need to do is just contact us, send us :
+				</p>
+				<ul style="list-style: initial; padding-left: 40px;">
+					<li style="color: #EEE; text-align: left !important;">The name of the restaurant</li>
+					<li style="color: #EEE; text-align: left !important;">The branch (if it has any)</li>
+					<li style="color: #EEE; text-align: left !important;">The motto of the restaurant (if it has any)</li>
+					<li style="color: #EEE; text-align: left !important;">The address of the restaurant</li>
+					<li style="color: #EEE; text-align: left !important;">The email address that people use to contact you</li>
+					<li style="color: #EEE; text-align: left !important;">The telephone numbers of the restaurants</li>
+					<li style="color: #EEE; text-align: left !important;">The opening and closing hour</li>
+				</ul>
+				<p style="color: #EEE; text-align: left !important;">
+					After being registered by us, you will receive an email address containing your login credentials and the trial key. If you have an account, you can just login.
+				</p>
+				<div class="buttons" style="margin-bottom: 25px;">
+					<a href="#" class="about-btn text-uppercase primary-border circle">Contact Us</a>
+					<a href="#" id="ting-admin-login" class="about-btn text-uppercase  primary-border circle">Login</a>
+				</div>
+			</div>
+			<div class="col-lg-6 about-right" style="padding: 0 !important;">
+				<img class="img-fluid" src="{% static 'imgs/restaurant-one.jpg' %}" alt="">
+			</div>
+		</div>
+	</div>	
+</section>
+
+<section class="service-area pt-100 pb-150">
+	<div class="container">
+		<div class="row d-flex justify-content-center">
+			<div class="menu-content pb-70 col-lg-8">
+				<div class="title text-center">
+					<span class="lnr lnr-briefcase" style="font-size: 38px; margin-bottom: 25px; display: block;"></span>
+					<h1 class="mb-10">Our Packages</h1>
+					<p>Here are the packages offered by <span class="ting-secondary-color">Ting</span><span class="ting-primary-color">.com</span></p>
+				</div>
+			</div>
+		</div>	
+		<div class="row">
+			<div class="sigle-service col-lg-3 col-md-6">
+				<img src="{% static 'imgs/packages/trial.png' %}">
+				<h4>Trial</h4>
+				<p>
+					Find and order food at any restaurants near you or at any other location, find their menus and special offers any time, any place.
+				</p>
+				<a href="#" class="text-uppercase primary-btn2 primary-border circle">View Details</a>
+			</div>
+			<div class="sigle-service col-lg-3 col-md-6">
+				<img src="{% static 'imgs/packages/silver.png' %}">
+				<h4>Silver</h4>
+				<p>
+					Get updates of your favourite restaurants, their new meals and offers anytime posted through notifications or emails.
+				</p>
+				<a href="#" class="text-uppercase primary-btn2 primary-border circle">View Details</a>
+			</div>
+			<div class="sigle-service col-lg-3 col-md-6">
+				<img src="{% static 'imgs/packages/gold.png' %}">
+				<h4>Gold</h4>
+				<p>
+					Book a place in your favourite restaurants and choose a confortable seat by viewing the inside of restaurant in 3D.
+				</p>
+				<a href="#" class="text-uppercase primary-btn2 primary-border circle">View Details</a>
+			</div>
+			<div class="sigle-service col-lg-3 col-md-6">
+				<img src="{% static 'imgs/packages/platinum.png' %}">
+				<h4>Platinum</h4>
+				<p>
+					Manage your restaurant and all it content like meals, menus, drinks, bookings, tables, incomes even also employees.
+				</p>
+			    <a href="#" class="text-uppercase primary-btn2 primary-border circle">View Details</a>
+			</div>																		
+		</div>
+	</div>	
+</section>
+
+<div class="ui tiny modal" data-modal="ting-admin-login">
+    <div class="header">
+        Login As Restaurant
+    </div>
+    <div class="content">
+        <div class="ting-search-place">
+            <form class="ui form" action="{% url 'ting_wb_adm_login' %}" method="POST" id="ting-admin-login-form">
+                {% csrf_token %}
+                <div class="field">
+                    <label>Enter Email Address :</label>
+                    <input type="email" name="email" placeholder="Email Address" required autocomplete="off">
+                </div>
+                <div class="field">
+                    <label>Enter Password :</label>
+                    <input type="password" name="password" placeholder="Password" autocomplete="off" required>
+                </div>
+                <div class="field">
+				    <div class="ui checkbox">
+				    	<input type="checkbox" tabindex="0">
+				      	<label style="line-height: 1.3 !important;">Remember Me</label>
+				    </div>
+				</div>
+                <div class="ting-action-modal">
+                    <div class="actions">
+                        <div class="ui red deny button">
+                            Cancel
+                        </div>
+                    </div>
+                    <button type="submit" class="ui positive right labeled icon button" id="ting-login-admin">
+                        Submit
+                        <i class="checkmark icon"></i>
+                    </button>
+                    <a href="#" id="ting-admin-forgot-password" style="float: right; margin-top: -30px;">Forgot Password ?</a>
+                    <div class="ui right ting-loader ting-form-loader-submit">
+                        <img src="{% static 'imgs/loading.gif' %}">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<div class="ui tiny modal" data-modal="ting-admin-forgot-password" id="ting-admin-forgot-password-modal">
+    <div class="header">
+        Reset Password
+    </div>
+    <div class="content">
+        <div class="ting-search-place">
+            <form class="ui form" action="{% url 'ting_wb_adm_submit_reset_pwd' %}" method="POST" id="ting-admin-reset-password">
+                {% csrf_token %}
+                <div class="field">
+                    <label>Enter Email Address :</label>
+                    <input type="email" name="email" placeholder="Email Address" required autocomplete="off">
+                </div>
+                <div class="ting-action-modal">
+                    <div class="actions">
+                        <div class="ui red deny button">
+                            Cancel
+                        </div>
+                    </div>
+                    <button type="submit" class="ui positive right labeled icon button" id="ting-reset-password">
+                        Submit
+                        <i class="checkmark icon"></i>
+                    </button>
+                    <div class="ui right ting-loader ting-form-loader-submit">
+                        <img src="{% static 'imgs/loading.gif' %}">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

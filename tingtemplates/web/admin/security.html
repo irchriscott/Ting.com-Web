@@ -1,0 +1,87 @@
+{% extends '../../layouts/header.html' %}
+{% load staticfiles %}
+{% load ting_tags %}
+{% load tz %}
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}">
+{% endblock %}
+{% block title %}
+    <title>Ting.com - Admin / Security</title>
+{% endblock %}
+{% block content %}
+{% include '../../web/admin/sidebar.html' %}
+<div class="pusher">
+    <div class="article ting-admin-container">
+        {% include '../../web/admin/navbar.html' %}
+        <div class="ui grid divided" style="margin-left: 10px;">
+            <div class="row">
+                <div class="twelve wide column">
+                    
+                    <div class="row justify-content-start align-items-center d-flex ting-restaurant-about-mini">
+                        <div class="" style="padding-left: 2rem;">
+                            <div class="ting-profile-image">
+                                <div class="ting-profile-image-container">
+                                    <div class="box ting-session-profile-image">
+                                        <div class="item light ting-session-profile-image">
+                                            <a href="#"><img class="ting-session-profile-image-img" src="{{admin.image.url}}" alt="{{admin.username}}" class="w-full" id="ting-profile-image"></a>
+                                                
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ting-restaurant-name" style="padding-left: 2rem;">
+                            <h2>{{admin.name}}</h2>
+                            <p style="font-weight: 100;">{{admin.username}}</p>
+                            <p><i class="icon mail alternate"></i> {{admin.email}}</p>
+                        </div>
+                    </div>
+
+
+                    <div class="ting-restaurant-about">
+
+                        <div class="row justify-content-start d-flex no-padding">
+                            <div class="col-lg-6">
+                                <h3>CHANGE PASSWORD</h3>
+
+                                <div class="ting-restaurant-about-data">
+                                    <form method="POST" action="{%  url 'ting_wb_adm_admin_update_password' %}" id="ting-admin-change-password-form">
+                                        {% csrf_token %}
+                                        <div class="ui form">
+                                            <div class="field">
+                                                <label>Enter Current Password :</label>
+                                                <input type="password" name="oldpass" placeholder="Current Password" autocomplete="off" required>
+                                            </div>
+                                            <div class="field">
+                                                <label>Enter New Password :</label>
+                                                <input type="password" name="newpass" placeholder="New Password" autocomplete="off" required>
+                                            </div>
+
+                                            <div class="field">
+                                                <label>Confirm New Password :</label>
+                                                <input type="password" name="confirmpass" placeholder="Confirm Password" autocomplete="off" required>
+                                            </div>
+                                            <button type="submit" class="ui positive labeled icon button" style="margin-top: 10px;">
+                                                Submit
+                                                <i class="checkmark icon"></i>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+                <div class="four wide column">
+                    {% include '../../web/admin/sideorders.html' %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

@@ -1,0 +1,61 @@
+{% load staticfiles %}
+<div class="ui visible sidebar inverted vertical menu">
+    <div class="ting-menu-logo" style="margin-top:20px;">
+        <img src="{% static 'imgs/logo.png' %}" alt="Ting.com">
+        <h3><span class="ting-secondary-color">Ting</span><span class="ting-primary-color">.com</span></h3>
+    </div>
+    <div class="ting-side-menu">
+        <div class="ting-side-menu-items">
+            <div class="ting-menu-item">
+                <a href="{% url 'ting_admin_dashboard' %}">
+                    <div class="ting-menu-icon">
+                        <i class="home link icon"></i>
+                    </div>
+                    <div class="ting-menu-legend">
+                        <p>Dashboard</p>
+                    </div>
+                </a>
+            </div>
+            <div class="ting-menu-item">
+                <a href="{% url 'ting_admin_restaurants' %}">
+                    <div class="ting-menu-icon">
+                        <i class="utensils link icon"></i>
+                    </div>
+                    <div class="ting-menu-legend">
+                        <p>Restaurants</p>
+                    </div>
+                </a>
+            </div>
+            <div class="ting-menu-item">
+                <a href="{% url 'ting_admin_categories' %}">
+                    <div class="ting-menu-icon">
+                        <i class="list link icon"></i>
+                    </div>
+                    <div class="ting-menu-legend">
+                        <p>Categories</p>
+                    </div>
+                </a>
+            </div>
+            <div class="ting-menu-item">
+                <a href="{% url 'ting_admin_packages' %}">
+                    <div class="ting-menu-icon">
+                        <i class="boxes link icon"></i>
+                    </div>
+                    <div class="ting-menu-legend">
+                        <p>Packages</p>
+                    </div>
+                </a>
+            </div>
+            <div class="ting-menu-item">
+                <a href="{% url 'ting_admin_logout' %}">
+                    <div class="ting-menu-icon">
+                        <i class="sign out alternate link icon red"></i>
+                    </div>
+                    <div class="ting-menu-legend">
+                        <p style="color:red;">Logout</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

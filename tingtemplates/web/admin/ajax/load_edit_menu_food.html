@@ -1,0 +1,110 @@
+{% load staticfiles %}
+{% load ting_tags %}
+<div class="content">
+    <div class="ting-search-place">
+        <form class="ui form" action="{% url 'ting_wb_adm_menu_food_update' food.pk %}" method="POST" id="ting-update-menu-food-form" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="field">
+                <label>Enter Food Name :</label>
+                <input type="text" name="name" placeholder="Food Name" value="{{food.name}}" required autocomplete="off">
+            </div>
+
+            <div class="field">
+                <label>Enter Food Description :</label>
+                <textarea name="description" required placeholder="Enter Description">{{food.description}}</textarea>
+            </div>
+
+            <div class="field">
+                <div class="three fields">
+                    <div class="field">
+                        <label>Enter Last Price :</label>
+                        <input type="number" name="last_price" min="0" value="{{food.last_price}}" placeholder="Enter Last Price" required>
+                    </div>
+                    <div class="field">
+                        <label>Enter Current Price :</label>
+                        <input type="number" name="price" min="0" value="{{food.price}}" placeholder="Enter Price" required>
+                    </div>
+                    <div class="field">
+                        <label>Select Currency :</label>
+                        <select class="ui dropdown" name="currency">
+                            {% if restaurant.config.use_default_currency == True %}
+                                <option value="{{restaurant.config.currency}}">{{restaurant.config.currency|from_t:currencies}}</option>
+                            {% else %}
+                                {% for currency in currencies %}
+                                    {% if food.currency == currency.0 %}
+                                    <option value="{{currency.0}}" selected>{{currency.1}}</option>
+                                    {% else %}
+                                    <option value="{{currency.0}}">{{currency.1}}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="field">
+                <label>Enter Ingredient List :</label>
+                <textarea required name="ingredients" class="ting-textarea-froala-editor" placeholder="Ingredient List">{{food.ingredients}}</textarea>
+            </div>
+            <div class="field">
+                <div class="ui checkbox">
+                    <input type="checkbox" name="show_ingredients" {% if food.show_ingredients == True %} checked {% endif %}>
+                    <label style="line-height: 1.3 !important;">Show Ingredients To Users</label>
+                </div>
+            </div>
+            <div class="field">
+                <label>Enter Quantity (According to the price if countable is true. Eg: Price of 2 Pizzas, ... ) :</label>
+                <input type="number" name="quantity" value="{{food.quantity}}" placeholder="Enter Quantity" min="0">
+            </div>
+            <div class="field">
+                <div class="ui checkbox">
+                    <input type="checkbox" name="is_countable" {% if food.is_countable == True %} checked {% endif %}>
+                    <label style="line-height: 1.3 !important;">Is Countable</label>
+                </div>
+            </div>
+            <div class="field ting-file-input">
+                <span>Add Food Images</span>
+                <input type="file" name="image" required multiple="true" id="ting-multiple-image-input-else" accept=".jpg, .png, .jpeg" required>
+            </div>
+            <div class="ting-item-images-preview ting-item-images-preview-else"></div>
+            <div class="ui indicating progress small ting-progress-form" style="display: none;" data-value="0" data-total="100">
+                <div class="bar"></div>
+            </div>
+            <div class="ting-form-data-images">
+                {% for image in images %}
+                    <div class="ting-image-form" id="ting-image-form-{{image.id}}">
+                        <img src="{{image.image.url}}">
+                        <div class="ting-delete-image"><a class="ting-open-ajax-modal" ting-modal-type="confirm" ting-hide-content="ting-image-form-{{image.id}}" ting-data-url="{% url 'ting_wb_adm_menu_food_delete_image' food.pk image.pk %}" ting-modal-target="ting-food-image-delete-{{image.id}}"><i class="times icon"></i></a></div>
+                    </div>
+                    <div class="ui modal mini ting-overlay-modal" data-modal="ting-food-image-delete-{{image.id}}">
+                        <div class="header">
+                            Delete Food Image
+                        </div>
+                        <div class="content">
+                            <p>Do you really want to delete this menu food image ?</p>
+                        </div>
+                        <div class="actions">
+                            <div class="ui positive button right labeled icon">
+                                Yes
+                                <i class="icon check"></i>
+                            </div>
+                            <div class="ui red deny button right labeled icon">
+                                No
+                                <i class="icon times"></i>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </form>
+    </div>
+    <script type="text/javascript">
+        $(".ting-textarea-froala-editor").setFroalaEditor();
+        $("#ting-multiple-image-input-else").change(function(e){
+            multipleImagesPreview(this, $(".ting-item-images-preview-else"));
+        });
+        $("select.dropdown, .dropdown").dropdown('hide');
+        $("#ting-update-menu-food-form").submitFormAjax();
+        $(".ting-open-ajax-modal").openModal();
+    </script>
+</div>

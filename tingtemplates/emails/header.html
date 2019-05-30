@@ -1,0 +1,131 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:100,200,400,300,500,600,700">
+        <style type="text/css">
+            h1,
+            h2,
+            h3,
+            h4,
+            h5,
+            p,
+            div,
+            a,
+            label,
+            input,
+            button,
+            textarea{
+                font-family: Poppins, Lato, 'Helvetica Neue', Arial, Helvetica, sans-serif !important;
+            }
+
+            :root{
+                --primaryColor: #b56fe8;
+                --secondaryColor: #908ced;
+            }
+
+            body{
+                padding: 40px;
+                background: #CCC;
+            }
+
+            .ting-link-btn{
+                display: block;
+                width: 100%;
+                padding: 8px;
+                color: #FFF !important;
+                background: #b56fe8;
+                text-align: center;
+                border-radius: 5px;
+                font-size: 15px;
+                text-decoration: none !important;
+            }
+
+            .ting-content{
+                padding: 30px;
+                border: 2px solid #b56fe8;
+                width: 50%;
+                margin: auto;
+                background: #FFF;
+            }
+
+            .ting-message{
+                position: relative;
+                display: block;
+                color: #333;
+                margin-top: 15px;
+                border-bottom: 1px solid #DDD;
+                padding-bottom:15px;
+            }
+
+            .ting-header{
+                display: block;
+                position: relative;
+                padding-bottom: 20px;
+                border-bottom: 1px solid #DDD;
+            }
+
+            .ting-header h2{
+                margin: 0;
+            }
+
+            .ting-footer{
+                display: block;
+                position: relative;
+            }
+
+            .ting-footer p{
+                margin-bottom: 0;
+                font-size: 13px;
+                color: #999;
+            }
+
+            @media only screen and (max-width: 1085px) {
+                body{
+                    padding: 20px;
+                    background: #CCC;
+                }
+
+                .ting-content{
+                    padding: 20px;
+                    border: 2px solid #b56fe8;
+                    width: 90%;
+                    margin: auto;
+                    background: #FFF;
+                }
+
+                .ting-message{
+                    position: relative;
+                    display: block;
+                    color: #333;
+                    margin-top: 15px;
+                    border-bottom: 1px solid #DDD;
+                    padding-bottom:15px;
+                }
+
+                .ting-header{
+                    display: block;
+                    position: relative;
+                    padding-bottom: 10px;
+                    border-bottom: 1px solid #DDD;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="ting-content">
+            <div class="ting-header">
+                <h2><span style="color:#908ced;">Ting</span><span style="color: #b56fe8;">.com</span></h2>
+            </div>
+            <div class="ting-message">
+                {% block content %}{% endblock %}
+            </div>
+            <div class="ting-footer">
+                <p>Sent by Team Code Pipes Solutions - <span style="color:#908ced;">Ting</span><span style="color: #b56fe8;">.com</span></p>
+            </div>
+        </div>
+    </body>
+</html>

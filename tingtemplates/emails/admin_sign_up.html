@@ -1,0 +1,8 @@
+{% extends '../emails/header.html' %}
+{% block content %}
+<p>Hello {{admin.name}},</p>
+<p>You have been registered in <span style="color:#908ced;">Ting</span><span style="color: #b56fe8;">.com</span> to the restaurant account of <b>{{restaurant.name}}</b> with user type of <b>{{admin.admin_type_str}}</b>. To get started with this account, please login with the credintials here bellow: </p>
+<p><b>Email Address : </b> {{admin.email}}, <b>Password : </b>{{password}}</p>
+
+<p>Regards</p>
+{% endblock %}

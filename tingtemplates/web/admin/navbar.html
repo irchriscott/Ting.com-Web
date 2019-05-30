@@ -1,0 +1,32 @@
+<div class="ui secondary menu ting-no-p-right" style="border-bottom: 1px solid #DDD;">
+    <div class="ui item ting-no-p-top">
+        <div class="ting-profile-image-menu">
+        	<img src="{{restaurant.logo.url}}" alt="{{restaurant.name}}">
+        </div>
+    </div>
+    <a class="ui item" href="{% url 'ting_wb_adm_restaurant' %}" style="margin-top: -10px;">{{restaurant.full_name}}</a>
+    <div class="right menu">
+        <div class="item ting-no-p-top">
+            <div class="ui icon input">
+                <input type="text" placeholder="Search...">
+                <i class="search link icon"></i>
+            </div>
+        </div>
+        <div class="ui item ting-no-p-top">
+        	<div class="ting-profile-image-menu">
+        		<img src="{{admin.image.url}}" alt="{{admin.username}}">
+        	</div>
+        </div>
+
+        <div class="ui right dropdown item" style="margin-top: -10px !important;">
+		    <i class="icon cog"></i>
+		  	<div class="menu">
+		    	<div class="header">Admin Settings</div>
+		    	<a class="item" href="{% url 'ting_wb_adm_admin_session' %}" style="align-self: flex-start; width: 100%"><i class="pencil icon"></i>Edit Profile</a>
+		    	<a class="item" href="{% url 'ting_wb_adm_admin_permissions' %}" style="align-self: flex-start; width: 100%"><i class="clipboard list icon"></i>Privileges</a>
+		    	<a class="item" href="{% url 'ting_wb_adm_admin_security' %}" style="align-self: flex-start; width: 100%"><i class="shield alternate icon"></i>Security</a>
+		    	<a class="item" href="#" style="align-self: flex-start; width: 100%"><i class="history icon"></i>Recent Actions</a>
+		  	</div>
+		</div>
+    </div>
+</div>
