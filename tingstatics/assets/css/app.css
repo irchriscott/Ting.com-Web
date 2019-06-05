@@ -552,3 +552,38 @@ textarea{
     text-align: center;
     margin-left: calc((30px - 1.18em) / 2);
 }
+
+.ting-jumb-image-bg{
+    width: 100%;
+    height: 400px;
+    overflow: hidden;
+}
+
+.ting-jumb-image-bg img{
+    width: 100%;
+}
+
+.ting-checkbox{
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    background: #FFF;
+    border-radius:2px;
+    box-sizing: border-box;
+    position: relative;
+    box-sizing: content-box ;
+    width: 35px;
+    height: 35px;
+    border: 1px solid #999;
+    transition: all .3s linear;
+}
+
+.ting-checkbox:checked{
+  background-color: #2ECC71;
+  border: 1px solid #2ECC71;
+  border-radius: 2px;
+}
+.ting-checkbox:focus{
+  outline: 0 none;
+  box-shadow: none;
+}

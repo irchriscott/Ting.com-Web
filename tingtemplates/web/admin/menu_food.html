@@ -71,8 +71,8 @@
                                             <td>{{food.price|intcomma}} {{food.currency}}</td>
                                             <td>{{food.type_str}}</td>
                                             <td>
-                                                <div class="ui small blue labeled icon button ting-open-ajax-modal" ting-modal-type="ajax" ting-data-url="" ting-modal-target="ting-admin-load-profile">
-                                                    <i class="user icon"></i> Load
+                                                <div class="ui small blue labeled icon button ting-open-ajax-modal" ting-modal-type="ajax" ting-data-url="{% url 'ting_wb_adm_menu_food_load' food.pk %}" ting-modal-target="ting-load-menu-food">
+                                                    <i class="utensils spoon icon"></i> Load
                                                 </div>
                                                 <div class="ui right dropdown item" style="margin-top: -10px !important;">
                                                     <i class="icon chevron down"></i>
@@ -115,9 +115,9 @@
                                                                 <div class="header">Categories</div>
                                                                 {% for category in categories %}
                                                                     {% if food.category.id == category.id %}
-                                                                    <a class="item ting-open-ajax-modal active selected" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_menu_food_move_to_category' food.pk category.pk %}" ting-modal-target="ting-move-to-category-{{food.id}}" style="align-self: flex-start; width: 100%"><img class="ui avatar image" src="{{category.image.url}}"> {{category.name}}</a>
+                                                                    <a class="item ting-open-ajax-modal active selected" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_menu_food_move_to_category' food.pk category.pk %}" ting-modal-target="ting-move-to-category-{{food.id}}" style="align-self: flex-start; width: 100%"><img class="ui avatar image" src="{{category.image.url}}" style="width: 30px;"> {{category.name}}</a>
                                                                     {% else %}
-                                                                    <a class="item ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_menu_food_move_to_category' food.pk category.pk %}" ting-modal-target="ting-move-to-category-{{food.id}}" style="align-self: flex-start; width: 100%"><img class="ui avatar image" src="{{category.image.url}}"> {{category.name}}</a>
+                                                                    <a class="item ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_menu_food_move_to_category' food.pk category.pk %}" ting-modal-target="ting-move-to-category-{{food.id}}" style="align-self: flex-start; width: 100%"><img class="ui avatar image" src="{{category.image.url}}" style="width: 30px;"> {{category.name}}</a>
                                                                     {% endif %}
                                                                 {% endfor %}
                                                             </div>
@@ -254,7 +254,7 @@
     <div class="header">
         Menu Food
     </div>
-    <div class="scrolling content">
+    <div class="content">
         <div class="ting-data-content"></div>
         <div class="ui right ting-loader" style="margin: auto; text-align: center;">
             <img src="{% static 'imgs/loading.gif' %}">

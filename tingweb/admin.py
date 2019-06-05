@@ -12,7 +12,8 @@ from django.utils import timezone
 from ting.responses import ResponseObject, HttpJsonResponse
 from tingweb.models import (
 							Restaurant, Administrator, AdminPermission, RestaurantLicenceKey, RestaurantConfig,
-							Menu, Food, Drink, Dish, FoodCategory, FoodImage, AdministratorResetPassword
+							Menu, Food, Drink, Dish, FoodCategory, FoodImage, AdministratorResetPassword, DrinkImage,
+							DishImage, DishFood
 						)
 from tingweb.backend import AdminAuthentication
 from tingweb.mailer import (SendAdminRegistrationMail, SendAdminResetPasswordMail)
@@ -20,7 +21,8 @@ from tingweb.forms import (
 							RestaurantUpdateLogo, RestaurantUpdateProfile, RestaurantUpdateConfig, 
 							AdministratorUpdateImage, AdministratorUpdateProfile, AdministratorUpdateUsername, 
 							AdministratorUpdateEmail, AddAdministrator, FoodCategoryForm, EditFoodCategoryForm,
-							AddMenuFood, FoodImageForm, EditMenuFood
+							AddMenuFood, FoodImageForm, EditMenuFood, AddMenuDrink, DrinkImageForm, EditMenuDrink,
+							AddMenuDish, DishImageForm, EditMenuDish
 						) 
 import ting.utils as utils
 from datetime import datetime, timedelta
@@ -522,6 +524,10 @@ def update_admin_profile(request, token):
 
 				admin = Administrator.objects.get(token=token)
 
+				if admin.restaurant.pk != session.restaurant.pk:
+					messages.error(request, 'Data Not For This Restaurant !!!')
+					return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, reverse('ting_wb_adm_administrators')))
+
 				if admin.username != request.POST.get('username'):
 					if username.is_valid():
 						admin.username = username.cleaned_data['username']
@@ -559,6 +565,12 @@ def update_admin_profile(request, token):
 def disable_admin_account_toggle(request, token):
 	admin = Administrator.objects.get(token=token)
 	session = Administrator.objects.get(pk=request.session['admin'])
+
+	if admin.restaurant.pk != session.restaurant.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+				reverse('ting_wb_adm_administrators')))
+
 	if admin.pk != session.pk:
 		if admin.is_disabled == False:
 			admin.is_disabled = True
@@ -674,6 +686,11 @@ def update_admin_permissions(request, token):
 		password = request.POST.get('password')
 		_permissions = request.POST.getlist('permission')
 
+		if admin.restaurant.pk != session.restaurant.pk:
+			messages.error(request, 'Data Not For This Restaurant !!!')
+			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+					reverse('ting_wb_adm_administrators')))
+
 		if check_password(password, session.password) == True:
 
 			admin_permissions = AdminPermission.objects.get(admin=admin.pk)
@@ -700,7 +717,7 @@ def update_admin_permissions(request, token):
 def categories(request):
 	template = 'web/admin/categories.html'
 	admin = Administrator.objects.get(pk=request.session['admin'])
-	categories = FoodCategory.objects.all()
+	categories = FoodCategory.objects.filter(restaurant__pk=admin.restaurant.pk)
 	return render(request, template, {
 			'admin': admin,
 			'restaurant': admin.restaurant,
@@ -739,6 +756,11 @@ def add_new_category(request):
 def delete_category(request, slug):
 	admin = Administrator.objects.get(pk=request.session['admin'])
 	category = FoodCategory.objects.get(slug=slug)
+
+	if admin.restaurant.pk != category.restaurant.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+				reverse('ting_wb_adm_categories')))
 	
 	if category != None:
 			
@@ -767,10 +789,15 @@ def update_category(request, slug):
 	if request.method == 'POST':
 		admin = Administrator.objects.get(pk=request.session['admin'])
 		form = EditFoodCategoryForm(request.POST)
-
+		category = FoodCategory.objects.get(slug=slug)
+		
 		if form.is_valid():
 
-			category = FoodCategory.objects.get(slug=slug)
+			if admin.restaurant.pk != category.restaurant.pk:
+				messages.error(request, 'Data Not For This Restaurant !!!')
+				return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+						reverse('ting_wb_adm_administrators')))
+			
 			category.name = form.cleaned_data['name']
 			category.description = form.cleaned_data['description']
 
@@ -798,8 +825,8 @@ def update_category(request, slug):
 def menu_food(request):
 	template = 'web/admin/menu_food.html'
 	admin = Administrator.objects.get(pk=request.session['admin'])
-	foods = Food.objects.all().order_by('-created_at')
-	categories = FoodCategory.objects.all()
+	foods = Food.objects.filter(restaurant__pk=admin.restaurant.pk).order_by('-created_at')
+	categories = FoodCategory.objects.filter(restaurant__pk=admin.restaurant.pk)
 	types = utils.FOOD_TYPE
 	currencies = utils.CURRENCIES
 
@@ -866,10 +893,17 @@ def add_new_menu_food(request):
 @check_admin_login
 @is_admin_enabled
 @has_admin_permissions(permission='can_avail_menu', xhr='ajax')
-def avail_menu_food_toggle(request, pk):
-	food = get_object_or_404(Food, pk=pk)
+def avail_menu_food_toggle(request, food):
+	food = get_object_or_404(Food, pk=food)
 	food.admin = Administrator.objects.get(pk=request.session['admin'])
 	food.updated_at = timezone.now()
+
+	admin = Administrator.objects.get(pk=request.session['admin'])
+
+	if admin.restaurant.pk != food.restaurant.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+				reverse('ting_wb_adm_menu_food')))
 
 	menu = Menu.objects.filter(menu_type=1, menu_id=food.pk).first()
 	menu.admin = Administrator.objects.get(pk=request.session['admin'])
@@ -900,6 +934,11 @@ def move_menu_food_to_type(request, food, food_type_key):
 	food = get_object_or_404(Food, pk=food)
 	food_type = utils.get_from_tuple(utils.FOOD_TYPE, food_type_key)
 
+	if admin.restaurant.pk != food.restaurant.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+				reverse('ting_wb_adm_menu_food')))
+
 	if food_type != None and food_type != food_type_key:
 		food.food_type = int(food_type_key)
 		food.admin = Administrator.objects.get(pk=admin.pk)
@@ -928,6 +967,11 @@ def move_menu_food_to_category(request, food, category):
 	admin = Administrator.objects.get(pk=request.session['admin'])
 	food = get_object_or_404(Food, pk=food)
 	category = get_object_or_404(FoodCategory, pk=category)
+
+	if admin.restaurant.pk != food.restaurant.pk or category.restaurant.pk != admin.restaurant.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+				reverse('ting_wb_adm_menu_food')))
 
 	food.category = FoodCategory.objects.get(pk=category.pk)
 	food.admin = Administrator.objects.get(pk=admin.pk)
@@ -972,6 +1016,11 @@ def update_menu_food(request, food):
 
 		food = get_object_or_404(Food, pk=food)
 		form = EditMenuFood(request.POST)
+
+		if admin.restaurant.pk != food.restaurant.pk:
+			messages.error(request, 'Data Not For This Restaurant !!!')
+			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+					reverse('ting_wb_adm_menu_food')))
 
 		if form.is_valid():
 
@@ -1022,6 +1071,11 @@ def delete_menu_food_image(request, food, image):
 	food = get_object_or_404(Food, pk=food)
 	image = get_object_or_404(FoodImage, pk=image)
 
+	if admin.restaurant.pk != food.restaurant.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+				reverse('ting_wb_adm_menu_food')))
+
 	if food.images.count() > 2:
 		image.delete()
 		return HttpJsonResponse(ResponseObject('success', 'Menu Food Image Deleted Successfully !!!', 200))
@@ -1032,12 +1086,31 @@ def delete_menu_food_image(request, food, image):
 
 @check_admin_login
 @is_admin_enabled
-@has_admin_permissions(permission='can_update_menu', xhr='ajax')
+@has_admin_permissions(permission='can_delete_menu', xhr='ajax')
 def delete_menu_food(request, food):
 	admin = Administrator.objects.get(pk=request.session['admin'])
 	food = get_object_or_404(Food, pk=food)
 
+	if admin.restaurant.pk != food.restaurant.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+				reverse('ting_wb_adm_menu_food')))
+
 	return HttpJsonResponse(ResponseObject('info', 'Action To Be Implemented Later !!!', 500))
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_menu', xhr='ajax')
+def load_menu_food(request, food):
+	template = 'web/admin/ajax/load_menu_food.html'
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	food = get_object_or_404(Food, pk=food)
+	return render(request, template, {
+			'food': food,
+			'admin': admin,
+			'restaurant': admin.restaurant
+		})
 
 
 
@@ -1050,11 +1123,254 @@ def delete_menu_food(request, food):
 def menu_drinks(request):
 	template = 'web/admin/menu_drinks.html'
 	admin = Administrator.objects.get(pk=request.session['admin'])
-	menus = []
+	drinks = Drink.objects.filter(restaurant__pk=admin.restaurant.pk).order_by('-created_at')
 	return render(request, template, {
 			'admin': admin,
 			'restaurant': admin.restaurant,
-			'menus': menus
+			'drinks': drinks,
+			'currencies': utils.CURRENCIES,
+			'types': utils.DRINK_TYPE
+		})
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_add_menu', xhr='ajax')
+def add_new_menu_drink(request):
+	if request.method == 'POST':
+		admin = Administrator.objects.get(pk=request.session['admin'])
+		is_countable = True if request.POST.get('is_countable') is 'on' else False
+		show_ingredients = True if request.POST.get('show_ingredients') is 'on' else False
+
+		form = AddMenuDrink(request.POST, instance=Drink(
+				restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
+				admin=Administrator.objects.get(pk=admin.pk),
+				slug='{0}-{1}'.format(request.POST.get('name').replace(' ', '-'), get_random_string(16)).lower(),
+				is_countable=is_countable,
+				show_ingredients=show_ingredients,
+				quantity=int(request.POST.get('quantity')) if is_countable is True else 1
+			))
+
+		images_form = DrinkImageForm(request.POST, request.FILES)
+
+		if form.is_valid() and images_form.is_valid():
+
+			drink = form.save()
+			images = request.FILES.getlist('image')
+
+			for image in images:
+				img = DrinkImage(
+						drink=Drink.objects.get(pk=drink.pk),
+						image=image
+					)
+				img.save()
+
+			menu = Menu(
+					restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
+					admin=Administrator.objects.get(pk=admin.pk),
+					menu_type=utils.MENU_TYPE[1][0],
+					menu_id=drink.pk
+				)
+			menu.save()
+
+			messages.success(request, 'Menu Drink Added Successfully !!!')
+			return HttpJsonResponse(ResponseObject('success', 'Menu Drink Added Successfully !!!', 200, 
+					reverse('ting_wb_adm_menu_drinks')))
+		else:
+			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 400, msgs=form.errors.items() + images_form.errors.items()))
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_avail_menu', xhr='ajax')
+def avail_menu_drink_toggle(request, drink):
+	drink = get_object_or_404(Drink, pk=drink)
+	drink.admin = Administrator.objects.get(pk=request.session['admin'])
+	drink.updated_at = timezone.now()
+
+	admin = Administrator.objects.get(pk=request.session['admin'])
+
+	if admin.restaurant.pk != drink.restaurant.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+				reverse('ting_wb_adm_menu_drinks')))
+
+	menu = Menu.objects.filter(menu_type=2, menu_id=drink.pk).first()
+	menu.admin = Administrator.objects.get(pk=request.session['admin'])
+	menu.updated_at = timezone.now()
+	menu.save()
+
+	if drink.is_available == True:
+		drink.is_available = False
+		drink.save()
+
+		messages.success(request, 'Menu Drink Unavailed Successfully !!!')
+		return HttpJsonResponse(ResponseObject('success', 'Menu Drink Unavailed Successfully !!!', 200, 
+					reverse('ting_wb_adm_menu_drinks')))
+	else:
+		drink.is_available = True
+		drink.save()
+
+		messages.success(request, 'Menu Drink Availed Successfully !!!')
+		return HttpJsonResponse(ResponseObject('success', 'Menu Drink Availed Successfully !!!', 200, 
+					reverse('ting_wb_adm_menu_drinks')))
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_delete_menu', xhr='ajax')
+def delete_menu_drink(request, drink):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	drink = get_object_or_404(Drink, pk=drink)
+
+	if admin.restaurant.pk != drink.restaurant.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+				reverse('ting_wb_adm_menu_drinks')))
+
+	return HttpJsonResponse(ResponseObject('info', 'Action To Be Implemented Later !!!', 500))
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu', xhr='ajax')
+def move_menu_drink_to_type(request, drink, drink_type_key):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	drink = get_object_or_404(Drink, pk=drink)
+	drink_type = utils.get_from_tuple(utils.DRINK_TYPE, drink_type_key)
+
+	if admin.restaurant.pk != drink.restaurant.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+				reverse('ting_wb_adm_menu_drinks')))
+
+	if drink_type != None and drink_type != drink_type_key:
+		drink.drink_type = int(drink_type_key)
+		drink.admin = Administrator.objects.get(pk=admin.pk)
+		drink.updated_at = timezone.now()
+		drink.save()
+
+		menu = Menu.objects.filter(menu_type=2, menu_id=drink.pk).first()
+		menu.admin = Administrator.objects.get(pk=admin.pk)
+		menu.updated_at = timezone.now()
+		menu.save()
+
+		messages.success(request, 'Menu Drink Type Changed To %s !!!' % drink_type)
+		return HttpJsonResponse(ResponseObject('success', 'Menu Drink Type Changed To %s !!!' % drink_type, 200, 
+					reverse('ting_wb_adm_menu_drinks')))
+	else:
+		messages.error(request, 'Unknown Drink Type !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Unknown Drink Type !!!', 400, 
+					reverse('ting_wb_adm_menu_drinks')))
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu', xhr='ajax')
+def edit_menu_drink(request, drink):
+	template = 'web/admin/ajax/load_edit_menu_drink.html'
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	drink = get_object_or_404(Drink, pk=drink)
+	return render(request, template, {
+			'drink':drink, 
+			'currencies':utils.CURRENCIES,
+			'admin':admin, 
+			'restaurant':admin.restaurant,
+			'images': drink.images
+		})
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu', xhr='ajax')
+def update_menu_drink(request, drink):
+	if request.method == 'POST':
+		admin = Administrator.objects.get(pk=request.session['admin'])
+		is_countable = True if request.POST.get('is_countable') is 'on' else False
+		show_ingredients = True if request.POST.get('show_ingredients') is 'on' else False
+
+		drink = get_object_or_404(Drink, pk=drink)
+		form = EditMenuDrink(request.POST)
+
+		if admin.restaurant.pk != drink.restaurant.pk:
+			messages.error(request, 'Data Not For This Restaurant !!!')
+			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+					reverse('ting_wb_adm_menu_drinks')))
+
+		if form.is_valid():
+
+			drink.name = form.cleaned_data['name']
+			drink.description = form.cleaned_data['description']
+			drink.last_price = form.cleaned_data['last_price']
+			drink.price = form.cleaned_data['price']
+			drink.currency = form.cleaned_data['currency']
+			drink.ingredients = form.cleaned_data['ingredients']
+			drink.is_countable = is_countable
+			drink.show_ingredients = show_ingredients
+			drink.quantity = int(request.POST.get('quantity')) if is_countable == True else 1
+			drink.admin = Administrator.objects.get(pk=admin.pk)
+			drink.updated_at = timezone.now()
+
+			drink.save()
+
+			images = request.FILES.getlist('image')
+
+			if len(images) > 0:
+				for image in images:
+					img = DrinkImage(
+							drink=Drink.objects.get(pk=drink.pk),
+							image=image
+						)
+					img.save()
+
+			menu = Menu.objects.filter(menu_type=2, menu_id=drink.pk).first()
+			menu.admin = Administrator.objects.get(pk=admin.pk)
+			menu.updated_at = timezone.now()
+			menu.save()
+
+			messages.success(request, 'Menu Drink Updated Successfully !!!')
+			return HttpJsonResponse(ResponseObject('success', 'Menu Drink Updated Successfully !!!', 200, 
+					reverse('ting_wb_adm_menu_drinks')))
+		else:
+			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 400, msgs=form.errors.items() + images_form.errors.items()))
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu', xhr='ajax')
+def delete_menu_drink_image(request, drink, image):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	drink = get_object_or_404(Drink, pk=drink)
+	image = get_object_or_404(DrinkImage, pk=image)
+
+	if admin.restaurant.pk != drink.restaurant.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+				reverse('ting_wb_adm_menu_drinks')))
+
+	if drink.images.count() > 2:
+		image.delete()
+		return HttpJsonResponse(ResponseObject('success', 'Menu Drink Image Deleted Successfully !!!', 200))
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'The Menu Drink Must Have More Than 2 Images To Perform This Action !!!', 400))
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_menu', xhr='ajax')
+def load_menu_drink(request, drink):
+	template = 'web/admin/ajax/load_menu_drink.html'
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	drink = get_object_or_404(Drink, pk=drink)
+	return render(request, template, {
+			'drink': drink,
+			'admin': admin,
+			'restaurant': admin.restaurant
 		})
 
 
@@ -1067,9 +1383,412 @@ def menu_drinks(request):
 def menu_dishes(request):
 	template = 'web/admin/menu_dishes.html'
 	admin = Administrator.objects.get(pk=request.session['admin'])
-	menus = []
+	dishes = Dish.objects.filter(restaurant__pk=admin.restaurant.pk)
+	categories = FoodCategory.objects.filter(restaurant__pk=admin.restaurant.pk)
+	drinks = Drink.objects.filter(restaurant__pk=admin.restaurant.pk)
 	return render(request, template, {
 			'admin': admin,
 			'restaurant': admin.restaurant,
-			'menus': menus
+			'dishes': dishes,
+			'categories': categories,
+			'currencies': utils.CURRENCIES,
+			'types': utils.DISH_TIME,
+			'drinks': drinks
 		})
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_add_menu', xhr='ajax')
+def add_new_menu_dish(request):
+	if request.method == 'POST':
+		admin = Administrator.objects.get(pk=request.session['admin'])
+		is_countable = True if request.POST.get('is_countable') is 'on' else False
+		show_ingredients = True if request.POST.get('show_ingredients') is 'on' else False
+
+		form = AddMenuDish(request.POST, instance=Dish(
+				restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
+				admin=Administrator.objects.get(pk=admin.pk),
+				slug='{0}-{1}'.format(request.POST.get('name').replace(' ', '-'), get_random_string(16)).lower(),
+				category=FoodCategory.objects.get(pk=request.POST.get('category')),
+				is_countable=is_countable,
+				show_ingredients=show_ingredients,
+				quantity=int(request.POST.get('quantity')) if is_countable is True else 1
+			))
+
+		images_form = DishImageForm(request.POST, request.FILES)
+
+		if form.is_valid() and images_form.is_valid():
+
+			dish = form.save()
+			images = request.FILES.getlist('image')
+
+			for image in images:
+				img = DishImage(
+						dish=Dish.objects.get(pk=dish.pk),
+						image=image
+					)
+				img.save()
+
+			menu = Menu(
+					restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
+					admin=Administrator.objects.get(pk=admin.pk),
+					menu_type=utils.MENU_TYPE[2][0],
+					menu_id=dish.pk
+				)
+			menu.save()
+
+			messages.success(request, 'Menu Dish Added Successfully !!!')
+			return HttpJsonResponse(ResponseObject('success', 'Menu Dish Added Successfully !!!', 200, 
+					reverse('ting_wb_adm_menu_dishes')))
+		else:
+			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 400, msgs=form.errors.items() + images_form.errors.items()))
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_avail_menu', xhr='ajax')
+def avail_menu_dish_toggle(request, dish):
+	dish = get_object_or_404(Dish, pk=dish)
+	dish.admin = Administrator.objects.get(pk=request.session['admin'])
+	dish.updated_at = timezone.now()
+
+	admin = Administrator.objects.get(pk=request.session['pk'])
+
+	if admin.restaurant.pk != dish.restaurant.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+				reverse('ting_wb_adm_menu_dishes')))
+
+	menu = Menu.objects.filter(menu_type=3, menu_id=dish.pk).first()
+	menu.admin = Administrator.objects.get(pk=request.session['admin'])
+	menu.updated_at = timezone.now()
+	menu.save()
+
+	if dish.is_available == True:
+		dish.is_available = False
+		dish.save()
+
+		messages.success(request, 'Menu Dish Unavailed Successfully !!!')
+		return HttpJsonResponse(ResponseObject('success', 'Menu Dish Unavailed Successfully !!!', 200, 
+					reverse('ting_wb_adm_menu_dishes')))
+	else:
+		dish.is_available = True
+		dish.save()
+
+		messages.success(request, 'Menu Dish Availed Successfully !!!')
+		return HttpJsonResponse(ResponseObject('success', 'Menu Dish Availed Successfully !!!', 200, 
+					reverse('ting_wb_adm_menu_dishes')))
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu', xhr='ajax')
+def move_menu_dish_to_type(request, dish, dish_time_key):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	dish = get_object_or_404(Dish, pk=dish)
+	dish_time = utils.get_from_tuple(utils.DISH_TIME, dish_time_key)
+
+	if admin.restaurant.pk != dish.restaurant.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+				reverse('ting_wb_adm_menu_dishes')))
+
+	if dish_time != None and dish_time != dish_time_key:
+		dish.dish_time = int(dish_time_key)
+		dish.admin = Administrator.objects.get(pk=admin.pk)
+		dish.updated_at = timezone.now()
+		dish.save()
+
+		menu = Menu.objects.filter(menu_type=3, menu_id=dish.pk).first()
+		menu.admin = Administrator.objects.get(pk=admin.pk)
+		menu.updated_at = timezone.now()
+		menu.save()
+
+		messages.success(request, 'Menu Dish Type Changed To %s !!!' % dish_time)
+		return HttpJsonResponse(ResponseObject('success', 'Menu Dish Type Changed To %s !!!' % dish_time, 200, 
+					reverse('ting_wb_adm_menu_dishes')))
+	else:
+		messages.error(request, 'Unknown Food Type !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Unknown Dish Type !!!', 400, 
+					reverse('ting_wb_adm_menu_dishes')))
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu', xhr='ajax')
+def move_menu_dish_to_category(request, dish, category):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	dish = get_object_or_404(Dish, pk=dish)
+	category = get_object_or_404(FoodCategory, pk=category)
+
+	if admin.restaurant.pk != dish.restaurant.pk or category.restaurant.pk != admin.restaurant.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+				reverse('ting_wb_adm_menu_dishes')))
+
+	dish.category = FoodCategory.objects.get(pk=category.pk)
+	dish.admin = Administrator.objects.get(pk=admin.pk)
+	dish.updated_at = timezone.now()
+	dish.save()
+
+	menu = Menu.objects.filter(menu_type=3, menu_id=dish.pk).first()
+	menu.admin = Administrator.objects.get(pk=admin.pk)
+	menu.updated_at = timezone.now()
+	menu.save()
+
+	messages.success(request, 'Menu Dish Moved To Category %s !!!' % category.name)
+	return HttpJsonResponse(ResponseObject('success', 'Menu Dish Moved To Category %s !!!' % category.name, 200, 
+					reverse('ting_wb_adm_menu_dishes')))
+
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu', xhr='ajax')
+def edit_menu_dish(request, dish):
+	template = 'web/admin/ajax/load_edit_menu_dish.html'
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	dish = get_object_or_404(Dish, pk=dish)
+	return render(request, template, {
+			'dish':dish, 
+			'currencies':utils.CURRENCIES,
+			'admin':admin, 
+			'restaurant':admin.restaurant,
+			'images': dish.images
+		})
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu', xhr='ajax')
+def update_menu_dish(request, dish):
+	if request.method == 'POST':
+		admin = Administrator.objects.get(pk=request.session['admin'])
+		is_countable = True if request.POST.get('is_countable') is 'on' else False
+		show_ingredients = True if request.POST.get('show_ingredients') is 'on' else False
+
+		dish = get_object_or_404(Dish, pk=dish)
+		form = EditMenuDish(request.POST)
+
+		if admin.restaurant.pk != dish.restaurant.pk:
+			messages.error(request, 'Data Not For This Restaurant !!!')
+			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+					reverse('ting_wb_adm_menu_dishes')))
+
+		if form.is_valid():
+
+			dish.name = form.cleaned_data['name']
+			dish.description = form.cleaned_data['description']
+			dish.last_price = form.cleaned_data['last_price']
+			dish.price = form.cleaned_data['price']
+			dish.currency = form.cleaned_data['currency']
+			dish.ingredients = form.cleaned_data['ingredients']
+			dish.is_countable = is_countable
+			dish.show_ingredients = show_ingredients
+			dish.quantity = int(request.POST.get('quantity')) if is_countable == True else 1
+			dish.admin = Administrator.objects.get(pk=admin.pk)
+			dish.updated_at = timezone.now()
+
+			dish.save()
+
+			images = request.FILES.getlist('image')
+
+			if len(images) > 0:
+				for image in images:
+					img = DishImage(
+							dish=Dish.objects.get(pk=dish.pk),
+							image=image
+						)
+					img.save()
+
+			menu = Menu.objects.filter(menu_type=3, menu_id=dish.pk).first()
+			menu.admin = Administrator.objects.get(pk=admin.pk)
+			menu.updated_at = timezone.now()
+			menu.save()
+
+			messages.success(request, 'Menu Dish Updated Successfully !!!')
+			return HttpJsonResponse(ResponseObject('success', 'Menu Dish Updated Successfully !!!', 200, 
+					reverse('ting_wb_adm_menu_dishes')))
+		else:
+			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 400, msgs=form.errors.items() + images_form.errors.items()))
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu', xhr='ajax')
+def delete_menu_dish_image(request, dish, image):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	dish = get_object_or_404(Dish, pk=dish)
+	image = get_object_or_404(DishImage, pk=image)
+
+	if admin.restaurant.pk != dish.restaurant.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+				reverse('ting_wb_adm_menu_dishes')))
+
+	if dish.images.count() > 2:
+		image.delete()
+		return HttpJsonResponse(ResponseObject('success', 'Menu Dish Image Deleted Successfully !!!', 200))
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'The Menu Dish Must Have More Than 2 Images To Perform This Action !!!', 400))
+
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_delete_menu', xhr='ajax')
+def delete_menu_dish(request, dish):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	dish = get_object_or_404(Dish, pk=dish)
+
+	if admin.restaurant.pk != dish.restaurant.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+				reverse('ting_wb_adm_menu_dishes')))
+
+	return HttpJsonResponse(ResponseObject('info', 'Action To Be Implemented Later !!!', 500))
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_menu', xhr='ajax')
+def load_menu_dish(request, dish):
+	template = 'web/admin/ajax/load_menu_dish.html'
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	dish = get_object_or_404(Dish, pk=dish)
+	return render(request, template, {
+			'dish': dish,
+			'admin': admin,
+			'restaurant': admin.restaurant
+		})
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu', xhr='ajax')
+def add_drink_to_menu_dish(request, dish, drink):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	dish = get_object_or_404(Dish, pk=dish)
+	drink = get_object_or_404(Drink, pk=drink)
+
+	if admin.restaurant.pk != dish.restaurant.pk or drink.restaurant.pk != admin.restaurant.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+				reverse('ting_wb_adm_menu_dishes')))
+
+	dish.admin = Administrator.objects.get(pk=admin.pk)
+	dish.has_drink = True
+	dish.drink = Drink.objects.get(pk=drink.pk)
+	dish.updated_at = timezone.now()
+	dish.save()
+
+	menu = Menu.objects.filter(menu_type=3, menu_id=dish.pk).first()
+	menu.admin = Administrator.objects.get(pk=admin.pk)
+	menu.updated_at = timezone.now()
+	menu.save()
+
+	messages.success(request, 'Drink Added To Menu Dish Successfully !!!')
+	return HttpJsonResponse(ResponseObject('success', 'Drink Added To Menu Dish Successfully !!!', 200, 
+					reverse('ting_wb_adm_menu_dishes')))
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu', xhr='ajax')
+def remove_drink_to_menu_dish(request, dish):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	dish = get_object_or_404(Dish, pk=dish)
+
+	if admin.restaurant.pk != dish.restaurant.pk or drink.restaurant.pk != admin.restaurant.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+				reverse('ting_wb_adm_menu_dishes')))
+
+	dish.admin = Administrator.objects.get(pk=request.session['admin'])
+	dish.has_drink = False
+	dish.drink = None
+	dish.save()
+
+	menu = Menu.objects.filter(menu_type=3, menu_id=dish.pk).first()
+	menu.admin = Administrator.objects.get(pk=admin.pk)
+	menu.updated_at = timezone.now()
+	menu.save()
+
+	messages.success(request, 'Drink Removed From Menu Dish Successfully !!!')
+	return HttpJsonResponse(ResponseObject('success', 'Drink Removed From Menu Dish Successfully !!!', 200, 
+					reverse('ting_wb_adm_menu_dishes')))
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu', xhr='ajax')
+def load_menu_food_for_menu_dish(request, dish):
+	template = 'web/admin/ajax/load_menu_food_for_menu_dish.html'
+	dish = get_object_or_404(Dish, pk=dish)
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	foods = Food.objects.filter(restaurant__pk=admin.restaurant.pk)
+	return render(request, template, {
+			'dish':dish,
+			'foods': foods,
+			'restaurant': admin.restaurant,
+			'admin': admin
+		})
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu', xhr='ajax')
+def update_food_menu_for_dish_menu(request, dish):
+	if request.method == 'POST':
+		quantites = request.POST.getlist('quantity')
+		foods = request.POST.getlist('food')
+		dish = get_object_or_404(Dish, pk=dish)
+		admin = Administrator.objects.get(pk=request.session['admin'])
+
+		if admin.restaurant.pk != dish.restaurant.pk:
+			messages.error(request, 'Data Not For This Restaurant !!!')
+			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+					reverse('ting_wb_adm_menu_dishes')))
+
+		foods_dish = DishFood.objects.filter(dish__pk=dish.pk)
+		
+		if foods_dish.count() > 0:
+			for food in foods_dish:
+				food.delete()
+
+		if len(foods) > 0:
+			for f in foods:
+				data = f.split('-')
+				food = Food.objects.get(pk=int(data[0]))
+				
+				if food.restaurant.pk == admin.restaurant.pk:
+					quantity = int(quantites[int(data[1]) - 1])
+					new_df = DishFood(
+								dish=Dish.objects.get(pk=dish.pk),
+								food=Food.objects.get(pk=food.pk),
+								quantity=quantity,
+								is_countable=True if quantity != 1 else False
+							)
+					new_df.save()
+
+		messages.success(request, 'Menu Dish Foods Updated Successfully !!!')
+		return HttpJsonResponse(ResponseObject('success', 'Menu Dish Foods Updated Successfully !!!', 200, 
+					reverse('ting_wb_adm_menu_dishes')))
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+
+
+# Tables
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_table', xhr='ajax')
+def tables(request):
+	pass

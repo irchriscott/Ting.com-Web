@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 from django import forms
 from tingweb.models import (
 							Restaurant, RestaurantConfig, Administrator, Food, Drink, Dish, FoodImage,
-							FoodCategory
+							FoodCategory, DrinkImage, DishImage
 						)
 
 
@@ -95,3 +95,45 @@ class FoodImageForm(forms.ModelForm):
 	class Meta:
 		model = FoodImage
 		fields = ('image',)
+
+
+class AddMenuDrink(forms.ModelForm):
+
+	class Meta:
+		model = Drink
+		fields = ('name', 'drink_type', 'description', 'ingredients', 'price', 'last_price', 'currency')
+
+
+class DrinkImageForm(forms.ModelForm):
+
+	class Meta:
+		model = DrinkImage
+		fields = ('image',)
+
+
+class EditMenuDrink(forms.ModelForm):
+
+	class Meta:
+		model = Drink
+		fields = ('name', 'description', 'ingredients', 'price', 'last_price', 'currency')
+
+
+class AddMenuDish(forms.ModelForm):
+
+	class Meta:
+		model = Dish
+		fields = ('name', 'dish_time', 'description', 'ingredients', 'price', 'last_price', 'currency')
+
+
+class DishImageForm(forms.ModelForm):
+
+	class Meta:
+		model = DishImage
+		fields = ('image',)
+
+
+class EditMenuDish(forms.ModelForm):
+
+	class Meta:
+		model = Dish
+		fields = ('name', 'description', 'ingredients', 'price', 'last_price', 'currency')

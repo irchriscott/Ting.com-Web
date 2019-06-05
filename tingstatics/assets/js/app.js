@@ -54,6 +54,8 @@ $(document).ready(function(){
     $("#ting-admin-add-new-category").openModal();
     $(".ting-open-ajax-modal").openModal();
     $("#ting-admin-add-new-menu-food").openModal();
+    $("#ting-admin-add-new-menu-drink").openModal();
+    $("#ting-admin-add-new-menu-dish").openModal();
 
     $("#ting-map-form").submit(function(e){
         e.preventDefault();
@@ -106,6 +108,8 @@ $(document).ready(function(){
     $("#ting-add-category-form").submitFormAjax();
     $("#ting-add-menu-food-form").submitFormAjax();
     $("#ting-admin-reset-password").submitFormAjax();
+    $("#ting-add-menu-drink-form").submitFormAjax();
+    $("#ting-add-menu-dish-form").submitFormAjax();
 
     let today = new Date();
 
@@ -347,11 +351,12 @@ jQuery.fn.openModal = function(){
         var type = $(this).attr("ting-modal-type");
         var form_id = $(this).attr("ting-modal-form");
         var hide_content = $(this).attr("ting-hide-content");
+        var data = $(this).attr("ting-modal-data");
+
         if(url != null && url != ""){
             if(type == "ajax" || type == "ajax-form"){
                 
                 $("[data-modal=" + $(this).attr("ting-modal-target") + "]").modal({
-                    allowMultiple: true,
                     onVisible: function(callback){
                         callback = $.isFunction(callback) ? callback : function () { };
                         var content = $(this).find('.content');
@@ -402,8 +407,6 @@ jQuery.fn.openModal = function(){
             } else if (type == "confirm"){
 
                 $("[data-modal=" + $(this).attr("ting-modal-target") + "]").modal({
-                    allowMultiple: true,
-                    centered: true,
                     onApprove: function(){
                         var modal = $(this);
                         $.ajax({
@@ -422,10 +425,59 @@ jQuery.fn.openModal = function(){
                                 showErrorMessage(t, e);
                             }
                         });
+                    },
+                    onDeny: function(){
+                        showInfoMessage(randomString(16), "Operation Cancelled !!!");
                     }
-                }).modal("show", "attach events", ".ting-open-ajax-modal");
+                }).modal("show");
+            } else if(type == "confirm-ajax"){
+                if(data != null && data != ""){
+                    var object = JSON.parse(data);
+                    iziToast.question({
+                        timeout: 10000,
+                        close: false,
+                        overlay: true,
+                        toastOnce: true,
+                        id: randomString(16),
+                        zindex: 999,
+                        title: object.title.toUpperCase(),
+                        message: object.message,
+                        position: 'center',
+                        buttons: [
+                            ['<button><b>YES</b></button>', function (instance, toast) {
+                                instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                                var modal = $(this);
+                                $.ajax({
+                                    type: 'GET',
+                                    url: url,
+                                    success: function(response){
+                                        if(response.type == "success"){
+                                            showSuccessMessage(response.type, response.message);
+                                            if(hide_content != "" && hide_content != null) modal.siblings().find("#" + hide_content).hide();
+                                            if(response.redirect != null) window.location = response.redirect;
+                                        } else {
+                                            showErrorMessage(response.type, response.message);
+                                        }
+                                    },
+                                    error: function(_, t, e){
+                                        showErrorMessage(t, e);
+                                    }
+                                });
+                            }, true],
+                            ['<button>NO</button>', function (instance, toast) {
+                                instance.hide({ transitionOut: 'fadeOut' }, toast, 'button');
+                                showInfoMessage(randomString(16), "Operation Cancelled !!!");
+                            }],
+                        ],
+                        onClosing: function(instance, toast, closedBy){},
+                        onClosed: function(instance, toast, closedBy){
+                            showInfoMessage(randomString(16), "Operation Cancelled !!!");
+                        }
+                    });
+                } else {
+                    showErrorMessage(randomString(16), "No Data To Show !!!")
+                }
             }
-
         } else { $("[data-modal=" + $(this).attr("id") + "]").modal("show") }
     });
 }

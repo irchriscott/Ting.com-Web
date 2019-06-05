@@ -72,16 +72,18 @@ class Restaurant(models.Model):
 	def closing_str(self):
 		return self.closing.strftime('%H:%M')
 	
-
+	@property
 	def categories(self):
 		return CategoryRestaurant.objects.filter(restaurant=self.pk).order_by('-created_at')
 
+	@property
 	def tables(self):
 		return RestaurantTable.objects.filter(restaurant=self.pk).order_by('-created_at')
 
 	def tables_count(self):
 		return self.tables.count()
 
+	@property
 	def administrators(self):
 		return Administrator.objects.filter(restaurant=self.pk).order_by('-created_at')
 
@@ -91,72 +93,84 @@ class Restaurant(models.Model):
 	def config(self):
 		return RestaurantConfig.objects.get(restaurant=self.pk)
 
+	@property
 	def likes(self):
 		return UserRestaurant.objects.filter(restaurant=self.pk).order_by('-created_at')
 
 	def likes_count(self):
 		return self.likes.count()
 
+	@property
 	def reviews(self):
 		return RestaurantReview.objects.filter(restaurant=self.pk).order_by('created_at')
 
 	def reviews_count(self):
 		return self.reviews.count()
 
+	@property
 	def food_categories(self):
 		return FoodCategory.objects.filter(restaurant=self.pk).order_by('-created_at')
 
 	def food_categories_count(self):
 		return self.categories.count()
 
+	@property
 	def menus(self):
 		return Menu.objects.filter(restaurant=self.pk).order_by('-created_at')
 
 	def menus_count(self):
 		return self.menus.count()
 
+	@property
 	def foods(self):
 		return Food.objects.filter(restaurant=self.pk).order_by('-created_at')
 
 	def foods_count(self):
 		return self.foods.count()
 
+	@property
 	def appetizers(self):
 		return Food.objects.filter(restaurant=self.pk, food_type=1).order_by('-created_at')
 
 	def appetizers_count(self):
 		return self.appetizers.count()
 
+	@property
 	def meals(self):
 		return Food.objects.filter(restaurant=self.pk, food_type=2).order_by('-created_at')
 
 	def meals_count(self):
 		return self.meals.count()
 
+	@property
 	def desserts(self):
 		return Food.objects.filter(restaurant=self.pk, food_type=3).order_by('-created_at')
 
 	def desserts_count(self):
 		return self.desserts.count()
 
+	@property
 	def sauces(self):
 		return Food.objects.filter(restaurant=self.pk, food_type=4).order_by('-created_at')
 
 	def sauces_count(self):
 		return self.sauces.count()
 
+	@property
 	def drinks(self):
 		return Drink.objects.filter(restaurant=self.pk).order_by('-created_at')
 
 	def drinks_count(self):
 		return self.drinks.count()
 
+	@property
 	def dishes(self):
 		return Dish.objects.filter(restaurant=self.pk).order_by('-created_at')
 
 	def dishes_count(self):
 		return self.dishes.count()
 
+	@property
 	def images(self):
 		return RestaurantImage.objects.filter(restaurant=self.pk).order_by('-created_at')
 
@@ -266,7 +280,7 @@ class RestaurantTable(models.Model):
 	uuid = models.CharField(max_length=100, null=False, blank=False)
 	max_people = models.IntegerField(null=False, blank=False)
 	number = models.CharField(max_length=20, null=False, blank=False)
-	coordinates = models.CharField(max_length=200, null=False, blank=False)
+	description = models.TextField(null=False, blank=False)
 	is_available = models.BooleanField(default=True)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
@@ -277,12 +291,14 @@ class RestaurantTable(models.Model):
 	def __unicode__(self):
 		return self.number
 
+	@property
 	def placements(self):
 		return Placement.objects.filter(table=self.pk).order_by('-created_at')
 
 	def placements_count(self):
 		return self.placements.count()
 
+	@property
 	def bookings(self):
 		return Booking.objects.filter(table=self.pk).order_by('-created_at')
 
@@ -295,7 +311,7 @@ class RestaurantTable(models.Model):
 			'uuid': self.uuid,
 			'maxPeople': self.max_people,
 			'number': self.number,
-			'coordinates': self.coordinates,
+			'description': self.description,
 			'isAvailable': self.is_available,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
@@ -327,12 +343,14 @@ class Administrator(models.Model):
 	def admin_type_str(self):
 		return utils.get_from_tuple(utils.ADMIN_TYPE, self.admin_type)
 
+	@property
 	def bills(self):
 		return Bill.objects.filter(admin=self.pk).order_by('-created_at')
 
 	def bills_count(self):
 		return self.bills.count()
 
+	@property
 	def placements(self):
 		return Placement.objects.filter(waiter=self.pk).order_by('-created_at')
 
@@ -464,42 +482,49 @@ class User(models.Model):
 	def __unicode__(self):
 		return self.name
 
+	@property
 	def categories(self):
 		return UserCategory.objects.filter(user=self.pk).order_by('-created_at')
 
 	def categories_count(self):
 		return self.categories.count()
 
+	@property
 	def restaurants(self):
 		return UserRestaurant.objects.filter(user=self.pk).order_by('-created_at')
 
 	def restaurants_count(self):
 		return self.restaurants.count()
 
+	@property
 	def restaurant_reviews(self):
 		return RestaurantReview.objects.filter(user=self.pk).order_by('-created_at')
 
 	def restaurant_reviews_count(self):
 		return self.reviews.count()
 
+	@property
 	def menu_reviews(self):
 		return MenuReview.objects.filter(user=self.pk).order_by('-created_at')
 
 	def menu_reviews_count(self):
 		return self.menu_reviews.count()
 
+	@property
 	def bookings(self):
 		return Booking.objects.filter(user=self.pk).order_by('-created_at')
 
 	def bookings_count(self):
 		return self.bookings.count()
 
+	@property
 	def placements(self):
 		return Placement.objects.filter(user=self.pk).order_by('-created_at')
 
 	def placements_count(self):
 		return self.placements.count()
 
+	@property
 	def addresses(self):
 		return UserAddress.objects.filter(user=self.pk).order_by('-created_at')
 
@@ -642,24 +667,28 @@ class FoodCategory(models.Model):
 	def foods_count(self):
 		return self.foods.count()
 
+	@property
 	def appetizers(self):
 		return Food.objects.filter(category=self.pk, food_type=1).order_by('-created_at')
 
 	def appetizers_count(self):
 		return self.appetizers.count()
 
+	@property
 	def meals(self):
 		return Food.objects.filter(category=self.pk, food_type=2).order_by('-created_at')
 
 	def meals_count(self):
 		return self.meals.count()
 
+	@property
 	def desserts(self):
 		return Food.objects.filter(category=self.pk, food_type=3).order_by('-created_at')
 
 	def desserts_count(self):
 		return self.desserts.count()
 
+	@property
 	def sauces(self):
 		return Food.objects.filter(category=self.pk, food_type=4).order_by('-created_at')
 
@@ -708,6 +737,7 @@ class Food(models.Model):
 	def menu(self):
 		return Menu.objects.get(restaurant=self.restaurant.pk, menu_type=1, menu_id=self.pk)
 
+	@property
 	def reviews(self):
 		return MenuReview.objects.filter(menu=self.menu.pk).order_by('-created_at')
 
@@ -795,12 +825,14 @@ class Drink(models.Model):
 	def menu(self):
 		return Menu.objects.get(restaurant=self.restaurant.pk, menu_type=2, menu_id=self.pk)
 
+	@property
 	def reviews(self):
 		return MenuReview.objects.filter(menu=self.menu.pk).order_by('-created_at')
 
 	def reviews_count(self):
 		return self.reviews.count()
 
+	@property
 	def images(self):
 		return DrinkImage.objects.filter(drink=self.pk).order_by('-created_at')
 
@@ -809,7 +841,7 @@ class Drink(models.Model):
 			'id': self.pk,
 			'restaurant': self.restaurant.to_json(),
 			'name': self.name,
-			'drinkType': self.drink_type, # To Be Fixed
+			'drinkType': self.drink_type_str,
 			'description': self.description,
 			'ingredients': self.ingredients,
 			'showIngredients': self.show_ingredients,
@@ -878,21 +910,32 @@ class Dish(models.Model):
 	def __unicode__(self):
 		return self.name
 
+	@property
+	def dish_time_str(self):
+		return utils.get_from_tuple(utils.DISH_TIME, self.dish_time)
+
 	def menu(self):
 		return Menu.objects.get(restaurant=self.restaurant.pk, menu_type=3, menu_id=self.pk)
 
+	@property
 	def foods(self):
 		return DishFood.objects.filter(dish=self.pk).order_by('-created_at')
+
+	@property
+	def foods_ids(self):
+		return [food.food.id for food in self.foods]
 
 	def foods_count(self):
 		return self.foods.count()
 
+	@property
 	def reviews(self):
 		return MenuReview.objects.filter(menu=self.menu.pk).order_by('-created_at')
 
 	def reviews_count(self):
 		return self.reviews.count()
 
+	@property
 	def images(self):
 		return DishImage.objects.filter(dish=self.pk).order_by('-created_at')
 

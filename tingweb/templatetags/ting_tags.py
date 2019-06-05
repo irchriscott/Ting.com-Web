@@ -1,5 +1,5 @@
 from django import template
-from tingweb.models import Administrator
+from tingweb.models import Administrator, DishFood
 import ting.utils as utils
 
 register = template.Library()
@@ -57,3 +57,8 @@ def prefix(value, arg):
 @register.filter(name='from_t')
 def from_tupple(value, arg):
 	return utils.get_from_tuple(arg, value)
+
+@register.filter(name='dish_food_q')
+def dish_food_quantity(value, arg):
+	food = DishFood.objects.filter(food=int(value), dish=int(arg)).last()
+	return food.quantity

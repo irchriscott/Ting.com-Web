@@ -1,0 +1,52 @@
+{% load staticfiles %}
+{% load ting_tags %}
+{% load humanize %}
+<div class="content">
+    <div class="ting-search-place">
+        <form class="ui form" action="{% url 'ting_wb_adm_menu_dish_food_update' dish.pk %}" method="POST" id="ting-update-menu-food-dish-form">
+            {% csrf_token %}
+            <div class="ui divided items">
+                {% if foods.count > 0 %}
+                    {% for food in foods %}
+                        <div class="item">
+                            <div class="ui small image">
+                                <img src="{{food.images.0.image.url}}">
+                            </div>
+                            <div class="middle aligned content">
+                                <div class="header">
+                                    {{food.name}}
+                                </div>
+                                <div class="description">
+                                    {{food.description}}
+                                </div>
+                                <div class="extra">
+                                    <div class="ui label">{{food.type_str}}</div>
+                                    <div class="ui label">{{food.price|intcomma}} {{food.currency}}</div>
+                                    <div class="ui grid">
+                                        <div class="row" style="padding-top: 0; padding-bottom: 0;">
+                                            <div class="fifteen wide column">
+                                                <input type="number" min="1" {% if food.id in dish.foods_ids %} value="{{food.id|dish_food_q:dish.pk}}" {% else %} value="1" {% endif %} name="quantity" placeholder="Enter Quantity">
+                                            </div>
+                                            <div class="one wide column">
+                                                <div class="ui">
+                                                    {% if food.id in dish.foods_ids %}
+                                                        <input type="checkbox" checked name="food" value="{{food.id}}-{{forloop.counter}}" class="ting-checkbox">
+                                                    {% else %}
+                                                        <input type="checkbox" name="food" value="{{food.id}}-{{forloop.counter}}" class="ting-checkbox">
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </form>
+    </div>
+    <script type="text/javascript">
+        $("#ting-update-menu-food-dish-form").submitFormAjax();
+    </script>
+</div>

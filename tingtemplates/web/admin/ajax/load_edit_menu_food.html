@@ -74,25 +74,7 @@
                 {% for image in images %}
                     <div class="ting-image-form" id="ting-image-form-{{image.id}}">
                         <img src="{{image.image.url}}">
-                        <div class="ting-delete-image"><a class="ting-open-ajax-modal" ting-modal-type="confirm" ting-hide-content="ting-image-form-{{image.id}}" ting-data-url="{% url 'ting_wb_adm_menu_food_delete_image' food.pk image.pk %}" ting-modal-target="ting-food-image-delete-{{image.id}}"><i class="times icon"></i></a></div>
-                    </div>
-                    <div class="ui modal mini ting-overlay-modal" data-modal="ting-food-image-delete-{{image.id}}">
-                        <div class="header">
-                            Delete Food Image
-                        </div>
-                        <div class="content">
-                            <p>Do you really want to delete this menu food image ?</p>
-                        </div>
-                        <div class="actions">
-                            <div class="ui positive button right labeled icon">
-                                Yes
-                                <i class="icon check"></i>
-                            </div>
-                            <div class="ui red deny button right labeled icon">
-                                No
-                                <i class="icon times"></i>
-                            </div>
-                        </div>
+                        <div class="ting-delete-image"><a class="ting-open-ajax-modal" ting-modal-type="confirm-ajax" ting-modal-data='{ "title" : "Delete Food Image", "message" : "Do you realy want to delete this food image ?" }' ting-hide-content="ting-image-form-{{image.id}}" ting-data-url="{% url 'ting_wb_adm_menu_food_delete_image' food.pk image.pk %}" ting-modal-target="ting-food-image-delete-{{image.id}}"><i class="times icon"></i></a></div>
                     </div>
                 {% endfor %}
             </div>

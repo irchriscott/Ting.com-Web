@@ -70,17 +70,49 @@ admins = [
 	url(r'adm/menu/food/$', admin.menu_food, name='ting_wb_adm_menu_food'),
 	url(r'adm/menu/drinks/$', admin.menu_drinks, name='ting_wb_adm_menu_drinks'),
 	url(r'adm/menu/dishes/$', admin.menu_dishes, name='ting_wb_adm_menu_dishes'),
-	url(r'adm/menu/foods/add/new/$', admin.add_new_menu_food, name='ting_wb_adm_add_menu_food'),
 
 	# Menu Food
 
-	url(r'adm/menu/food/avail/toggle/(?P<pk>\d+)/$', admin.avail_menu_food_toggle, name='ting_wb_adm_menu_food_avail_toggle'),
+	url(r'adm/menu/food/add/new/$', admin.add_new_menu_food, name='ting_wb_adm_add_menu_food'),
+	url(r'adm/menu/food/avail/toggle/(?P<food>\d+)/$', admin.avail_menu_food_toggle, name='ting_wb_adm_menu_food_avail_toggle'),
 	url(r'adm/menu/food/move/type/(?P<food>\d+)/to/(?P<food_type_key>\d+)/$', admin.move_menu_food_to_type, name='ting_wb_adm_menu_food_move_to_type'),
 	url(r'adm/menu/food/move/category/(?P<food>\d+)/to/(?P<category>\d+)/$', admin.move_menu_food_to_category, name='ting_wb_adm_menu_food_move_to_category'),
 	url(r'adm/menu/food/edit/(?P<food>\d+)/$', admin.edit_menu_food, name='ting_wb_adm_menu_food_edit'),
 	url(r'adm/menu/food/update/(?P<food>\d+)/$', admin.update_menu_food, name='ting_wb_adm_menu_food_update'),
 	url(r'adm/menu/food/delete/(?P<food>\d+)/$', admin.delete_menu_food, name='ting_wb_adm_menu_food_delete'),
 	url(r'adm/menu/food/update/(?P<food>\d+)/image/delete/(?P<image>\d+)/$', admin.delete_menu_food_image, name='ting_wb_adm_menu_food_delete_image'),
+	url(r'adm/menu/food/load/(?P<food>\d+)/$', admin.load_menu_food, name='ting_wb_adm_menu_food_load'),
+
+	# Menu Drink
+
+	url(r'adm/menu/drink/add/new/$', admin.add_new_menu_drink, name='ting_wb_adm_add_menu_drink'),
+	url(r'adm/menu/drink/avail/toggle/(?P<drink>\d+)/$', admin.avail_menu_drink_toggle, name='ting_wb_adm_menu_drink_avail_toggle'),
+	url(r'adm/menu/drink/move/type/(?P<drink>\d+)/to/(?P<drink_type_key>\d+)/$', admin.move_menu_drink_to_type, name='ting_wb_adm_menu_drink_move_to_type'),
+	url(r'adm/menu/drink/edit/(?P<drink>\d+)/$', admin.edit_menu_drink, name='ting_wb_adm_menu_drink_edit'),
+	url(r'adm/menu/drink/update/(?P<drink>\d+)/$', admin.update_menu_drink, name='ting_wb_adm_menu_drink_update'),
+	url(r'adm/menu/drink/delete/(?P<drink>\d+)/$', admin.delete_menu_drink, name='ting_wb_adm_menu_drink_delete'),
+	url(r'adm/menu/drink/update/(?P<drink>\d+)/image/delete/(?P<image>\d+)/$', admin.delete_menu_drink_image, name='ting_wb_adm_menu_drink_delete_image'),
+	url(r'adm/menu/drink/load/(?P<drink>\d+)/$', admin.load_menu_drink, name='ting_wb_adm_menu_drink_load'),
+
+	# Menu Dish
+
+	url(r'adm/menu/dish/add/new/$', admin.add_new_menu_dish, name='ting_wb_adm_add_menu_dish'),
+	url(r'adm/menu/dish/avail/toggle/(?P<dish>\d+)/$', admin.avail_menu_dish_toggle, name='ting_wb_adm_menu_dish_avail_toggle'),
+	url(r'adm/menu/dish/move/type/(?P<dish>\d+)/to/(?P<dish_time_key>\d+)/$', admin.move_menu_dish_to_type, name='ting_wb_adm_menu_dish_move_to_type'),
+	url(r'adm/menu/dish/move/category/(?P<dish>\d+)/to/(?P<category>\d+)/$', admin.move_menu_dish_to_category, name='ting_wb_adm_menu_dish_move_to_category'),
+	url(r'adm/menu/dish/edit/(?P<dish>\d+)/$', admin.edit_menu_dish, name='ting_wb_adm_menu_dish_edit'),
+	url(r'adm/menu/dish/update/(?P<dish>\d+)/$', admin.update_menu_dish, name='ting_wb_adm_menu_dish_update'),
+	url(r'adm/menu/dish/delete/(?P<dish>\d+)/$', admin.delete_menu_dish, name='ting_wb_adm_menu_dish_delete'),
+	url(r'adm/menu/dish/update/(?P<dish>\d+)/image/delete/(?P<image>\d+)/$', admin.delete_menu_dish_image, name='ting_wb_adm_menu_dish_delete_image'),
+	url(r'adm/menu/dish/drink/(?P<dish>\d+)/add/(?P<drink>\d+)/$', admin.add_drink_to_menu_dish, name='ting_wb_adm_menu_dish_add_drink'),
+	url(r'adm/menu/dish/drink/(?P<dish>\d+)/remove/$', admin.remove_drink_to_menu_dish, name='ting_wb_adm_menu_dish_remove_drink'),
+	url(r'adm/menu/dish/food/(?P<dish>\d+)/load/$', admin.load_menu_food_for_menu_dish, name='ting_wb_adm_menu_dish_food_load'),
+	url(r'adm/menu/dish/food/(?P<dish>\d+)/update/$', admin.update_food_menu_for_dish_menu, name='ting_wb_adm_menu_dish_food_update'),
+	url(r'adm/menu/dish/load/(?P<dish>\d+)/$', admin.load_menu_dish, name='ting_wb_adm_menu_dish_load'),
+
+	# Tables
+
+	url(r'adm/tables/all/$', admin.tables, name='ting_wb_adm_tables'),
 ]
 
 urlpatterns = admins + users
