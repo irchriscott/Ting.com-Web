@@ -32,16 +32,11 @@ def category_image_path(instance, filename):
 class Restaurant(models.Model):
 	token = models.TextField(null=False, blank=False)
 	name = models.CharField(max_length=200, null=False, blank=False)
-	branch = models.CharField(max_length=100, null=True, blank=True)
 	motto = models.TextField(null=True, blank=True)
 	slug = models.CharField(max_length=255, null=False, blank=False)
 	logo = models.ImageField(upload_to=restaurant_logo_path, null=False, blank=False)
 	country = models.CharField(max_length=200, null=False, blank=False)
 	town = models.CharField(max_length=255, null=False, blank=False)
-	address = models.TextField(null=False, blank=False)
-	latitude = models.CharField(max_length=200, null=False, blank=False)
-	longitude = models.CharField(max_length=200, null=False, blank=False)
-	place_id = models.CharField(max_length=200, null=False, blank=False, default='Ting.com')
 	opening = models.TimeField(null=False, blank=False)
 	closing = models.TimeField(null=False, blank=False)
 	is_authenticated = models.BooleanField(default=False)
@@ -59,10 +54,6 @@ class Restaurant(models.Model):
 	def uuid(self):
 		arr = self.slug.split('-')
 		return arr[len(arr) - 1]
-
-	@property
-	def full_name(self):
-		return '%s, %s' % (self.name, self.branch) if self.branch is not None else self.name
 
 	@property
 	def opening_str(self):
@@ -174,11 +165,17 @@ class Restaurant(models.Model):
 	def images(self):
 		return RestaurantImage.objects.filter(restaurant=self.pk).order_by('-created_at')
 
+	@property
+	def branches(self):
+		return Branch.objects.filter(restaurant=self.pk).order_by('created_at')
+
+	def branches_count(self):
+		return self.branches.count()
+
 	def to_json(self):
 		return {
 			'id': self.pk,
 			'name': self.name,
-			'branch': self.branch,
 			'motto': self.motto,
 			'categories': {
 				'count': self.categories.count(),
@@ -187,10 +184,6 @@ class Restaurant(models.Model):
 			'logo': self.logo,
 			'country': self.country,
 			'town': self.town,
-			'address': self.address,
-			'latitude': self.latitude,
-			'longitude': self. longitude,
-			'place_id': self.place_id,
 			'opening': self.opening.strftime('%H:%M'),
 			'closing': self.closing.strftime('%H:%M'),
 			'menus': {
@@ -208,6 +201,10 @@ class Restaurant(models.Model):
 					'drinks': self.drinks_count,
 					'dishes': self.dishes_count
 				}
+			},
+			'branches': {
+				'count': self.branches.count(),
+				'branches': [branch.to_json() for branch in self.branches]
 			},
 			'images': {
 				'count': self.images.count(),
@@ -230,6 +227,51 @@ class Restaurant(models.Model):
 				'categories': [category.to_json() for category in self.food_categories]
 			},
 			'config': self.config.to_json(),
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+
+class Branch(models.Model):
+	restaurant = models.ForeignKey(Restaurant)
+	name = models.CharField(max_length=200, null=False, blank=False)
+	country = models.CharField(max_length=200, null=False, blank=False)
+	town = models.CharField(max_length=255, null=False, blank=False)
+	address = models.TextField(null=False, blank=False)
+	latitude = models.CharField(max_length=200, null=False, blank=False)
+	longitude = models.CharField(max_length=200, null=False, blank=False)
+	place_id = models.CharField(max_length=200, null=False, blank=False)
+	is_available = models.BooleanField(default=True)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now_add=True)
+
+	def __str__(self):
+		return self.name
+
+	def __unicode__(self):
+		return self.name
+
+	@property
+	def tables(self):
+		return RestaurantTable.objects.filter(branch=self.pk)
+
+	def tables_count(self):
+		return self.tables.count()
+
+	def to_json(self):
+		return {
+			'id': self.pk,
+			'name': self.name,
+			'country': self.country,
+			'town': self.town,
+			'address': self.address,
+			'latitude': self.latitude,
+			'longitude': self.longitude,
+			'placeId': self.place_id,
+			'tables':{
+				'count': self.tables_count(),
+				'tables': [table.to_json() for table in self.tables]
+			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
@@ -277,9 +319,12 @@ class CategoryRestaurant(models.Model):
 
 class RestaurantTable(models.Model):
 	restaurant = models.ForeignKey(Restaurant)
+	branch = models.ForeignKey(Branch)
 	uuid = models.CharField(max_length=100, null=False, blank=False)
 	max_people = models.IntegerField(null=False, blank=False)
 	number = models.CharField(max_length=20, null=False, blank=False)
+	location = models.IntegerField(null=False, blank=False)
+	chair_type = models.IntegerField(null=False, blank=False)
 	description = models.TextField(null=False, blank=False)
 	is_available = models.BooleanField(default=True)
 	created_at = models.DateTimeField(auto_now_add=True)
@@ -291,6 +336,14 @@ class RestaurantTable(models.Model):
 	def __unicode__(self):
 		return self.number
 
+	@property
+	def location_str(self):
+		return utils.get_from_tuple(utils.TABLE_LOCATION, self.location)
+	
+	@property
+	def chair_type_str(self):
+		return utils.get_from_tuple(utils.CHAIR_TYPE, self.chair_type)
+	
 	@property
 	def placements(self):
 		return Placement.objects.filter(table=self.pk).order_by('-created_at')
@@ -311,6 +364,8 @@ class RestaurantTable(models.Model):
 			'uuid': self.uuid,
 			'maxPeople': self.max_people,
 			'number': self.number,
+			'location': self.location_str,
+			'chairType': self.chair_type_str,
 			'description': self.description,
 			'isAvailable': self.is_available,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
@@ -320,6 +375,7 @@ class RestaurantTable(models.Model):
 
 class Administrator(models.Model):
 	restaurant = models.ForeignKey(Restaurant)
+	branch = models.ForeignKey(Branch)
 	token = models.TextField(null=False, blank=False)
 	name = models.CharField(max_length=200, null=False, blank=False)
 	username = models.CharField(max_length=100, null=False, blank=False, unique=True)
@@ -371,6 +427,7 @@ class Administrator(models.Model):
 	def to_json(self):
 		return {
 			'id': self.pk,
+			'branch': self.branch.to_json(),
 			'name': self.name,
 			'username': self.username,
 			'type': self.admin_type_str,
@@ -707,6 +764,7 @@ class FoodCategory(models.Model):
 
 class Food(models.Model):
 	restaurant = models.ForeignKey(Restaurant)
+	branch = models.ForeignKey(Branch)
 	admin = models.ForeignKey(Administrator)
 	name = models.CharField(max_length=250, null=False, blank=False)
 	slug = models.CharField(max_length=250, null=False, blank=False)
@@ -752,6 +810,7 @@ class Food(models.Model):
 		return {
 			'id': self.pk,
 			'restaurant': self.restaurant.to_json(),
+			'branch': self.branch.to_json(),
 			'name': self.name,
 			'category': self.category.to_json(),
 			'foodType': utils.get_from_tuple(utils.FOOD_TYPE, self.food_type),
@@ -796,6 +855,7 @@ class FoodImage(models.Model):
 
 class Drink(models.Model):
 	restaurant = models.ForeignKey(Restaurant)
+	branch = models.ForeignKey(Branch)
 	admin = models.ForeignKey(Administrator)
 	name = models.CharField(max_length=250, null=False, blank=False)
 	slug = models.CharField(max_length=250, null=False, blank=False)
@@ -840,6 +900,7 @@ class Drink(models.Model):
 		return {
 			'id': self.pk,
 			'restaurant': self.restaurant.to_json(),
+			'branch': self.branch.to_json(),
 			'name': self.name,
 			'drinkType': self.drink_type_str,
 			'description': self.description,
@@ -885,6 +946,7 @@ class DrinkImage(models.Model):
 
 class Dish(models.Model):
 	restaurant = models.ForeignKey(Restaurant)
+	branch = models.ForeignKey(Branch)
 	admin = models.ForeignKey(Administrator)
 	name = models.CharField(max_length=250, null=False, blank=False)
 	slug = models.CharField(max_length=250, null=False, blank=False)
@@ -943,6 +1005,7 @@ class Dish(models.Model):
 		return {
 			'id': self.pk,
 			'restaurant': self.restaurant.to_json(),
+			'branch': self.branch.to_json(),
 			'name': self.name,
 			'category': self.category.to_json(),
 			'dishTime': self.dish_time, # To Be Fixed
@@ -1020,6 +1083,7 @@ class DishFood(models.Model):
 
 class Menu(models.Model):
 	restaurant = models.ForeignKey(Restaurant)
+	branch = models.ForeignKey(Branch)
 	admin = models.ForeignKey(Administrator)
 	menu_type = models.IntegerField(null=False, blank=False)
 	menu_id = models.IntegerField(null=False, blank=False)
@@ -1075,11 +1139,77 @@ class MenuReview(models.Model):
 		}
 
 
+class Promotion(models.Model):
+	restaurant = models.ForeignKey(Restaurant)
+	admin = models.ForeignKey(Administrator)
+	uuid = models.CharField(max_length=100, null=False, blank=False)
+	occasion_event = models.CharField(max_length=200, null=False, blank=False)
+	promotion_menu_type = models.CharField(max_length=100, null=False, blank=False)
+	menu = models.ForeignKey(Menu, null=True, blank=True, related_name='menu')
+	has_reduction = models.BooleanField(default=True)
+	amount = models.IntegerField(null=True, blank=True, default=0)
+	reduction_type = models.CharField(max_length=100, null=True, blank=True) # Currency Or %
+	has_supplement = models.BooleanField(default=False)
+	supplement_max_quantity = models.IntegerField(default=1, null=False, blank=False)
+	is_supplement_same = models.BooleanField(default=False)
+	supplement = models.ForeignKey(Menu, null=True, blank=True, related_name='supplement')
+	supplement_quantity = models.IntegerField(default=1, null=False, blank=False)
+	is_on = models.BooleanField(default=True)
+	start_date = models.DateField(null=False, blank=False)
+	end_date = models.DateField(null=False, blank=False)
+	description = models.TextField(null=False, blank=False)
+	created_at = models.DateField(auto_now_add=True)
+	updated_at = models.DateField(auto_now_add=True)
+
+	def __str__(self):
+		return self.occasion_event
+
+	def __unicode__(self):
+		return self.occasion_event
+
+	@property
+	def interests(self):
+		return PromotionInterest.objects.filter(promotion=self.pk)
+
+	def interests_count(self):
+		return self.interests.count()
+
+	def to_json(self):
+		return {
+			'id': self.pk
+		}
+	
+
+
+class PromotionInterest(models.Model):
+	promotion = models.ForeignKey(Promotion)
+	user = models.ForeignKey(User)
+	is_interested = models.BooleanField(default=True)
+	created_at = models.DateField(auto_now_add=True)
+	updated_at = models.DateField(auto_now_add=True)
+
+	def __str__(self):
+		return self.promotion.occasion_event
+
+	def __unicode__(self):
+		return self.promotion.occasion_event
+
+	def to_json(self):
+		return {
+			'id': self.pk,
+			'user': self.user.to_json(),
+			'isInterested': self.is_interested
+		}
+
+
+
+
 ### BOOK, ORDERS, BILLS
 
 
 class Booking(models.Model):
 	restaurant = models.ForeignKey(Restaurant)
+	branch = models.ForeignKey(Branch)
 	user = models.ForeignKey(User)
 	table = models.ForeignKey(RestaurantTable)
 	token = models.CharField(max_length=100, null=False, blank=False)
@@ -1099,7 +1229,9 @@ class Booking(models.Model):
 
 	def to_json(self):
 		return {
+			'id': self.pk,
 			'restaurant': self.restaurant.to_json(),
+			'branch': self.branch.to_json(),
 			'user': self.user.to_json(),
 			'table': self.table.to_json(),
 			'token': self.token,
@@ -1115,6 +1247,7 @@ class Booking(models.Model):
 
 class Placement(models.Model):
 	restaurant = models.ForeignKey(Restaurant)
+	branch = models.ForeignKey(Branch)
 	user = models.ForeignKey(User)
 	table = models.ForeignKey(RestaurantTable)
 	booking = models.ForeignKey(Booking, null=True, blank=True)
@@ -1142,6 +1275,7 @@ class Placement(models.Model):
 		return {
 			'id': self.pk,
 			'restaurant': self.restaurant.to_json(),
+			'branch': self.branch.to_json(),
 			'user': self.user.to_json(),
 			'table': self.table.to_json(),
 			'booking': self.booking.to_json(),
@@ -1215,6 +1349,8 @@ class Order(models.Model):
 	is_declined = models.BooleanField(default=False)
 	reasons = models.TextField(blank=True, null=True)
 	is_delivered = models.BooleanField(default=False)
+	has_promotion = models.BooleanField(default=False)
+	promotion = models.ForeignKey(Promotion, null=True, blank=True)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
 

@@ -14,7 +14,7 @@ $(document).ready(function(){
         getUserCurrentLocation("ting-restaurant-latitude", "ting-restaurant-longitude", "ting-search-location-input", "ting-restaurant-town", "ting-restaurant-country", "ting-search-location-input-else", "ting-restaurant-place-id");
         
         setTimeout(function () {
-            initializeRestaurantMap();
+            initializeRestaurantMap("ting-restaurant-latitude", "ting-restaurant-longitude", "ting-search-location-input", "ting-search-location-input-else", "ting-restaurant-place-id", "ting-restaurant-map-container", true, "");
         }, 1000);
 
         $("#ting-add-new-branch").modal('show');
@@ -56,42 +56,14 @@ $(document).ready(function(){
     $("#ting-admin-add-new-menu-food").openModal();
     $("#ting-admin-add-new-menu-drink").openModal();
     $("#ting-admin-add-new-menu-dish").openModal();
+    $("#ting-admin-add-new-branch").openModal();
+    $("#ting-admin-add-new-table").openModal();
 
     $("#ting-map-form").submit(function(e){
         e.preventDefault();
     });
 
-    $("#ting-search-location-input-else").keyup(function (e) {
-        
-        var key = e.charCode || e.keyCode || 0;
-        
-        if (key == 13) {
-            
-            e.preventDefault();
-            var address = $(this).val();
-            var geocoder = new google.maps.Geocoder();
-            
-            geocoder.geocode({
-                'address': address
-            }, function (results, status) {
-                
-                if (status == google.maps.GeocoderStatus.OK) {
-                    
-                    var from_lat = results[0].geometry.location.lat();
-                    var from_long = results[0].geometry.location.lng();
-
-                    $("#ting-restaurant-latitude").val(from_lat);
-                    $("#ting-restaurant-longitude").val(from_long);
-                    $("#ting-search-location-input").val(results[0].formatted_address);
-                    $("#ting-restaurant-place-id").val(results[0].place_id);
-                }
-            });
-            
-            setTimeout(function () {
-                initializeRestaurantMap();
-            }, 1000);
-        }
-    });
+    $("#ting-search-location-input-else").searchLocationByAddress("ting-restaurant-latitude", "ting-restaurant-longitude", "ting-search-location-input", "ting-search-location-input-else", "ting-restaurant-place-id", "ting-restaurant-map-container")
 
     $("select.dropdown, .dropdown").dropdown('hide');
 
@@ -110,6 +82,8 @@ $(document).ready(function(){
     $("#ting-admin-reset-password").submitFormAjax();
     $("#ting-add-menu-drink-form").submitFormAjax();
     $("#ting-add-menu-dish-form").submitFormAjax();
+    $("#ting-add-branch-form").submitFormAjax();
+    $("#ting-add-table-form").submitFormAjax();
 
     let today = new Date();
 
@@ -482,6 +456,41 @@ jQuery.fn.openModal = function(){
     });
 }
 
+jQuery.fn.searchLocationByAddress = function(lat, long, addr, addr_else, place, cont, clickable, img){
+
+    $(this).keyup(function (e) {
+        
+        var key = e.charCode || e.keyCode || 0;
+        
+        if (key == 13) {
+            
+            e.preventDefault();
+            var address = $(this).val();
+            var geocoder = new google.maps.Geocoder();
+            
+            geocoder.geocode({
+                'address': address
+            }, function (results, status) {
+                
+                if (status == google.maps.GeocoderStatus.OK) {
+                    
+                    var from_lat = results[0].geometry.location.lat();
+                    var from_long = results[0].geometry.location.lng();
+
+                    $("#" + lat).val(from_lat);
+                    $("#" + long).val(from_long);
+                    $("#" + addr).val(results[0].formatted_address);
+                    $("#" + place).val(results[0].place_id);
+                }
+            });
+            
+            setTimeout(function () {
+                initializeRestaurantMap(lat, long, addr, addr_else, place, cont, clickable, img);
+            }, 1000);
+        }
+    });
+}
+
 function hideModal(container){
     $(container).modal('hide');
 }
@@ -564,76 +573,117 @@ function getUserCurrentLocation(lt, lg, ad, tc, cc, ads, id) {
     }, function () { showErrorMessage("locate_user", 'Unable To Fetch Location !!!') });
 }
 
-function initializeRestaurantMap() {
+function initializeRestaurantMap(lat, long, addr, addr_else, place, cont, clickable, img) {
 
-    var latitude = parseFloat($("#ting-restaurant-latitude").val());
-    var longitude = parseFloat($("#ting-restaurant-longitude").val());
-    var address = $("#ting-search-location-input").val();
+    var latitude = parseFloat($("#" + lat).val());
+    var longitude = parseFloat($("#" + long).val());
+    var address = $("#" + addr).val();
+    var place_id = $("#" + place).val();
 
     var myLatLng = {
         lat: latitude,
         lng: longitude
     };
 
-    map = new google.maps.Map(document.getElementById('ting-restaurant-map-container'), {
-        zoom: 16,
+    map = new google.maps.Map(document.getElementById(cont), {
+        zoom: 17,
         center: myLatLng,
-        gestureHandling: 'cooperative'
+        gestureHandling: 'cooperative',
+        clickable: clickable
     });
 
-    var marker = new google.maps.Marker({
-        position: myLatLng,
-        map: map,
-        title: address
-    });
+    if(clickable == true){
 
-    markers.push(marker);
+        var marker;
+
+        if(place_id == 'is-really-needed'){
+            var service = new google.maps.places.PlacesService(map);
+            service.getDetails({
+                placeId: place_id
+            }, function (result, status) {
+
+                var marker = new google.maps.Marker({
+                    map: map,
+                    place: {
+                        placeId: place_id,
+                        location: result.geometry.location
+                    }
+                });
+            });
+
+        } else{
+            var marker = new google.maps.Marker({
+                position: myLatLng,
+                map: map,
+                title: address,
+                animation: google.maps.Animation.DROP,
+            });
+
+            marker.addListener('click', toggleBounce);
+
+            function toggleBounce() {
+                if (marker.getAnimation() !== null) {
+                    marker.setAnimation(null);
+                } else {
+                    marker.setAnimation(google.maps.Animation.BOUNCE);
+                }
+            }
+            markers.push(marker);
+        }
+
+    } else {
+        var htmlMarker = new HTMLMarker(latitude, longitude, img);
+        htmlMarker.setMap(map);
+    }
 
     var geocoder = new google.maps.Geocoder();
 
-    google.maps.event.addListener(map, 'click', function (event) {
-        geocoder.geocode({
-            'latLng': event.latLng
-        }, function (results, status) {
-            if (status == google.maps.GeocoderStatus.OK) {
+    if (clickable == true){
 
-                if (results[0]) {
+        google.maps.event.addListener(map, 'click', function (event) {
+            geocoder.geocode({
+                'latLng': event.latLng
+            }, function (results, status) {
+                if (status == google.maps.GeocoderStatus.OK) {
 
-                    var n_address = results[0].formatted_address;
-                    var n_latitude = results[0].geometry.location.lat();
-                    var n_longitude = results[0].geometry.location.lng();
+                    if (results[0]) {
 
-                    var position = {
-                        lat: n_latitude,
-                        lng: n_longitude
+                        var n_address = results[0].formatted_address;
+                        var n_latitude = results[0].geometry.location.lat();
+                        var n_longitude = results[0].geometry.location.lng();
+
+                        var position = {
+                            lat: n_latitude,
+                            lng: n_longitude
+                        }
+
+                        $("#" + lat).val(n_latitude);
+                        $("#" + long).val(n_longitude);
+                        $("#" + addr).val(n_address);
+                        $("#" + place).val(results[0].place_id);
+                        
+                        let inputElse = $("#" + addr_else);
+
+                        if (inputElse != null) {
+                            inputElse.val(n_address);
+                        }
+
+                        clearMarkers();
+
+                        var marker = new google.maps.Marker({
+                            position: position,
+                            map: map,
+                            title: n_address
+                        });
+
+                        markers.push(marker);
                     }
-
-                    $("#ting-restaurant-latitude").val(n_latitude);
-                    $("#ting-restaurant-longitude").val(n_longitude);
-                    $("#ting-search-location-input").val(n_address);
-                    $("#ting-restaurant-place-id").val(results[0].place_id);
-                    
-                    let inputElse = $("#ting-search-location-input-else");
-
-                    if (inputElse != null) {
-                        inputElse.val(n_address);
-                    }
-
-                    clearMarkers();
-
-                    var marker = new google.maps.Marker({
-                        position: position,
-                        map: map,
-                        title: n_address
-                    });
-
-                    markers.push(marker);
+                } else {
+                    showErrorMessage("init_map", status);
                 }
-            } else {
-                showErrorMessage("init_map", status);
-            }
+            });
         });
-    });
+    }
 }
 
 function setMapOnAll(map) {
@@ -656,4 +706,30 @@ function InitializePlaces(input) {
     google.maps.event.addListener(autocomplete, 'place_changed', function () {
         autocomplete.getPlace();
     });
+}
+
+function HTMLMarker(lat, lng, img){
+    this.lat = lat;
+    this.lng = lng;
+    this.img = img;
+    this.pos = new google.maps.LatLng(lat,lng);
+}
+    
+HTMLMarker.prototype = new google.maps.OverlayView();
+HTMLMarker.prototype.onRemove = function(){}
+    
+HTMLMarker.prototype.onAdd = function(){
+    div = document.createElement('div');
+    div.className = "ting-maps-marker";
+    div.innerHTML = "<div class='ting-maps-marker-box'><img src='" + this.img + "' alt=''></div>";
+    var panes = this.getPanes();
+    panes.overlayImage.appendChild(div);
+}
+    
+HTMLMarker.prototype.draw = function(){
+    var overlayProjection = this.getProjection();
+    var position = overlayProjection.fromLatLngToDivPixel(this.pos);
+    var panes = this.getPanes();
+    panes.overlayImage.style.left = position.x + 30 + 'px';
+    panes.overlayImage.style.top = position.y + 52 + 'px';
 }

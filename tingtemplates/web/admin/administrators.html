@@ -78,6 +78,22 @@
                                                             {% endif %}
                                                         </a>
                                                         {% endif %}
+                                                        {% if admin.pk|has_p:"can_move_admin" == True %}
+                                                        <div class="item">
+                                                            <i class="dropdown icon" style="margin-top: 5px;"></i>
+                                                            <a class="text" style="align-self: flex-start; width: 100%"><i class="arrow right icon"></i>Move To Branch</a>
+                                                            <div class="menu">
+                                                                <div class="header">Types</div>
+                                                                {% for branch in branches %}
+                                                                    {% if branch.pk == administrator.branch.pk %}
+                                                                    <a class="item ting-open-ajax-modal active selected" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_move_admin_to_branch' administrator.token branch.pk %}" ting-modal-target="ting-move-to-branch-{{administrator.id}}" style="align-self: flex-start; width: 100%">{{branch.name}}</a>
+                                                                    {% else %}
+                                                                    <a class="item ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_move_admin_to_branch' administrator.token branch.pk %}" ting-modal-target="ting-move-to-branch-{{administrator.id}}" style="align-self: flex-start; width: 100%">{{branch.name}}</a>
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                            </div>
+                                                        </div>
+                                                        {% endif %}
                                                     </div>
                                                 </div>
                                             </td>
@@ -93,6 +109,26 @@
                                             </div>
                                             <div class="content">
                                                 <p>Do you really want to {% if administrator.is_disabled %} Enable {% else %} Disable {% endif %} this account ?</p>
+                                            </div>
+                                            <div class="actions">
+                                                <div class="ui positive button right labeled icon">
+                                                    Yes
+                                                    <i class="icon check"></i>
+                                                </div>
+                                                <div class="ui red deny button right labeled icon">
+                                                    No
+                                                    <i class="icon times"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        {% if admin.pk|has_p:"can_move_admin" == True %}
+                                        <div class="ui modal mini" data-modal="ting-move-to-branch-{{administrator.id}}">
+                                            <div class="header">
+                                                Move Admin To Branch
+                                            </div>
+                                            <div class="content">
+                                                <p>Do you really want to move this admin ?</p>
                                             </div>
                                             <div class="actions">
                                                 <div class="ui positive button right labeled icon">

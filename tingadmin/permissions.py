@@ -6,6 +6,15 @@ restaurant = [
 	{'category': 'restaurant', 'permission': 'can_update_configurations', 'title': 'Update Configuration'}
 ]
 
+
+branch = [
+	{'category': 'branch', 'permission': 'can_add_branch', 'title': 'Add'},
+	{'category': 'branch', 'permission': 'can_view_branch', 'title': 'View'},
+	{'category': 'branch', 'permission': 'can_update_branch', 'title': 'Update'},
+	{'category': 'branch', 'permission': 'can_avail_branch', 'title': 'Avail / Unavail'},
+	{'category': 'admin', 'permission': 'can_move_admin', 'title': 'Move'},
+]
+
 tables = [
 	{'category': 'table', 'permission': 'can_add_table', 'title': 'Add'},
 	{'category': 'table', 'permission': 'can_view_table', 'title': 'View'},
@@ -18,7 +27,7 @@ administrators = [
 	{'category': 'admin', 'permission': 'can_view_admin', 'title': 'View'},
 	{'category': 'admin', 'permission': 'can_update_admin', 'title': 'Update'},
 	{'category': 'admin', 'permission': 'can_disable_admin', 'title': 'Disable / Enable'},
-	{'category': 'admin', 'permission': 'can_assign_table', 'title': 'Assign Table To Waiter'}
+	{'category': 'admin', 'permission': 'can_assign_table', 'title': 'Assign Table To Waiter'},
 ]
 
 category = [
@@ -60,7 +69,7 @@ management = [
 	{'category': 'management', 'permission': 'can_print_incomes', 'title': 'Print Incomes'}
 ]
 
-permissions = restaurant + tables + administrators + category + menus + orders + bills + booking + management
+permissions = branch + restaurant + tables + administrators + category + menus + orders + bills + booking + management
 
 global_permissions = [
 						'can_view_table', 
@@ -72,6 +81,10 @@ global_permissions = [
 					]
 
 admin_permissions = global_permissions + [
+						'can_add_branch',
+						'can_view_branch',
+						'can_update_branch',
+						'can_avail_branch',
 						'can_update_restaurant',
 						'can_update_configurations',
 						'can_add_table',
@@ -97,7 +110,8 @@ admin_permissions = global_permissions + [
 						'can_view_reports',
 						'can_print_reports',
 						'can_view_incomes',
-						'can_print_incomes'
+						'can_print_incomes',
+						'can_move_admin'
 					]
 
 supervisor_permissions = global_permissions + [

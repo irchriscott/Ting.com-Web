@@ -1,4 +1,5 @@
 {% load staticfiles %}
+{% load ting_tags %}
 <div class="ui visible sidebar inverted vertical menu">
     <div class="ting-menu-logo" style="margin-top:20px;">
         <img src="{% static 'imgs/logo.png' %}" alt="Ting.com" style="margin-bottom: 15px;">
@@ -16,7 +17,19 @@
                     </div>
                 </a>
             </div>
-
+            {% if admin.pk|has_p:"can_view_branch" == True %}
+            <div class="ting-menu-item">
+                <a href="{% url 'ting_wb_adm_branches' %}">
+                    <div class="ting-menu-icon">
+                        <i class="sitemap link icon"></i>
+                    </div>
+                    <div class="ting-menu-legend">
+                        <p>Branches</p>
+                    </div>
+                </a>
+            </div>
+            {% endif %}
+            {% if admin.pk|has_p:"can_view_category" == True %}
             <div class="ting-menu-item">
                 <a href="{% url 'ting_wb_adm_categories' %}">
                     <div class="ting-menu-icon">
@@ -27,7 +40,8 @@
                     </div>
                 </a>
             </div>
-
+            {% endif %}
+            {% if admin.pk|has_p:"can_view_menu" == True %}
             <div class="ting-menu-item">
                 <a href="{% url 'ting_wb_adm_menu_food' %}">
                     <div class="ting-menu-icon">
@@ -38,7 +52,8 @@
                     </div>
                 </a>
             </div>
-
+            {% endif %}
+            {% if admin.pk|has_p:"can_view_admin" == True %}
             <div class="ting-menu-item">
                 <a href="{% url 'ting_wb_adm_administrators' %}">
                     <div class="ting-menu-icon">
@@ -49,7 +64,7 @@
                     </div>
                 </a>
             </div>
-
+            {% endif %}
             <div class="ting-menu-item">
                 <a href="{% url 'ting_wb_adm_restaurant' %}">
                     <div class="ting-menu-icon">
@@ -60,18 +75,18 @@
                     </div>
                 </a>
             </div>
-
+            {% if admin.pk|has_p:"can_view_table" == True %}
             <div class="ting-menu-item">
                 <a href="{% url 'ting_wb_adm_tables' %}">
                     <div class="ting-menu-icon">
-                        <i class="fas fa-chair" style="display: inline-block; opacity: .8; margin: 0 .25rem 0 0; width: 1.18em;height: 1em;"></i>
+                        <i class="fas fa-chair link" style="display: inline-block; opacity: .8; margin: 0 .25rem 0 0; width: 1.18em;height: 1em;"></i>
                     </div>
                     <div class="ting-menu-legend">
                         <p>Tables</p>
                     </div>
                 </a>
             </div>
-            
+            {% endif %}
             <div class="ting-menu-item">
                 <a href="{% url 'ting_wb_adm_logout' %}">
                     <div class="ting-menu-icon">

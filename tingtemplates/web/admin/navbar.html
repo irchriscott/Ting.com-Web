@@ -4,7 +4,7 @@
         	<img src="{{restaurant.logo.url}}" alt="{{restaurant.name}}">
         </div>
     </div>
-    <a class="ui item" href="{% url 'ting_wb_adm_restaurant' %}" style="margin-top: -10px;">{{restaurant.full_name}}</a>
+    <a class="ui item" href="{% url 'ting_wb_adm_restaurant' %}" style="margin-top: -10px;">{{restaurant.name}}, {{admin.branch.name}}</a>
     <div class="right menu">
         <div class="item ting-no-p-top">
             <div class="ui icon input">

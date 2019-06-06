@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 from django import forms
 from tingweb.models import (
 							Restaurant, RestaurantConfig, Administrator, Food, Drink, Dish, FoodImage,
-							FoodCategory, DrinkImage, DishImage
+							FoodCategory, DrinkImage, DishImage, Branch, RestaurantTable
 						)
 
 
@@ -17,7 +17,7 @@ class RestaurantUpdateProfile(forms.ModelForm):
 
 	class Meta:
 		model = Restaurant
-		fields = ('name', 'branch', 'motto', 'opening', 'closing',)
+		fields = ('name', 'motto', 'opening', 'closing',)
 
 
 class RestaurantUpdateConfig(forms.ModelForm):
@@ -25,6 +25,13 @@ class RestaurantUpdateConfig(forms.ModelForm):
 	class Meta:
 		model = RestaurantConfig
 		fields = ('currency', 'use_default_currency', 'tax', 'cancel_late_booking', 'waiter_see_all_orders', 'book_with_advance', 'booking_advance',)
+
+
+class AddNewBranch(forms.ModelForm):
+
+	class Meta:
+		model = Branch
+		fields = ('name', 'country', 'town', 'address', 'longitude', 'latitude', 'place_id')
 
 
 class AddAdministrator(forms.ModelForm):
@@ -137,3 +144,10 @@ class EditMenuDish(forms.ModelForm):
 	class Meta:
 		model = Dish
 		fields = ('name', 'description', 'ingredients', 'price', 'last_price', 'currency')
+
+
+class RestaurantTableForm(forms.ModelForm):
+
+	class Meta:
+		model = RestaurantTable
+		fields = ('number', 'max_people', 'location', 'chair_type', 'description')

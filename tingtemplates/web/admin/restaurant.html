@@ -42,9 +42,9 @@
                             </div>
                         </div>
                         <div class="ting-restaurant-name" style="padding-left: 2rem;">
-                            <h2>{{restaurant.full_name}}</h2>
+                            <h2>{{restaurant.name}}, {{admin.branch.name}}</h2>
                             <p style="font-weight: 100;">{{restaurant.motto}}</p>
-                            <p><i class="icon map marker alternate"></i> {{restaurant.address}}</p>
+                            <p><i class="icon map marker alternate"></i> {{restaurant.branches.0.address}}</p>
                         </div>
                     </div>
 
@@ -57,11 +57,11 @@
 
                                 <div class="ting-restaurant-about-data">
                                     <p><i class="icon utensils"></i>{{restaurant.name}}</p>
-                                    <p><i class="icon home"></i>{{restaurant.branch}}</p>
+                                    <p><i class="icon home"></i>{{restaurant.branches.0.name}}</p>
                                     <p><i class="icon mail"></i>{{restaurant.config.email}}</p>
                                     <p><i class="icon phone"></i>{{restaurant.config.phone|none}}</p>
                                     <p><i class="icon quote right"></i>{{restaurant.motto}}</p>
-                                    <p><i class="icon map marker alternate"></i>{{restaurant.address}}</p>
+                                    <p><i class="icon map marker alternate"></i>{{restaurant.branches.0.address}}</p>
                                     <p style="text-transform: uppercase;"><i class="icon clock"></i>{{restaurant.opening}} - {{restaurant.closing}}</p>
                                 </div>
                                 {% if admin.pk|has_p:"can_update_restaurant" == True %}
@@ -116,16 +116,6 @@
                 <div class="field">
                     <label>Enter Restaurant Name :</label>
                     <input type="text" name="name" placeholder="Restaurant Name" value="{{restaurant.name}}" required autocomplete="off">
-                </div>
-                <div class="field">
-                    <label>Enter Restaurant Branch :</label>
-                    <input type="text" name="branch" placeholder="Restaurant Branch" value="{{restaurant.branch}}" autocomplete="off">
-                </div>
-                <div class="field">
-                    <label for="">Enter Restaurant Address : </label>
-                    <div class="ui action input">
-                        <input type="text" name="address" value="{{restaurant.address}}" disabled placeholder="Restaurant Address" autocomplete="off">
-                    </div>
                 </div>
                 <div class="field">
                     <div class="two fields">

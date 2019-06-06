@@ -1,0 +1,246 @@
+{% extends '../../layouts/header.html' %}
+{% load staticfiles %}
+{% load ting_tags %}
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}">
+{% endblock %}
+{% block title %}
+    <title>Ting.com - Admin / Branches</title>
+{% endblock %}
+{% block content %}
+{% include '../../web/admin/sidebar.html' %}
+<div class="pusher">
+    <div class="article ting-admin-container">
+        {% include '../../web/admin/navbar.html' %}
+        <div class="ui grid divided" style="margin-left: 10px;">
+            <div class="row">
+                <div class="twelve wide column">
+                    
+                    <div class="ui grid">
+                        <div class="row ting-data-container-header">
+                            <div class="twelve wide column">
+                                <h1>Branches</h1>
+                            </div>
+                             {% if admin.pk|has_p:"can_add_admin" == True %}
+                            <div class="four wide column ting-no-p-right">
+                                <button class="ui twitter button" style="float:right" id="ting-open-add-restaurant-location">
+                                <i class="plus icon"></i>
+                                    Add New Branch
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="ting-data-container">
+                        
+                        <table class="ui single line table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Country</th>
+                                    <th>Town</th>
+                                    <th>Address</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if branches.count > 0 %}
+                                    {% for branch in branches %}
+                                        <tr>
+                                            <td><div class="ui ribbon label">{{forloop.counter}}</div></td>
+                                            <td>{{branch.name}}</td>
+                                            <td>{{branch.country}}</td>
+                                            <td>{{branch.town}}</td>
+                                            <td>{{branch.address}}</td>
+                                            <td>
+                                                <div class="ui small blue labeled icon button ting-open-ajax-modal" ting-modal-type="ajax" ting-data-url="{% url 'ting_wb_load_branch' branch.pk %}" ting-modal-target="ting-load-branch">
+                                                    <i class="map marker alternate icon"></i> Load
+                                                </div>
+                                                <div class="ui right dropdown item" style="margin-top: -10px !important;">
+                                                    <i class="icon chevron down"></i>
+                                                    <div class="menu">
+                                                        <div class="header">Options</div>
+                                                        {% if admin.pk|has_p:"can_update_branch" == True %}
+                                                        <a class="item ting-open-ajax-modal" ting-modal-type="ajax-form" ting-modal-form="ting-update-branch-form" ting-data-url="{% url 'ting_wb_edit_branch' branch.pk %}" ting-modal-target="ting-admin-load-edit-profile" style="align-self: flex-start; width: 100%"><i class="pencil alternate icon"></i> Edit</a>
+                                                        {% endif %}
+                                                        {% if admin.pk|has_p:"can_avail_branch" == True %}
+                                                        <a class="item ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_avail_branch_toggle' branch.pk %}" ting-modal-target="ting-avail-branch-toggle-{{branch.id}}" style="align-self: flex-start; width: 100%">
+                                                            {% if branch.is_available %}
+                                                            <i class="times icon"></i> Unavail
+                                                            {% else %}
+                                                            <i class="check icon"></i> Avail
+                                                            {% endif %}
+                                                        </a>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% if admin.pk|has_p:"can_avail_branch" == True %}
+                                        <div class="ui modal mini" data-modal="ting-avail-branch-toggle-{{branch.id}}">
+                                            <div class="header">
+                                                {% if branch.is_available %}
+                                                    Unavail Branch
+                                                {% else %}
+                                                    Avail Branch
+                                                {% endif %}
+                                            </div>
+                                            <div class="content">
+                                                <p>Do you really want to {% if branch.is_available %} Unavail {% else %} Avail {% endif %} this branch ?</p>
+                                            </div>
+                                            <div class="actions">
+                                                <div class="ui positive button right labeled icon">
+                                                    Yes
+                                                    <i class="icon check"></i>
+                                                </div>
+                                                <div class="ui red deny button right labeled icon">
+                                                    No
+                                                    <i class="icon times"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <th colspan="9">
+                                            <p class="ting-error">No Added Branch</p>
+                                        </th>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="9">
+                                        <div class="ui right floated pagination menu">
+                                            <a class="icon item">
+                                                <i class="left chevron icon"></i>
+                                            </a>
+                                            <a class="item">1</a>
+                                            <a class="item">2</a>
+                                            <a class="item">3</a>
+                                            <a class="item">4</a>
+                                            <a class="icon item">
+                                                <i class="right chevron icon"></i>
+                                            </a>
+                                        </div>
+                                    </th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                        
+                    </div>
+
+                </div>
+                <div class="four wide column">
+                    {% include '../../web/admin/sideorders.html' %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="ui modal" data-modal="ting-load-branch">
+    <div class="header">
+        Branch
+    </div>
+    <div class="content">
+        <div class="ting-data-content"></div>
+        <div class="ui right ting-loader" style="margin: auto; text-align: center;">
+            <img src="{% static 'imgs/loading.gif' %}">
+        </div>
+    </div>
+    <div class="actions">
+        <div class="ui red deny button left">
+            Close
+        </div>
+    </div>
+</div>
+
+<div class="ui modal" data-modal="ting-admin-load-edit-profile">
+    <div class="header">
+        Edit Branch
+    </div>
+    <div class="content">
+        <div class="ting-data-content"></div>
+        <div class="ui right ting-loader" style="margin: auto; text-align: center;">
+            <img src="{% static 'imgs/loading.gif' %}">
+        </div>
+    </div>
+    <div class="actions">
+        <div class="ui right ting-loader ting-form-loader-else">
+            <img src="{% static 'imgs/loading.gif' %}">
+        </div>
+        <button type="submit" class="ui positive right labeled icon button">
+            Save
+            <i class="checkmark icon"></i>
+        </button>
+        <div class="ui red deny button left">
+            Close
+        </div>
+    </div>
+</div>
+
+
+{% if admin.pk|has_p:"can_add_admin" == True %}
+
+<div class="ui modal" data-modal="ting-admin-add-new-branch" id="ting-add-new-branch">
+    <div class="header">
+        Add Branch
+    </div>
+    <div class="content">
+        <div class="ting-search-place">
+            <div class="u form">
+                <div class="field">
+                    <label>Enter Branch Address : </label>
+                    <div class="ui fluid icon input">
+                        <input type="text" id="ting-search-location-input-else" name="address" placeholder="Search Branch Location"
+                            autocomplete="off" autofocus="false" required>
+                        <i class="search icon"></i>
+                    </div>
+                </div>
+                <div class="ting-map-container">
+                    <div class="ting-restaurant-map-container" id="ting-restaurant-map-container"></div>
+                </div>
+            </div>
+            <form class="ui form" action="{% url 'ting_wb_adm_add_branch' %}" method="POST" id="ting-add-branch-form">
+                {% csrf_token %}
+                <input type="hidden" id="ting-restaurant-latitude" name="latitude">
+                <input type="hidden" id="ting-restaurant-longitude" name="longitude">
+                <input type="hidden" id="ting-restaurant-country" name="country">
+                <input type="hidden" id="ting-restaurant-town" name="town">
+                <input type="hidden" id="ting-restaurant-place-id" name="place_id">
+                <input type="hidden" id="ting-search-location-input" name="address">
+                <div class="field" style="margin-top: 15px;">
+                    <label>Enter Branch Name :</label>
+                    <input type="text" name="name" placeholder="Branch Name" required autocomplete="off">
+                </div>
+                <div class="ting-action-modal">
+                    <div class="actions">
+                        <div class="ui red deny button">
+                            Cancel
+                        </div>
+                    </div>
+                    <button type="submit" class="ui positive right labeled icon button">
+                        Save
+                        <i class="checkmark icon"></i>
+                    </button>
+                    <div class="ui right ting-loader ting-form-loader">
+                        <img src="{% static 'imgs/loading.gif' %}">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    google.maps.event.addDomListener(window, 'load', InitializePlaces('ting-search-location-input-else'));
+</script>
+
+{% endif %}
+
+{% endblock %}

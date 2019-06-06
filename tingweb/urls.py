@@ -29,7 +29,16 @@ admins = [
 	url(r'adm/reset/password/submit/$', admin.submit_reset_password, name='ting_wb_adm_submit_reset_pwd'),
 	url(r'adm/reset/password/link/(?P<token>[^/]+)/$', admin.reset_password_link, name='ting_wb_adm_reset_pwd_link'),
 	url(r'adm/reset/password/reset/(?P<token>[^/]+)/$', admin.reset_password, name='ting_wb_adm_reset_pwd'),
+
+	# Branches
 	
+	url(r'adm/branches/all/$', admin.branches, name='ting_wb_adm_branches'),
+	url(r'adm/branches/add/$', admin.add_new_branch, name='ting_wb_adm_add_branch'),
+	url(r'adm/branches/avail/toogle/(?P<branch>\d+)/$', admin.avail_branch_toggle, name='ting_wb_avail_branch_toggle'),
+	url(r'adm/branches/edit/(?P<branch>\d+)/$', admin.edit_branch, name='ting_wb_edit_branch'),
+	url(r'adm/branches/update/(?P<branch>\d+)/$', admin.update_branch, name='ting_wb_update_branch'),
+	url(r'adm/branches/load/(?P<branch>\d+)/$', admin.load_branch, name='ting_wb_load_branch'),
+
 	# Administrators
 
 	url(r'adm/administrators/all/$', admin.administrators, name='ting_wb_adm_administrators'),
@@ -39,6 +48,7 @@ admins = [
 	url(r'adm/administrators/profile/disable/toggle/(?P<token>[^/]+)/$', admin.disable_admin_account_toggle, name='ting_wb_adm_disable_admin_profile_toggle'),
 	url(r'adm/administrators/permissions/edit/(?P<token>[^/]+)/$', admin.edit_admin_permissions, name='ting_wb_adm_edit_admin_permissions'),
 	url(r'adm/administrators/permissions/update/(?P<token>[^/]+)/$', admin.update_admin_permissions, name='ting_wb_adm_update_admin_permissions'),
+	url(r'adm/administrators/move/(?P<token>[^/]+)/to/branch/(?P<branch>\d+)/$', admin.move_admin_to_branch, name='ting_wb_adm_move_admin_to_branch'),
 	
 	# Admin Session
 
@@ -113,6 +123,10 @@ admins = [
 	# Tables
 
 	url(r'adm/tables/all/$', admin.tables, name='ting_wb_adm_tables'),
+	url(r'adm/tables/add/$', admin.add_new_table, name='ting_wb_adm_add_table'),
+	url(r'adm/tables/edit/(?P<table>\d+)/$', admin.load_edit_table, name='ting_wb_adm_load_edit_table'),
+	url(r'adm/tables/update/(?P<table>\d+)/$', admin.update_table, name='ting_wb_adm_update_table'),
+	url(r'adm/tables/avail/toggle/(?P<table>\d+)/$', admin.avail_table_toggle, name='ting_wb_adm_avail_toggle_table'),
 ]
 
 urlpatterns = admins + users

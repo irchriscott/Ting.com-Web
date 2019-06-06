@@ -12,8 +12,8 @@ from django.contrib.auth.models import User
 from tingadmin.backend import UserAuthentication
 from tingadmin.models import RestaurantCategory, TingPackage, TingLicenceKey
 from ting.responses import ResponseObject, HttpJsonResponse
-from tingadmin.forms import RestaurantCategoryForm, RestaurantFormAdmin, TingPackageForm
-from tingweb.models import Restaurant, RestaurantConfig, Administrator, AdminPermission, RestaurantLicenceKey
+from tingadmin.forms import RestaurantCategoryForm, RestaurantFormAdmin, TingPackageForm, BranchForm
+from tingweb.models import Restaurant, RestaurantConfig, Administrator, AdminPermission, RestaurantLicenceKey, Branch
 from tingadmin.mailer import SendRestaurantRegistrationMail
 import ting.utils as utils
 import datetime
@@ -100,9 +100,16 @@ def add_restaurant(request):
 				logo=utils.DEFAULT_RESTAURANT_IMAGE
 			))
 
-		if restaurant_form.is_valid():
+		branch_form = BranchForm(request.POST, instance=Branch(
+				name=request.POST.get('branch')
+			))
+
+		if restaurant_form.is_valid() and branch_form.is_valid():
 
 			restaurant = restaurant_form.save()
+			branch = branch_form.save(commit=False)
+			branch.restaurant = Restaurant.objects.get(pk=restaurant.pk)
+			branch.save()
 
 			# Create Configuration For Restaurant
 
@@ -122,6 +129,7 @@ def add_restaurant(request):
 
 			admin = Administrator(
 					restaurant=Restaurant.objects.get(pk=restaurant.pk),
+					branch=Branch.objects.get(pk=branch.pk),
 					token=admin_token,
 					name=utils.DEFAULT_ADMIN_NAME,
 					username=utils.DEFAULT_ADMIN_USERNAME,
@@ -138,7 +146,7 @@ def add_restaurant(request):
 
 			_permissions = AdminPermission(
 					admin=Administrator.objects.get(pk=admin.pk),
-					permissions=', '.join(permissions.admin_permissions)
+					permissions=','.join(permissions.admin_permissions)
 				)
 
 			_permissions.save()
@@ -179,7 +187,7 @@ def add_restaurant(request):
                 reverse('ting_admin_dashboard')))
 		else:
 			return HttpJsonResponse(
-                ResponseObject('error', 'Fill All Fields With Rignt Data, Please !!!', 400, msgs=restaurant.errors.items()))
+                ResponseObject('error', 'Fill All Fields With Rignt Data, Please !!!', 400, msgs=restaurant_form.errors.items() + branch_form.errors.items()))
 	else:
 		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
 

@@ -583,7 +583,42 @@ textarea{
   border: 1px solid #2ECC71;
   border-radius: 2px;
 }
+
 .ting-checkbox:focus{
   outline: 0 none;
   box-shadow: none;
+}
+
+.ting-maps-marker .ting-maps-marker-box{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    margin:-100px -50px;
+    border:solid 2px #b56fe8;
+    color: red;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.ting-maps-marker .ting-maps-marker-box img{
+    min-width:40px;
+    width:auto;
+    max-height:40px;
+    height:auto;
+}
+
+.ting-maps-marker:after {
+    top: 40px;
+    left: 0px;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+    border-color: rgba(136, 183, 213, 0);
+    border-top-color: #b56fe8;
+    border-width: 9px;
+    margin-left: -39px;
+    margin-top: -2px;
 }

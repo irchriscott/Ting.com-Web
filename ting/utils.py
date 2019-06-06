@@ -15,6 +15,21 @@ ADMIN_TYPE = (
 		(5, 'Accountant')
 	)
 
+TABLE_LOCATION = (
+		(1, 'Inside'),
+		(2, 'Outside'),
+		(3, 'Balcony'),
+		(4, 'Rooftop')
+	)
+
+CHAIR_TYPE = (
+		(1, 'Iron'),
+		(2, 'Wooden'),
+		(3, 'Plastic'),
+		(4, 'Couch'),
+		(5, 'Mixture')
+	)
+
 GENDER = (
 		('male', 'Male'),
 		('female', 'Female')
