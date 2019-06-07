@@ -25,6 +25,9 @@ def food_image_path(instance, filename):
 def category_image_path(instance, filename):
 	return "categories/%s_%s" % (str(time()).replace('.','_'), filename)
 
+def promotion_image_path(instance, filename):
+	return "promotions/%s_%s" % (str(time()).replace('.','_'), filename)
+
 
 ### USER RESTAURANT
 
@@ -33,6 +36,7 @@ class Restaurant(models.Model):
 	token = models.TextField(null=False, blank=False)
 	name = models.CharField(max_length=200, null=False, blank=False)
 	motto = models.TextField(null=True, blank=True)
+	purpose = models.IntegerField(null=False, blank=False, default=2)
 	slug = models.CharField(max_length=255, null=False, blank=False)
 	logo = models.ImageField(upload_to=restaurant_logo_path, null=False, blank=False)
 	country = models.CharField(max_length=200, null=False, blank=False)
@@ -62,6 +66,11 @@ class Restaurant(models.Model):
 	@property
 	def closing_str(self):
 		return self.closing.strftime('%H:%M')
+
+	@property
+	def purpose_str(self):
+		return utils.get_from_tuple(utils.ACCOUNT_PURPOSE, self.purpose)
+	
 	
 	@property
 	def categories(self):
@@ -762,6 +771,7 @@ class FoodCategory(models.Model):
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+
 class Food(models.Model):
 	restaurant = models.ForeignKey(Restaurant)
 	branch = models.ForeignKey(Branch)
@@ -806,6 +816,11 @@ class Food(models.Model):
 	def images(self):
 		return FoodImage.objects.filter(food=self.pk).order_by('created_at')
 
+	@property
+	def image(self):
+		return self.images[0].image.url
+	
+
 	def to_json(self):
 		return {
 			'id': self.pk,
@@ -834,6 +849,7 @@ class Food(models.Model):
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+
 class FoodImage(models.Model):
 	food = models.ForeignKey(Food)
 	image = models.ImageField(upload_to=food_image_path, null=False, blank=False)
@@ -852,6 +868,7 @@ class FoodImage(models.Model):
 			'image': self.image,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
+
 
 class Drink(models.Model):
 	restaurant = models.ForeignKey(Restaurant)
@@ -895,6 +912,10 @@ class Drink(models.Model):
 	@property
 	def images(self):
 		return DrinkImage.objects.filter(drink=self.pk).order_by('-created_at')
+
+	@property
+	def image(self):
+		return self.images[0].image.url
 
 	def to_json(self):
 		return {
@@ -1001,6 +1022,10 @@ class Dish(models.Model):
 	def images(self):
 		return DishImage.objects.filter(dish=self.pk).order_by('-created_at')
 
+	@property
+	def image(self):
+		return self.images[0].image.url
+
 	def to_json(self):
 		return {
 			'id': self.pk,
@@ -1096,6 +1121,7 @@ class Menu(models.Model):
 	def __unicode__(self):
 		return self.menu_type
 
+	@property
 	def menu(self):
 		if self.menu_type == 1:
 			return Food.objects.get(pk=self.menu_id)
@@ -1142,6 +1168,7 @@ class MenuReview(models.Model):
 class Promotion(models.Model):
 	restaurant = models.ForeignKey(Restaurant)
 	admin = models.ForeignKey(Administrator)
+	branch = models.ForeignKey(Branch)
 	uuid = models.CharField(max_length=100, null=False, blank=False)
 	occasion_event = models.CharField(max_length=200, null=False, blank=False)
 	promotion_menu_type = models.CharField(max_length=100, null=False, blank=False)
@@ -1150,13 +1177,14 @@ class Promotion(models.Model):
 	amount = models.IntegerField(null=True, blank=True, default=0)
 	reduction_type = models.CharField(max_length=100, null=True, blank=True) # Currency Or %
 	has_supplement = models.BooleanField(default=False)
-	supplement_max_quantity = models.IntegerField(default=1, null=False, blank=False)
+	supplement_min_quantity = models.IntegerField(default=1, null=False, blank=False)
 	is_supplement_same = models.BooleanField(default=False)
 	supplement = models.ForeignKey(Menu, null=True, blank=True, related_name='supplement')
 	supplement_quantity = models.IntegerField(default=1, null=False, blank=False)
 	is_on = models.BooleanField(default=True)
 	start_date = models.DateField(null=False, blank=False)
 	end_date = models.DateField(null=False, blank=False)
+	poster_image = models.ImageField(upload_to=promotion_image_path, null=False, blank=False)
 	description = models.TextField(null=False, blank=False)
 	created_at = models.DateField(auto_now_add=True)
 	updated_at = models.DateField(auto_now_add=True)
@@ -1178,7 +1206,6 @@ class Promotion(models.Model):
 		return {
 			'id': self.pk
 		}
-	
 
 
 class PromotionInterest(models.Model):

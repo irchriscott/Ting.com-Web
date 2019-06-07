@@ -144,12 +144,23 @@ def add_restaurant(request):
 
 			# Administrator Permissions
 
-			_permissions = AdminPermission(
-					admin=Administrator.objects.get(pk=admin.pk),
-					permissions=','.join(permissions.admin_permissions)
-				)
+			if restaurant.purpose == 1:
 
-			_permissions.save()
+				_permissions = AdminPermission(
+						admin=Administrator.objects.get(pk=admin.pk),
+						permissions=','.join(permissions.admin_permissions)
+					)
+
+				_permissions.save()
+
+			elif restaurant.purpose == 2:
+				_permissions = AdminPermission(
+						admin=Administrator.objects.get(pk=admin.pk),
+						permissions=','.join(permissions.advertisment_account_permissions)
+					)
+
+				_permissions.save()
+				
 
 			# Create Trial Key
 

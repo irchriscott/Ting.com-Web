@@ -53,6 +53,18 @@
                 </a>
             </div>
             {% endif %}
+            {% if admin.pk|has_p:"can_view_promotion" == True %}
+            <div class="ting-menu-item">
+                <a href="{% url 'ting_wb_adm_promotions' %}">
+                    <div class="ting-menu-icon">
+                        <i class="star link icon"></i>
+                    </div>
+                    <div class="ting-menu-legend">
+                        <p>Promotions</p>
+                    </div>
+                </a>
+            </div>
+            {% endif %}
             {% if admin.pk|has_p:"can_view_admin" == True %}
             <div class="ting-menu-item">
                 <a href="{% url 'ting_wb_adm_administrators' %}">

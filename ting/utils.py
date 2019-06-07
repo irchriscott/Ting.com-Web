@@ -7,6 +7,11 @@ TING_PACKAGES = (
 		(4, 'Platinum')
 	)
 
+ACCOUNT_PURPOSE = (
+		(1, 'Advertisment'),
+		(2, 'Managment')
+	)
+
 ADMIN_TYPE = (
 		(1, 'Administrator'),
 		(2, 'Supervisor'),
@@ -81,6 +86,14 @@ CURRENCIES = (
 		('USD', 'United State Dollar'),
 		('UGX', 'Ugandan Shillings'),
 		('GBP', 'Grand Britain Pounds')
+	)
+
+PROMOTION_MENU = (
+		('00', 'All Menus'),
+		('01', 'Food Menus'),
+		('02', 'Drink Menus'),
+		('03', 'Dish Menus'),
+		('04', 'Specific Menu')
 	)
 
 

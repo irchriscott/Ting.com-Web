@@ -7,12 +7,19 @@ restaurant = [
 ]
 
 
+promotion = [
+	{'category': 'promotion', 'permission': 'can_add_promotion', 'title': 'Add'},
+	{'category': 'promotion', 'permission': 'can_view_promotion', 'title': 'View'},
+	{'category': 'promotion', 'permission': 'can_update_promotion', 'title': 'Update'},
+	{'category': 'promotion', 'permission': 'can_avail_promotion', 'title': 'Avail / Unavail'},
+	{'category': 'promotion', 'permission': 'can_delete_promotion', 'title': 'Delete'}
+]
+
 branch = [
 	{'category': 'branch', 'permission': 'can_add_branch', 'title': 'Add'},
 	{'category': 'branch', 'permission': 'can_view_branch', 'title': 'View'},
 	{'category': 'branch', 'permission': 'can_update_branch', 'title': 'Update'},
 	{'category': 'branch', 'permission': 'can_avail_branch', 'title': 'Avail / Unavail'},
-	{'category': 'admin', 'permission': 'can_move_admin', 'title': 'Move'},
 ]
 
 tables = [
@@ -28,6 +35,7 @@ administrators = [
 	{'category': 'admin', 'permission': 'can_update_admin', 'title': 'Update'},
 	{'category': 'admin', 'permission': 'can_disable_admin', 'title': 'Disable / Enable'},
 	{'category': 'admin', 'permission': 'can_assign_table', 'title': 'Assign Table To Waiter'},
+	{'category': 'admin', 'permission': 'can_move_admin', 'title': 'Move'},
 ]
 
 category = [
@@ -69,7 +77,7 @@ management = [
 	{'category': 'management', 'permission': 'can_print_incomes', 'title': 'Print Incomes'}
 ]
 
-permissions = branch + restaurant + tables + administrators + category + menus + orders + bills + booking + management
+permissions = branch + restaurant + tables + administrators + category + menus + orders + bills + booking + management + promotion
 
 global_permissions = [
 						'can_view_table', 
@@ -111,7 +119,12 @@ admin_permissions = global_permissions + [
 						'can_print_reports',
 						'can_view_incomes',
 						'can_print_incomes',
-						'can_move_admin'
+						'can_move_admin',
+						'can_add_promotion',
+						'can_view_promotion',
+						'can_update_promotion',
+						'can_avail_promotion',
+						'can_delete_promotion'
 					]
 
 supervisor_permissions = global_permissions + [
@@ -126,6 +139,11 @@ supervisor_permissions = global_permissions + [
 							'can_view_menu',
 							'can_update_menu',
 							'can_avail_menu',
+							'can_add_promotion',
+							'can_view_promotion',
+							'can_update_promotion',
+							'can_avail_promotion',
+							'can_delete_promotion',
 							'can_receive_orders',
 							'can_accept_orders',
 							'can_send_bill',
@@ -160,3 +178,51 @@ accountant_permission = global_permissions + [
 							'can_view_incomes',
 							'can_print_incomes'
 						]
+
+
+advertisment_account_permissions = [
+						'can_update_restaurant',
+						'can_add_branch',
+						'can_view_branch',
+						'can_update_branch',
+						'can_avail_branch',
+						'can_move_admin',
+						'can_add_admin',
+						'can_view_admin',
+						'can_update_admin',
+						'can_disable_admin',
+						'can_add_category',
+						'can_view_category',
+						'can_update_category',
+						'can_delete_category',
+						'can_add_menu',
+						'can_view_menu',
+						'can_update_menu',
+						'can_avail_menu',
+						'can_delete_menu',
+						'can_add_promotion',
+						'can_view_promotion',
+						'can_update_promotion',
+						'can_avail_promotion',
+						'can_delete_promotion'
+					]
+
+
+advertisment_new_account_permissions  = [
+						'can_view_branch',
+						'can_view_admin',
+						'can_add_category',
+						'can_view_category',
+						'can_update_category',
+						'can_delete_category',
+						'can_add_menu',
+						'can_view_menu',
+						'can_update_menu',
+						'can_avail_menu',
+						'can_delete_menu',
+						'can_add_promotion',
+						'can_view_promotion',
+						'can_update_promotion',
+						'can_avail_promotion',
+						'can_delete_promotion'
+					]

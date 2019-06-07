@@ -58,6 +58,7 @@ $(document).ready(function(){
     $("#ting-admin-add-new-menu-dish").openModal();
     $("#ting-admin-add-new-branch").openModal();
     $("#ting-admin-add-new-table").openModal();
+    $("#ting-admin-add-new-promotion").openModal();
 
     $("#ting-map-form").submit(function(e){
         e.preventDefault();
@@ -84,12 +85,7 @@ $(document).ready(function(){
     $("#ting-add-menu-dish-form").submitFormAjax();
     $("#ting-add-branch-form").submitFormAjax();
     $("#ting-add-table-form").submitFormAjax();
-
-    let today = new Date();
-
-    // $("#").calendar({
-    //     minDate: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 5)
-    // });
+    $("#ting-add-promotion-form").submitFormAjax();
 
     var window_width = $(window).width(),
         window_height = window.innerHeight,
@@ -452,7 +448,25 @@ jQuery.fn.openModal = function(){
                     showErrorMessage(randomString(16), "No Data To Show !!!")
                 }
             }
-        } else { $("[data-modal=" + $(this).attr("id") + "]").modal("show") }
+        } else { $("[data-modal=" + $(this).attr("id") + "]").modal({
+            onShow: function(){
+                var today = new Date();
+                $("#ting-datepicker-start-date, #ting-datepicker-end-date").calendar({
+                    type: 'date',
+                    minDate: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+                    monthFirst: false,
+                    formatter: {
+                        date: function (date, settings) {
+                            if (!date) return '';
+                            var day = date.getDate();
+                            var month = date.getMonth() + 1;
+                            var year = date.getFullYear();
+                            return year + '-' + month + '-' + day;
+                        }
+                    }
+                });
+            }
+        }).modal("show") }
     });
 }
 

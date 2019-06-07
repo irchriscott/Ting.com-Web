@@ -13,7 +13,7 @@ from ting.responses import ResponseObject, HttpJsonResponse
 from tingweb.models import (
 							Restaurant, Administrator, AdminPermission, RestaurantLicenceKey, RestaurantConfig,
 							Menu, Food, Drink, Dish, FoodCategory, FoodImage, AdministratorResetPassword, DrinkImage,
-							DishImage, DishFood, RestaurantTable, Branch
+							DishImage, DishFood, RestaurantTable, Branch, Promotion
 						)
 from tingweb.backend import AdminAuthentication
 from tingweb.mailer import (SendAdminRegistrationMail, SendAdminResetPasswordMail)
@@ -572,16 +572,19 @@ def add_new_admin(request):
 
 				_permissions = []
 
-				if admin.admin_type == 1:
-					_permissions = permissions.admin_permissions
-				elif admin.admin_type == 2:
-					_permissions = permissions.supervisor_permissions
-				elif admin.admin_type == 3:
-					_permissions = permissions.chef_permissions
-				elif admin.admin_type == 4:
-					_permissions = permissions.waiter_permissions
-				elif admin.admin_type == 5:
-					_permissions = permissions.accountant_permission
+				if admin.restaurant.purpose == 1:
+					_permissions = permissions.advertisment_new_account_permissions
+				else:
+					if admin.admin_type == 1:
+						_permissions = permissions.admin_permissions
+					elif admin.admin_type == 2:
+						_permissions = permissions.supervisor_permissions
+					elif admin.admin_type == 3:
+						_permissions = permissions.chef_permissions
+					elif admin.admin_type == 4:
+						_permissions = permissions.waiter_permissions
+					elif admin.admin_type == 5:
+						_permissions = permissions.accountant_permission
 
 				admin_permissions = AdminPermission(
 						admin=Administrator.objects.get(pk=admin.pk),
@@ -806,6 +809,7 @@ def admin_permissions(request):
 			'bills': permissions.bills,
 			'booking': permissions.booking,
 			'management': permissions.management,
+			'promotion': permissions.promotion,
 			'restaurant': admin.restaurant
 		})
 
@@ -819,7 +823,7 @@ def edit_admin_permissions(request, token):
 	return render(request, template, {
 			'admin': admin,
 			'branch': permissions.branch,
-			'restaurant': permissions.restaurant,
+			'restaurants': permissions.restaurant,
 			'tables': permissions.tables,
 			'administrators': permissions.administrators,
 			'category': permissions.category,
@@ -827,7 +831,9 @@ def edit_admin_permissions(request, token):
 			'orders': permissions.orders,
 			'bills': permissions.bills,
 			'booking': permissions.booking,
-			'management': permissions.management
+			'promotion': permissions.promotion,
+			'management': permissions.management,
+			'restaurant': admin.restaurant
 		})
 
 
@@ -1002,8 +1008,8 @@ def menu_food(request):
 def add_new_menu_food(request):
 	if request.method == 'POST':
 		admin = Administrator.objects.get(pk=request.session['admin'])
-		is_countable = True if request.POST.get('is_countable') is 'on' else False
-		show_ingredients = True if request.POST.get('show_ingredients') is 'on' else False
+		is_countable = True if request.POST.get('is_countable') == 'on' else False
+		show_ingredients = True if request.POST.get('show_ingredients') == 'on' else False
 
 		form = AddMenuFood(request.POST, instance=Food(
 				restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
@@ -1013,7 +1019,7 @@ def add_new_menu_food(request):
 				category=FoodCategory.objects.get(pk=request.POST.get('category')),
 				is_countable=is_countable,
 				show_ingredients=show_ingredients,
-				quantity=int(request.POST.get('quantity')) if is_countable is True else 1
+				quantity=int(request.POST.get('quantity')) if is_countable == True else 1
 			))
 
 		images_form = FoodImageForm(request.POST, request.FILES)
@@ -1169,8 +1175,8 @@ def edit_menu_food(request, food):
 def update_menu_food(request, food):
 	if request.method == 'POST':
 		admin = Administrator.objects.get(pk=request.session['admin'])
-		is_countable = True if request.POST.get('is_countable') is 'on' else False
-		show_ingredients = True if request.POST.get('show_ingredients') is 'on' else False
+		is_countable = True if request.POST.get('is_countable') == 'on' else False
+		show_ingredients = True if request.POST.get('show_ingredients') == 'on' else False
 
 		food = get_object_or_404(Food, pk=food)
 		form = EditMenuFood(request.POST)
@@ -1297,8 +1303,8 @@ def menu_drinks(request):
 def add_new_menu_drink(request):
 	if request.method == 'POST':
 		admin = Administrator.objects.get(pk=request.session['admin'])
-		is_countable = True if request.POST.get('is_countable') is 'on' else False
-		show_ingredients = True if request.POST.get('show_ingredients') is 'on' else False
+		is_countable = True if request.POST.get('is_countable') == 'on' else False
+		show_ingredients = True if request.POST.get('show_ingredients') == 'on' else False
 
 		form = AddMenuDrink(request.POST, instance=Drink(
 				restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
@@ -1307,7 +1313,7 @@ def add_new_menu_drink(request):
 				slug='{0}-{1}'.format(request.POST.get('name').replace(' ', '-'), get_random_string(16)).lower(),
 				is_countable=is_countable,
 				show_ingredients=show_ingredients,
-				quantity=int(request.POST.get('quantity')) if is_countable is True else 1
+				quantity=int(request.POST.get('quantity')) if is_countable == True else 1
 			))
 
 		images_form = DrinkImageForm(request.POST, request.FILES)
@@ -1448,8 +1454,8 @@ def edit_menu_drink(request, drink):
 def update_menu_drink(request, drink):
 	if request.method == 'POST':
 		admin = Administrator.objects.get(pk=request.session['admin'])
-		is_countable = True if request.POST.get('is_countable') is 'on' else False
-		show_ingredients = True if request.POST.get('show_ingredients') is 'on' else False
+		is_countable = True if request.POST.get('is_countable') == 'on' else False
+		show_ingredients = True if request.POST.get('show_ingredients') == 'on' else False
 
 		drink = get_object_or_404(Drink, pk=drink)
 		form = EditMenuDrink(request.POST)
@@ -1563,8 +1569,8 @@ def menu_dishes(request):
 def add_new_menu_dish(request):
 	if request.method == 'POST':
 		admin = Administrator.objects.get(pk=request.session['admin'])
-		is_countable = True if request.POST.get('is_countable') is 'on' else False
-		show_ingredients = True if request.POST.get('show_ingredients') is 'on' else False
+		is_countable = True if request.POST.get('is_countable') == 'on' else False
+		show_ingredients = True if request.POST.get('show_ingredients') == 'on' else False
 
 		form = AddMenuDish(request.POST, instance=Dish(
 				restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
@@ -1574,7 +1580,7 @@ def add_new_menu_dish(request):
 				category=FoodCategory.objects.get(pk=request.POST.get('category')),
 				is_countable=is_countable,
 				show_ingredients=show_ingredients,
-				quantity=int(request.POST.get('quantity')) if is_countable is True else 1
+				quantity=int(request.POST.get('quantity')) if is_countable == True else 1
 			))
 
 		images_form = DishImageForm(request.POST, request.FILES)
@@ -1729,8 +1735,8 @@ def edit_menu_dish(request, dish):
 def update_menu_dish(request, dish):
 	if request.method == 'POST':
 		admin = Administrator.objects.get(pk=request.session['admin'])
-		is_countable = True if request.POST.get('is_countable') is 'on' else False
-		show_ingredients = True if request.POST.get('show_ingredients') is 'on' else False
+		is_countable = True if request.POST.get('is_countable') == 'on' else False
+		show_ingredients = True if request.POST.get('show_ingredients') == 'on' else False
 
 		dish = get_object_or_404(Dish, pk=dish)
 		form = EditMenuDish(request.POST)
@@ -2071,3 +2077,24 @@ def avail_table_toggle(request, table):
 		messages.success(request, 'Restaurant Table Availed Successfully !!!')
 		return HttpJsonResponse(ResponseObject('success', 'Menu Dish Availed Successfully !!!', 200, 
 					reverse('ting_wb_adm_tables')))
+
+
+
+# Promotions
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_promotion')
+def promotions(request):
+	template = 'web/admin/promotions.html'
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	promotions = Promotion.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk)
+	menus = Menu.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk)
+	return render(request, template, {
+			'admin': admin,
+			'restaurant': admin.restaurant,
+			'promotions': promotions,
+			'menus': menus,
+			'promotion_types': utils.PROMOTION_MENU,
+			'currencies': utils.CURRENCIES
+		})

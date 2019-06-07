@@ -22,7 +22,7 @@ class RestaurantFormAdmin(forms.ModelForm):
 
 	class Meta:
 		model = Restaurant
-		fields = ('name', 'motto', 'country', 'town', 'opening', 'closing',)
+		fields = ('name', 'motto', 'purpose', 'country', 'town', 'opening', 'closing',)
 
 
 class BranchForm(forms.ModelForm):

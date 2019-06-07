@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 from django import forms
 from tingweb.models import (
 							Restaurant, RestaurantConfig, Administrator, Food, Drink, Dish, FoodImage,
-							FoodCategory, DrinkImage, DishImage, Branch, RestaurantTable
+							FoodCategory, DrinkImage, DishImage, Branch, RestaurantTable, Promotion
 						)
 
 
@@ -151,3 +151,10 @@ class RestaurantTableForm(forms.ModelForm):
 	class Meta:
 		model = RestaurantTable
 		fields = ('number', 'max_people', 'location', 'chair_type', 'description')
+
+
+class PromotionForm(forms.ModelForm):
+
+	class Meta:
+		model = Promotion
+		fields = ('occasion_event', 'promotion_menu_type', 'start_date', 'end_date', 'poster_image', 'description')

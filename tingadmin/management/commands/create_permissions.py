@@ -14,12 +14,15 @@ class Command(BaseCommand):
 		_permissions = permissions.permissions
 
 		for permission in _permissions:
-			_permission = Permission(
-					title=permission['title'],
-					category=permission['category'],
-					permission=permission['permission']
-				)
-			_permission.save()
+			perm = Permission.objects.filter(permission=permission['permission']).count()
+			print perm
+			if perm == 0:
+				_permission = Permission(
+						title=permission['title'],
+						category=permission['category'],
+						permission=permission['permission']
+					)
+				_permission.save()
 
 	def handle(self, *args, **options):
 		self._create_permissions()

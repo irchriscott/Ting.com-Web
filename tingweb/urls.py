@@ -127,6 +127,10 @@ admins = [
 	url(r'adm/tables/edit/(?P<table>\d+)/$', admin.load_edit_table, name='ting_wb_adm_load_edit_table'),
 	url(r'adm/tables/update/(?P<table>\d+)/$', admin.update_table, name='ting_wb_adm_update_table'),
 	url(r'adm/tables/avail/toggle/(?P<table>\d+)/$', admin.avail_table_toggle, name='ting_wb_adm_avail_toggle_table'),
+
+	# Promotions
+
+	url(r'adm/promotions/all/$', admin.promotions, name='ting_wb_adm_promotions'),	
 ]
 
 urlpatterns = admins + users
