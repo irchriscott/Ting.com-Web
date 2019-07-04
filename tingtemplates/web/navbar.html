@@ -1,14 +1,19 @@
 {% extends '../layouts/header.html' %}
 {% load staticfiles %}
+{% load ting_tags %}
 {% block css %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
 <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}">
 {% endblock %}
-{% block title %}
-<title>Ting.com</title>
+{% block js %}
+<script src="https://apis.google.com/js/platform.js" async defer></script>
+{% endblock %}
+{% block meta %}
+<meta name="google-signin-client_id" content="1033794072902-4nmor0d3gfck26ovo3dk3a73ls7ub7vk.apps.googleusercontent.com">
 {% endblock %}
 {% block content %}
-<header class="default-header">
+{% csrf_token %}
+<header class="default-header" style="position: fixed;">
 	<nav class="navbar navbar-expand-lg  navbar-light">
 		<div class="container">
 			<a class="navbar-brand" href="{% url 'ting_index' %}">
@@ -19,59 +24,277 @@
 			</button>
 			<div class="collapse navbar-collapse justify-content-end align-items-center" id="navbarSupportedContent">
 				<ul class="navbar-nav">
-					<li><a href="">Discovery</a></li>
-					<li><a href="">Restaurants</a></li>
+					<li><a href="{% url 'ting_usr_global_discovery' %}">Discovery</a></li>
+					<li><a href="{% url 'ting_usr_global_restaurants' %}">Restaurants</a></li>
+					<li><a href="{% url 'ting_usr_global_moments' %}">Moments</a></li>
 					<li>
 						<a href="#" class="ting-menu-icon">
 							<i class="lnr lnr-magnifier"></i>
 						</a>
 					</li>
-                    <li><a href="#" class="text-uppercase primary-btn2 primary-border circle ting-link-header">Sign In</a></li>
-														
+					{% if is_logged_in == True %}
+					<li>
+						<div class="ting-menu-image ui icon top right pointing dropdown">
+							<a class="icon nav-link" data-id="nav" id="hd-nav-menu" title="{{session.name}}">
+								<img src="{{session.image.url}}" alt="{{session.name}}">
+							</a>
+							<div class="menu" style="margin-top: 26px !important; right:-8px!important;">
+							    <div class="header">{{session.username}}</div>
+							    <a href="{% url 'ting_usr_profile' session.pk session.username|lower %}" class="item"><i class="lnr lnr-user ting-icon"></i>Profile</a>
+							    <a href="{% url 'ting_usr_moments' session.pk session.username|lower %}" class="item"><i class="lnr lnr-picture ting-icon"></i>Moments</a>
+							    <a href="{% url 'ting_usr_restaurants' session.pk session.username|lower %}" class="item"><i class="lnr lnr-dinner ting-icon"></i>Restaurants</a>
+							    <a href="{% url 'ting_usr_orders' session.pk session.username|lower %}" class="item"><i class="lnr lnr-list ting-icon"></i>Orders</a>
+							    <a href="{% url 'ting_usr_bookings' session.pk session.username|lower %}" class="item"><i class="lnr lnr-book ting-icon"></i>Booking</a>
+							    <div class="ui divider"></div>
+							    <a class="item"><i class="lnr lnr-cog ting-icon"></i>Settings</a>
+							    <div class="ui divider"></div>
+							    <div class="item" id="ting-log-out-user"><i class="lnr lnr-exit ting-icon"></i>Log Out</div>
+							</div>
+						</div>
+					</li>
+					<script type="text/javascript">$("#ting-log-out-user").click(function(){window.location = "{% url 'ting_usr_logout' %}?href=" + window.location.href;})</script>
+					{% else %}
+                    <li><a href="#" id="ting-user-login" class="text-uppercase primary-btn2 primary-border circle ting-link-header">Sign In</a></li>
+					{% endif %}				
 				</ul>
 			</div>						
 		</div>
 	</nav>
 </header>
+<div class="ting-user-location-values">
+	<input type="hidden" id="ting-lat">
+	<input type="hidden" id="ting-long">
+	{% if is_logged_in == True %}
+	<input type="hidden" id="ting-addr">
+	{% endif %}
+	<input type="hidden" id="ting-place">
+	<input type="hidden" id="ting-country">
+	<input type="hidden" id="ting-town">
+    <input type="hidden" id="ting-ip">
+    <input type="hidden" id="ting-tz">
+    <input type="hidden" id="ting-currency">
+	<script type="text/javascript">
+    $(document).ready(function(){
+        setTimeout(function(){getUserCurrentLocation("ting-lat", "ting-long", "ting-addr", "ting-town", "ting-country", "ting-user-address", "ting-place");}, 500);});</script>
+</div>
+{% if is_logged_in != True %}
+<div class="ui tiny modal" data-modal="ting-user-login">
+    <div class="header">
+        Login As User
+    </div>
+    <div class="content">
+        <div class="ui form ting-search-place" id="ting-google-form">
+        	<button class="ui primary medium fluid button" id="ting-open-user-registration" style="margin-bottom: 1.5rem;">
+				REGISTER
+			</button>
+			<h4 class="ui horizontal divider">
+				Or Sign In With
+			</h4>
+        	<div class="g-signin2" data-onsuccess="onSignIn" style="margin-bottom: 1.5rem;"></div>
+			<h4 class="ui horizontal divider">
+				Or
+			</h4>
+            <form class="ui" action="{% url 'ting_usr_login' %}" method="POST" id="ting-user-login-form">
+                {% csrf_token %}
+                <div class="field">
+                    <label>Enter Email Address :</label>
+                    <input type="email" name="email" placeholder="Email Address" required autocomplete="off">
+                </div>
+                <div class="field">
+                    <label>Enter Password :</label>
+                    <input type="password" name="password" placeholder="Password" autocomplete="off" required>
+                </div>
+                <div class="field">
+				    <div class="ui checkbox">
+				    	<input type="checkbox" tabindex="0">
+				      	<label style="line-height: 1.3 !important;">Remember Me</label>
+				    </div>
+				</div>
+                <div class="ting-action-modal">
+                    <div class="actions">
+                        <div class="ui red deny button">
+                            Cancel
+                        </div>
+                    </div>
+                    <button type="submit" class="ui positive right labeled icon button" id="ting-login-user">
+                        Submit
+                        <i class="checkmark icon"></i>
+                    </button>
+                    <a href="#" id="ting-user-forgot-password" style="float: right; margin-top: -30px;">Forgot Password ?</a>
+                    <div class="ui right ting-loader ting-form-loader-submit">
+                        <img src="{% static 'imgs/loading.gif' %}">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="ui tiny modal" data-modal="ting-user-forgot-password" id="ting-user-forgot-password-modal">
+    <div class="header">
+        Reset Password
+    </div>
+    <div class="content">
+        <div class="ting-search-place">
+            <form class="ui form" action="{% url 'ting_usr_submit_reset_password' %}" method="POST" id="ting-user-reset-password">
+                {% csrf_token %}
+                <div class="field">
+                    <label>Enter Email Address :</label>
+                    <input type="email" name="email" placeholder="Email Address" required autocomplete="off">
+                </div>
+                <div class="ting-action-modal">
+                    <div class="actions">
+                        <div class="ui red deny button">
+                            Cancel
+                        </div>
+                    </div>
+                    <button type="submit" class="ui positive right labeled icon button" id="ting-reset-user-password">
+                        Submit
+                        <i class="checkmark icon"></i>
+                    </button>
+                    <div class="ui right ting-loader ting-form-loader-submit">
+                        <img src="{% static 'imgs/loading.gif' %}">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="ui small modal" id="ting-user-registration-modal" data-modal="ting-user-registration">
+    <div class="header">
+        Register
+    </div>
+    <div class="content">
+        <div class="ting-search-place">
+            <form class="ui form" action="{% url 'ting_usr_email_sign_up' %}" method="POST" id="ting-user-registration-form">
+                {% csrf_token %}
+                <div class="field">
+                	<div class="two fields">
+                		<div class="field">
+                			<label>Enter Full Name :</label>
+                    		<input type="text" name="name" placeholder="Full Name" required autocomplete="off">
+                		</div>
+                		<div class="field">
+		                    <label>Enter Username :</label>
+		                    <input type="text" name="username" placeholder="Username" required autocomplete="off">
+		                </div>
+                	</div>
+                </div>
+                <div class="field">
+                    <label>Enter Email Address :</label>
+                    <input type="email" name="email" placeholder="Email Address" required autocomplete="off">
+                </div>
+                <div class="field">
+                	<div class="two fields">
+                		<div class="field">
+		                    <label>Select Gender :</label>
+		                    <select name="gender" class="dropdown">
+		                    	<option value="Male">Male</option>
+		                    	<option value="Female">Female</option>
+		                    </select>
+		                </div>
+		                <div class="field">
+		                    <label>Enter Date Of Birth :</label>
+		                    <div class="ui calendar"  id="ting-date-of-birth">
+		                        <div class="ui input">
+		                    		<input type="text" name="date_of_birth" placeholder="Date Of Birth" required autocomplete="off">
+		                		</div>
+		                	</div>
+		                </div>
+                	</div>
+                </div>
+                <div class="field">
+                    <label>Physical Address :</label>
+                    <div class="ui action input">
+	                    <input type="text" name="address" placeholder="Address" id="ting-addr" required autocomplete="off" disabled>
+	                    <button type="button" class="ui icon blue button" id="ting-open-add-user-location">
+	                        <i class="map marker alternate icon"></i>
+	                    </button>
+	                </div>
+                </div>
+                <div class="field">
+                	<div class="two fields">
+                		<div class="field">
+		                    <label>Set This Address As :</label>
+		                    <select name="type" class="dropdown" id="ting-address-type">
+		                    	{% for type in address_types %}
+		                    		<option value="{{type.1}}">{{type.1}}</option>
+		                    	{% endfor %}
+		                    </select>
+		                </div>
+		                <div class="field">
+		                    <label>Other :</label>
+		                    <input type="text" name="other_address_type" id="ting-other-address-type" placeholder="Address Type" required autocomplete="off" disabled>
+		                </div>
+                	</div>
+                </div>
+                <div class="field">
+                    <label>Enter Password :</label>
+                    <input type="password" name="password" placeholder="Password" autocomplete="off" required>
+                </div>
+                <div class="ting-action-modal">
+                    <div class="actions">
+                        <div class="ui red deny button">
+                            Cancel
+                        </div>
+                    </div>
+                    <button type="submit" class="ui positive right labeled icon button" id="ting-register-user">
+                        Submit
+                        <i class="checkmark icon"></i>
+                    </button>
+                    <div class="ui right ting-loader ting-form-loader-submit">
+                        <img src="{% static 'imgs/loading.gif' %}">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="ui modal" id="ting-add-restaurant-location">
+    <div class="header">
+        Add Location
+    </div>
+    <div class="content">
+        <div class="ting-search-place">
+            <form class="ui form" id="ting-map-form">
+                <div class="field">
+                    <label>Enter Address : </label>
+                    <div class="ui fluid icon input">
+                        <input type="text" id="ting-user-address" name="address" placeholder="Search Location"
+                            autocomplete="off" autofocus="false" required>
+                        <i class="search icon"></i>
+                    </div>
+                </div>
+                <div class="ting-map-container">
+                    <div class="ting-restaurant-map-container" id="ting-user-map-container"></div>
+                </div>
+                <div class="ting-action-modal">
+                    <div class="actions">
+                        <div class="ui red deny button">
+                            Cancel
+                        </div>
+                        <button type="button" class="ui positive right labeled icon button" id="ting-save-new-location">
+                            Save
+                            <i class="checkmark icon"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    google.maps.event.addDomListener(window, 'load', InitializePlaces('ting-user-address'));
+    $("#ting-address-type").change(function(e){
+    	var value = $(this).val();
+    	if(value.toLowerCase() == "other"){$("#ting-other-address-type").removeAttr("disabled").attr("required", "required");} 
+    	else {$("#ting-other-address-type").attr("disabled", "disabled").removeAttr("required");}
+    });
+</script>
+{% endif %}
 <main>{% block body %}{% endblock %}</main>
-<footer class="footer-area section-gap">
+<footer style="background: #222222; padding:30px 0;">
 	<div class="container">
-		<div class="row">
-			<div class="col-lg-3  col-md-12">
-				<div class="single-footer-widget">
-					<h5><span class="ting-secondary-color">Ting</span><span class="ting-primary-color">.com</span></h5>
-					<ul class="footer-nav">
-						<li><a href="#">Terms &amp; Conditions</a></li>
-						<li><a href="#">Terms &amp; Usage</a></li>
-						<li><a href="#">Data Security</a></li>
-						<li><a href="#">Major Rules</a></li>
-					</ul>
-				</div>
-			</div>
-			<div class="col-lg-6  col-md-12">
-				<div class="single-footer-widget newsletter">
-					<h6>Newsletter</h6>
-					<p>You can trust us. we only send promo offers, not a single spam.</p>
-					<div id="mc_embed_signup">
-						<form novalidate="true" action="#" method="get" class="form-inline">
-							<div class="form-group row" style="width: 100%">
-								<div class="col-lg-8 col-md-12">
-									<input name="EMAIL" placeholder="Enter Email" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Enter Email '" required="" type="email">
-									<div style="position: absolute; left: -5000px;">
-										<input name="b_36c4fd991d266f23781ded980_aefe40901a" tabindex="-1" value="" type="text">
-									</div>
-								</div> 					
-								<div class="col-lg-4 col-md-12">
-									<button class="nw-btn primary-btn">Subscribe<span class="lnr lnr-arrow-right"></span></button>
-								</div> 
-							</div>		
-							<div class="info"></div>
-						</form>
-					</div>		
-				</div>
-			</div>					
-		</div>
-		<div class="row footer-bottom d-flex justify-content-between">
+		<div class="row d-flex justify-content-between">
         	<p class="col-lg-8 col-sm-12 footer-text m-0 text-white">Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This web application is made with <i class="lnr lnr-heart" aria-hidden="true"></i> by <a href="#" target="_blank">Code Pipes Solutions</a></p>
 			<div class="col-lg-4 col-sm-12 footer-social">
 				<a href="#"><i class="facebook icon"></i></a>
@@ -82,4 +305,44 @@
 		</div>
 	</div>
 </footer>
+{% if is_logged_in != True %}
+<script type="text/javascript">
+	function onSignIn(googleUser) {
+		var auth2 = gapi.auth2.getAuthInstance();
+	    auth2.signOut().then(function () {
+	    	var profile = googleUser.getBasicProfile();
+			var id_token = googleUser.getAuthResponse().id_token;
+
+			var form = new FormData();
+			form.append("token", profile.getId() + "-" + id_token);
+			form.append("name", profile.getName());
+			form.append("email", profile.getEmail());
+			form.append("country", $("#ting-country").val());
+			form.append("town", $("#ting-town").val());
+			form.append("address", $("#ting-addr").val());
+			form.append("longitude", $("#ting-long").val());
+			form.append("latitude", $("#ting-lat").val());
+			form.append("type", "Home");
+			form.append("link", window.location.href);
+
+			$("#ting-google-form").addClass("loading");
+
+			$.ajax({
+				type:"POST", data:form, url:"{% url 'ting_usr_google_sign_up' %}", processData: false, contentType: false,
+	            success: function(response){
+	                if(response.type == "success" || response.type == "info"){showSuccessMessage(response.type, response.message);$("#ting-google-form").removeClass("loading");
+	                    if(response.redirect != null) window.location = response.redirect;
+	                } else {$("#ting-google-form").removeClass("loading");showErrorMessage(response.type, response.message);
+	                    if(response.msgs.length > 0){
+	            			response.msgs.forEach(msg => {var title = capitalize(msg[0]); msg[1].forEach(err => {showErrorMessage(randomString(10), `<b>${title} : </b> ${err}`);});});
+	                    }
+	                }
+	            },
+	            error: function(_, t, e){$("#ting-google-form").removeClass("loading");showErrorMessage(t, e);}
+			});
+	    });
+	}
+</script>
+{% endif %}
+<style type="text/css">.ui.grid{margin: 0 !important;}.row, .ui.grid>.row{margin-right: 0 !important; width: calc(100% + 30px) !important;}</style>
 {% endblock %}

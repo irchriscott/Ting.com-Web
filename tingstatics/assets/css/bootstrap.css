@@ -7716,9 +7716,9 @@ a.text-dark:focus, a.text-dark:hover {
   border: 0;
 }
 
-.visible {
+/*.visible {
   visibility: visible !important;
-}
+}*/
 
 .invisible {
   visibility: hidden !important;

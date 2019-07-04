@@ -1,0 +1,73 @@
+{% load ting_tags %}
+{% load tz %}
+{% load staticfiles %}
+<div class="content">
+    <div class="content">
+        <div class="ting-search-place">
+            <div class="u form">
+                <div class="field">
+                    <label>Enter Address : </label>
+                    <div class="ui fluid icon input">
+                        <input type="text" id="ting-search-location-input-else-branch" name="address" placeholder="Search Location"
+                            autocomplete="off" autofocus="false" value="{{address.address}}" required>
+                        <i class="search icon"></i>
+                    </div>
+                </div>
+                <div class="ting-map-container">
+                    <div class="ting-restaurant-map-container" id="ting-branch-map-container"></div>
+                </div>
+            </div>
+            <form class="ui form" action="{% url 'ting_usr_update_address' address.pk %}" method="POST" id="ting-update-user-address-form">
+                {% csrf_token %}
+                <input type="hidden" id="ting-branch-latitude" name="latitude" value="{{address.latitude}}">
+                <input type="hidden" id="ting-branch-longitude" name="longitude" value="{{address.longitude}}">
+                <input type="hidden" id="ting-branch-country" name="country" value="{{user.country}}">
+                <input type="hidden" id="ting-branch-town" name="town" value="{{user.town}}">
+                <input type="hidden" id="ting-branch-place-id" name="place_id" value="{{address.place_id}}">
+                <input type="hidden" id="ting-search-location-input-branch" name="address" value="{{address.address}}">
+                <div class="field" style="margin-top: 15px;">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Set This Address As :</label>
+                            <select name="type" class="dropdown" id="ting-address-type-else">
+                                {% for type in address_types %}
+                                    {% if address.type in address_types_else %}
+                                        {% if address.type == type.1 %}
+                                        <option value="{{type.1}}" selected>{{type.1}}</option>
+                                        {% else %}
+                                        <option value="{{type.1}}">{{type.1}}</option>
+                                        {% endif %}
+                                    {% else %}
+                                        {% if type.1 == 'Other' %}
+                                        <option value="{{type.1}}" selected>{{type.1}}</option>
+                                        {% else %}
+                                        <option value="{{type.1}}">{{type.1}}</option>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Other :</label>
+                            <input type="text" name="other_address_type" id="ting-other-address-type-else" placeholder="Address Type" required autocomplete="off" {% if address.type in address_types_else %} disabled {% else %} required value="{{address.type}}" {% endif %}>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $("#ting-update-user-address-form").submitFormAjax();
+    google.maps.event.addDomListener(window, 'load', InitializePlaces('ting-search-location-input-else-branch'));
+    setTimeout(function () {
+        initializeRestaurantMap("ting-branch-latitude", "ting-branch-longitude", "ting-search-location-input-branch", "ting-search-location-input-else-branch", "ting-branch-place-id", "ting-branch-map-container", true, "");
+    }, 1000);
+    $("#ting-search-location-input-else-branch").searchLocationByAddress("ting-branch-latitude", "ting-branch-longitude", "ting-search-location-input-branch", "ting-search-location-input-else-branch", "ting-branch-place-id", "ting-branch-map-container", true, "")
+    $("#ting-address-type-else").change(function(e){
+        var value = $(this).val();
+        if(value.toLowerCase() == "other"){$("#ting-other-address-type-else").removeAttr("disabled").attr("required", "required");} 
+        else {$("#ting-other-address-type-else").attr("disabled", "disabled").removeAttr("required");}
+    });
+    $("select.dropdown").dropdown();
+</script>

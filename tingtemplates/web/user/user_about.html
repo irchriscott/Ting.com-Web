@@ -1,0 +1,17 @@
+<div class="ting-profile-image-else ui fluid">
+    <div class="ting-profile-image-container">
+        <div class="box ting-session-profile-image">
+            <div class="item light ting-session-profile-image">
+                <a href="#"><img class="ting-session-profile-image-img" src="{{user.image.url}}" alt="{{user.username}}" class="w-full"></a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="ting-user-about">
+    <p style="font-size: 22px; font-weight: 500;"> {{user.name}}</p>
+    <p style="margin-top: -15px;"> {{user.username}}</p>
+    <hr>
+    <p><i class="lnr lnr-envelope"></i> {{user.email}}</p>
+    <p><i class="lnr lnr-map-marker"></i> {{user.town}}, {{user.country}}</p>
+    <p><i class="lnr lnr-smile"></i> {{user.gender}}</p>
+</div>

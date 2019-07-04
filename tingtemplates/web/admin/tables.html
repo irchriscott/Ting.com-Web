@@ -54,7 +54,10 @@
                                             <td>{{table.chair_type_str}}</td>
                                             <td>{{table.max_people}}</td>
                                             <td>
-                                                <div class="ui dropdown item">
+                                                <div class="ui small blue labeled icon button ting-open-ajax-modal" id="ting-table-qr-code-{{table.id}}">
+                                                    <i class="qrcode icon"></i> Load
+                                                </div>
+                                                <div class="ui dropdown item" style="margin-top: -10px !important;">
                                                     <i class="icon chevron down"></i>
                                                     <div class="menu">
                                                         <div class="header">Options</div>
@@ -98,6 +101,24 @@
                                             </div>
                                         </div>
                                         {% endif %}
+                                        <div class="ui modal tiny" data-modal="ting-table-qr-code-{{table.id}}">
+                                            <div class="header">
+                                                Table's QR Code
+                                            </div>
+                                            <div class="content">
+                                                 <img style="width: 100%;" src="http://api.qrserver.com/v1/create-qr-code/?size=600x600&data={{ table.uuid }}" />
+                                            </div>
+                                            <div class="actions">
+                                                <a href="http://api.qrserver.com/v1/create-qr-code/?size=600x600&data={{ table.uuid }}&download=1" download="{{restaurant.name_hi}}-{{admin.branch.name_hi}}-table-{{table.number}}" class="ui positive button right labeled icon">
+                                                    Download
+                                                    <i class="icon download"></i>
+                                                </a>
+                                                <div class="ui red deny button right labeled icon">
+                                                    Close
+                                                    <i class="icon times"></i>
+                                                </div>
+                                            </div>
+                                        </div>
                                     {% endfor %}
                                 {% else %}
                                     <tr>
@@ -139,7 +160,7 @@
 </div>
 
 
-<div class="ui modal" data-modal="ting-admin-edit-table">
+<div class="ui small modal" data-modal="ting-admin-edit-table">
     <div class="header">
         Edit Table
     </div>

@@ -33,7 +33,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 
 EMAIL_HOST_USER = 'irchristianscott@gmail.com'
 
-EMAIL_HOST_PASSWORD = '323639371998'
+EMAIL_HOST_PASSWORD = 'chrisCONS@123'
 
 EMAIL_PORT = 587
 

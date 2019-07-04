@@ -38,77 +38,63 @@
                         <table class="ui single line table">
                             <thead>
                                 <tr>
-                                    <th>Badge</th>
-                                    <th>Image</th>
-                                    <th>Name</th>
-                                    <th>Username</th>
-                                    <th>Email</th>
-                                    <th>Type</th>
+                                    <th>No</th>
+                                    <th>Occasion</th>
+                                    <th>Menu</th>
+                                    <th>Day / Date</th>
+                                    <th>Reduction</th>
+                                    <th>Supplement</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% if administrators.count > 0 %}
-                                    {% for administrator in administrators %}
+                                {% if promotions.count > 0 %}
+                                    {% for promo in promotions %}
                                         <tr>
-                                            <td><div class="ui ribbon label">{{administrator.badge_number}}</div></td>
-                                            <td><img src="{{administrator.image.url}}"></td>
-                                            <td>{{administrator.name}}</td>
-                                            <td>{{administrator.username}}</td>
-                                            <td>{{administrator.email}}</td>
-                                            <td>{{administrator.admin_type_str}}</td>
+                                            <td><div class="ui ribbon label">{{forloop.counter}}</div></td>
+                                            <td>{{promo.occasion_event}}</td>
+                                            <td>{% autoescape off %}{{promo.promo_type_html}}{% endautoescape %}</td>
+                                            <td>{{promo.promo_period}}</td>
+                                            <td>{{promo.reduction}}</td>
+                                            <td>{% autoescape off %}{{promo.supplement_html}}{% endautoescape %}</td>
                                             <td>
-                                                <div class="ui small blue labeled icon button ting-open-ajax-modal" ting-modal-type="ajax" ting-data-url="{% url 'ting_wb_adm_load_admin_profile' administrator.token %}" ting-modal-target="ting-admin-load-profile">
-                                                    <i class="user icon"></i> Load
+                                                <div class="ui small blue labeled icon button ting-open-ajax-modal" ting-modal-type="ajax" ting-data-url="{% url 'ting_wb_adm_load_promotion' promo.pk %}" ting-modal-target="ting-load-promotion">
+                                                    <i class="star icon"></i> Load
                                                 </div>
                                                 <div class="ui right dropdown item" style="margin-top: -10px !important;">
                                                     <i class="icon chevron down"></i>
                                                     <div class="menu">
                                                         <div class="header">Options</div>
-                                                        {% if admin.pk|has_p:"can_update_admin" == True %}
-                                                        <a class="item ting-open-ajax-modal" ting-modal-type="ajax-form" ting-modal-form="ting-admin-edit-profile-form" ting-data-url="{% url 'ting_wb_adm_edit_admin_profile' administrator.token %}" ting-modal-target="ting-admin-load-edit-profile" style="align-self: flex-start; width: 100%"><i class="pencil alternate icon"></i> Edit</a>
-                                                        <a class="item ting-open-ajax-modal" ting-modal-type="ajax-form" ting-modal-form="ting-admin-edit-permissions-form" ting-data-url="{% url 'ting_wb_adm_edit_admin_permissions' administrator.token %}" ting-modal-target="ting-admin-load-permissions" style="align-self: flex-start; width: 100%"><i class="clipboard list icon"></i>Permissions</a>
+                                                        {% if admin.pk|has_p:"can_update_promotion" == True %}
+                                                        <a class="item ting-open-ajax-modal" ting-modal-type="ajax-form" ting-modal-form="ting-update-promotion-form" ting-data-url="{% url 'ting_wb_adm_edit_promotion' promo.pk %}" ting-modal-target="ting-admin-load-edit-promotion" style="align-self: flex-start; width: 100%"><i class="pencil alternate icon"></i> Edit</a>
                                                         {% endif %}
-                                                        {% if admin.pk|has_p:"can_disable_admin" == True %}
-                                                        <a class="item ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_disable_admin_profile_toggle' administrator.token %}" ting-modal-target="ting-admin-disable-account-toggle-{{administrator.id}}" style="align-self: flex-start; width: 100%">
-                                                            {% if administrator.is_disabled %}
-                                                            <i class="check icon"></i> Enable
+                                                        {% if admin.pk|has_p:"can_avail_promotion" == True %}
+                                                        <a class="item ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_avail_promotion' promo.pk %}" ting-modal-target="ting-avail-promotion-{{promo.pk}}" style="align-self: flex-start; width: 100%">
+                                                            {% if promo.is_on %}
+                                                            <i class="times icon"></i> Off
                                                             {% else %}
-                                                            <i class="times icon"></i> Disable
+                                                            <i class="check icon"></i> On
                                                             {% endif %}
                                                         </a>
                                                         {% endif %}
-                                                        {% if admin.pk|has_p:"can_move_admin" == True %}
-                                                        <div class="item">
-                                                            <i class="dropdown icon" style="margin-top: 5px;"></i>
-                                                            <a class="text" style="align-self: flex-start; width: 100%"><i class="arrow right icon"></i>Move To Branch</a>
-                                                            <div class="menu">
-                                                                <div class="header">Types</div>
-                                                                {% for branch in branches %}
-                                                                    {% if branch.pk == administrator.branch.pk %}
-                                                                    <a class="item ting-open-ajax-modal active selected" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_move_admin_to_branch' administrator.token branch.pk %}" ting-modal-target="ting-move-to-branch-{{administrator.id}}" style="align-self: flex-start; width: 100%">{{branch.name}}</a>
-                                                                    {% else %}
-                                                                    <a class="item ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_move_admin_to_branch' administrator.token branch.pk %}" ting-modal-target="ting-move-to-branch-{{administrator.id}}" style="align-self: flex-start; width: 100%">{{branch.name}}</a>
-                                                                    {% endif %}
-                                                                {% endfor %}
-                                                            </div>
-                                                        </div>
+                                                        {% if admin.pk|has_p:"can_delete_promotion" == True %}
+                                                        <a class="item ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_delete_promotion' promo.pk %}" ting-modal-target="ting-move-to-trash-{{promo.pk}}" style="align-self: flex-start; width: 100%"><i class="trash alternate outline icon"></i> Delete</a>
                                                         {% endif %}
                                                     </div>
                                                 </div>
                                             </td>
                                         </tr>
-                                        {% if admin.pk|has_p:"can_disable_admin" == True %}
-                                        <div class="ui modal mini" data-modal="ting-admin-disable-account-toggle-{{administrator.id}}">
+                                        {% if admin.pk|has_p:"can_avail_promotion" == True %}
+                                        <div class="ui modal mini" data-modal="ting-avail-promotion-{{promo.pk}}">
                                             <div class="header">
-                                                {% if administrator.is_disabled %}
-                                                    Enable Account
+                                                {% if promo.is_on %}
+                                                    Switch Off Promotion
                                                 {% else %}
-                                                    Disable Account
+                                                    Switch On Promotion
                                                 {% endif %}
                                             </div>
                                             <div class="content">
-                                                <p>Do you really want to {% if administrator.is_disabled %} Enable {% else %} Disable {% endif %} this account ?</p>
+                                                <p>Do you really want to switch {% if promo.is_on %} Off {% else %} On {% endif %} this promotion ?</p>
                                             </div>
                                             <div class="actions">
                                                 <div class="ui positive button right labeled icon">
@@ -122,13 +108,13 @@
                                             </div>
                                         </div>
                                         {% endif %}
-                                        {% if admin.pk|has_p:"can_move_admin" == True %}
-                                        <div class="ui modal mini" data-modal="ting-move-to-branch-{{administrator.id}}">
+                                        {% if admin.pk|has_p:"can_delete_promotion" == True %}
+                                        <div class="ui modal mini" data-modal="ting-move-to-trash-{{promo.id}}">
                                             <div class="header">
-                                                Move Admin To Branch
+                                                Delete Promotion
                                             </div>
                                             <div class="content">
-                                                <p>Do you really want to move this admin ?</p>
+                                                <p>Do you really want to delete this promotion ?</p>
                                             </div>
                                             <div class="actions">
                                                 <div class="ui positive button right labeled icon">
@@ -183,9 +169,9 @@
 </div>
 
 
-<div class="ui modal" data-modal="ting-admin-load-profile">
+<div class="ui modal" data-modal="ting-load-promotion">
     <div class="header">
-        Administrator Profile
+        Promotion
     </div>
     <div class="content">
         <div class="ting-data-content"></div>
@@ -201,36 +187,11 @@
 </div>
 
 
-<div class="ui modal" data-modal="ting-admin-load-permissions">
+<div class="ui modal" data-modal="ting-admin-load-edit-promotion">
     <div class="header">
-        Administrator Permissions
+        Edit Promotion
     </div>
-    <div class="content">
-        <div class="ting-data-content"></div>
-        <div class="ui right ting-loader" style="margin: auto; text-align: center;">
-            <img src="{% static 'imgs/loading.gif' %}">
-        </div>
-    </div>
-    <div class="actions">
-        <div class="ui right ting-loader ting-form-loader-else">
-            <img src="{% static 'imgs/loading.gif' %}">
-        </div>
-        <button type="submit" class="ui positive right labeled icon button">
-            Save
-            <i class="checkmark icon"></i>
-        </button>
-        <div class="ui red deny button left">
-            Close
-        </div>
-    </div>
-</div>
-
-
-<div class="ui modal" data-modal="ting-admin-load-edit-profile">
-    <div class="header">
-        Edit Administrator Profile
-    </div>
-    <div class="content">
+    <div class="content scrolling">
         <div class="ting-data-content"></div>
         <div class="ui right ting-loader" style="margin: auto; text-align: center;">
             <img src="{% static 'imgs/loading.gif' %}">
@@ -259,31 +220,15 @@
     </div>
     <div class="content">
         <div class="ting-search-place">
-            <form class="ui form" action="" method="POST" id="ting-add-promotion-form" enctype="multipart/form-data">
+            <form class="ui form" action="{% url 'ting_wb_adm_add_promotion' %}" method="POST" id="ting-add-promotion-form" enctype="multipart/form-data" ting-multiple-select="ting-promotion-period">
                 {% csrf_token %}
                 <div class="field">
                     <label>Enter Promotion Occasion / Event :</label>
                     <input type="text" name="occasion_event" placeholder="Promotion Occasion / Event" required autocomplete="off">
                 </div>
                 <div class="field">
-                    <div class="two fields">
-                        <div class="field">
-                            <label>Enter Promotion Start Date :</label>
-                            <div class="ui calendar"  id="ting-datepicker-start-date">
-                                <div class="ui input">
-                                    <input type="text" name="start_date" placeholder="Promotion Start Date" autocomplete="off" required>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="field">
-                            <label>Enter Promotion End Date :</label>
-                            <div class="ui calendar"  id="ting-datepicker-end-date">
-                                <div class="ui input">
-                                    <input type="text" name="end_date" placeholder="Promotion End Date" autocomplete="off" required>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <label>Enter Promotion Description:</label>
+                    <textarea name="description" class="ting-textarea-froala-editor" placeholder="Promotion Description" required></textarea>
                 </div>
                 <div class="field">
                     <label>Select Promotion On :</label>
@@ -307,6 +252,56 @@
                                     <span class="description">{{menu.pk|menu_type}}</span>
                                 </div>
                             {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Enter Promotion Specific Category:</label>
+                    <div class="ui fluid search selection dropdown disabled" id="ting-specific-category-input">
+                        <input type="hidden" name="category">
+                        <i class="dropdown icon"></i>
+                        <div class="default text">Select Category</div>
+                        <div class="menu">
+                            {% for category in categories %}
+                                <div class="item" data-value="{{category.pk}}">
+                                    <img class="ui mini avatar image" style="width: 30px; height: 30px;" src="{{category.image.url}}">
+                                    {{category.name}}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="ui checkbox">
+                        <input type="checkbox" name="is_special" id="ting-is-special">
+                        <label style="line-height: 1.3 !important;">Is Promotion Special</label>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Select Promotion Special Time : </label>
+                    <select class="ui fluid search dropdown" multiple="" id="ting-promotion-period">
+                        {% for period in periods %}
+                            <option value="{{period.0}}">{{period.1}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Enter Promotion Start Date :</label>
+                            <div class="ui calendar"  id="ting-datepicker-start-date">
+                                <div class="ui input">
+                                    <input type="text" name="start_date" placeholder="Promotion Start Date" autocomplete="off" disabled>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Enter Promotion End Date :</label>
+                            <div class="ui calendar"  id="ting-datepicker-end-date">
+                                <div class="ui input">
+                                    <input type="text" name="end_date" placeholder="Promotion End Date" autocomplete="off" disabled>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -353,7 +348,7 @@
                 </div>
                 <div class="fields">
                     <div class="ten wide field">
-                        <label>Enter Promotion Specific Menu:</label>
+                        <label>Enter Supplement Menu:</label>
                         <div class="ui fluid search selection dropdown disabled" id="ting-has-supplement-supplement">
                             <input type="hidden" name="supplement">
                             <i class="dropdown icon"></i>
@@ -376,7 +371,7 @@
                 </div>
                 <div class="field ting-file-input">
                     <span>Add Promotion Poster</span>
-                    <input type="file" name="poster" id="ting-single-image-input" accept=".jpg, .png, .jpeg" required>
+                    <input type="file" name="poster_image" id="ting-single-image-input" accept=".jpg, .png, .jpeg" required>
                 </div>
                 <div class="ting-item-images-preview"><img style="display: none;" id="ting-single-image-preview"></div>
                 <div class="ui indicating progress small ting-progress-form" style="display: none;" data-value="0" data-total="100">
@@ -400,27 +395,33 @@
         </div>
     </div>
 </div>
+
 {% endif %}
 
 <script type="text/javascript">
     $(document).ready(function(){
         $("#ting-specific-menu-select").change(function(){
             var value = $(this).val();
-            if(value == "04"){$("#ting-specific-menu-input").removeClass("disabled").attr("required", "required");} 
-            else {$("#ting-specific-menu-input").addClass("disabled").removeAttr("required");}
+            if(value == "04"){$("#ting-specific-menu-input").removeClass("disabled").attr("required", "required");$("#ting-specific-category-input").addClass("disabled").removeAttr("required");}
+            else if(value == "05"){$("#ting-specific-category-input").removeClass("disabled").attr("required", "required");$("#ting-specific-menu-input").addClass("disabled").removeAttr("required");}
+            else {$("#ting-specific-menu-input").addClass("disabled").removeAttr("required");$("#ting-specific-category-input").addClass("disabled").removeAttr("required");}
         });
         $("#ting-has-reduction").click(function(){
             if($(this).is(":checked") == true){$("#ting-has-reduction-amount").removeAttr("disabled").attr("required", "required"); $("#ting-has-reduction-type").removeAttr("disabled").parent(".dropdown").removeClass("disabled");}
             else {$("#ting-has-reduction-amount").attr("disabled", "disabled").removeAttr("required"); $("#ting-has-reduction-type").attr("disabled", "disabled").parent(".dropdown").addClass("disabled");} 
         });
         $("#ting-has-supplement").click(function(){
-            if($(this).is(":checked")){$("#ting-has-supplement-min-quantity").removeAttr("disabled").attr("required", "required");$("#ting-has-supplement-same-menu").removeAttr("disabled");} 
-            else {$("#ting-has-supplement-min-quantity, #ting-has-supplement-quantity").attr("disabled", "disabled").removeAttr("required");$("#ting-has-supplement-same-menu").attr("disabled", "disabled");$("#ting-has-supplement-supplement").addClass("disabled");}
-            if($("#ting-has-supplement-same-menu").is(":checked")){$("#ting-has-supplement-same-menu").removeAttr("checked");}
+            if($(this).is(":checked")){$("#ting-has-supplement-min-quantity, #ting-has-supplement-quantity").removeAttr("disabled").attr("required", "required");$("#ting-has-supplement-same-menu").removeAttr("disabled"); $("#ting-has-supplement-supplement").removeClass("disabled");} 
+            else {$("#ting-has-supplement-min-quantity, #ting-has-supplement-quantity").attr("disabled", "disabled").removeAttr("required");$("#ting-has-supplement-same-menu").attr("disabled", "disabled");$("#ting-has-supplement-supplement").addClass("disabled"); $("#ting-has-supplement-supplement").addClass("disabled");}
+            if($("#ting-has-supplement-same-menu").is(":checked") == false){$("#ting-has-supplement-same-menu").removeAttr("checked");}
         });
         $("#ting-has-supplement-same-menu").click(function(){
-            if($(this).is(":checked")){$("#ting-has-supplement-quantity").removeAttr("disabled").attr("required", "required");$("#ting-has-supplement-supplement").removeClass("disabled");}
-            else {$("#ting-has-supplement-quantity").attr("disabled", "disabled").removeAttr("required");$("#ting-has-supplement-supplement").addClass("disabled");   }
+            if($(this).is(":checked") == false){$("#ting-has-supplement-supplement").removeClass("disabled");}
+            else {$("#ting-has-supplement-supplement").addClass("disabled");   }
+        });
+        $("#ting-is-special").click(function(){
+            if($(this).is(":checked")){$("input[name=start_date], input[name=end_date]").removeAttr("disabled").attr("required", "required");$("#ting-promotion-period").attr("disabled", "disabled").parent(".dropdown").addClass("disabled");} 
+            else {$("input[name=start_date], input[name=end_date]").removeAttr("required").attr("disabled", "disabled");$("#ting-promotion-period").removeAttr("disabled").parent(".dropdown").removeClass("disabled");}
         });
     });
 </script>

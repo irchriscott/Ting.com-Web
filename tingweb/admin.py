@@ -13,20 +13,24 @@ from ting.responses import ResponseObject, HttpJsonResponse
 from tingweb.models import (
 							Restaurant, Administrator, AdminPermission, RestaurantLicenceKey, RestaurantConfig,
 							Menu, Food, Drink, Dish, FoodCategory, FoodImage, AdministratorResetPassword, DrinkImage,
-							DishImage, DishFood, RestaurantTable, Branch, Promotion
+							DishImage, DishFood, RestaurantTable, Branch, Promotion, User
 						)
 from tingweb.backend import AdminAuthentication
-from tingweb.mailer import (SendAdminRegistrationMail, SendAdminResetPasswordMail)
+from tingweb.mailer import (
+							SendAdminRegistrationMail, SendAdminResetPasswordMail, SendAdminSuccessResetPasswordMail
+							)
 from tingweb.forms import (
 							RestaurantUpdateLogo, RestaurantUpdateProfile, RestaurantUpdateConfig, 
 							AdministratorUpdateImage, AdministratorUpdateProfile, AdministratorUpdateUsername, 
 							AdministratorUpdateEmail, AddAdministrator, FoodCategoryForm, EditFoodCategoryForm,
 							AddMenuFood, FoodImageForm, EditMenuFood, AddMenuDrink, DrinkImageForm, EditMenuDrink,
-							AddMenuDish, DishImageForm, EditMenuDish, AddNewBranch, RestaurantTableForm
+							AddMenuDish, DishImageForm, EditMenuDish, AddNewBranch, RestaurantTableForm, PromotionForm,
+							PromotionEditForm
 						) 
 import ting.utils as utils
 from datetime import datetime, timedelta
 import tingadmin.permissions as permissions
+from tingweb.views import get_restaurant_map_pin_svg
 
 
 # Create your views here.
@@ -50,7 +54,7 @@ def is_admin_enabled(func):
 			if request.method == 'POST' or request.is_ajax():
 				return HttpJsonResponse(ResponseObject('error', 'Sorry, Your Account Has Been Disabled !!!', 401))
 			else:
-				messages.error(request, 'Sorry, Your Account Has Been Disabled !!! !!!')
+				messages.error(request, 'Sorry, Your Account Has Been Disabled !!!')
 				return HttpResponseRedirect(reverse('ting_wb_adm_login'))
 		return func(request, *args, **kwargs)
 	wrapper.__doc__ = func.__doc__
@@ -86,7 +90,11 @@ class AdminLogin(TemplateView):
 	def get(self, request, *args, **kwargs):
 		if 'admin' in request.session.keys():
 			return HttpResponseRedirect(reverse('ting_wb_adm_dashboard'))
-		return render(request, self.template, {})
+		return render(request, self.template, {
+				'is_logged_in': True if 'user' in request.session else False,
+				'address_types': utils.USER_ADDRESS_TYPE,
+				'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None
+			})
 
 	def post(self, request, *args, **kwargs):
 		if request.method == 'POST':
@@ -102,9 +110,9 @@ class AdminLogin(TemplateView):
 				return HttpJsonResponse(ResponseObject('success', 'Administrator Logged In Successfully !!!', 200, 
                 		reverse('ting_wb_adm_dashboard')))
 			else:
-				return HttpJsonResponse(ResponseObject('error', 'Invalid Email or Password !!!', 400))
+				return HttpJsonResponse(ResponseObject('error', 'Invalid Email or Password !!!', 404))
 		else:
-			return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+			return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
 def logout(request):
@@ -113,7 +121,7 @@ def logout(request):
 		messages.success(request, 'Admin Logged Out Successfully !!!')
 		return HttpResponseRedirect(reverse('ting_wb_adm_login'))
 	except KeyError:
-		messages.error(request, 'No Admin Session Found !!!')
+		messages.error(request, 'No User Session Found !!!')
 		return HttpResponseRedirect(reverse('ting_wb_adm_login'))
 
 
@@ -140,9 +148,9 @@ def submit_reset_password(request):
 			return HttpJsonResponse(ResponseObject('success', 'Reset Password Link Mail Sent Successfully !!!', 400))
 
 		except Administrator.DoesNotExist as e:
-			return HttpJsonResponse(ResponseObject('error', 'Unknown Administrator Email', 400))
+			return HttpJsonResponse(ResponseObject('error', 'Unknown Administrator Email', 404))
 	else:
-		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
 def reset_password_link(request, token):
@@ -177,13 +185,24 @@ def reset_password(request, token):
 					reset.is_active = False
 					reset.save()
 
+					mail = SendAdminSuccessResetPasswordMail(email=admin.email, context={
+							'name': admin.name,
+							'link': reverse('ting_wb_adm_login'),
+							'ip': request.POST.get('ip'),
+							'location': request.POST.get('addr'),
+							'time': timezone.now(),
+							'tz': request.POST.get('tz'),
+							'os': request.POST.get('os')
+						})
+					mail.send()
+
 					messages.success(request, 'Password Updated Successfully !!!')
 					return HttpResponseRedirect(reverse('ting_wb_adm_login'))
 				else:
 					messages.error(request, 'Passwords Didnt Match !!!')
 					return HttpResponseRedirect(link)
 			else:
-				messages.error(request, 'Bad Request !!!')
+				messages.error(request, 'Method Not Allowed !!!')
 				return HttpResponseRedirect(link)
 		else:
 			messages.error(request, 'Link Has Expired !!!')
@@ -232,16 +251,16 @@ def activate_licence_key(request):
 						return HttpJsonResponse(ResponseObject('success', 'The Restaurant Account Has Been Activated !!!', 200,
 								reverse('ting_wb_adm_dashboard')))
 					else:
-						return HttpJsonResponse(ResponseObject('error', 'This Licence Key Has Expired !!!', 400))
+						return HttpJsonResponse(ResponseObject('error', 'This Licence Key Has Expired !!!', 403))
 				else:
-					return HttpJsonResponse(ResponseObject('info', 'You Have Already Activated This Key !!!', 400, 
+					return HttpJsonResponse(ResponseObject('info', 'You Have Already Activated This Key !!!', 403, 
 							reverse('ting_wb_adm_dashboard')))
 			else:
-				return HttpJsonResponse(ResponseObject('error', 'Licence Key Not Found !!!', 400))
+				return HttpJsonResponse(ResponseObject('error', 'Licence Key Not Found !!!', 404))
 		else:
-			return HttpJsonResponse(ResponseObject('error', 'Insert A Valid Key !!!', 400))
+			return HttpJsonResponse(ResponseObject('error', 'Insert A Valid Key !!!', 406))
 	else:
-		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
 @check_admin_login
@@ -291,12 +310,12 @@ def update_restaurant_logo(request):
 			restaurant.logo = form.cleaned_data['logo']
 			restaurant.updated_at = timezone.now()
 			restaurant.save()
-			
+			get_restaurant_map_pin_svg(request, restaurant.pk, True)
 			return HttpJsonResponse(ResponseObject('success', 'Restaurant Logo Updated Successfully !!!', 200))
 		else:
-			return HttpJsonResponse(ResponseObject('error', 'Insert A Valid Image !!!', 400, msgs=form.errors.items()))
+			return HttpJsonResponse(ResponseObject('error', 'Insert A Valid Image !!!', 406, msgs=form.errors.items()))
 	else:
-		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
 @check_admin_login
@@ -336,9 +355,9 @@ def update_restaurant_profile(request):
 			else:
 				return HttpJsonResponse(ResponseObject('error', 'Incorrect Password !!!', 401))
 		else:
-			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 400, msgs=form.errors.items()))
+			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, msgs=form.errors.items()))
 	else:
-		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
 @check_admin_login
@@ -371,9 +390,9 @@ def update_restaurant_config(request):
 			else:
 				return HttpJsonResponse(ResponseObject('error', 'Incorrect Password !!!', 401))
 		else:
-			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 400, msgs=form.errors.items()))
+			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, msgs=form.errors.items()))
 	else:
-		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
 # Branches
@@ -409,9 +428,9 @@ def add_new_branch(request):
 			return HttpJsonResponse(ResponseObject('success', 'Branch Created Successfully', 200, 
 						reverse('ting_wb_adm_branches')))
 		else:
-			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 400, msgs=branch.errors.items()))
+			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, msgs=branch.errors.items()))
 	else:
-		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
 @check_admin_login
@@ -424,7 +443,7 @@ def avail_branch_toggle(request, branch):
 
 	if admin.restaurant.pk != branch.restaurant.pk:
 		messages.error(request, 'Data Not For This Restaurant !!!')
-		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 				reverse('ting_wb_adm_branches')))
 
 	if branch.is_available == True:
@@ -468,7 +487,7 @@ def update_branch(request, branch):
 
 		if admin.restaurant.pk != branch.restaurant.pk:
 			messages.error(request, 'Data Not For This Restaurant !!!')
-			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 					reverse('ting_wb_adm_branches')))
 
 		if branch_form.is_valid():
@@ -484,9 +503,9 @@ def update_branch(request, branch):
 			return HttpJsonResponse(ResponseObject('success', 'Branch Updated Successfully', 200, 
 						reverse('ting_wb_adm_branches')))
 		else:
-			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 400, msgs=branch_form.errors.items()))
+			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, msgs=branch_form.errors.items()))
 	else:
-		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
 @check_admin_login
@@ -605,9 +624,9 @@ def add_new_admin(request):
 			else:
 				return HttpJsonResponse(ResponseObject('error', 'Incorrect Password !!!', 401))
 		else:
-			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 400, msgs=form.errors.items()))
+			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, msgs=form.errors.items()))
 	else:
-		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
 @check_admin_login
@@ -620,7 +639,7 @@ def move_admin_to_branch(request, token, branch):
 
 	if admin.restaurant.pk != session.restaurant.pk or branch.restaurant.pk != session.restaurant.pk:
 		messages.error(request, 'Data Not For This Restaurant !!!')
-		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 				reverse('ting_wb_adm_administrators')))
 
 
@@ -652,7 +671,7 @@ def update_admin_image(request):
 		else:
 			return HttpJsonResponse(ResponseObject('error', 'Insert A Valid Image !!!', 400, msgs=form.errors.items()))
 	else:
-		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
 @check_admin_login
@@ -683,19 +702,19 @@ def update_admin_profile(request, token):
 
 				if admin.restaurant.pk != session.restaurant.pk:
 					messages.error(request, 'Data Not For This Restaurant !!!')
-					return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, reverse('ting_wb_adm_administrators')))
+					return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, reverse('ting_wb_adm_administrators')))
 
 				if admin.username != request.POST.get('username'):
 					if username.is_valid():
 						admin.username = username.cleaned_data['username']
 					else:
-						return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 400, msgs=username.errors.items()))
+						return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, msgs=username.errors.items()))
 
 				if admin.email != request.POST.get('email'):
 					if email.is_valid():
 						admin.email = email.cleaned_data['email']
 					else:
-						return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 400, msgs=email.errors.items()))
+						return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, msgs=email.errors.items()))
 				
 				admin.name = form.cleaned_data['name']
 				admin.phone = form.cleaned_data['phone']
@@ -711,9 +730,9 @@ def update_admin_profile(request, token):
 			else:
 				return HttpJsonResponse(ResponseObject('error', 'Incorrect Password !!!', 401))
 		else:
-			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 400, msgs=form.errors.items()))
+			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, msgs=form.errors.items()))
 	else:
-		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
 @check_admin_login
@@ -725,7 +744,7 @@ def disable_admin_account_toggle(request, token):
 
 	if admin.restaurant.pk != session.restaurant.pk:
 		messages.error(request, 'Data Not For This Restaurant !!!')
-		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 				reverse('ting_wb_adm_administrators')))
 
 	if admin.pk != session.pk:
@@ -786,7 +805,7 @@ def update_admin_password(request):
 		else:
 			return HttpJsonResponse(ResponseObject('error', 'Invalid Password !!!', 400))
 	else:
-		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
 # Permissions
@@ -850,7 +869,7 @@ def update_admin_permissions(request, token):
 
 		if admin.restaurant.pk != session.restaurant.pk:
 			messages.error(request, 'Data Not For This Restaurant !!!')
-			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 					reverse('ting_wb_adm_administrators')))
 
 		if check_password(password, session.password) == True:
@@ -867,7 +886,7 @@ def update_admin_permissions(request, token):
 		else:
 			return HttpJsonResponse(ResponseObject('error', 'Invalid Password !!!', 400))
 	else:
-		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
 # Categories
@@ -896,7 +915,7 @@ def add_new_category(request):
 		form = FoodCategoryForm(request.POST, request.FILES, instance=FoodCategory(
 				restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
 				admin=Administrator.objects.get(pk=admin.pk),
-				slug='{0}-{1}'.format(request.POST.get('name').replace(' ', '-'), get_random_string(16)).lower()
+				slug='{0}-{1}'.format(request.POST.get('name').replace(' ', '-'), get_random_string(32)).lower()
 			))
 
 		if form.is_valid():
@@ -907,9 +926,9 @@ def add_new_category(request):
 			return HttpJsonResponse(ResponseObject('success', 'Category Created Successfully !!!', 200, 
 					reverse('ting_wb_adm_categories')))
 		else:
-			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 400, msgs=form.errors.items()))
+			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, msgs=form.errors.items()))
 	else:
-		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
 @check_admin_login
@@ -921,7 +940,7 @@ def delete_category(request, slug):
 
 	if admin.restaurant.pk != category.restaurant.pk:
 		messages.error(request, 'Data Not For This Restaurant !!!')
-		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 				reverse('ting_wb_adm_categories')))
 	
 	if category != None:
@@ -957,7 +976,7 @@ def update_category(request, slug):
 
 			if admin.restaurant.pk != category.restaurant.pk:
 				messages.error(request, 'Data Not For This Restaurant !!!')
-				return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+				return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 						reverse('ting_wb_adm_administrators')))
 			
 			category.name = form.cleaned_data['name']
@@ -973,9 +992,9 @@ def update_category(request, slug):
 			return HttpJsonResponse(ResponseObject('success', 'Category Updated Successfully !!!', 200, 
 					reverse('ting_wb_adm_categories')))
 		else:
-			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 400, msgs=form.errors.items()))
+			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, msgs=form.errors.items()))
 	else:
-		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
 # Menus Food
@@ -1015,7 +1034,7 @@ def add_new_menu_food(request):
 				restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
 				branch=Branch.objects.get(pk=admin.branch.pk),
 				admin=Administrator.objects.get(pk=admin.pk),
-				slug='{0}-{1}'.format(request.POST.get('name').replace(' ', '-'), get_random_string(16)).lower(),
+				slug='{0}-{1}'.format(request.POST.get('name').replace(' ', '-'), get_random_string(32)).lower(),
 				category=FoodCategory.objects.get(pk=request.POST.get('category')),
 				is_countable=is_countable,
 				show_ingredients=show_ingredients,
@@ -1049,9 +1068,9 @@ def add_new_menu_food(request):
 			return HttpJsonResponse(ResponseObject('success', 'Menu Food Added Successfully !!!', 200, 
 					reverse('ting_wb_adm_menu_food')))
 		else:
-			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 400, msgs=form.errors.items() + images_form.errors.items()))
+			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, msgs=form.errors.items() + images_form.errors.items()))
 	else:
-		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
 @check_admin_login
@@ -1066,7 +1085,7 @@ def avail_menu_food_toggle(request, food):
 
 	if admin.restaurant.pk != food.restaurant.pk or admin.branch.pk != food.branch.pk:
 		messages.error(request, 'Data Not For This Restaurant !!!')
-		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 				reverse('ting_wb_adm_menu_food')))
 
 	menu = Menu.objects.filter(menu_type=1, menu_id=food.pk).first()
@@ -1100,7 +1119,7 @@ def move_menu_food_to_type(request, food, food_type_key):
 
 	if admin.restaurant.pk != food.restaurant.pk or admin.branch.pk != food.branch.pk:
 		messages.error(request, 'Data Not For This Restaurant !!!')
-		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 				reverse('ting_wb_adm_menu_food')))
 
 	if food_type != None and food_type != food_type_key:
@@ -1134,7 +1153,7 @@ def move_menu_food_to_category(request, food, category):
 
 	if admin.restaurant.pk != food.restaurant.pk or category.restaurant.pk != admin.restaurant.pk or admin.branch.pk != food.branch.pk:
 		messages.error(request, 'Data Not For This Restaurant !!!')
-		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 				reverse('ting_wb_adm_menu_food')))
 
 	food.category = FoodCategory.objects.get(pk=category.pk)
@@ -1183,7 +1202,7 @@ def update_menu_food(request, food):
 
 		if admin.restaurant.pk != food.restaurant.pk or admin.branch.pk != food.branch.pk:
 			messages.error(request, 'Data Not For This Restaurant !!!')
-			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 					reverse('ting_wb_adm_menu_food')))
 
 		if form.is_valid():
@@ -1221,9 +1240,9 @@ def update_menu_food(request, food):
 			return HttpJsonResponse(ResponseObject('success', 'Menu Food Updated Successfully !!!', 200, 
 					reverse('ting_wb_adm_menu_food')))
 		else:
-			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 400, msgs=form.errors.items() + images_form.errors.items()))
+			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, msgs=form.errors.items() + images_form.errors.items()))
 	else:
-		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
 
@@ -1237,7 +1256,7 @@ def delete_menu_food_image(request, food, image):
 
 	if admin.restaurant.pk != food.restaurant.pk or admin.branch.pk != food.branch.pk:
 		messages.error(request, 'Data Not For This Restaurant !!!')
-		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 				reverse('ting_wb_adm_menu_food')))
 
 	if food.images.count() > 2:
@@ -1257,7 +1276,7 @@ def delete_menu_food(request, food):
 
 	if admin.restaurant.pk != food.restaurant.pk or admin.branch.pk != food.branch.pk:
 		messages.error(request, 'Data Not For This Restaurant !!!')
-		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 				reverse('ting_wb_adm_menu_food')))
 
 	return HttpJsonResponse(ResponseObject('info', 'Action To Be Implemented Later !!!', 500))
@@ -1310,7 +1329,7 @@ def add_new_menu_drink(request):
 				restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
 				branch=Branch.objects.get(pk=admin.branch.pk),
 				admin=Administrator.objects.get(pk=admin.pk),
-				slug='{0}-{1}'.format(request.POST.get('name').replace(' ', '-'), get_random_string(16)).lower(),
+				slug='{0}-{1}'.format(request.POST.get('name').replace(' ', '-'), get_random_string(32)).lower(),
 				is_countable=is_countable,
 				show_ingredients=show_ingredients,
 				quantity=int(request.POST.get('quantity')) if is_countable == True else 1
@@ -1343,9 +1362,9 @@ def add_new_menu_drink(request):
 			return HttpJsonResponse(ResponseObject('success', 'Menu Drink Added Successfully !!!', 200, 
 					reverse('ting_wb_adm_menu_drinks')))
 		else:
-			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 400, msgs=form.errors.items() + images_form.errors.items()))
+			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, msgs=form.errors.items() + images_form.errors.items()))
 	else:
-		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
 @check_admin_login
@@ -1360,7 +1379,7 @@ def avail_menu_drink_toggle(request, drink):
 
 	if admin.restaurant.pk != drink.restaurant.pk or admin.branch.pk != drink.branch.pk:
 		messages.error(request, 'Data Not For This Restaurant !!!')
-		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 				reverse('ting_wb_adm_menu_drinks')))
 
 	menu = Menu.objects.filter(menu_type=2, menu_id=drink.pk).first()
@@ -1393,7 +1412,7 @@ def delete_menu_drink(request, drink):
 
 	if admin.restaurant.pk != drink.restaurant.pk:
 		messages.error(request, 'Data Not For This Restaurant !!!')
-		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 				reverse('ting_wb_adm_menu_drinks')))
 
 	return HttpJsonResponse(ResponseObject('info', 'Action To Be Implemented Later !!!', 500))
@@ -1409,7 +1428,7 @@ def move_menu_drink_to_type(request, drink, drink_type_key):
 
 	if admin.restaurant.pk != drink.restaurant.pk or admin.branch.pk != drink.branch.pk:
 		messages.error(request, 'Data Not For This Restaurant !!!')
-		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 				reverse('ting_wb_adm_menu_drinks')))
 
 	if drink_type != None and drink_type != drink_type_key:
@@ -1462,7 +1481,7 @@ def update_menu_drink(request, drink):
 
 		if admin.restaurant.pk != drink.restaurant.pk or admin.branch.pk != drink.branch.pk:
 			messages.error(request, 'Data Not For This Restaurant !!!')
-			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 					reverse('ting_wb_adm_menu_drinks')))
 
 		if form.is_valid():
@@ -1500,9 +1519,9 @@ def update_menu_drink(request, drink):
 			return HttpJsonResponse(ResponseObject('success', 'Menu Drink Updated Successfully !!!', 200, 
 					reverse('ting_wb_adm_menu_drinks')))
 		else:
-			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 400, msgs=form.errors.items() + images_form.errors.items()))
+			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, msgs=form.errors.items() + images_form.errors.items()))
 	else:
-		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
 
@@ -1516,7 +1535,7 @@ def delete_menu_drink_image(request, drink, image):
 
 	if admin.restaurant.pk != drink.restaurant.pk or admin.branch.pk != drink.branch.pk:
 		messages.error(request, 'Data Not For This Restaurant !!!')
-		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 				reverse('ting_wb_adm_menu_drinks')))
 
 	if drink.images.count() > 2:
@@ -1576,7 +1595,7 @@ def add_new_menu_dish(request):
 				restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
 				branch=Branch.objects.get(pk=admin.branch.pk),
 				admin=Administrator.objects.get(pk=admin.pk),
-				slug='{0}-{1}'.format(request.POST.get('name').replace(' ', '-'), get_random_string(16)).lower(),
+				slug='{0}-{1}'.format(request.POST.get('name').replace(' ', '-'), get_random_string(32)).lower(),
 				category=FoodCategory.objects.get(pk=request.POST.get('category')),
 				is_countable=is_countable,
 				show_ingredients=show_ingredients,
@@ -1610,9 +1629,9 @@ def add_new_menu_dish(request):
 			return HttpJsonResponse(ResponseObject('success', 'Menu Dish Added Successfully !!!', 200, 
 					reverse('ting_wb_adm_menu_dishes')))
 		else:
-			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 400, msgs=form.errors.items() + images_form.errors.items()))
+			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, msgs=form.errors.items() + images_form.errors.items()))
 	else:
-		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
 @check_admin_login
@@ -1627,7 +1646,7 @@ def avail_menu_dish_toggle(request, dish):
 
 	if admin.restaurant.pk != dish.restaurant.pk or admin.branch.pk != dish.branch.pk:
 		messages.error(request, 'Data Not For This Restaurant !!!')
-		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 				reverse('ting_wb_adm_menu_dishes')))
 
 	menu = Menu.objects.filter(menu_type=3, menu_id=dish.pk).first()
@@ -1661,7 +1680,7 @@ def move_menu_dish_to_type(request, dish, dish_time_key):
 
 	if admin.restaurant.pk != dish.restaurant.pk or admin.branch.pk != dish.branch.pk:
 		messages.error(request, 'Data Not For This Restaurant !!!')
-		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 				reverse('ting_wb_adm_menu_dishes')))
 
 	if dish_time != None and dish_time != dish_time_key:
@@ -1694,7 +1713,7 @@ def move_menu_dish_to_category(request, dish, category):
 
 	if admin.restaurant.pk != dish.restaurant.pk or category.restaurant.pk != admin.restaurant.pk or admin.branch.pk != dish.branch.pk:
 		messages.error(request, 'Data Not For This Restaurant !!!')
-		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 				reverse('ting_wb_adm_menu_dishes')))
 
 	dish.category = FoodCategory.objects.get(pk=category.pk)
@@ -1743,7 +1762,7 @@ def update_menu_dish(request, dish):
 
 		if admin.restaurant.pk != dish.restaurant.pk or admin.branch.pk != dish.branch.pk:
 			messages.error(request, 'Data Not For This Restaurant !!!')
-			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 					reverse('ting_wb_adm_menu_dishes')))
 
 		if form.is_valid():
@@ -1781,9 +1800,9 @@ def update_menu_dish(request, dish):
 			return HttpJsonResponse(ResponseObject('success', 'Menu Dish Updated Successfully !!!', 200, 
 					reverse('ting_wb_adm_menu_dishes')))
 		else:
-			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 400, msgs=form.errors.items() + images_form.errors.items()))
+			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, msgs=form.errors.items() + images_form.errors.items()))
 	else:
-		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
 
@@ -1797,7 +1816,7 @@ def delete_menu_dish_image(request, dish, image):
 
 	if admin.restaurant.pk != dish.restaurant.pk or admin.branch.pk != dish.branch.pk:
 		messages.error(request, 'Data Not For This Restaurant !!!')
-		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 				reverse('ting_wb_adm_menu_dishes')))
 
 	if dish.images.count() > 2:
@@ -1817,7 +1836,7 @@ def delete_menu_dish(request, dish):
 
 	if admin.restaurant.pk != dish.restaurant.pk or admin.branch.pk != dish.branch.pk:
 		messages.error(request, 'Data Not For This Restaurant !!!')
-		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 				reverse('ting_wb_adm_menu_dishes')))
 
 	return HttpJsonResponse(ResponseObject('info', 'Action To Be Implemented Later !!!', 500))
@@ -1847,7 +1866,7 @@ def add_drink_to_menu_dish(request, dish, drink):
 
 	if admin.restaurant.pk != dish.restaurant.pk or drink.restaurant.pk != admin.restaurant.pk or admin.branch.pk != dish.branch.pk or admin.branch.pk != drink.branch.pk:
 		messages.error(request, 'Data Not For This Restaurant !!!')
-		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 				reverse('ting_wb_adm_menu_dishes')))
 
 	dish.admin = Administrator.objects.get(pk=admin.pk)
@@ -1875,7 +1894,7 @@ def remove_drink_to_menu_dish(request, dish):
 
 	if admin.restaurant.pk != dish.restaurant.pk or drink.restaurant.pk != admin.restaurant.pk or admin.branch.pk != dish.branch.pk:
 		messages.error(request, 'Data Not For This Restaurant !!!')
-		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 				reverse('ting_wb_adm_menu_dishes')))
 
 	dish.admin = Administrator.objects.get(pk=request.session['admin'])
@@ -1921,7 +1940,7 @@ def update_food_menu_for_dish_menu(request, dish):
 
 		if admin.restaurant.pk != dish.restaurant.pk or admin.branch.pk != dish.branch.pk:
 			messages.error(request, 'Data Not For This Restaurant !!!')
-			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 					reverse('ting_wb_adm_menu_dishes')))
 
 		foods_dish = DishFood.objects.filter(dish__pk=dish.pk)
@@ -1949,7 +1968,7 @@ def update_food_menu_for_dish_menu(request, dish):
 		return HttpJsonResponse(ResponseObject('success', 'Menu Dish Foods Updated Successfully !!!', 200, 
 					reverse('ting_wb_adm_menu_dishes')))
 	else:
-		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
 # Tables
@@ -1993,10 +2012,10 @@ def add_new_table(request):
 			return HttpJsonResponse(ResponseObject('success', 'Restaurant Table Added Successfully !!!', 200, 
 					reverse('ting_wb_adm_tables')))
 		else:
-			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 400, msgs=table.errors.items()))
+			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, msgs=table.errors.items()))
 
 	else:
-		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
 @check_admin_login
@@ -2026,7 +2045,7 @@ def update_table(request, table):
 
 		if admin.restaurant.pk != table.restaurant.pk or admin.branch.pk != table.branch.pk:
 			messages.error(request, 'Data Not For This Restaurant !!!')
-			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 					reverse('ting_wb_adm_tables')))
 
 		form = RestaurantTableForm(request.POST)
@@ -2044,10 +2063,10 @@ def update_table(request, table):
 			return HttpJsonResponse(ResponseObject('success', 'Restaurant Table Updated Successfully !!!', 200, 
 					reverse('ting_wb_adm_tables')))
 		else:
-			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 400, msgs=form.errors.items()))
+			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, msgs=form.errors.items()))
 
 	else:
-		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
 @check_admin_login
@@ -2060,7 +2079,7 @@ def avail_table_toggle(request, table):
 
 	if admin.restaurant.pk != table.restaurant.pk or admin.branch.pk != table.branch.pk:
 		messages.error(request, 'Data Not For This Restaurant !!!')
-		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 400, 
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 				reverse('ting_wb_adm_tables')))
 
 	if table.is_available == True:
@@ -2079,8 +2098,8 @@ def avail_table_toggle(request, table):
 					reverse('ting_wb_adm_tables')))
 
 
-
 # Promotions
+
 
 @check_admin_login
 @is_admin_enabled
@@ -2090,11 +2109,294 @@ def promotions(request):
 	admin = Administrator.objects.get(pk=request.session['admin'])
 	promotions = Promotion.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk)
 	menus = Menu.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk)
+	categories = FoodCategory.objects.filter(restaurant__pk=admin.restaurant.pk)
 	return render(request, template, {
 			'admin': admin,
 			'restaurant': admin.restaurant,
 			'promotions': promotions,
 			'menus': menus,
 			'promotion_types': utils.PROMOTION_MENU,
-			'currencies': utils.CURRENCIES
+			'currencies': utils.CURRENCIES,
+			'periods': utils.PROMOTION_PERIOD,
+			'categories': categories
+		})
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_add_promotion', xhr='ajax')
+def add_new_promotion(request):
+	if request.method == 'POST':
+		admin = Administrator.objects.get(pk=request.session['admin'])
+		form = PromotionForm(request.POST, request.FILES, instance=Promotion(
+				restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
+				admin=Administrator.objects.get(pk=admin.pk),
+				branch=Branch.objects.get(pk=admin.branch.pk),
+				uuid=get_random_string(32).lower(),
+				is_on=True
+			))
+
+		is_special = True if request.POST.get('is_special') == 'on' else False
+
+		if is_special == True:
+			try:
+				sd = datetime.strptime(request.POST.get('start_date'), '%Y-%m-%d')
+				ed = datetime.strptime(request.POST.get('end_date'), '%Y-%m-%d')
+			except ValueError as e:
+				return HttpJsonResponse(ResponseObject('error', 'Insert Valid Dates !!!', 406))
+
+		if form.is_valid():
+
+			periods = request.POST.get('promotion_period')
+			start_date = datetime.strptime(request.POST.get('start_date'), '%Y-%m-%d') if request.POST.get('start_date') != None else ''
+			end_date = datetime.strptime(request.POST.get('end_date'), '%Y-%m-%d') if request.POST.get('end_date') != None else ''
+
+			if is_special == True:
+
+				if request.POST.get('start_date') == '' or request.POST.get('start_date') == None or request.POST.get('end_date') == '' or request.POST.get('end_date') == None:
+					return HttpJsonResponse(ResponseObject('error', 'Is Promotion Special Is Checked. Please, Enter Start Date And End Date !!!', 406))
+
+				if start_date > end_date:
+					return HttpJsonResponse(ResponseObject('error', 'Is Promotion Special Is Checked. Please, Enter Start Date Cannot Be Greater Than End Date !!!', 406))
+			else:
+				if periods == None or periods == '':
+					return HttpJsonResponse(ResponseObject('error', 'Select Promotion Period !!!', 406))
+
+			menu_type = request.POST.get('promotion_menu_type')
+			selected_menu = request.POST.get('menu')
+			selected_category = request.POST.get('category')
+
+			if menu_type == '04' and (selected_menu == None or selected_menu == ''):
+				return HttpJsonResponse(ResponseObject('error', 'You Have Selected Promotion Type To Be Specific Menu. Please, Enter That Specific Menu !!!', 406))
+
+			if menu_type == '05' and (selected_category == None or selected_category == ''):
+				return HttpJsonResponse(ResponseObject('error', 'You Have Selected Promotion Type To Be Specific Category. Please, Enter That Specific Category !!!', 406))
+
+			has_reduction = True if request.POST.get('has_reduction') == 'on' else False
+			amount = request.POST.get('amount')
+			reduction_type = request.POST.get('reduction_type')
+
+			if has_reduction == True and (amount == None or amount <= 0):
+				return HttpJsonResponse(ResponseObject('error', 'Please, Enter The Reduction Amount Greater Than 0 !!!', 406))
+
+			has_supplement = True if request.POST.get('has_supplement') == 'on' else False
+			supplement_min_quantity = request.POST.get('supplement_min_quantity')
+			is_supplement_same = True if request.POST.get('is_supplement_same') == 'on' else False
+			supplement = request.POST.get('supplement')
+			supplement_quantity = request.POST.get('supplement_quantity')
+
+			if has_supplement == True and (supplement_min_quantity == None or supplement_min_quantity <= 0):
+				return HttpJsonResponse(ResponseObject('error', 'Promotion Has Supplement Is Checked. Please Enter The Minimum Quantity For Supplement !!!', 406))
+			
+			if is_supplement_same == False and (supplement == None or supplement == ''):
+				return HttpJsonResponse(ResponseObject('error', 'Is Supplement The Promoted Menu Is Not Checked. Please Select The Supplement Menu !!!', 406))
+
+			if has_supplement == True and (supplement_quantity == None or supplement_quantity == ''):
+				return HttpJsonResponse(ResponseObject('error', 'Promotion Has Supplement Is Checked. Please Enter The Quantity Of The Supplement !!!', 406))
+			
+			promotion = form.save(commit=False)
+
+			promotion.menu = Menu.objects.get(pk=selected_menu) if menu_type == '04' else None
+			promotion.category = FoodCategory.objects.get(pk=selected_category) if menu_type == '05' else None
+			promotion.has_reduction = has_reduction
+			promotion.amount = amount if has_reduction == True else 0
+			promotion.reduction_type = reduction_type if has_reduction == True else None
+			promotion.has_supplement = has_supplement
+			promotion.supplement_min_quantity = supplement_min_quantity if has_supplement == True else 0
+			promotion.is_supplement_same = is_supplement_same
+			promotion.supplement = Menu.objects.get(pk=supplement) if is_supplement_same == False and has_supplement == True else None
+			promotion.supplement_quantity = supplement_quantity if has_supplement == True else 0
+			promotion.start_date = start_date if is_special == True else None
+			promotion.end_date = end_date if is_special == True else None
+			promotion.is_special = is_special
+			promotion.promotion_period = periods if is_special == False else None
+			promotion.save()
+
+			messages.success(request, 'Promotion Created Successfully !!!')
+			return HttpJsonResponse(ResponseObject('success', 'Promotion Created Successfully !!!', 200, 
+					reverse('ting_wb_adm_promotions')))
+		else:
+			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, msgs=form.errors.items()))
+
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_promotion', xhr='ajax')
+def load_edit_promotion(request, promotion):
+	template = 'web/admin/ajax/load_edit_promotion.html'
+	promotion = Promotion.objects.get(pk=promotion)
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	menus = Menu.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk)
+	categories = FoodCategory.objects.filter(restaurant__pk=admin.restaurant.pk)
+	return render(request, template, {
+			'promotion': promotion,
+			'admin': admin,
+			'restaurant': admin.restaurant,
+			'menus': menus,
+			'promotion_types': utils.PROMOTION_MENU,
+			'currencies': utils.CURRENCIES,
+			'periods': utils.PROMOTION_PERIOD,
+			'categories': categories
+		})
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_promotion', xhr='ajax')
+def update_promotion(request, promotion):
+	if request.method == 'POST':
+		admin = Administrator.objects.get(pk=request.session['admin'])
+		form = PromotionEditForm(request.POST, request.FILES)
+		promotion = Promotion.objects.get(pk=promotion)
+
+		if admin.restaurant.pk != promotion.restaurant.pk or admin.branch.pk != promotion.branch.pk:
+			messages.error(request, 'Data Not For This Restaurant !!!')
+			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
+					reverse('ting_wb_adm_promotions')))
+
+		is_special = True if request.POST.get('is_special') == 'on' else False
+
+		if is_special == True:
+			try:
+				sd = datetime.strptime(request.POST.get('start_date'), '%Y-%m-%d')
+				ed = datetime.strptime(request.POST.get('end_date'), '%Y-%m-%d')
+			except ValueError as e:
+				return HttpJsonResponse(ResponseObject('error', 'Insert Valid Dates !!!', 406))
+
+		if form.is_valid():
+
+			periods = request.POST.get('promotion_period')
+			start_date = datetime.strptime(request.POST.get('start_date'), '%Y-%m-%d') if request.POST.get('start_date') != None else ''
+			end_date = datetime.strptime(request.POST.get('end_date'), '%Y-%m-%d') if request.POST.get('end_date') != None else ''
+
+			if is_special == True:
+
+				if request.POST.get('start_date') == '' or request.POST.get('start_date') == None or request.POST.get('end_date') == '' or request.POST.get('end_date') == None:
+					return HttpJsonResponse(ResponseObject('error', 'Is Promotion Special Is Checked. Please, Enter Start Date And End Date !!!', 406))
+
+				if start_date > end_date:
+					return HttpJsonResponse(ResponseObject('error', 'Is Promotion Special Is Checked. Please, Enter Start Date Cannot Be Greater Than End Date !!!', 406))
+			else:
+				if periods == None or periods == '':
+					return HttpJsonResponse(ResponseObject('error', 'Select Promotion Period !!!', 406))
+
+			has_reduction = True if request.POST.get('has_reduction') == 'on' else False
+			amount = request.POST.get('amount')
+			reduction_type = request.POST.get('reduction_type')
+
+			if has_reduction == True and (amount == None or amount <= 0):
+				return HttpJsonResponse(ResponseObject('error', 'Please, Enter The Reduction Amount Greater Than 0 !!!', 406))
+
+			has_supplement = True if request.POST.get('has_supplement') == 'on' else False
+			supplement_min_quantity = request.POST.get('supplement_min_quantity')
+			is_supplement_same = True if request.POST.get('is_supplement_same') == 'on' else False
+			supplement = request.POST.get('supplement')
+			supplement_quantity = request.POST.get('supplement_quantity')
+
+			if has_supplement == True and (supplement_min_quantity == None or supplement_min_quantity <= 0):
+				return HttpJsonResponse(ResponseObject('error', 'Promotion Has Supplement Is Checked. Please Enter The Minimum Quantity For Supplement !!!', 406))
+			
+			if is_supplement_same == False and (supplement == None or supplement == ''):
+				return HttpJsonResponse(ResponseObject('error', 'Is Supplement The Promoted Menu Is Not Checked. Please Select The Supplement Menu !!!', 406))
+
+			if has_supplement == True and (supplement_quantity == None or supplement_quantity == ''):
+				return HttpJsonResponse(ResponseObject('error', 'Promotion Has Supplement Is Checked. Please Enter The Quantity Of The Supplement !!!', 406))
+
+			if request.FILES.get('poster_image') != None and request.FILES.get('poster_image') != '':
+				promotion.poster_image = request.FILES.get('poster_image')
+			
+			promotion.occasion_event = form.cleaned_data['occasion_event']
+			promotion.description = form.cleaned_data['description']
+			promotion.has_reduction = has_reduction
+			promotion.amount = amount if has_reduction == True else 0
+			promotion.reduction_type = reduction_type if has_reduction == True else None
+			promotion.has_supplement = has_supplement
+			promotion.supplement_min_quantity = supplement_min_quantity if has_supplement == True else 0
+			promotion.is_supplement_same = is_supplement_same
+			promotion.supplement = Menu.objects.get(pk=supplement) if is_supplement_same == False and has_supplement == True else None
+			promotion.supplement_quantity = supplement_quantity if has_supplement == True else 0
+			promotion.start_date = start_date if is_special == True else None
+			promotion.end_date = end_date if is_special == True else None
+			promotion.is_special = is_special
+			promotion.promotion_period = periods if is_special == False else None
+			promotion.updated_at = timezone.now()
+			promotion.save()
+
+			messages.success(request, 'Promotion Updated Successfully !!!')
+			return HttpJsonResponse(ResponseObject('success', 'Promotion Updated Successfully !!!', 200, 
+					reverse('ting_wb_adm_promotions')))
+		else:
+			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, msgs=form.errors.items()))
+
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_avail_promotion', xhr='ajax')
+def avail_promotion_toggle(request, promotion):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	promotion = Promotion.objects.get(pk=promotion)
+
+	if admin.restaurant.pk != promotion.restaurant.pk or admin.branch.pk != promotion.branch.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
+				reverse('ting_wb_adm_promotions')))
+
+	if promotion.is_on == True:
+		promotion.is_on = False
+		promotion.updated_at = timezone.now()
+		promotion.save()
+
+		messages.success(request, 'Promotion Set To Off Successfully !!!')
+		return HttpJsonResponse(ResponseObject('success', 'Promotion Set To Off Successfully !!!', 200, 
+				reverse('ting_wb_adm_promotions')))
+	elif promotion.is_on == False:
+		promotion.is_on = True
+		promotion.updated_at = timezone.now()
+		promotion.save()
+
+		messages.success(request, 'Promotion Set To On Successfully !!!')
+		return HttpJsonResponse(ResponseObject('success', 'Promotion Set To On Successfully !!!', 200, 
+					reverse('ting_wb_adm_promotions')))
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_delete_promotion', xhr='ajax')
+def delete_promotion(request, promotion):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	promotion = Promotion.objects.get(pk=promotion)
+
+	if admin.restaurant.pk != promotion.restaurant.pk or admin.branch.pk != promotion.branch.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
+				reverse('ting_wb_adm_promotions')))
+
+	messages.info(request, 'To Be Implemented Later !!!')
+	return HttpJsonResponse(ResponseObject('info', 'To Be Implemented Later !!!', 200, 
+			reverse('ting_wb_adm_promotions')))
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_promotion', xhr='ajax')
+def load_promotion(request, promotion):
+	template = 'web/admin/ajax/load_promotion.html'
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	promotion = Promotion.objects.get(pk=promotion)
+
+	if admin.restaurant.pk != promotion.restaurant.pk or admin.branch.pk != promotion.branch.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
+				reverse('ting_wb_adm_promotions')))
+
+	return render(request, template, {
+			'promotion': promotion,
+			'admin': admin,
+			'restaurant': admin.restaurant
 		})

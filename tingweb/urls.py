@@ -16,7 +16,50 @@ Including another URLconf
 from django.conf.urls import url
 from tingweb import views, admin
 
-users = []
+users = [
+	url(r'usr/login/$', views.login, name='ting_usr_login'),
+	url(r'usr/signup/google/$', views.sign_up_with_google, name='ting_usr_google_sign_up'),
+	url(r'usr/signup/email/$', views.sign_up_with_email, name='ting_usr_email_sign_up'),
+	url(r'usr/reset/password/submit/$', views.submit_reset_password, name='ting_usr_submit_reset_password'),
+	url(r'usr/reset/password/link/(?P<token>[^/]+)/$', views.reset_password_link, name='ting_usr_reset_pwd_link'),
+	url(r'usr/reset/password/reset/(?P<token>[^/]+)/$', views.reset_password, name='ting_usr_reset_pwd'),
+	url(r'usr/logout/$', views.logout, name='ting_usr_logout'),
+
+	# User Data
+
+	url(r'usr/profile/(?P<user>\d+)-(?P<username>[^/]+)/$', views.user_profile, name='ting_usr_profile'),
+	url(r'usr/moments/(?P<user>\d+)-(?P<username>[^/]+)/$', views.user_moments, name='ting_usr_moments'),
+	url(r'usr/restaurants/(?P<user>\d+)-(?P<username>[^/]+)/$', views.user_restaurants, name='ting_usr_restaurants'),
+	url(r'usr/orders/(?P<user>\d+)-(?P<username>[^/]+)/$', views.user_orders, name='ting_usr_orders'),
+	url(r'usr/bookings/(?P<user>\d+)-(?P<username>[^/]+)/$', views.user_bookings, name='ting_usr_bookings'),
+
+	# User Profile
+
+	url(r'usr/profile/image/update/$', views.update_user_profile_image, name='ting_usr_update_image_profile'),
+	url(r'usr/profile/email/update/$', views.update_user_email, name='ting_usr_update_email_profile'),
+	url(r'usr/profile/password/update/$', views.update_user_password, name='ting_usr_update_password_profile'),
+	url(r'usr/profile/info/private/update/$', views.update_user_private, name='ting_usr_update_private_profile'),
+	url(r'usr/profile/info/public/update/$', views.update_user_public, name='ting_usr_update_public_profile'),
+	url(r'usr/profile/address/add/$', views.add_user_address, name='ting_usr_add_address'),
+	url(r'usr/profile/address/edit/(?P<address>\d+)/$', views.load_user_edit_address, name='ting_usr_edit_address'),
+	url(r'usr/profile/address/update/(?P<address>\d+)/$', views.update_user_address, name='ting_usr_update_address'),
+	url(r'usr/profile/address/delete/(?P<address>\d+)/$', views.delete_user_address, name='ting_usr_delete_address'),
+
+	# Global
+
+	url(r'usr/g/discovery/$', views.discovery, name='ting_usr_global_discovery'),
+	url(r'usr/g/restaurants/$', views.restaurants, name='ting_usr_global_restaurants'),
+	url(r'usr/g/restaurants/filter/$', views.filter_restaurants_search, name='ting_usr_global_restaurants_filter'),
+	url(r'usr/g/moments/$', views.moments, name='ting_usr_global_moments'),
+
+	# Restaurant & Branch
+
+	url(r'usr/restaurant/get/map/pin/(?P<restaurant>\d+)/html/$', views.get_restaurant_map_pin_html, name='ting_usr_restaurant_get_map_pin_html'),
+	url(r'usr/restaurant/get/map/pin/(?P<restaurant>\d+)/svg/$', views.get_restaurant_map_pin_svg, name='ting_usr_restaurant_get_map_pin_svg'),
+	url(r'usr/restaurant/get/map/pin/(?P<restaurant>\d+)/img/$', views.get_restaurant_map_pin_img, name='ting_usr_restaurant_get_map_pin_img'),
+	url(r'usr/restaurant/like/toggle/(?P<restaurant>[^/]+)/$', views.like_restaurant, name='ting_usr_like_restaurant_toggle'),
+	url(r'usr/restaurant/load/menus/(?P<restaurant>[^/]+)/branch/top/five/(?P<branch>[^/]+)/$', views.load_branch_top_five, name='ting_usr_load_branch_top_five')
+]
 
 admins = [
 	url(r'adm/login/$', admin.AdminLogin.as_view(), name='ting_wb_adm_login'),
@@ -130,7 +173,13 @@ admins = [
 
 	# Promotions
 
-	url(r'adm/promotions/all/$', admin.promotions, name='ting_wb_adm_promotions'),	
+	url(r'adm/promotions/all/$', admin.promotions, name='ting_wb_adm_promotions'),
+	url(r'adm/promotions/add/$', admin.add_new_promotion, name='ting_wb_adm_add_promotion'),
+	url(r'adm/promotions/edit/(?P<promotion>\d+)/$', admin.load_edit_promotion, name='ting_wb_adm_edit_promotion'),
+	url(r'adm/promotions/update/(?P<promotion>\d+)/$', admin.update_promotion, name='ting_wb_adm_update_promotion'),
+	url(r'adm/promotions/avail/toggle/(?P<promotion>\d+)/$', admin.avail_promotion_toggle, name='ting_wb_adm_avail_promotion'),	
+	url(r'adm/promotions/delete/(?P<promotion>\d+)/$', admin.delete_promotion, name='ting_wb_adm_delete_promotion'),
+	url(r'adm/promotions/load/(?P<promotion>\d+)/$', admin.load_promotion, name='ting_wb_adm_load_promotion'),
 ]
 
 urlpatterns = admins + users

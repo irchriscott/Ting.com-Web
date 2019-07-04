@@ -1,0 +1,374 @@
+{% extends '../navbar.html' %}
+{% load staticfiles %}
+{% load ting_tags %}
+{% block title %}
+<title>Ting.com - {{user.name}}</title>
+{% endblock %}
+{% block body %}
+<div class="ting-user-top-fixed-menu">
+	<div class="container">
+		<div class="ui grid">
+			<div class="row">
+				<div class="col-lg-3">
+					<img src="{{user.image.url}}" alt="{{user.username}}">
+					<p class="ting-username">{{user.username}}</p>
+				</div>
+				<div class="col-lg-9">
+					<div class="ui secondary pointing menu">
+						{% if is_logged_in == True and user.pk == session.pk %}
+					  	<a href="{% url 'ting_usr_profile' session.pk session.username|lower %}" class="item active">
+					   		Profile
+					  	</a>
+					  	{% endif %}
+					  	<a href="{% url 'ting_usr_moments' user.pk user.username|lower %}" class="item">
+					    	Moments
+					  	</a>
+					  	<a href="{% url 'ting_usr_restaurants' user.pk user.username|lower %}" class="item">
+					    	Restaurants
+					  	</a>
+					  	{% if is_logged_in == True and user.pk == session.pk %}
+					  	<a href="{% url 'ting_usr_orders' session.pk session.username|lower %}" class="item">
+					    	Orders
+					  	</a>
+					  	<a href="{% url 'ting_usr_bookings' session.pk session.username|lower %}" class="item">
+					    	Bookings
+					  	</a>
+					  	{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<section class="container">
+	<div class="ting-user-container">
+		<div class="ui grid">
+			<div class="row">
+				<div class="col-lg-3">
+					<div class="ting-profile-image-else ui fluid">
+                        <div class="ting-profile-image-container">
+                            <div class="box ting-session-profile-image">
+                                <div class="item light ting-session-profile-image">
+                                    <a href="#"><img class="ting-session-profile-image-img" src="{{user.image.url}}" alt="{{user.username}}" class="w-full" id="ting-profile-image"></a>
+                                    <div id="ting-image-overlay" class="item-overlay black-overlay w-full">
+                                        <a href="#" id="ting-open-profile-img-input" class="center text-md">
+                                            <span id="ting-image-icon" class="lnr lnr-camera" style="font-size:45px; color:white;"></span>
+                                            <span id="ting-image-load" style="display:none;"><i class="fa circle-o-notch fa-spinner" style="font-size:45px; color:white;"></i></span>
+                                        </a>
+                                        <form id="ting-session-profile-image-update" method="POST" action="{% url 'ting_usr_update_image_profile' %}" data-image="{{user.image.url}}" enctype="multipart/form-data">
+                                            {% csrf_token %}
+                                            <input type="file" name="image" id="ting-profile-img-input" accept="image/jpg, image/png, image/jpeg">
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+				</div>
+				<div class="col-lg-9">
+					<div class="ui secondary pointing menu">
+						{% if is_logged_in == True and user.pk == session.pk %}
+					  	<a href="{% url 'ting_usr_profile' session.pk session.username|lower %}" class="item active">
+					   		Profile
+					  	</a>
+					  	{% endif %}
+					  	<a href="{% url 'ting_usr_moments' user.pk user.username|lower %}" class="item">
+					    	Moments
+					  	</a>
+					  	<a href="{% url 'ting_usr_restaurants' user.pk user.username|lower %}" class="item">
+					    	Restaurants
+					  	</a>
+					  	{% if is_logged_in == True and user.pk == session.pk %}
+					  	<a href="{% url 'ting_usr_orders' session.pk session.username|lower %}" class="item">
+					    	Orders
+					  	</a>
+					  	<a href="{% url 'ting_usr_bookings' session.pk session.username|lower %}" class="item">
+					    	Bookings
+					  	</a>
+					  	{% endif %}
+					</div>
+					<div>
+					  	<h1>EDIT PROFILE</h1>
+					  	<br>
+						<h4>Log In</h4>
+						<hr>
+						<div class="ui grid">
+							<div class="row">
+								<div class="five wide column"><p style="text-align: right;">Email Address : </p></div>
+								<div class="eight wide column"><div class="ui form"><div class="field"><input type="email" value="{{user.email}}" disabled></div></div></div>
+								<div class="three wide column"><button class="ui primary left labeled icon button {% if session.password %}{% else %}disabled{% endif %}" id="ting-edit-email-address"><i class="lnr lnr-pencil icon" style="font-family: 'Linearicons-Free' !important;"></i>Edit</button></div>
+							</div>
+							<div class="row">
+								<div class="five wide column"><p style="text-align: right;">Password : </p></div>
+								<div class="eight wide column"><div class="ui form"><div class="field"><input type="password" value="12345678" disabled></div></div></div>
+								<div class="three wide column"><button class="ui primary left labeled icon button" id="ting-edit-password"><i class="lnr lnr-pencil icon" style="font-family: 'Linearicons-Free' !important;"></i>Edit</button></div>
+							</div>
+						</div>
+						<div class="ui tiny modal" data-modal="ting-edit-email-address">
+						    <div class="header">
+						        Edit Email Address
+						    </div>
+						    <div class="content">
+						        <div class="ui form ting-search-place">
+						            <form class="ui" action="{% url 'ting_usr_update_email_profile' %}" method="POST" id="ting-edit-email-address-form">
+						                {% csrf_token %}
+						                <div class="field">
+						                    <label>Enter Old Email Address :</label>
+						                    <input type="email" name="old_email" placeholder="Old Email Address" required autocomplete="off">
+						                </div>
+						                <div class="field">
+						                    <label>Enter Email Address :</label>
+						                    <input type="email" name="new_email" placeholder="New Email Address" required autocomplete="off">
+						                </div>
+						                <div class="field">
+						                    <label>Enter Password :</label>
+						                    <input type="password" name="password" placeholder="Password" autocomplete="off" required>
+						                </div>
+						                <div class="ting-action-modal">
+						                    <div class="actions">
+						                        <div class="ui red deny button">
+						                            Cancel
+						                        </div>
+						                    </div>
+						                    <button type="submit" class="ui positive right labeled icon button">
+						                        Submit
+						                        <i class="checkmark icon"></i>
+						                    </button>
+						                    <div class="ui right ting-loader ting-form-loader-submit">
+						                        <img src="{% static 'imgs/loading.gif' %}">
+						                    </div>
+						                </div>
+						            </form>
+						        </div>
+						    </div>
+						</div>
+						<div class="ui tiny modal" data-modal="ting-edit-password">
+						    <div class="header">
+						        Edit Password
+						    </div>
+						    <div class="content">
+						        <div class="ui form ting-search-place">
+						            <form class="ui" action="{% url 'ting_usr_update_password_profile' %}" method="POST" id="ting-edit-password-form">
+						                {% csrf_token %}
+						                {% if session.password %}
+						                <div class="field">
+						                    <label>Enter Old Password :</label>
+						                    <input type="password" name="old_password" placeholder="Old Password" required autocomplete="off">
+						                </div>
+						                {% endif %}
+						                <div class="field">
+						                    <label>Enter New Address :</label>
+						                    <input type="password" name="new_password" placeholder="New Password" required autocomplete="off">
+						                </div>
+						                <div class="field">
+						                    <label>Confirm New Password :</label>
+						                    <input type="password" name="confirm_password" placeholder="Confirm Password" autocomplete="off" required>
+						                </div>
+						                <div class="ting-action-modal">
+						                    <div class="actions">
+						                        <div class="ui red deny button">
+						                            Cancel
+						                        </div>
+						                    </div>
+						                    <button type="submit" class="ui positive right labeled icon button">
+						                        Submit
+						                        <i class="checkmark icon"></i>
+						                    </button>
+						                    <div class="ui right ting-loader ting-form-loader-submit">
+						                        <img src="{% static 'imgs/loading.gif' %}">
+						                    </div>
+						                </div>
+						            </form>
+						        </div>
+						    </div>
+						</div>
+						<h4>Private Information</h4>
+						<hr>
+						<form class="ui form" method="POST" action="{% url 'ting_usr_update_private_profile' %}" id="ting-edit-private-profile">
+							{% csrf_token %}
+							<div class="ui grid">
+								<div class="row">
+									<div class="five wide column"><p style="text-align: right;">Phone Number : </p></div>
+									<div class="eight wide column"><div class="field"><input type="text" name="phone" value="{{user.phone}}" placeholder="Enter Phone Number" autocomplete="off"></div></div>
+								</div>
+								<div class="row">
+									<div class="five wide column"><p style="text-align: right;">Date Of Bith : </p></div>
+									<div class="eight wide column">
+										<div class="field">
+						                    <div class="ui calendar"  id="ting-date-of-birth">
+						                        <div class="ui input">
+						                    		<input type="text" name="date_of_birth" value="{{user.date_of_birth}}" placeholder="Date Of Birth" autocomplete="off">
+						                		</div>
+						                	</div>
+						                </div>
+									</div>
+								</div>
+								<div class="row">
+									<div class="five wide column"></div>
+									<div class="eight wide column"><button class="ui primary left labeled icon button"><i class="checkmark icon"></i>Submit</button></div>
+								</div>
+							</div>
+						</form>
+						<h4>Public Information</h4>
+						<hr>
+						<form class="ui form" method="POST" action="{% url 'ting_usr_update_public_profile' %}" id="ting-edit-public-profile">
+							{% csrf_token %}
+							<div class="ui grid">
+								<div class="row">
+									<div class="five wide column"><p style="text-align: right;">Name : </p></div>
+									<div class="eight wide column"><div class="field"><input type="text" name="name" value="{{user.name}}" placeholder="Enter Full Name" required></div></div>
+								</div>
+								<div class="row">
+									<div class="five wide column"><p style="text-align: right;">Username : </p></div>
+									<div class="eight wide column"><div class="field"><input type="text" name="username" value="{{user.username}}" placeholder="Enter Username" required></div></div>
+								</div>
+								<div class="row">
+									<div class="five wide column"><p style="text-align: right;">Gender : </p></div>
+									<div class="eight wide column"><div class="field">
+										<select name="gender" class="dropdown">
+					                    	<option value="Male" {% if user.gender == "Male" %} selected {% endif %}>Male</option>
+					                    	<option value="Female" {% if user.gender == "Female" %} selected {% endif %}>Female</option>
+					                    </select>
+									</div></div>
+								</div>
+								<div class="row">
+									<div class="five wide column"></div>
+									<div class="eight wide column"><button class="ui primary left labeled icon button"><i class="checkmark icon"></i>Submit</button></div>
+								</div>
+							</div>
+						</form>
+						<h4>Addresses</h4>
+						<hr>
+						<div class="ui middle aligned divided list">
+						 	{% for address in user.addresses %}
+						 		<div class="item">
+								    <div class="right floated content">
+								    	<button class="ui primary icon button ting-open-ajax-modal" ting-modal-type="ajax-form" ting-modal-form="ting-update-user-address-form" ting-data-url="{% url 'ting_usr_edit_address' address.pk %}" ting-modal-target="ting-edit-user-address"><i class="lnr lnr-pencil icon" style="font-family: 'Linearicons-Free' !important;"></i></button>
+								    	<button class="ui red icon button ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_usr_delete_address' address.pk %}" ting-modal-target="ting-delete-address-{{address.id}}"><i class="lnr lnr-trash icon" style="font-family: 'Linearicons-Free' !important;"></i></button>
+								    </div>
+								    <i class="lnr {{address.type_icon}} icon" style="font-family: 'Linearicons-Free' !important; font-size: 15px;"></i>
+								    <div class="content" style="font-size: 15px;">
+								    	{{address.address}}
+								    </div>
+								</div>
+								<div class="ui modal mini" data-modal="ting-delete-address-{{address.id}}">
+                                    <div class="header">
+                                        Delete Address
+                                    </div>
+                                    <div class="content">
+                                        <p>Do you really want to delete this address ?</p>
+                                    </div>
+                                    <div class="actions">
+                                        <div class="ui positive button right labeled icon">
+                                            Yes
+                                            <i class="icon check"></i>
+                                        </div>
+                                        <div class="ui red deny button right labeled icon">
+                                            No
+                                        	<i class="icon times"></i>
+                                    	</div>
+                                	</div>
+                                </div>
+						 	{% endfor %}
+						</div>
+						<button class="ui primary left labeled icon button" id="ting-open-add-restaurant-location" style="overflow: hidden;"><i class="plus icon"></i>Add</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+<div class="ui modal" data-modal="ting-edit-user-address">
+    <div class="header">
+        Edit Address
+    </div>
+    <div class="content">
+        <div class="ting-data-content"></div>
+        <div class="ui right ting-loader" style="margin: auto; text-align: center;">
+            <img src="{% static 'imgs/loading.gif' %}">
+        </div>
+    </div>
+    <div class="actions">
+        <div class="ui right ting-loader ting-form-loader-else">
+            <img src="{% static 'imgs/loading.gif' %}">
+        </div>
+        <button type="submit" class="ui positive right labeled icon button">
+            Save
+            <i class="checkmark icon"></i>
+        </button>
+        <div class="ui red deny button left">
+            Close
+        </div>
+    </div>
+</div>
+<div class="ui modal" data-modal="ting-admin-add-new-branch" id="ting-add-new-branch">
+    <div class="header">
+        Add Address
+    </div>
+    <div class="content">
+        <div class="ting-search-place">
+            <div class="u form">
+                <div class="field">
+                    <label>Enter Address : </label>
+                    <div class="ui fluid icon input">
+                        <input type="text" id="ting-search-location-input-else" name="address" placeholder="Search Location"
+                            autocomplete="off" autofocus="false" required>
+                        <i class="search icon"></i>
+                    </div>
+                </div>
+                <div class="ting-map-container">
+                    <div class="ting-restaurant-map-container" id="ting-restaurant-map-container"></div>
+                </div>
+            </div>
+            <form class="ui form" action="{% url 'ting_usr_add_address' %}" method="POST" id="ting-add-branch-form">
+                {% csrf_token %}
+                <input type="hidden" id="ting-restaurant-latitude" name="latitude">
+                <input type="hidden" id="ting-restaurant-longitude" name="longitude">
+                <input type="hidden" id="ting-restaurant-country" name="country">
+                <input type="hidden" id="ting-restaurant-town" name="town">
+                <input type="hidden" id="ting-restaurant-place-id" name="place_id">
+                <input type="hidden" id="ting-search-location-input" name="address">
+                <div class="field" style="margin-top: 15px;">
+                	<div class="two fields">
+                		<div class="field">
+		                    <label>Set This Address As :</label>
+		                    <select name="type" class="dropdown" id="ting-address-type">
+		                    	{% for type in address_types %}
+		                    		<option value="{{type.1}}">{{type.1}}</option>
+		                    	{% endfor %}
+		                    </select>
+		                </div>
+		                <div class="field">
+		                    <label>Other :</label>
+		                    <input type="text" name="other_address_type" id="ting-other-address-type" placeholder="Address Type" required autocomplete="off" disabled>
+		                </div>
+                	</div>
+                </div>
+                <div class="ting-action-modal">
+                    <div class="actions">
+                        <div class="ui red deny button">
+                            Cancel
+                        </div>
+                    </div>
+                    <button type="submit" class="ui positive right labeled icon button">
+                        Save
+                        <i class="checkmark icon"></i>
+                    </button>
+                    <div class="ui right ting-loader ting-form-loader">
+                        <img src="{% static 'imgs/loading.gif' %}">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    google.maps.event.addDomListener(window, 'load', InitializePlaces('ting-search-location-input-else'));
+    $("#ting-address-type").change(function(e){
+    	var value = $(this).val();
+    	if(value.toLowerCase() == "other"){$("#ting-other-address-type").removeAttr("disabled").attr("required", "required");} 
+    	else {$("#ting-other-address-type").attr("disabled", "disabled").removeAttr("required");}
+    });
+</script>
+
+{% endblock %}

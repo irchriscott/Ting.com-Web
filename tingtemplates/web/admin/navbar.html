@@ -1,3 +1,17 @@
+<div class="ting-user-location-values">
+    <input type="hidden" id="ting-lat">
+    <input type="hidden" id="ting-long">
+    {% if is_logged_in == True %}
+    <input type="hidden" id="ting-addr">
+    {% endif %}
+    <input type="hidden" id="ting-place">
+    <input type="hidden" id="ting-country">
+    <input type="hidden" id="ting-town">
+    <input type="hidden" id="ting-ip">
+    <input type="hidden" id="ting-tz">
+    <input type="hidden" id="ting-currency">
+    <script type="text/javascript">$(document).ready(function(){setTimeout(function(){if($("#ting-lat").val() != "" && $("#ting-lat").val() != null){getUserCurrentLocation("ting-lat", "ting-long", "ting-addr", "ting-town", "ting-country", "ting-user-address", "ting-place");}}, 3000)});</script>
+</div>
 <div class="ui secondary menu ting-no-p-right" style="border-bottom: 1px solid #DDD;">
     <div class="ui item ting-no-p-top">
         <div class="ting-profile-image-menu">

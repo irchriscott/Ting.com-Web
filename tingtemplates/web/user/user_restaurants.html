@@ -1,0 +1,81 @@
+{% extends '../navbar.html' %}
+{% load staticfiles %}
+{% load ting_tags %}
+{% block title %}
+<title>Ting.com - {{user.name}}</title>
+{% endblock %}
+{% block body %}
+<div class="ting-user-top-fixed-menu">
+	<div class="container">
+		<div class="ui grid">
+			<div class="row">
+				<div class="col-lg-3">
+					<img src="{{user.image.url}}" alt="{{user.username}}">
+					<p class="ting-username">{{user.username}}</p>
+				</div>
+				<div class="col-lg-9">
+					<div class="ui secondary pointing menu">
+						{% if is_logged_in == True and user.pk == session.pk %}
+					  	<a href="{% url 'ting_usr_profile' session.pk session.username|lower %}" class="item">
+					   		Profile
+					  	</a>
+					  	{% endif %}
+					  	<a href="{% url 'ting_usr_moments' user.pk user.username|lower %}" class="item">
+					    	Moments
+					  	</a>
+					  	<a href="{% url 'ting_usr_restaurants' user.pk user.username|lower %}" class="item active">
+					    	Restaurants
+					  	</a>
+					  	{% if is_logged_in == True and user.pk == session.pk %}
+					  	<a href="{% url 'ting_usr_orders' session.pk session.username|lower %}" class="item">
+					    	Orders
+					  	</a>
+					  	<a href="{% url 'ting_usr_bookings' session.pk session.username|lower %}" class="item">
+					    	Bookings
+					  	</a>
+					  	{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<section class="container">
+	<div class="ting-user-container">
+		<div class="ui grid">
+			<div class="row">
+				<div class="col-lg-3">
+					{% include '../user/user_about.html' %}
+				</div>
+				<div class="col-lg-9">
+					<div class="ui secondary pointing menu">
+						{% if is_logged_in == True and user.pk == session.pk %}
+					  	<a href="{% url 'ting_usr_profile' session.pk session.username|lower %}" class="item">
+					   		Profile
+					  	</a>
+					  	{% endif %}
+					  	<a href="{% url 'ting_usr_moments' user.pk user.username|lower %}" class="item">
+					    	Moments
+					  	</a>
+					  	<a href="{% url 'ting_usr_restaurants' user.pk user.username|lower %}" class="item active">
+					    	Restaurants
+					  	</a>
+					  	{% if is_logged_in == True and user.pk == session.pk %}
+					  	<a href="{% url 'ting_usr_orders' session.pk session.username|lower %}" class="item">
+					    	Orders
+					  	</a>
+					  	<a href="{% url 'ting_usr_bookings' session.pk session.username|lower %}" class="item">
+					    	Bookings
+					  	</a>
+					  	{% endif %}
+					</div>
+					<div class="ui">
+					  	<p></p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+{% endblock %}

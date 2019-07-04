@@ -1,0 +1,59 @@
+<html>
+            <head>
+                <meta name="imgkit-format" content="png"/>
+                <style type="text/css">
+                    body, html{
+                        background: rgba(0,0,0,0);
+                        text-align: center;
+                        width: 42px;
+                        height: 50px;
+                    }
+                    .ting-maps-marker{
+                        width: 42px;
+                        height: 50px;
+                        text-align: center;
+                        align-items: center;
+                        margin: auto;
+                        background: transparent;
+                    }
+                    .ting-maps-marker .ting-maps-marker-box{
+                        width:40px;
+                        height:40px;
+                        border-radius:50%;
+                        border:solid 2px #b56fe8;
+                        color: red;
+                        cursor: pointer;
+                        overflow: hidden;
+                        background: transparent;
+                    }
+
+                    .ting-maps-marker .ting-maps-marker-box img{
+                        min-width:40px;
+                        width:auto;
+                        max-height:40px;
+                        height:auto;
+                    }
+
+                    .ting-maps-marker:after {
+                        top: 40px;
+                        left: 0px;
+                        border: solid transparent;
+                        content: " ";
+                        height: 0;
+                        width: 0;
+                        position: absolute;
+                        pointer-events: none;
+                        border-color: rgba(136, 183, 213, 0);
+                        border-top-color: #b56fe8;
+                        border-width: 9px;
+                        margin-left: 21px;
+                        margin-top: 10px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="ting-maps-marker">
+                    <div class="ting-maps-marker-box"><img src="{{restaurant.logo.url}}" alt=""></div>
+                </div>
+            </body>
+        </html>

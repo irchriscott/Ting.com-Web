@@ -1,4 +1,6 @@
 from __future__ import unicode_literals
+import os
+import base64
 
 TING_PACKAGES = (
 		(1, 'Trial'),
@@ -93,8 +95,30 @@ PROMOTION_MENU = (
 		('01', 'Food Menus'),
 		('02', 'Drink Menus'),
 		('03', 'Dish Menus'),
-		('04', 'Specific Menu')
+		('04', 'Specific Menu'),
+		('05', 'Specific Category')
 	)
+
+PROMOTION_PERIOD = (
+		(1, 'Every Day'),
+		(2, 'Every Moday'),
+		(3, 'Every Tuesday'),
+		(4, 'Every Wednesday'),
+		(5, 'Every Thursday'),
+		(6, 'Every Friday'),
+		(7, 'Every Saturday'),
+		(8, 'Every Weekend')
+	)
+
+
+USER_ADDRESS_TYPE = (
+		(1, 'Home'),
+		(2, 'Work'),
+		(3, 'School'),
+		(4, 'Other')
+	)
+
+USER_ADDRESS_TYPE_LIST = ['Home', 'Work', 'School', 'Other']
 
 
 def get_from_tuple(data, key):
@@ -119,3 +143,13 @@ DEFAULT_RESTAURANT_IMAGE = 'restaurants/default.jpg'
 DEFAULT_ADMIN_NAME = 'Restaurant Admin'
 
 DEFAULT_ADMIN_USERNAME = 'admin'
+
+def image_as_base64(image_file, format='png'):
+
+	if not os.path.isfile(image_file):
+		return None
+    
+	encoded_string = ''
+	with open(image_file, 'rb') as img_f:
+		encoded_string = base64.b64encode(img_f.read())
+	return 'data:image/%s;base64,%s' % (format, encoded_string)

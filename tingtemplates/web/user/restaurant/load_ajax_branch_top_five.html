@@ -1,0 +1,23 @@
+<div class="ui divided items">
+	{% for menu in menus %}
+		<div class="item">
+            <div class="ui tiny image">
+                <img src="{{menu.to_json.menu.images.images.0.image}}">
+           	</div>
+            <div class="content" style="padding-left:1em;">
+                <a class="header" style="font-size:15px; font-weight:500;">{{menu.to_json.menu.name}}</a>
+                <div class="meta" style="margin-top:5px;">
+                    <span class="cinema"></span>
+                </div>
+                <div class="description">
+                    <p></p>
+                </div>
+                <div class="extra">
+                    <div class="ui tiny label"><i class="icon map marker alternate"></i></div>
+                </div>
+            </div>
+        </div>
+	{% empty %}
+		<div class="ui red message">No Menu To Show</div>
+	{% endfor %}
+</div>

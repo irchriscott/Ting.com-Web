@@ -1,5 +1,5 @@
 from django import template
-from tingweb.models import Administrator, DishFood, Menu, Food, Dish, Drink
+from tingweb.models import Administrator, DishFood, Menu, Food, Dish, Drink, FoodCategory
 import ting.utils as utils
 
 register = template.Library()

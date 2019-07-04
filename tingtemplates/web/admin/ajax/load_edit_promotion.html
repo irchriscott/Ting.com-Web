@@ -1,0 +1,227 @@
+{% load ting_tags %}
+{% load staticfiles %}
+<div class="content">
+    <div class="content">
+        <div class="ting-search-place">
+            <form class="ui form" action="{% url 'ting_wb_adm_update_promotion' promotion.pk %}" method="POST" id="ting-update-promotion-form" ting-multiple-select="ting-promotion-period-{{promotion.pk}}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="field">
+                    <label>Enter Promotion Occasion / Event :</label>
+                    <input type="text" name="occasion_event" value="{{promotion.occasion_event}}" placeholder="Promotion Occasion / Event" required autocomplete="off">
+                </div>
+                <div class="field">
+                    <label>Enter Promotion Description:</label>
+                    <textarea name="description" class="ting-textarea-froala-editor" placeholder="Promotion Description" required>{{promotion.description}}</textarea>
+                </div>
+                <div class="field">
+                    <label>Select Promotion On :</label>
+                    <select id="ting-specific-menu-select-{{promotion.pk}}" class="dropdown" name="promotion_menu_type" disabled>
+                        {% for type in promotion_types %}
+                            {% if type.0 == promotion.promotion_menu_type %}
+                            <option value="{{type.0}}" selected>{{type.1}}</option>
+                            {% else %}
+                            <option value="{{type.0}}">{{type.1}}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Enter Promotion Specific Menu:</label>
+                    <div class="ui fluid search selection dropdown disabled" id="ting-specific-menu-input-{{promotion.pk}}">
+                        <input type="hidden" name="menu">
+                        <i class="dropdown icon"></i>
+                        <div class="default text">Select Menu</div>
+                        <div class="menu">
+                            {% for menu in menus %}
+                                <div class="item" data-value="{{menu.pk}}">
+                                    <img class="ui mini avatar image" style="width: 30px; height: 30px;" src="{{menu.pk|menu_image}}">
+                                    {{menu.pk|menu_name}}
+                                    <span class="description">{{menu.pk|menu_type}}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Enter Promotion Specific Category:</label>
+                    <div class="ui fluid search selection dropdown disabled" id="ting-specific-category-input-{{promotion.pk}}">
+                        <input type="hidden" name="category">
+                        <i class="dropdown icon"></i>
+                        <div class="default text">Select Category</div>
+                        <div class="menu">
+                            {% for category in categories %}
+                                <div class="item" data-value="{{category.pk}}">
+                                    <img class="ui mini avatar image" style="width: 30px; height: 30px;" src="{{category.image.url}}">
+                                    {{category.name}}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="ui checkbox">
+                        <input type="checkbox" name="is_special" {% if promotion.is_special == True %} checked {% endif %} id="ting-is-special-{{promotion.pk}}">
+                        <label style="line-height: 1.3 !important;">Is Promotion Special</label>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Select Promotion Special Time : </label>
+                    <select class="ui fluid search dropdown {% if promotion.is_special == True %} disabled {% endif %}" multiple="" id="ting-promotion-period-{{promotion.pk}}">
+                        {% for period in periods %}
+                            <option value="{{period.0}}">{{period.1}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Enter Promotion Start Date :</label>
+                            <div class="ui calendar"  id="ting-datepicker-start-date-else">
+                                <div class="ui input">
+                                    <input type="text" name="start_date" placeholder="Promotion Start Date" value="{{promotion.start_date|date:'Y-n-j'}}" autocomplete="off" {% if promotion.is_special == True %} required {% else %} disabled {% endif %}>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Enter Promotion End Date :</label>
+                            <div class="ui calendar"  id="ting-datepicker-end-date-else">
+                                <div class="ui input">
+                                    <input type="text" name="end_date" value="{{promotion.end_date|date:'Y-n-j'}}" placeholder="Promotion End Date" autocomplete="off" {% if promotion.is_special == True %} required {% else %} disabled {% endif %}>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="ui checkbox">
+                        <input type="checkbox" name="has_reduction" {% if promotion.has_reduction == True %} checked {% endif %} id="ting-has-reduction-{{promotion.pk}}">
+                        <label style="line-height: 1.3 !important;">Promotion Has Reduction</label>
+                    </div>
+                </div>
+                <div class="fields">
+                    <div class="twelve wide field">
+                        <label>Promotion Reduction Amount</label>
+                        <input type="number" name="amount" value="{{promotion.amount}}" id="ting-has-reduction-amount-{{promotion.pk}}" placeholder="Promotion Reduction Amount" {% if promotion.has_reduction == True %} required {% else %} disabled {% endif %}>
+                    </div>
+                    <div class="four wide field">
+                        <label>In</label>
+                        <select class="dropdown" name="reduction_type" id="ting-has-reduction-type-{{promotion.pk}}" {% if promotion.has_reduction == True %} required {% else %} disabled {% endif %}>
+                            {% if restaurant.config.use_default_currency == True %}
+                                <option value="{{restaurant.config.currency}}" {% if promotion.reduction_type == restaurant.config.currency %} selected {% endif %}>{{restaurant.config.currency|from_t:currencies}}</option>
+                            {% else %}
+                                {% for currency in currencies %}
+                                    {% if currency.0 == promotion.reduction_type %}
+                                    <option value="{{currency.0}}" selected>{{currency.1}}</option>
+                                    {% else %}
+                                    <option value="{{currency.0}}">{{currency.1}}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                            <option value="%" {% if promotion.reduction_type == "%" %} selected {% endif %}>Pourcentage (%)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="ui checkbox">
+                        <input type="checkbox" name="has_supplement" {% if promotion.has_supplement == True %} checked {% endif %} id="ting-has-supplement-{{promotion.pk}}">
+                        <label style="line-height: 1.3 !important;">Promotion Has Supplement</label>
+                    </div>     
+                </div>
+                <div class="field">
+                    <label>Enter Minimum Quantity For Supplement :</label>
+                    <input type="number" min="1" name="supplement_min_quantity" value="{{promotion.supplement_min_quantity}}" id="ting-has-supplement-min-quantity-{{promotion.pk}}" placeholder="Minimum Quantity For Supplement" autocomplete="off" {% if promotion.has_supplement == True %} required {% else %} disabled {% endif %}>
+                </div>
+                <div class="field">
+                    <div class="ui checkbox">
+                        <input type="checkbox" {% if promotion.has_supplement == False %} disabled {% endif %} name="is_supplement_same" {% if promotion.is_supplement_same == True %} checked {% endif %} id="ting-has-supplement-same-menu-{{promotion.pk}}">
+                        <label style="line-height: 1.3 !important;">Is Supplement The Promoted Menu</label>
+                    </div>     
+                </div>
+                <div class="fields">
+                    <div class="ten wide field">
+                        <label>Enter Supplement Menu:</label>
+                        <div class="ui fluid search selection dropdown {% if promotion.has_supplement == False or promotion.is_supplement_same == True %} disabled {% endif %}" id="ting-has-supplement-supplement-{{promotion.pk}}">
+                            <input type="hidden" name="supplement">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Select Menu</div>
+                            <div class="menu">
+                                {% for menu in menus %}
+                                    <div class="item" data-value="{{menu.pk}}">
+                                        <img class="ui mini avatar image" style="width: 30px; height: 30px;" src="{{menu.pk|menu_image}}">
+                                        {{menu.pk|menu_name}}
+                                        <span class="description">{{menu.pk|menu_type}}</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="six wide field">
+                        <label>Enter Supplement Quantity:</label>
+                        <input type="text" min="1" name="supplement_quantity" value="{{promotion.supplement_quantity}}" id="ting-has-supplement-quantity-{{promotion.pk}}" placeholder="Supplement Quantity" autocomplete="off" {% if promotion.has_supplement == True %} required {% else %} disabled {% endif %}>
+                    </div>
+                </div>
+                <div class="field ting-file-input">
+                    <span>Add Promotion Poster</span>
+                    <input type="file" name="poster_image" id="ting-single-image-input-else" accept=".jpg, .png, .jpeg">
+                </div>
+                <div class="ting-item-images-preview"><img style="display: none;" id="ting-single-image-preview-else"></div>
+                <div class="ui indicating progress small ting-progress-form" style="display: none;" data-value="0" data-total="100">
+                    <div class="bar"></div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function(){
+        $("#ting-update-promotion-form").submitFormAjax();
+        $(".dropdown").dropdown();
+        $(".ting-textarea-froala-editor").setFroalaEditor();
+        {% comment %}
+        $("#ting-specific-menu-select-{{promotion.pk}}").change(function(){
+            var value = $(this).val();
+            if(value == "04"){$("#ting-specific-menu-input-{{promotion.pk}}").removeAttr("disabled").removeClass("disabled").attr("required", "required");$("#ting-specific-category-input-{{promotion.pk}}").addClass("disabled").removeAttr("required");}
+            else if(value == "05"){$("#ting-specific-category-input-{{promotion.pk}}").removeClass("disabled").attr("required", "required");$("#ting-specific-menu-input-{{promotion.pk}}").addClass("disabled").removeAttr("required");}
+            else {$("#ting-specific-menu-input-{{promotion.pk}}").addClass("disabled").removeAttr("required");$("#ting-specific-category-input-{{promotion.pk}}").addClass("disabled").removeAttr("required");}
+        });
+        {% endcomment %}
+        $("#ting-has-reduction-{{promotion.pk}}").click(function(){
+            if($(this).is(":checked") == true){$("#ting-has-reduction-amount-{{promotion.pk}}").removeAttr("disabled").attr("required", "required"); $("#ting-has-reduction-type-{{promotion.pk}}").removeAttr("disabled").parent(".dropdown").removeClass("disabled");}
+            else {$("#ting-has-reduction-amount-{{promotion.pk}}").attr("disabled", "disabled").removeAttr("required"); $("#ting-has-reduction-type-{{promotion.pk}}").attr("disabled", "disabled").parent(".dropdown").addClass("disabled");} 
+        });
+        $("#ting-has-supplement-{{promotion.pk}}").click(function(){
+            if($(this).is(":checked")){$("#ting-has-supplement-min-quantity-{{promotion.pk}}, #ting-has-supplement-quantity-{{promotion.pk}}").removeAttr("disabled").attr("required", "required");$("#ting-has-supplement-same-menu-{{promotion.pk}}").removeAttr("disabled"); $("#ting-has-supplement-supplement-{{promotion.pk}}").removeClass("disabled");} 
+            else {$("#ting-has-supplement-min-quantity-{{promotion.pk}}, #ting-has-supplement-quantity-{{promotion.pk}}").attr("disabled", "disabled").removeAttr("required");$("#ting-has-supplement-same-menu-{{promotion.pk}}").attr("disabled", "disabled");$("#ting-has-supplement-supplement-{{promotion.pk}}").addClass("disabled"); $("#ting-has-supplement-supplement-{{promotion.pk}}").addClass("disabled");}
+            if($("#ting-has-supplement-same-menu-{{promotion.pk}}").is(":checked") == false){$("#ting-has-supplement-same-menu-{{promotion.pk}}").removeAttr("checked");}
+        });
+        $("#ting-has-supplement-same-menu-{{promotion.pk}}").click(function(){
+            if($(this).is(":checked") == false){$("#ting-has-supplement-supplement-{{promotion.pk}}").removeClass("disabled");}
+            else {$("#ting-has-supplement-supplement-{{promotion.pk}}").addClass("disabled");   }
+        });
+        $("#ting-is-special-{{promotion.pk}}").click(function(){
+            if($(this).is(":checked")){$("input[name=start_date], input[name=end_date]").removeAttr("disabled").attr("required", "required");$("#ting-promotion-period-{{promotion.pk}}").attr("disabled", "disabled").parent(".dropdown").addClass("disabled");} 
+            else {$("input[name=start_date], input[name=end_date]").removeAttr("required").attr("disabled", "disabled");$("#ting-promotion-period-{{promotion.pk}}").removeAttr("disabled").parent(".dropdown").removeClass("disabled");}
+        });
+        $("#ting-single-image-input-else").change(function(e){
+            singleImagePreview(this, "ting-single-image-preview-else");
+        });
+        if("{{promotion.promotion_menu_type}}" == "04"){$("#ting-specific-menu-input-{{promotion.pk}}").dropdown("set selected", "{{promotion.menu.pk}}");} 
+        else if("{{promotion.promotion_menu_type}}" == "05"){$("#ting-specific-category-input-{{promotion.pk}}").dropdown("set selected", "{{promotion.category.pk}}");}
+        if("{{promotion.supplement.pk}}" != "" && "{{promotion.supplement.pk}}" != null){$("#ting-has-supplement-supplement-{{promotion.pk}}").dropdown("set selected", "{{promotion.supplement.pk}}");}
+        if("{{promotion.promotion_period}}" != null && "{{promotion.promotion_period}}" != ""){$("#ting-promotion-period-{{promotion.pk}}").dropdown("set selected", "{{promotion.promotion_period}}".split(","))}
+        $("#ting-datepicker-start-date-else, #ting-datepicker-end-date-else").calendar({
+            type: 'date',
+            minDate: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+            monthFirst: false,
+            formatter: {
+                date: function (date, settings) {
+                    if (!date) return '';
+                    var day = date.getDate();
+                    var month = date.getMonth() + 1;
+                    var year = date.getFullYear();
+                    return year + '-' + month + '-' + day;
+                }
+            }
+        });
+    });
+</script>

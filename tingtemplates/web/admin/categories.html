@@ -66,7 +66,7 @@
                                                 {% endif %}
                                                 {% if admin.pk|has_p:"can_delete_category" == True %}
                                                 <div class="ui small red labeled icon button ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_delete_category' category.slug %}" ting-modal-target="ting-admin-delete-category-{{category.id}}">
-                                                    <i class="times icon"></i> Delete
+                                                    <i class="trash alternate outline icon"></i> Delete
                                                 </div>
                                                 {% endif %}
                                             </td>

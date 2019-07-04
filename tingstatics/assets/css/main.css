@@ -518,12 +518,12 @@ a, a:focus, a:hover {
   color: #fff;
 }
 
-.transition {
+/*.transition {
   -webkit-transition: all 0.3s ease 0s;
   -moz-transition: all 0.3s ease 0s;
   -o-transition: all 0.3s ease 0s;
   transition: all 0.3s ease 0s;
-}
+}*/
 
 .section-full {
   padding: 100px 0;
@@ -6106,7 +6106,7 @@ body {
   clear: both;
 }
 
-.item .top {
+/*.item .top {
   position: absolute;
   right: 0;
   left: 0;
@@ -6116,7 +6116,7 @@ body {
   border-radius: inherit;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
-}
+}*/
 
 .item .bottom {
   position: absolute;

@@ -1,0 +1,46 @@
+{% extends '../navbar.html' %}
+{% load staticfiles %}
+{% block title %}
+<title>Ting.com - Restaurants</title>
+{% endblock %}
+{% block body %}
+<section class="generic-banner relative ting-banner">		
+	<div class="container">
+		<div class="d-flex align-items-center">
+			<div class="generic-banner-content ting-banner-content">
+				<h1 class="text-white" style="text-transform:uppercase;">Restaurants</h1>
+                <p class="text-white">Discover Restaurants around and near your location</p>
+			</div>							
+        </div>
+    </div>
+</section>
+<secltion class="ting-restaurants-map-container"><div class="container"><div class="ting-restaurants-map" id="ting-restaurants-map"></div></div></secltion>
+<secltion class="ting-restaurants-list-container">
+	<div class="container">
+		<div class="ui grid">
+			<div class="row">
+				<div class="nine wide column"><h2>Restaurants Near Location</h2></div>
+				<div class="seven wide column" style="padding: 0;">
+					<select class="ui dropdown fluid" id="ting-user-locations"></select>
+				</div>
+			</div>
+		</div>
+		<div class="ting-restaurants-list" id="ting-restaurants-list">
+			<div class="ui right ting-loader" style="margin: auto; text-align: center; padding: 40px 0;">
+	            <img src="{% static 'imgs/loading.gif' %}">
+	        </div>
+		</div>
+	</div>
+</secltion>
+<script type="text/javascript">
+	window.__TING__Session = {{session_json|safe}}
+	window.__TING__Restaurants = {{branches|safe}}
+	window.__TING__Link = "global_restaurants" || null;
+	window.__TING__Token = $("input[name=csrfmiddlewaretoken]").val() || null;
+	window.__TING__URL_Like = decodeURI("{% url 'ting_usr_like_restaurant_toggle' '{restaurant}' %}");
+	window.__TING__URL_Top_Five = decodeURI("{% url 'ting_usr_load_branch_top_five' '{restaurant}' '{branch}' %}");
+	window.__TING__URL_Filter_Restaurants = "{% url 'ting_usr_global_restaurants_filter' %}"
+	window.__TING__Countries = {{countries|safe}}
+	window.__TING__Towns = {{towns|safe}}
+</script>
+{% endblock %}

@@ -1,18 +1,20 @@
 {% extends '../web/navbar.html' %}
 {% load staticfiles %}
+{% block title %}
+<title>Ting.com - Home</title>
+{% endblock %}
 {% block body %}
-
 <section class="banner-area relative" data-parallax="scroll" data-image-src="{% static 'imgs/food.jpg' %}">
 	<div class="overlay-bg overlay"></div>
 	<div class="container">
-		<div class="row fullscreen  d-flex align-items-center justify-content-end">
+		<div class="row fullscreen  d-flex align-items-center justify-content-end" style="height: 100vh;">
 			<div class="banner-content col-lg-6 col-md-12" style="text-align: center; display: none;">
 				<img src="{% static 'imgs/logo.png' %}" style="width: 80px;">
 				<h1><span class="ting-secondary-color">Ting</span><span class="ting-primary-color">.com</span></h1>
 			</div>
 			<div class="banner-content col-lg-6 col-md-12">
 				<h1>Find Affordable <br><b class="ting-bold">Restaurant</b>, <br>Be served <br>your favourite <b class="ting-bold">Meal</b></h1>
-				<a href="" class="primary-btn2 header-btn text-uppercase">Find Restaurants Now</a>
+				<a href="{% url 'ting_usr_global_restaurants' %}" class="primary-btn2 header-btn text-uppercase">Find Restaurants Now</a>
 			</div>												
 		</div>
 	</div>

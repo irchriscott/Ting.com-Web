@@ -374,7 +374,33 @@ textarea{
   border-radius: 50% !important;
 }
 
-.ting-profile-image form input[type=file]{
+.ting-profile-image-else {
+  overflow: hidden;
+  border: 4px solid #FFF;
+  margin: auto;
+  border-radius: 8px !important;
+}
+
+.ting-profile-image-else img{
+    width: 100%;
+    text-align: center;
+    border-radius: 8px;
+}
+
+.ting-profile-image-else .ting-profile-image-container {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+}
+
+.ting-profile-image-else #ting-image-overlay{
+    overflow: hidden;
+    border-radius: 8px !important;
+}
+
+.ting-profile-image form input[type=file],
+.ting-profile-image-else form input[type=file]{
     position: absolute; 
     width: 100%; 
     height: 100%; 
@@ -621,4 +647,324 @@ textarea{
     border-width: 9px;
     margin-left: -39px;
     margin-top: -2px;
+}
+
+.gmnoprint *{
+    font-size: 15px !important;
+}
+
+.gm-style-cc{
+    display: none !important;
+}
+
+.abcRioButton{
+    width: 100% !important;
+}
+
+.abcRioButton *{
+    font-family: Poppins, Lato, 'Helvetica Neue', Arial, Helvetica, sans-serif !important;
+    text-transform: uppercase !important;
+}
+
+.abcRioButtonContents{
+    text-transform: uppercase !important;
+}
+
+.ting-menu-image {
+  width: 35px;
+  height: 35px;
+  margin-top: -27px;
+}
+
+.ting-menu-image img {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  border: 2px solid #DDD;
+}
+
+.ting-icon {
+    margin-left: 0;
+    float: none;
+    margin-right: .78571429rem;
+    margin-top: 0;
+    display: inline-block;
+    opacity: 1;
+    margin: 0 .78571429rem 0 0;
+    width: 1.18em;
+    height: 1em;
+    font-style: normal;
+    font-weight: 400;
+    text-decoration: inherit;
+    text-align: center;
+    speak: none;
+    font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+.ting-user-container{
+    padding: 60px 0 30px 0;
+    background: #FFF;
+}
+
+.ui.secondary.pointing.menu .item{
+    text-transform: uppercase !important;
+}
+
+.ui.secondary.pointing.menu .active.item {
+    text-transform: uppercase !important;
+    border-color: #b56fe8 !important;
+    font-weight: 700;
+    color: #b56fe8 !important;
+}
+
+.ting-user-about p{
+    font-size: 15px;
+}
+
+.ui.labeled.ting-icon.button>.ting-icon, .ui.labeled.ting-icon.buttons>.button>.ting-icon {
+    top: 0;
+    left: 0;
+}
+.ui.labeled.ting-icon.button>.ting-icon, .ui.labeled.ting-icon.buttons>.button>.ting-icon {
+    position: absolute;
+    height: 100%;
+    line-height: 1;
+    border-radius: 0;
+    border-top-left-radius: inherit;
+    border-bottom-left-radius: inherit;
+    text-align: center;
+    margin: 0;
+    width: 2.57142857em;
+    background-color: rgba(0,0,0,.05);
+    color: '';
+    -webkit-box-shadow: -1px 0 0 0 transparent inset;
+    box-shadow: -1px 0 0 0 transparent inset;
+}
+.ui.ting-icon.button>.ting-icon, .ui.ting-icon.buttons .button>.ting-icon {
+    opacity: .9;
+    margin: 0!important;
+    vertical-align: top;
+}
+.ui.button>.ting-icon:not(.button) {
+    height: .85714286em;
+    opacity: .8;
+    margin: 0 .42857143em 0 -.21428571em;
+    -webkit-transition: opacity .1s ease;
+    transition: opacity .1s ease;
+    vertical-align: '';
+    color: '';
+}
+
+.ting-user-container h1{
+    font-weight: 100;
+    margin-top: 20px !important;
+}
+
+.ting-user-top-fixed-menu{
+    display: none;
+    position: fixed;
+    margin-top: 49px;
+    width: 100%;
+    z-index: 200;
+    border-bottom: 2px solid rgba(34,36,38,.15);
+    height: 42px;
+    background: #FFF;
+    box-shadow: inset -21.213px 21.213px 30px 0px rgba(158, 158, 158, 0.3);
+}
+
+.ting-user-top-fixed-menu img{
+    height: 32px;
+    width: 32px;
+    border-radius: 3px;
+    margin-top: 4px;
+    margin-left: 3px;
+}
+
+.ting-user-top-fixed-menu .ting-username{
+    position: absolute;
+    left: 0;
+    margin-left: 55px;
+    margin-top: -25px;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.ting-user-top-fixed-menu .row{
+    padding: 0 !important;
+}
+
+.ting-user-top-fixed-menu .ui.secondary.pointing.menu{
+    border-bottom: none !important;
+}
+
+.ting-restaurants-map{
+    margin-top: 15px;
+    border: 1px solid #DDD;
+    height: calc(100vh - 187px - 49px - 32px);
+    margin-bottom: 15px;
+}
+
+.ting-banner{
+    padding: 60px 0;
+    margin-top: 49px;
+}
+
+.ting-banner-content{
+    width: 100%;
+    text-align: center;
+}
+
+.ting-banner-content h1{
+    font-weight: 100;
+}
+
+.ting-restaurant-map-info{
+    width: 300px !important;
+    white-space: normal;
+}
+
+.ting-restaurant-map-info .image{
+    width: 100%;
+}
+
+.ting-restaurant-map-info .image img{
+    width: 100%;
+}
+
+.ting-restaurant-map-info .about{
+    margin-top: 5px;
+}
+
+.ting-restaurant-map-info .about h2{
+    font-size: 23px;
+}
+
+.ting-restaurant-map-info .about .branch{
+    font-size: 15px !important;
+    margin-top: -11px;
+}
+
+.ting-restaurant-map-info .about p{
+    margin-top: -8px;
+}
+
+.ting-restaurant-map-info i{
+    margin-right: 8px;
+}
+
+.ting-restaurant-map-info .resto-info p{
+    margin-bottom: 5px !important;
+}
+
+.ting-restaurants-list-container{
+    display: block;
+    position: relative;
+}
+
+.ting-restaurants-list-container h2{
+    font-weight: 100;
+}
+
+.ting-restaurants-list-container .ting-restaurants-list{
+    padding: 20px 0;
+    position: relative;
+}
+
+.ting-rate-percent .ting-star{
+    text-align: right;
+    margin-top: -5px;
+}
+
+.ting-rate-percent .ting-star i.icon{
+    font-size: 0.8em !important;
+}
+
+.ting-rate-wrapper{
+    padding-top: 4px;
+}
+
+.ting-rate-container{
+    width: calc(100% + 30px);
+    background: #DDD;
+    margin-bottom: 11px;
+    margin-left: -20px;
+    border-radius: 3px;
+}
+
+.ting-rate-container .ting-rate-fill{
+    background: #999;
+    padding: 3px 0px;
+    border-radius: 3px;
+}
+
+.ting-rate-average{
+    text-align: center;
+    padding-top: 9px;
+}
+
+.ting-rate-average h1{
+    font-size: 45px !important;
+}
+
+.ting-rate-average p{
+    font-size: 12px;
+}
+
+.ting-reviews-count{
+    width: calc(100% + 30px);
+    margin-left: -20px;
+    text-align: right !important;
+}
+
+.ting-reviews-count p{
+    display: block;;
+    text-align: right !important;
+}
+
+.ting-like-restaurant{
+    position: absolute;
+    right: 0;
+    top: 0px;
+    margin-top: 20px;
+}
+
+.ting-like-restaurant button{
+    color: #DDD;
+    background: transparent;
+    outline: none;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    display: block;
+}
+
+.ting-like-restaurant button i{
+    font-size: 25px;
+    color: #DDD;
+}
+
+.ting-like-restaurant button svg{
+    position: absolute;
+    top: 3.5px;
+    right: 1px;
+}
+
+.ting-like-restaurant button:active i{
+    transform: scale(0.9);
+    background-color: darken(#b56fe8, 5%);
+    box-shadow: 0 2px 25px rgba(255, 0, 130, 0.2);
+}
+
+.ting-resto-item.active {
+    background: #EEE;
+}
+
+.ting-fix-left{
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
 }

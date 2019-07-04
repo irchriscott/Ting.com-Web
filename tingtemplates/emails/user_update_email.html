@@ -1,0 +1,11 @@
+{% extends '../emails/header.html' %}
+{% block content %}
+<p>Hello {{name}},</p>
+<p>This email has been set as login email for your account at <span style="color:#908ced;">Ting</span><span style="color: #b56fe8;">.com</span>. Old email was <b>{{old_email}}</b>. If you are not aware of these changes, please check more info about these changes and deny:</p>
+<p><b>IP : </b> {{ip}}</p>
+<p><b>Location : </b>{{location}}</p>
+<p><b>Time : </b>{{time}} / {{tz}}</p>
+<p><b>Platform : </b>{{os}}</p>
+<p><a href="{{link}}" class="ting-link-btn">Go To Ting.com</a></p>
+<p>Regards</p>
+{% endblock %}
