@@ -6118,7 +6118,7 @@ body {
   border-bottom-right-radius: 0;
 }*/
 
-.item .bottom {
+/*.item .bottom {
   position: absolute;
   right: 0;
   left: 0;
@@ -6128,16 +6128,16 @@ body {
   border-radius: inherit;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
-}
+}*/
 
-.item .center {
+/*.item .center {
   position: absolute;
   padding: 0 !important;
   top: 50%;
   left: 50%;
   margin-top: -20px;
   margin-left: -20px;
-}
+}*/
 
 .no-gutter .item {
   border-radius: 0;

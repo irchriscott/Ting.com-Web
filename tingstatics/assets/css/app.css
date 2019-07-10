@@ -921,7 +921,7 @@ textarea{
 }
 
 .ting-reviews-count p{
-    display: block;;
+    display: block;
     text-align: right !important;
 }
 
@@ -929,7 +929,18 @@ textarea{
     position: absolute;
     right: 0;
     top: 0px;
-    margin-top: 20px;
+}
+
+.ting-like-restaurant-branch{
+    color: #DDD;
+    background: transparent;
+    outline: none;
+    border: none;
+    cursor: pointer;
+    position: absolute;
+    display: block;
+    right: 0;
+    top: 0px;
 }
 
 .ting-like-restaurant button{
@@ -942,29 +953,196 @@ textarea{
     display: block;
 }
 
+.ting-like-restaurant-branch i,
 .ting-like-restaurant button i{
     font-size: 25px;
     color: #DDD;
 }
 
+.ting-like-restaurant-branch svg,
 .ting-like-restaurant button svg{
     position: absolute;
     top: 3.5px;
     right: 1px;
 }
 
+.ting-like-restaurant-branch:active i,
 .ting-like-restaurant button:active i{
     transform: scale(0.9);
     background-color: darken(#b56fe8, 5%);
     box-shadow: 0 2px 25px rgba(255, 0, 130, 0.2);
 }
 
+.ting-resto-item{
+    padding: 1.5rem !important;
+    border:1px solid #DDD !important;
+    border-radius: 8px !important;
+    margin-bottom: 1.5rem !important;
+}
+
+.ting-resto-item:hover{
+    background: rgba(200, 200, 200, .1) !important;
+}
+
 .ting-resto-item.active {
-    background: #EEE;
+    background: rgba(200, 200, 200, .1) !important;
 }
 
 .ting-fix-left{
     position: fixed !important;
     top: 0 !important;
     right: 0 !important;
+}
+
+.ting-filter-by{
+    position: relative;
+    display: block;
+    padding: 1.5em;
+    border:1px solid #DDD;
+    border-radius: 5px;
+}
+
+.ting-checkbox-container {
+    display: block;
+    position: relative;
+    padding-left: 30px;
+    margin-bottom: 9px;
+    cursor: pointer;
+    font-size: 14px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.ting-checkbox-container .ting-checkbox-quantity{
+    float: right;
+}
+
+.ting-checkbox-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.ting-checkbox-checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 21px;
+    width: 21px;
+    background-color: #FFF;
+    border:2px solid #999;
+    border-radius: 3px;
+}
+
+.ting-checkbox-container input:checked ~ .ting-checkbox-checkmark {
+    background-color: #908ced;
+    border-color: #908ced;
+}
+
+.ting-checkbox-checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.ting-checkbox-container input:checked ~ .ting-checkbox-checkmark:after {
+    display: block;
+}
+
+.ting-checkbox-container .ting-checkbox-checkmark:after {
+    left: 6px;
+    top: 3px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+
+.ting-menus-list-item{
+    display: block;
+    position: relative;
+    margin: 10px 0;
+    width: 100%;
+}
+
+.ting-menus-list-item .ting-menu-image-list{
+    display: inline;
+    height: 55px;
+    margin-left: 5px;
+}
+
+.ting-menus-list-item .ting-menu-image-list:first-child{
+    margin-left: 0;
+}
+
+.ting-menus-list-item .ting-menu-image-list img{
+    display: inline;
+    height: 55px;
+    border-radius: 2px;
+    margin-top: 5px;
+}
+
+.ui.pagination a.item.active{
+    background-image: -moz-linear-gradient(0deg, #908ced 0%, #b56fe8 100%);
+    background-image: -webkit-linear-gradient(0deg, #908ced 0%, #b56fe8 100%);
+    background-image: -ms-linear-gradient(0deg, #908ced 0%, #b56fe8 100%);
+    background-image: linear-gradient(0deg, #908ced 0%, #b56fe8 100%);
+    color: #FFF !important;
+}
+
+.ui.pagination a.item:hover{
+    background-image: -moz-linear-gradient(0deg, #908ced 0%, #b56fe8 100%) !important;
+    background-image: -webkit-linear-gradient(0deg, #908ced 0%, #b56fe8 100%) !important;
+    background-image: -ms-linear-gradient(0deg, #908ced 0%, #b56fe8 100%) !important;
+    background-image: linear-gradient(0deg, #908ced 0%, #b56fe8 100%) !important;
+    color: #FFF !important;
+}
+
+.ui .header a{
+    font-weight: 500 !important;
+    color: rgba(0,0,0,.85) !important;
+}
+
+.ui .header a:hover{
+    color: darkblue !important;
+}
+
+.ting-session-profile-image .center {
+  position: absolute;
+  padding: 0 !important;
+  top: 50%;
+  left: 50%;
+  margin-top: -20px;
+  margin-left: -20px;
+}
+
+.ting-price-promo{
+    display: block;
+    position: relative;
+    width: 100%;
+}
+
+.ting-price-promo .ting-menu-promo,
+.ting-price-promo .ting-menu-price{
+    display: inline-block;
+    position: relative;
+}
+
+.ting-price-promo .ting-menu-promo{
+    width: 55%;
+}
+
+.ting-price-promo .ting-menu-price{
+    text-align: right;
+    width: 45%;
+    position: absolute;
+    right: 0;
+    top: 0;
 }

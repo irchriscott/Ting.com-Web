@@ -16,7 +16,8 @@ from ting.responses import ResponseObject, HttpJsonResponse
 from tingweb.backend import UserAuthentication
 from tingweb.mailer import SendUserResetPasswordMail, SendUserUpdateEmailMail, SendUserSuccessResetPasswordMail
 from tingweb.models import (
-                                Restaurant, User, UserResetPassword, UserAddress, Branch, UserRestaurant, Menu
+                                Restaurant, User, UserResetPassword, UserAddress, Branch, UserRestaurant, Menu,
+                                MenuLike
                             )
 from tingweb.forms import (
                                 GoogleSignUpForm, UserLocationForm, EmailSignUpForm, UserImageForm
@@ -112,7 +113,7 @@ def sign_up_with_google(request):
                 address.user = User.objects.get(pk=user.pk)
                 address.save()
                 request.session['user'] = user.pk
-                
+                get_user_map_pin_svg(request, user.pk, False)
                 messages.success(request, 'User Signed In Successfully !!!')
                 return HttpJsonResponse(ResponseObject('success', 'User Signed In Successfully !!!', 200, link))
             else:
@@ -150,7 +151,7 @@ def sign_up_with_email(request):
             address.type = request.POST.get('other_address_type') if request.POST.get('type').lower() == 'other' else request.POST.get('type')
             address.save()
             request.session['user'] = user.pk
-            
+            get_user_map_pin_svg(request, user.pk, False)
             messages.success(request, 'User Registered Successfully !!!')
             return HttpJsonResponse(ResponseObject('success', 'User Registered Successfully !!!', 200, link))
         else:
@@ -280,7 +281,7 @@ def logout(request):
 
 @check_user_login(xhr='GET')
 def user_profile(request, user, username):
-    template = 'web/user/user_profile.html'
+    template = 'web/user/user/user_profile.html'
     user = get_object_or_404(User, pk=user)
     
     if user.pk != request.session['user']:
@@ -305,11 +306,40 @@ def update_user_profile_image(request):
             user.image = form.cleaned_data['image']
             user.updated_at = timezone.now()
             user.save()
+            get_user_map_pin_svg(request, user.pk, False)
             return HttpJsonResponse(ResponseObject('success', 'User Image Updated Successfully !!!', 200))
         else:
             return HttpJsonResponse(ResponseObject('error', 'Insert A Valid Image !!!', 400, msgs=form.errors.items()))
     else:
         return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
+
+
+def get_user_map_pin_svg(request, user, create=True):
+    template = 'web/user/user/map_pin_svg.html'
+    user = User.objects.get(pk=user)
+    
+    logo = user.image.url
+    data = logo.split('/')
+    last = data[len(data) - 1]
+    filename = '%s.svg' % last.split('.')[0]
+    
+    f = open(os.path.join(settings.MEDIA_ROOT, 'users', 'pins', filename), 'w+')
+    f.write(
+            """
+            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" xmlns:xlink="http://www.w3.org/1999/xlink">
+              <path stroke-width="2" stroke-miterlimit="10" stroke="#b56fe8" fill="#b56fe8" d="M55.9 28.3c.1-.8.1-1.5.1-2.3a24 24 0 0 0-48 0c0 .8 0 1.6.1 2.3v.3C10.1 47.6 32 61 32 61s21.9-13.6 23.8-32.3z" data-name="layer2" stroke-linejoin="round" stroke-linecap="round"></path>
+              <defs>
+                <pattern id="image" x="0" y="0" patternUnits="userSpaceOnUse" height="64" width="64">
+                  <image height="40" width="40" x="12" y="6" xlink:href="%s"></image>
+                </pattern>
+              </defs>
+              <circle stroke-width="2" stroke-miterlimit="10" stroke="#b56fe8" fill="url(#image)" r="17" cy="26" cx="32" data-name="layer1" stroke-linejoin="round" stroke-linecap="round"></circle>
+            </svg>
+            """ % user.get_cover_base64()
+        )
+    f.close()
+    if create == True:
+        return render(request, template, {'user':user})
 
 
 @check_user_login(xhr='ajax')
@@ -453,7 +483,7 @@ def add_user_address(request):
 
 @check_user_login(xhr='ajax')
 def load_user_edit_address(request, address):
-    template = 'web/user/ajax/load_user_edit_address.html'
+    template = 'web/user/user/load_user_edit_address.html'
     user = User.objects.get(pk=request.session['user'])
     address = get_object_or_404(UserAddress, pk=address)
     
@@ -519,7 +549,7 @@ def delete_user_address(request, address):
 
 
 def user_moments(request, user, username):
-    template = 'web/user/user_moments.html'
+    template = 'web/user/user/user_moments.html'
     user = get_object_or_404(User, pk=user)
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
@@ -530,7 +560,7 @@ def user_moments(request, user, username):
 
 
 def user_restaurants(request, user, username):
-    template = 'web/user/user_restaurants.html'
+    template = 'web/user/user/user_restaurants.html'
     user = get_object_or_404(User, pk=user)
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
@@ -542,7 +572,7 @@ def user_restaurants(request, user, username):
 
 @check_user_login(xhr='GET')
 def user_orders(request, user, username):
-    template = 'web/user/user_orders.html'
+    template = 'web/user/user/user_orders.html'
     user = get_object_or_404(User, pk=user)
 
     if user.pk != request.session['user']:
@@ -558,7 +588,7 @@ def user_orders(request, user, username):
 
 @check_user_login(xhr='GET')
 def user_bookings(request, user, username):
-    template = 'web/user/user_bookings.html'
+    template = 'web/user/user/user_bookings.html'
     user = get_object_or_404(User, pk=user)
 
     if user.pk != request.session['user']:
@@ -621,6 +651,98 @@ def filter_restaurants_search(request):
                     name__icontains=branch)
 
     return HttpJsonResponse([branch.to_json_r() for branch in branches])
+
+
+def get_restaurant_promotions(request, restaurant, branch, slug):
+    template = 'web/user/restaurant/get_restaurant_promotions.html'
+    restaurant = Branch.objects.get(pk=branch)
+    menus = Menu.objects.filter(restaurant__pk=restaurant.pk)
+    return render(request, template, {
+            'is_logged_in': True if 'user' in request.session else False,
+            'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
+            'restaurant_json': json.dumps(restaurant.to_json_r(), default=str),
+            'restaurant': restaurant
+        })
+
+
+def get_restaurant_foods(request, restaurant, branch, slug):
+    template = 'web/user/restaurant/get_restaurant_foods.html'
+    restaurant = Branch.objects.get(pk=branch)
+    menus = Menu.objects.filter(restaurant__pk=restaurant.pk)
+    return render(request, template, {
+            'is_logged_in': True if 'user' in request.session else False,
+            'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
+            'restaurant_json': json.dumps(restaurant.to_json_r(), default=str),
+            'restaurant': restaurant,
+            'types': utils.FOOD_TYPE
+        })
+
+
+def get_restaurant_drinks(request, restaurant, branch, slug):
+    template = 'web/user/restaurant/get_restaurant_drinks.html'
+    restaurant = Branch.objects.get(pk=branch)
+    menus = Menu.objects.filter(restaurant__pk=restaurant.pk)
+    return render(request, template, {
+            'is_logged_in': True if 'user' in request.session else False,
+            'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
+            'restaurant_json': json.dumps(restaurant.to_json_r(), default=str),
+            'restaurant': restaurant
+        })
+
+
+def get_restaurant_dishes(request, restaurant, branch, slug):
+    template = 'web/user/restaurant/get_restaurant_dishes.html'
+    restaurant = Branch.objects.get(pk=branch)
+    menus = Menu.objects.filter(restaurant__pk=restaurant.pk)
+    return render(request, template, {
+            'is_logged_in': True if 'user' in request.session else False,
+            'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
+            'restaurant_json': json.dumps(restaurant.to_json_r(), default=str),
+            'restaurant': restaurant
+        })
+
+
+def get_restaurant_reviews(request, restaurant, branch, slug):
+    template = 'web/user/restaurant/get_restaurant_reviews.html'
+    restaurant = Branch.objects.get(pk=branch)
+    menus = Menu.objects.filter(restaurant__pk=restaurant.pk)
+    return render(request, template, {
+            'is_logged_in': True if 'user' in request.session else False,
+            'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
+            'restaurant_json': json.dumps(restaurant.to_json_r(), default=str),
+            'restaurant': restaurant
+        })
+
+
+def get_restaurant_likes(request, restaurant, branch, slug):
+    template = 'web/user/restaurant/get_restaurant_likes.html'
+    restaurant = Branch.objects.get(pk=branch)
+    menus = Menu.objects.filter(restaurant__pk=restaurant.pk)
+    return render(request, template, {
+            'is_logged_in': True if 'user' in request.session else False,
+            'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
+            'restaurant_json': json.dumps(restaurant.to_json_r(), default=str),
+            'restaurant': restaurant
+        })
+
+
+def get_restaurant_about(request, restaurant, branch, slug):
+    template = 'web/user/restaurant/get_restaurant_about.html'
+    restaurant = Branch.objects.get(pk=branch)
+    menus = Menu.objects.filter(restaurant__pk=restaurant.pk)
+    return render(request, template, {
+            'is_logged_in': True if 'user' in request.session else False,
+            'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
+            'restaurant_json': json.dumps(restaurant.to_json_r(), default=str),
+            'restaurant': restaurant
+        })
 
 
 @check_user_login(xhr='ajax')
@@ -711,3 +833,45 @@ def load_branch_top_five(request, restaurant, branch):
     tops = Menu.objects.filter(restaurant__pk=restaurant.pk, branch__pk=branch.pk)[:5]
 
     return render(request, template, {'restaurant':restaurant, 'branch':branch, 'menus':tops})
+
+
+def load_branch_directions(request, restaurant, branch):
+    template = 'web/user/restaurant/load_branch_directions.html'
+    restaurant = Restaurant.objects.get(pk=restaurant)
+    branch = Branch.objects.get(pk=branch)
+    location = {'latitude': request.GET.get('lat'), 'longitude': request.GET.get('long'), 'address': request.GET.get('addr'), 'country': request.GET.get('count'), 'town': request.GET.get('town')}
+    return render(request, template, {
+            'restaurant': restaurant, 
+            'branch': json.dumps(branch.to_json_r(), default=str),
+            'location': json.dumps(location, default=str),
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
+        })
+
+
+# FOR MENUS
+
+
+@check_user_login(xhr='ajax')
+def like_menu(request, menu):
+    if request.method == 'POST':
+        user = User.objects.get(pk=request.session['user'])
+        menu = request.POST.get('menu')
+
+        check = MenuLike.objects.filter(user__pk=user.pk, menu__pk=menu)
+
+        if check.count() > 0:
+            check.delete()
+            return HttpJsonResponse(ResponseObject('success', 'Restaurant Disliked !!!', 200))
+        else:
+            like = MenuLike(
+                    user=User.objects.get(pk=user.pk),
+                    menu=Menu.objects.get(pk=menu)
+                )
+            like.save()
+            return HttpJsonResponse(ResponseObject('success', 'Restaurant Liked !!!', 200))
+    else:
+        return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
+
+
+def get_menu(request, menu, slug):
+    pass

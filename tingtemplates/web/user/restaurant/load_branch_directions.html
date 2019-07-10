@@ -1,0 +1,95 @@
+<div class="content">
+	<div class="ting-search-place">
+		<div class="ui grid">
+			<div class="row">
+				<div class="seven wide column"><h2 style="font-weight: 200; font-size: 22px;">Direction From Location</h2></div>
+				<div class="nine wide column"><select class="ui fluid dropdown" id="ting-direction-from"></select></div>
+			</div>
+		</div>
+		<div class="ting-map-container">
+            <div class="ting-restaurant-map-container" id="ting-resto-directions-map-container"></div>
+        </div>
+        <div class="extra" style="margin-top: 1.5rem">
+        	<div class="ui large label"><i class="icon flag"></i> <span id="ting-resto-directions-map-from"></span></div>
+        	<div class="ui large label"><i class="icon flag checkered"></i> <span id="ting-resto-directions-map-to"></span></div>
+            <div class="ui large label"><i class="icon map marker alternate"></i> <span id="ting-resto-directions-map-distance"></span></div>
+            <div class="ui large label"><i class="icon clock"></i> <span id="ting-resto-directions-map-time"></span></div>
+            <div class="ui floating icon labeled tiny dropdown button" id="ting-resto-directions-map-travel-mode">
+            	<i class="icon road"></i>
+			  	<span class="text"><i class="icon car"></i>Driving</span>
+			  	<div class="menu">
+				    <div class="header">
+				      	Travel Mode
+				    </div>
+				    <div class="item" data-value="d">
+				      	<i class="icon car"></i>
+				      	Driving
+				    </div>
+				    <div class="item" data-value="w">
+				      	<i class="icon male"></i>
+				      	Walking
+				    </div>
+			  	</div>
+			</div>
+        </div>
+	</div>
+</div>
+<script type="text/javascript">
+	$("#ting-direction-from, #ting-resto-directions-map-travel-mode").dropdown();
+	var session = window.__TING__Session
+	var branch = JSON.parse('{{branch|safe}}');
+	var curloc = JSON.parse('{{location|safe}}');
+	curloc.location = "Current Location";
+	curloc.pin = session.pin;
+	var loc = $("#ting-direction-from");
+	loc.append(`<option value="0">Current Location</option>`);
+	var sm = "d";
+	var sloc = curloc;
+
+	if (session !== null && session !== undefined && Object.keys(session).length > 0){
+		if (!isObjEmpty(session)){
+            var _uas = session.addresses
+            if(_uas.count > 0){
+                for(var _a = 0; _a < _uas.count; _a++){
+                    loc.append(`<option value="${_uas.addresses[_a].id}">${_uas.addresses[_a].type} - ${_uas.addresses[_a].address}</option>`);
+                }
+            }
+        }
+	}
+	drawRoute(sloc, sm);
+
+	loc.change(function(){
+		var v = $(this).val();
+		if(v == 0){
+			sloc = curloc;
+			drawRoute(sloc, sm);
+		} else {
+			var uloc = session.addresses.addresses.find(function(a){return a.id == v});
+			uloc.country = branch.restaurant.country;
+			uloc.town = branch.restaurant.town;
+			uloc.location = uloc.address.split(", ")[0];
+			uloc.pin = session.pin;
+			sloc = uloc;
+			drawRoute(sloc, sm);
+		}
+	});
+
+	$("#ting-resto-directions-map-travel-mode .item").click(function(){
+		var m = $(this).attr("data-value");sm = m;
+		drawRoute(sloc, sm);
+	});
+
+	function drawRoute(loc, m){
+		mapsDirection(loc, {
+			latitude: branch.latitude, longitude: branch.longitude,
+			address: branch.address, country: branch.country, town: branch.town,
+			branch: branch.restaurant.name + ", " + branch.name, pin: branch.restaurant.pin
+		}, {
+			map: 'ting-resto-directions-map-container',
+			distance: 'ting-resto-directions-map-distance',
+			from: 'ting-resto-directions-map-from',
+			to: 'ting-resto-directions-map-to',
+			time: 'ting-resto-directions-map-time'
+		}, m);
+	}
+</script>

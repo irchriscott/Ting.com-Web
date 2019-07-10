@@ -1,4 +1,4 @@
-{% extends '../navbar.html' %}
+{% extends '../../navbar.html' %}
 {% load staticfiles %}
 {% load ting_tags %}
 {% block title %}
@@ -20,7 +20,7 @@
 					   		Profile
 					  	</a>
 					  	{% endif %}
-					  	<a href="{% url 'ting_usr_moments' user.pk user.username|lower %}" class="item active">
+					  	<a href="{% url 'ting_usr_moments' user.pk user.username|lower %}" class="item">
 					    	Moments
 					  	</a>
 					  	<a href="{% url 'ting_usr_restaurants' user.pk user.username|lower %}" class="item">
@@ -30,7 +30,7 @@
 					  	<a href="{% url 'ting_usr_orders' session.pk session.username|lower %}" class="item">
 					    	Orders
 					  	</a>
-					  	<a href="{% url 'ting_usr_bookings' session.pk session.username|lower %}" class="item">
+					  	<a href="{% url 'ting_usr_bookings' session.pk session.username|lower %}" class="item active">
 					    	Bookings
 					  	</a>
 					  	{% endif %}
@@ -54,7 +54,7 @@
 					   		Profile
 					  	</a>
 					  	{% endif %}
-					  	<a href="{% url 'ting_usr_moments' user.pk user.username|lower %}" class="item active">
+					  	<a href="{% url 'ting_usr_moments' user.pk user.username|lower %}" class="item">
 					    	Moments
 					  	</a>
 					  	<a href="{% url 'ting_usr_restaurants' user.pk user.username|lower %}" class="item">
@@ -64,7 +64,7 @@
 					  	<a href="{% url 'ting_usr_orders' session.pk session.username|lower %}" class="item">
 					    	Orders
 					  	</a>
-					  	<a href="{% url 'ting_usr_bookings' session.pk session.username|lower %}" class="item">
+					  	<a href="{% url 'ting_usr_bookings' session.pk session.username|lower %}" class="item active">
 					    	Bookings
 					  	</a>
 					  	{% endif %}

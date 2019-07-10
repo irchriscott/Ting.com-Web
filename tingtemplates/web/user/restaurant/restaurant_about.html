@@ -1,0 +1,30 @@
+<div class="ting-profile-image-else ui fluid">
+    <div class="ting-profile-image-container">
+        <div class="box ting-session-profile-image">
+            <div class="item light ting-session-profile-image">
+                <a href="#"><img class="ting-session-profile-image-img" src="{{restaurant.restaurant.logo.url}}" alt="{{restaurant.name}}" class="w-full"></a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="ting-user-about" id="ting-restaurant-about">
+    <p style="font-size: 22px; font-weight: 500;"> {{restaurant.restaurant.name}}</p>
+    <p style="margin-top: -15px;"> {{restaurant.name}}</p>
+    <hr>
+    <p><i class="lnr lnr-envelope"></i> {{restaurant.email}}</p>
+    <p><i class="lnr lnr-phone-handset"></i> {{restaurant.phone}}</p>
+    <p><i class="lnr lnr-map-marker"></i> {{restaurant.town}}, {{restaurant.country}}</p>
+    <p style="text-transform: uppercase;"><i class="lnr lnr-clock"></i> {{restaurant.restaurant.opening}} - {{restaurant.restaurant.closing}}</p>
+    <hr>
+</div>
+<div class="ui modal" id="ting-resto-branch-direction" data-modal="ting-resto-branch-directions">
+    <div class="header">
+        Directions
+    </div>
+    <div class="content"></div>
+    <div class="actions">
+        <div class="ui red deny button left">
+            Close
+        </div>
+    </div>
+</div>

@@ -256,31 +256,35 @@ $(document).ready(function(){
 
 function loadtingdotcom(){
 
-    //tingdotcom(0, 0, "", "", "")
-
     if (!navigator.geolocation) {
         $.getJSON('https://ipapi.co/json/', function(data) {
             tingdotcom(data.latitude, data.longitude, data.address, data.country_name, data.city)
-        });
+        }).error(function(_, t, e){tingdotcom(0, 0, "", "", "");});
         return showErrorMessage('error_geolocation', 'Geolocation not supported by your browser');
     }
     navigator.geolocation.getCurrentPosition(function (position) {
+        try{
+            var geocoder = new google.maps.Geocoder();
+            var location = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
 
-        var geocoder = new google.maps.Geocoder();
-        var location = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+            geocoder.geocode({ 'latLng': location }, function (results, status) {
 
-        geocoder.geocode({ 'latLng': location }, function (results, status) {
-
-            if (status == google.maps.GeocoderStatus.OK) {
-                var length = results[0].address_components.length
-                tingdotcom(position.coords.latitude, position.coords.longitude, results[0].formatted_address, results[0].address_components[length - 1], results[0].address_components[length - 3])
-            }
-        });
-    }, function () { 
+                if (status == google.maps.GeocoderStatus.OK) {
+                    var length = results[0].address_components.length
+                    tingdotcom(position.coords.latitude, position.coords.longitude, results[0].formatted_address, results[0].address_components[length - 1], results[0].address_components[length - 3])
+                }
+            });
+        } catch(e){
+            $.getJSON('https://ipapi.co/json/', function(data) {
+                tingdotcom(data.latitude, data.longitude, data.address, data.country_name, data.city)
+            }).error(function(_, t, e){tingdotcom(0, 0, "", "", "");});
+        }
+        
+    }, function (e) { 
 
         $.getJSON('https://ipapi.co/json/', function(data) {
             tingdotcom(data.latitude, data.longitude, data.address, data.country_name, data.city)
-        });
+        }).error(function(_, t, e){tingdotcom(0, 0, "", "", "");});
 
     }, {
         enableHighAccuracy: true,
@@ -295,226 +299,873 @@ function tingdotcom(lat, long, addr, cntr, twn){
     var session = window.__TING__Session
     var sloc = {}
 
-    if(state == "global_restaurants"){
+    if (state != null && state != undefined && typeof state == 'object'){
 
-        var branches = window.__TING__Restaurants
-        var usl = $("#ting-user-locations");
-        usl.empty();
-        usl.append(`<option value="0">Current Location</option>`);
+        if(state.type == "global"){
 
-        var usa = {lat: lat, lng: long}
-        branches = newBranches(branches, usa)
+            if(state.name == "restaurants"){
 
-        var c = $("#ting-restaurants-list");
-        var g = $(`<div class="ui grid" style="position: relative;"></div>`);
-        var r = $(`<div class="row" style="position: relative;"></div>`);
-        var fc = $(`<div class="five wide column"></div>`);
-        var rc = $(`<div class="eleven wide column" style="padding-right: 0;"></div>`);
+                var branches = window.__TING__Restaurants
+                var usl = $("#ting-user-locations");
+                usl.empty();
+                usl.append(`<option value="0">Current Location</option>`);
+                var fbs = [];
 
-        var hf = `<h4 style="text-transform:uppercase; font-weight:100;">Search Restaurant</h4><br/>`;
-        fc.append(hf);
-        var cd = $(`<select name="country" class="ui dropdown"></select>`);
-        cd.append(`<option value="all">All</option>`);
-        cd.append(`<option value="${cntr}">Current</option>`);
-        var cntrs = window.__TING__Countries;
-        for(var k = 0; k < cntrs.length; k++){cd.append(`<option value="${cntrs[k].country.toLowerCase()}">${cntrs[k].country}</option>`);}
-            
-        var f = $(`<form class="ui form" action="${window.__TING__URL_Filter_Restaurants}" method="GET"></form>`);
-        f.append(`<div class="field">
-                        <label>By Restaurant Name :</label>
-                        <input type="text" name="resto" placeholder="Restaurant Name" autocomplete="off" />
-                    </div>`);
-        f.append(`<div class="field">
-                    <label>By Branch Name :</label>
-                        <input type="text" name="branch" placeholder="Branch Name" autocomplete="off" />
-                    </div>`);
-        var cdc = $(`<div class="field"></div>`);
-        cdc.append(`<label>By Country</label>`);
-        cdc.append(cd);
-        f.append(cdc).append(`<script>$("select").dropdown()</script>`);
-        f.append(`<button class="ui button primary fluid" type="submit">${"Search".toUpperCase()}</button>`);
-            
-        f.submit(function(e){
-            e.preventDefault();
-            var _dt = new FormData($(this)[0]);
-            _dt.append("csrfmiddlewaretoken", window.__TING__Token);
-            var _url = $(this).attr("action");
-            var _meth = $(this).attr("method");
-            $.ajax({
-                type: "POST", url: _url,data: _dt,
-                processData: false, contentType: false,
-                success: function(r){window.__TING__Restaurants = r;
-                    getRestaurantList(newBranches(r, sloc), sloc, 1);
-                    branchesmaps(newBranches(r, sloc), sloc);
-                }, error: function(_, t, e){showErrorMessage(t, e);}
-            });
-        });
-            
-        fc.append(f).append(`<hr/>`);
-        var hff = `<h4 style="text-transform:uppercase; font-weight:100;">Filter By</h4>`;
-            
-        r.append(fc).append(rc);
-        g.html(r); c.html(g);
-        
-        getRestaurantList(branches, usa, 1);
-        branchesmaps(branches, usa);
-        sloc = usa
+                var usa = {lat: lat, lng: long}; sloc = usa;
+                branches = newBranches(branches, usa);
+                var branches__else = newBranches(window.__TING__Restaurants, usa, false);
 
-        if (!isObjEmpty(session)){
-            var _uas = session.addresses
-            if(_uas.count > 0){
-                for(var _a = 0; _a < _uas.count; _a++){
-                    usl.append(`<option value="${_uas.addresses[_a].id}">${_uas.addresses[_a].type} - ${_uas.addresses[_a].address}</option>`);
-                }
-            }
-        }
+                var c = $("#ting-restaurants-list");
+                var g = $(`<div class="ui grid" style="position: relative;"></div>`);
+                var r = $(`<div class="row" style="position: relative;"></div>`);
+                var fc = $(`<div class="col-lg-4"></div>`);
+                var rc = $(`<div class="col-lg-8" style="padding-right: 0;"></div>`);
+                var md = $(`<div class="ting-cnt-item"></div>`);
+                rc.append(md);
 
-        usl.change(function(e){
-            e.preventDefault();
-            var _av = $(this).val()
-            if(_av == 0){usa = {lat: lat, lng: long}; sloc = usa;}
-            else {var _sa = session.addresses.addresses.find(function(a){return a.id == _av});
-            usa = {lat: parseFloat(_sa.latitude), lng: parseFloat(_sa.longitude)};}
-            sloc = usa;
-            branches = newBranches(branches, usa);
-            getRestaurantList(branches, usa, 1);
-            branchesmaps(branches, usa);
-        });
+                var pag__p = [];
+                var pag__s = 0;
+                var pag__m = 15;
+                var pag__cont = $(`<div class="ui right floated pagination menu"></div>`);
+                rc.append(pag__cont);
 
+                var fcd = $(`<div class="ui ting-filter-by"></div>`);
+                var hf = `<h4 style="text-transform:uppercase; font-weight:100;">Search Restaurant</h4><hr/>`;
+                fcd.append(hf);
+                var cd = $(`<select name="country" class="ui dropdown"></select>`);
+                cd.append(`<option value="all">All</option>`);
+                cd.append(`<option value="${cntr}">Current</option>`);
+                var cntrs = window.__TING__Countries;
+                for(var k = 0; k < cntrs.length; k++){cd.append(`<option value="${cntrs[k].country.toLowerCase()}">${cntrs[k].country}</option>`);}
+                    
+                var f = $(`<form class="ui form" action="${window.__TING__URL_Filter_Restaurants}" method="GET"></form>`);
+                f.append(`<div class="field">
+                                <label>By Restaurant Name :</label>
+                                <input type="text" name="resto" placeholder="Restaurant Name" autocomplete="off" />
+                            </div>`);
+                f.append(`<div class="field">
+                            <label>By Branch Name :</label>
+                                <input type="text" name="branch" placeholder="Branch Name" autocomplete="off" />
+                            </div>`);
+                var cdc = $(`<div class="field"></div>`);
+                cdc.append(`<label>By Country</label>`);
+                cdc.append(cd);
+                f.append(cdc).append(`<script>$("select").dropdown()</script>`);
+                f.append(`<button class="ui button medium primary fluid" type="submit">${"Search".toUpperCase()}</button>`);
+                    
+                f.submit(function(e){
+                    e.preventDefault();
+                    var _dt = new FormData($(this)[0]);
+                    _dt.append("csrfmiddlewaretoken", window.__TING__Token);
+                    var _url = $(this).attr("action");
+                    var _meth = $(this).attr("method");
+                    rc.html(loader);
+                    $.ajax({
+                        type: "POST", url: _url,data: _dt,
+                        processData: false, contentType: false,
+                        success: function(r){window.__TING__Restaurants = r;
+                            pag__s = 0;createpags(r, true);r.sort(compare);
+                            if(r.length > 0){getRestaurantList(newBranches(r, sloc).sort(compare).slice(parseInt(pag__p[pag__s].from), parseInt(pag__p[pag__s].to)), sloc, 1);}
+                            else {getRestaurantList(newBranches(r, sloc).sort(compare), sloc, 1);}
+                            branchesmaps(newBranches(r, sloc), sloc, false);
+                        }, error: function(_, t, e){showErrorMessage(t, e);}
+                    });
+                });
+                    
+                fcd.append(f);fc.append(fcd).append(`<br/>`);
+                var hff = `<h4 style="text-transform:uppercase; font-weight:100;">Filter By</h4><hr/>`;
+                var fbc = $(`<div class="ui ting-filter-by"></div>`);
 
-        function branchesmaps(br, usloc){
-
-             var map = new google.maps.Map(document.getElementById("ting-restaurants-map"), {
-                zoom: 16,
-                center: usloc
-            });
-            map.setCenter(usloc);
-
-            for(var i = 0; i < br.length; i++){
-
-                var branch = br[i]
-                var icon = {
-                    url: branch.restaurant.pin,
-                    size: new google.maps.Size(71, 71),
-                    origin: new google.maps.Point(0, 0),
-                    anchor: new google.maps.Point(30, 64),
-                    scaledSize: new google.maps.Size(60, 60)
+                var filtercbx = function(t, v, gv, q){
+                    return `<label class="ting-checkbox-container">
+                                ${t}
+                                <span class="ting-checkbox-quantity">${numerilize(q, gv, 0)}</span>
+                                <input type="checkbox" value="${v}" data-g-value="${gv}">
+                                <span class="ting-checkbox-checkmark"></span>
+                            </label>`;
                 };
 
-                var contentInfo = `
-                                <div class="ting-restaurant-map-info">
-                                    <div class="image">
-                                        <img src="${branch.restaurant.logo}" />
-                                    </div>
-                                    <div class="about">
-                                        <h2><a href="#">${branch.restaurant.name}</a></h2>
-                                        <p class="branch">${branch.name} Branch</p>
-                                        <p><i class="lnr lnr-map-marker"></i>${branch.address}</p>
-                                        <hr/>
-                                    </div>
-                                    <div class="resto-info">
-                                        <p><i class="lnr lnr-bullhorn"></i>${branch.restaurant.motto}</p>
-                                        <p><i class="lnr lnr-envelope"></i>${branch.restaurant.config.email}</p>
-                                        <p><i class="lnr lnr-phone-handset"></i>${branch.restaurant.config.phone}</p>
-                                        <p><i class="lnr lnr-clock"></i>${branch.restaurant.opening} - ${branch.restaurant.closing}</p>
-                                    </div>
-                                </div>
-                            `;
+                var fb__hr = `<hr>`; var fb__h5__st = `style="font-size:15px; margin-bottom:1rem !important; text-transform: uppercase;"`;
+                
+                var fb__availability = `<h5 ${fb__h5__st}>Availability</h5>`;
+                var fb__a__a = $(filtercbx("Not Available", false, "avail", branches.filter(function(b){return b.isAvailable == false}).length));
+                var fb__a__b = $(filtercbx("Opened", "opened", "avail", branches.filter(function(b){
+                    if(b.isAvailable == true){
+                        var s = statusWorkTime(b.restaurant.opening, b.restaurant.closing)
+                        return s.st == "opened" 
+                    }
+                    return false
+                }).length));
+                var fb__a__c = $(filtercbx("Closed", "closed", "avail",  branches.filter(function(b){
+                    if(b.isAvailable == true){
+                        var s = statusWorkTime(b.restaurant.opening, b.restaurant.closing)
+                        return s.st == "closed" 
+                    }
+                    return false
+                }).length));
+                fbc.append(hff).append([fb__availability, fb__a__a, fb__a__b, fb__a__c, fb__hr]);
 
-                var infowindow = new google.maps.InfoWindow({
-                    content: contentInfo
+                var fb__distance = `<h5 ${fb__h5__st}>Distance From Location</h5>`;
+                var fb__d__1 = $(filtercbx("Less than 1 Km", 1, "dist", branches.filter(function(b){return b.dist <= 1}).length));
+                var fb__d__3 = $(filtercbx("Less than 3 Km", 3, "dist", branches.filter(function(b){return b.dist <= 3}).length));
+                var fb__d__5 = $(filtercbx("Less than 5 Km", 5, "dist", branches.filter(function(b){return b.dist <= 5}).length));
+                var fb__d__10 = $(filtercbx("Less than 10 Km", 10, "dist", branches.filter(function(b){return b.dist <= 10}).length));
+                fbc.append([fb__distance, fb__d__1, fb__d__3, fb__d__5, fb__d__10, fb__hr]);
+
+                var fb__chair_type = `<h5 ${fb__h5__st}>Chair Type</h5>`;
+                var fb__ct__iron = $(filtercbx("Iron", "iron", "chairt", branches.filter(function(b){return b.tables.iron > 0}).length));
+                var fb__ct__wooden = $(filtercbx("Wooden", "wooden", "chairt", branches.filter(function(b){return b.tables.wooden > 0}).length));
+                var fb__ct__plastic = $(filtercbx("Plastic", "plastic", "chairt", branches.filter(function(b){return b.tables.plastic > 0}).length));
+                var fb__ct__couch = $(filtercbx("Couch", "couch", "chairt", branches.filter(function(b){return b.tables.couch > 0}).length));
+                var fb__ct__mixture = $(filtercbx("Mixture", "mix", "chairt", branches.filter(function(b){return b.tables.mixture > 0}).length));
+                fbc.append([fb__chair_type, fb__ct__iron, fb__ct__wooden, fb__ct__plastic, fb__ct__couch, fb__ct__mixture, fb__hr]);
+
+                var fb__table_location = `<h5 ${fb__h5__st}>Table Location</h5>`;
+                var fb__t__inside = $(filtercbx("Inside", "inside", "tabloc", branches.filter(function(b){return b.tables.inside > 0}).length));
+                var fb__t__outside = $(filtercbx("Outside", "outside", "tabloc", branches.filter(function(b){return b.tables.outside > 0}).length));
+                var fb__t__balcony = $(filtercbx("Balcony", "balcony", "tabloc", branches.filter(function(b){return b.tables.balcony > 0}).length));
+                var fb__t__rooftop = $(filtercbx("Rooftop", "rooftop", "tabloc", branches.filter(function(b){return b.tables.rooftop > 0}).length));
+                fbc.append([fb__table_location, fb__t__inside, fb__t__outside, fb__t__balcony, fb__t__rooftop, fb__hr]);
+
+                var fb__star_rating = `<h5 ${fb__h5__st}>Star Average</h5>`;
+                var fb__s__1 = $(filtercbx("1 Star", "-1,1.5", "star", branches.filter(function(b){return b.restaurant.reviews.average <= 1.5}).length));
+                var fb__s__2 = $(filtercbx("2 Stars", "1.5,2", "star", branches.filter(function(b){return b.restaurant.reviews.average > 1.5 && b.restaurant.reviews.average <= 2.5}).length));
+                var fb__s__3 = $(filtercbx("3 Stars", "2.5,3.5", "star", branches.filter(function(b){return b.restaurant.reviews.average > 2.5 && b.restaurant.reviews.average <= 3.5}).length));
+                var fb__s__4 = $(filtercbx("4 Stars", "3.5,4.5", "star", branches.filter(function(b){return b.restaurant.reviews.average > 3.5 && b.restaurant.reviews.average <= 4.5}).length));
+                var fb__s__5 = $(filtercbx("5 Stars", "4.5,5", "star", branches.filter(function(b){return b.restaurant.reviews.average > 4.5}).length));
+                fbc.append([fb__star_rating, fb__s__1, fb__s__2, fb__s__3, fb__s__4, fb__s__5, fb__hr]);
+
+                var fb__reviews = `<h5 ${fb__h5__st}>Reviews</h5>`;
+                var fb__r__100 = $(filtercbx("- 100", "-1,100", "reviews", branches.filter(function(b){return b.restaurant.reviews.count <= 100}).length));
+                var fb__r__500 = $(filtercbx("101 - 500", "100,500", "reviews", branches.filter(function(b){return b.restaurant.reviews.count > 100 && b.restaurant.reviews.count <= 500}).length));
+                var fb__r__1000 = $(filtercbx("501 - 1000", "500,1000", "reviews", branches.filter(function(b){return b.restaurant.reviews.count > 500 && b.restaurant.reviews.count <= 1000}).length));
+                var fb__r__5000 = $(filtercbx("1001 - 5000", "100,5000", "reviews", branches.filter(function(b){return b.restaurant.reviews.count > 1000 && b.restaurant.reviews.count <= 5000}).length));
+                var fb__r__more = $(filtercbx("5001 -", "5000,100000000000", "reviews", branches.filter(function(b){return b.restaurant.reviews.count > 5000}).length));
+                fbc.append([fb__reviews, fb__r__100, fb__r__500, fb__r__1000, fb__r__5000, fb__r__more]);
+
+                fbc.find(".ting-checkbox-container input").click(function(){
+                    var v = {val: $(this).val(), gval: $(this).attr("data-g-value")}
+                    var c = fbs.find(function(f){return f.val == v.val && f.gval == v.gval})
+                    if($(this).is(":checked") == true){if(fbs.includes(v) == false){fbs.push(v)}}
+                    else{if(c !== undefined){fbs = fbs.filter(function(f){return f != c})}}
+                    pag__s = 0;
+                    branches = filterbranches(branches__else, fbs, false);
+                    branches.sort(compare);
+                    createpags(branches, true);
+                    if(branches.length > 0){getRestaurantList(branches.sort(compare).slice(parseInt(pag__p[pag__s].from), parseInt(pag__p[pag__s].to)), sloc, 1);}
+                    else {getRestaurantList(branches.sort(compare), sloc, 1);}
                 });
 
-                var marker = new google.maps.Marker({
-                    position: {lat: parseFloat(branch.latitude), lng: parseFloat(branch.longitude)},
-                    map: map,
-                    title: branch.restaurant.name + ",  " + branch.name,
-                    zIndex: branch.id,
-                    icon: icon
+                fc.append(fbc);
+                r.append(fc).append(rc);
+                g.html(r); c.html(g);
+
+                if (!isObjEmpty(session)){
+                    var _uas = session.addresses
+                    if(_uas.count > 0){
+                        for(var _a = 0; _a < _uas.count; _a++){
+                            usl.append(`<option value="${_uas.addresses[_a].id}">${_uas.addresses[_a].type} - ${_uas.addresses[_a].address}</option>`);
+                        }
+                    }
+                }
+
+                usl.change(function(e){
+                    e.preventDefault();
+                    var _av = $(this).val()
+                    if(_av == 0){usa = {lat: lat, lng: long}; sloc = usa;}
+                    else {var _sa = session.addresses.addresses.find(function(a){return a.id == _av});
+                    usa = {lat: parseFloat(_sa.latitude), lng: parseFloat(_sa.longitude)};}
+                    sloc = usa;
+                    pag__s = 0;
+                    branches = newBranches(branches__else, usa);
+                    createpags(branches, true);
+                    branches.sort(compare);
+                    if(branches.length > 0){getRestaurantList(branches.sort(compare).slice(parseInt(pag__p[pag__s].from), parseInt(pag__p[pag__s].to)), usa, 1);}
+                    else {getRestaurantList(branches.sort(compare), usa, 1);}
+                    branchesmaps(branches, usa, false);
                 });
 
-                google.maps.event.addListener(marker, "click", (function(marker, contentInfo, infowindow){ 
-                    return function() {
-                        infowindow.setContent(contentInfo);
-                        infowindow.open(map, marker);
-                    };
-                })(marker, contentInfo, infowindow));  
-            }
-        }
-        
+                createpags(branches, false);
+                branches.sort(compare);
+                if(branches.length > 0){getRestaurantList(branches.sort(compare).slice(parseInt(pag__p[pag__s].from), parseInt(pag__p[pag__s].to)), usa, 1);}
+                else {getRestaurantList(branches.sort(compare), usa, 1);}
+                branchesmaps(branches, usa, false);
 
-        function newBranches(branches, usa){
-            if(branches.length > 0){
-                branches.forEach(function(b){
-                    // var _ds = new google.maps.LatLng(usa.lat, usa.lng)
-                    // var _de = new google.maps.LatLng(parseFloat(b.latitude), parseFloat(b.longitude))
-                    // b.dist = calculateDistance(_ds, _de)
-                });
-            }
-            return branches
-        }
-           
-        function getRestaurantList(res, _ds, t){
+                function createpags(brchs, ev){
+                    if(brchs.length > 0){
+                        var pag__n = Math.floor(brchs.length / pag__m);
+                        var pag__l = brchs.length - (pag__n * pag__m);
+                        pag__cont.empty().show();
+                        pag__p = [];
+                        if(pag__l > 0){pag__n++}
+                        var pag__c = 0;
+                        for(var p = 0; p < pag__n; p++){pag__p.push({from: pag__c, to: pag__c + pag__m, pos: p}); pag__c += pag__m}
+                        if(pag__s != 0){ pag__cont.append(`<a class="item" data-position="prev"><i class="left chevron icon"></i></a>`)}
+                        if(pag__p.length > 1){
+                            for(var p = 0; p < pag__p.length; p++){
+                                pag__cont.append(`<a class="item" data-from="${pag__p[p].from}" data-to="${pag__p[p].to}" data-position="${pag__p[p].pos}">${pag__p[p].pos + 1}</a>`)
+                            }
+                        } else { pag__cont.hide() }
+                        if(pag__p.length > 1 && pag__s != pag__p.length - 1){pag__cont.append(`<a class="icon item" data-position="next"><i class="right chevron icon"></i></a>`)}
+                        pag__cont.find("a").click(function(){
+                            var p = $(this).attr("data-position");
+                            if(p == "next"){pag__s++} else if(p == "prev"){pag__s--;} else {pag__s = p;}
+                            createpags(brchs, true);
+                            brchs.sort(compare);
+                            getRestaurantList(brchs.sort(compare).slice(parseInt(pag__p[pag__s].from), parseInt(pag__p[pag__s].to)), usa, 1);
+                        });
+                        pag__cont.find("a[data-position="+pag__s+"]").addClass("active").siblings().removeClass("active");
+                    } else { pag__p = []; pag__cont.empty().hide(); }
+                }
 
-            if(res.length > 0){
-                res.sort(compare)
-                var ctn = $(`<div class="ui divided items"></div>`);
-                for(var i = 0; i < res.length; i++){
-                    var br = res[i]
-                    var s = statusWorkTime(br.restaurant.opening, br.restaurant.closing)
-                    var tc = $("<div class='item ting-resto-item'></div>");
-                    tc.attr("id", "ting-resto-item-" + br.id);
-                    tc.attr("data-position", i);
-                    tc.attr("data-top-url", decodeURIparams(window.__TING__URL_Top_Five, {"restaurant": br.restaurant.id, "branch": br.id}));
-                    tc.css("cursor", "pointer");
-                    var ti = `  
-                            <div class="ui tiny image">
-                                <img src="${br.restaurant.logo}">
-                            </div>
-                            <div class="content">
-                                <a class="header" style="font-size:17px; font-weight:500;">${br.restaurant.name}, ${br.name}</a>
-                                <div class="meta" style="margin-top:5px;">
-                                    <span class="cinema">${br.address}</span>
-                                </div>
-                                <div class="description">
-                                    <p></p>
-                                </div>
-                                <div class="extra">
-                                    <div class="ui label"><i class="icon map marker alternate"></i> ${br.dist} Km</div>
-                                    <div class="ui ${br.isAvailable == true ? s.clr : "red"} label"><i class="clock outline icon"></i> ${br.isAvailable == true ? s.msg : "Not Available"}</div>
-                                    <div class="ui label" style="cursor:pointer;"><i class="heart outline icon"></i>${numerilize(br.restaurant.likes.count, null, 0)}</div>
-                                    <div class="ui label ting-rate-btn-${br.id}" style="cursor:pointer;"><i class="star outline icon"></i>${br.restaurant.reviews.average}</div>
-                                </div>
-                                <div class="ting-like-restaurant">
-                                    <button class="ting-like-restaurant ting-btn-animate ${likesresto(br.restaurant) == true ? 'liked' : ''}" id="ting-like-restaurant-${br.id}" data-like='{"resto":"${br.restaurant.id}", "tkn":"${br.restaurant.token}", "id":"${br.id}", "typ":"link"}'>${likerestobtn(br.restaurant)}</button>
-                                </div>
-                                <div class="ui flowing popup top left transition hidden ting-rate-popup-${br.id}">
-                                    <div class="header">Rating</div>
-                                    <div class="content" style="width:300px;">
-                                        <div class="ui huge star rating" data-rating="${br.restaurant.reviews.average}" data-max-rating="5"></div>
-                                        <div class="ui grid">
-                                            <div class="row" style="padding:0 !important;">
-                                                <div class="four wide column ting-rate-average">
-                                                    <h1>${br.restaurant.reviews.average}</h1>
-                                                    <p>Out Of 5</p>
+                function filterbranches(brs, fb){
+                    if(fb.length > 0){
+                        var brs__avail = []; var ccs__avail = [];
+                        var brs__dist = []; var ccs__dist = [];
+                        var brs__chairt = []; var ccs__chairt = [];
+                        var brs__star = []; var ccs__star = [];
+                        var brs__reviews = []; var ccs__reviews = [];
+
+                        for(var i = 0; i < fb.length; i++){
+                            var f = fb[i];
+                            if(f.gval == "avail"){
+                                ccs__avail.push(f);
+                                var bf = brs.filter(function(b){
+                                    var s = statusWorkTime(b.restaurant.opening, b.restaurant.closing);
+                                    if(f.val == "false"){return b.isAvailable == false
+                                    } else {return s.st == f.val && b.isAvailable == true}
+                                }).forEach(function(b){if(brs__avail.includes(b) == false){brs__avail.push(b)}})
+                            } else if(f.gval == "dist"){
+                                ccs__dist.push(f);
+                                var bf = brs.filter(function(b){return b.dist <= parseInt(f.val)}).forEach(function(b){if(brs__dist.includes(b) == false){brs__dist.push(b)}})
+                            } else if(f.gval == "chairt" || f.gval == "tabloc"){
+                                ccs__chairt.push(f);
+                                var bf = brs.filter(function(b){return b.tables[f.val] > 0}).forEach(function(b){if(brs__chairt.includes(b) == false){brs__chairt.push(b)}})
+                            } else if(f.gval == "star"){
+                                ccs__star.push(f);
+                                var bf = brs.filter(function(b){var ff = f.val.split(","); return b.restaurant.reviews.average > parseFloat(ff[0]) && b.restaurant.reviews.average <= parseFloat(ff[1])}).forEach(function(b){if(brs__star.includes(b) == false){brs__star.push(b)}})
+                            } else if(f.gval == "reviews"){
+                                ccs__reviews.push(f);
+                                var bf = brs.filter(function(b){var ff = f.val.split(",");return b.restaurant.reviews.count > parseInt(ff[0]) && b.restaurant.reviews.count <= parseInt(ff[1])}).forEach(function(b){if(brs__reviews.includes(b) == false){brs__reviews.push(b)}})
+                            }
+                        }
+                        var brs__conc = {
+                            "avail":{"brs": brs__avail, "ccs": ccs__avail},
+                            "dist":{"brs": brs__dist, "ccs": ccs__dist},
+                            "chairt":{"brs": brs__chairt, "ccs": ccs__chairt},
+                            "star":{"brs": brs__star, "ccs": ccs__star},
+                            "reviews":{"brs": brs__reviews, "ccs": ccs__reviews}
+                        }
+                        var brs__all = [];
+                        Object.keys(brs__conc).forEach(function(l){
+                            var v = brs__conc[l];
+                            v.brs.forEach(function(b){
+                                var t = [];
+                                Object.keys(brs__conc).forEach(function(k){
+                                    if(l != k){if(brs__conc[k].brs.includes(b) == true){if(brs__conc[k].ccs.length > 0){t.push(true)} else { t.push(false) }
+                                    } else {if(brs__conc[k].ccs.length <= 0){t.push(true)} else { t.push(false) }}}
+                                });
+                                if(t.every(function(v){ return v === true }) == true){if(brs__all.includes(b) == false){ brs__all.push(b)}}
+                            });
+                        });
+                        return brs__all.sort(compare);
+                    } else {return brs.sort(compare);}
+                }
+
+                function branchesmaps(br, usloc, click){
+
+                    var map = new google.maps.Map(document.getElementById("ting-restaurants-map"), {
+                        zoom: 16,
+                        center: usloc
+                    });
+                    map.setCenter(usloc);
+
+                    for(var i = 0; i < br.length; i++){
+
+                        var branch = br[i]
+                        var icon = {
+                            url: branch.restaurant.pin,
+                            size: new google.maps.Size(71, 71),
+                            origin: new google.maps.Point(0, 0),
+                            anchor: new google.maps.Point(30, 64),
+                            scaledSize: new google.maps.Size(60, 60)
+                        };
+
+                        var contentInfo = `
+                                        <div class="ting-restaurant-map-info">
+                                            <div class="image">
+                                                <img src="${branch.restaurant.logo}" />
+                                            </div>
+                                            <div class="about">
+                                                <h2><a href="${branch.urls.relative}" target="_blank">${branch.restaurant.name}</a></h2>
+                                                <p class="branch">${branch.name} Branch</p>
+                                                <p><i class="lnr lnr-map-marker"></i>${branch.address}</p>
+                                                <hr/>
+                                            </div>
+                                            <div class="resto-info">
+                                                <p><i class="lnr lnr-bullhorn"></i>${branch.restaurant.motto}</p>
+                                                <p><i class="lnr lnr-envelope"></i>${branch.email}</p>
+                                                <p><i class="lnr lnr-phone-handset"></i>${branch.phone}</p>
+                                                <p><i class="lnr lnr-clock"></i>${branch.restaurant.opening} - ${branch.restaurant.closing}</p>
+                                            </div>
+                                        </div>
+                                    `;
+
+                        var infowindow = new google.maps.InfoWindow({
+                            content: contentInfo
+                        });
+
+                        var marker = new google.maps.Marker({
+                            position: {lat: parseFloat(branch.latitude), lng: parseFloat(branch.longitude)},
+                            map: map,
+                            title: branch.restaurant.name + ",  " + branch.name,
+                            zIndex: branch.id,
+                            icon: icon
+                        });
+
+                        google.maps.event.addListener(marker, "click", (function(marker, contentInfo, infowindow){ 
+                            return function() {
+                                infowindow.setContent(contentInfo);
+                                infowindow.open(map, marker);
+                            };
+                        })(marker, contentInfo, infowindow));
+                        if(click == true){
+                            if(usloc.lat == parseFloat(branch.latitude) && usloc.lng == parseFloat(branch.longitude)){
+                                google.maps.event.trigger(marker, "click");
+                            }
+                        } 
+                    }
+                }
+
+                function newBranches(branches, usa, f=true){
+                    if(branches.length > 0){
+                        branches.forEach(function(b){
+                            if(usa.lat != 0 && usa.lat !== undefined && usa.lng != 0 && usa.lng !== undefined){
+                                var _ds = new google.maps.LatLng(usa.lat, usa.lng)
+                                var _de = new google.maps.LatLng(parseFloat(b.latitude), parseFloat(b.longitude))
+                                b.dist = calculateDistance(_ds, _de)
+                            } else { b.dist = 0.00 }
+                        });
+                    }
+                    return f == true ? filterbranches(branches, fbs) : branches;
+                }
+                   
+                function getRestaurantList(res, _ds, t){
+                    if(res.length > 0){
+                        res = res.sort(compare);
+                        var ctn = $(`<div class="ui items"></div>`).empty();
+                        for(var i = 0; i < res.length; i++){
+                            var br = res[i];
+                            var s = statusWorkTime(br.restaurant.opening, br.restaurant.closing)
+                            var tc = $("<div class='item ting-resto-item'></div>");
+                            tc.attr("id", "ting-resto-item-" + br.id);
+                            tc.attr("data-position", i);
+                            tc.attr("data-top-url", decodeURIparams(window.__TING__URL_Top_Five, {"restaurant": br.restaurant.id, "branch": br.id}));
+                            tc.css("cursor", "pointer");
+                            var ti = `  
+                                    <div class="ui image">
+                                        <img src="${br.restaurant.logo}" style="width:225px;">
+                                    </div>
+                                    <div class="content">
+                                        <a class="header" href="${br.urls.relative}" style="font-size:19px; font-weight:500;">${br.restaurant.name}, ${br.name}</a>
+                                        <div class="meta" style="margin-top:5px;">
+                                            <div class="ui disabled star rating" data-rating="${br.restaurant.reviews.average}" data-max-rating="5" style="margin-bottom:10px;"></div>
+                                            <p class="ting-resto-item-address" data-position="${i}" data-branch-id="${br.id}"><i icon class="icon map marker alternate"></i> ${br.address}</p>
+                                        </div>
+                                        <div class="description">
+                                            <div class="ui small labeled icon button top left pointing dropdown bt-popup ting-tab-btn" data-tab='{"id": "${br.id}", "type": "cat", "pos": ${i}}' data-branch-id="${br.id}" data-tooltip="Categories" data-position="top left">
+                                                <i class="boxes link icon"></i> ${br.restaurant.foodCategories.count}
+                                                <div class="menu fluid" style="width: auto !important;">
+                                                    <div class="header">Categories</div>
+                                                    ${br.restaurant.foodCategories.categories.map(function(c){
+                                                        return `<div class="item" style="width: auto !important;" data-value="${c.id}">
+                                                                    <img class="ui mini avatar image" style="width: 30px; height: 30px;" src="${c.image}">
+                                                                    <span class="text">${c.name}</span>
+                                                                </div>`;
+                                                    }).join('')}
                                                 </div>
-                                                <div class="twelve wide column" style="padding: 0 !important;">
-                                                    <div class="ui grid">
-                                                        <div class="row" style="padding-bottom:0 !important;">
-                                                            <div class="eight wide column ting-rate-percent">
-                                                                <div class="ting-star"><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i></div>
-                                                                <div class="ting-star"><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i></div>
-                                                                <div class="ting-star"><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i></div>
-                                                                <div class="ting-star"><i class="star icon"></i><i class="star icon"></i></div>
-                                                                <div class="ting-star"><i class="star icon"></i></div>
+                                            </div>
+                                            <div class="ui small labeled icon button top left pointing dropdown bt-popup ting-tab-btn" data-tab='{"id": "${br.id}", "type": "food", "pos": ${i}}' data-branch-id="${br.id}" data-tooltip="Foods" data-position="top left">
+                                                <i class="utensils spoon icon"></i> ${numerilize(br.menus.type.foods.count, br.menus.type.foods.count, 0)}
+                                                <div class="menu fluid">
+                                                    <div class="header">Foods</div>
+                                                    ${br.menus.menus.filter(function(m){return m.type.id == 1}).map(function(m){
+                                                        return `<div class="item" data-value="${m.menu.id}">
+                                                                    <img class="ui mini avatar image" style="width: 30px; height: 30px;" src="${m.menu.images.images[0].image}">
+                                                                    <span class="text">${m.menu.name}</span>
+                                                                    <span class="description">${m.menu.currency} ${numerilize(m.menu.price, m.menu.price, 0)}</span>
+                                                                </div>`;
+                                                    }).join('')}
+                                                </div>
+                                            </div>
+                                            <div class="ui small labeled icon button top left pointing dropdown bt-popup ting-tab-btn" data-tab='{"id": "${br.id}", "type": "drink", "pos": ${i}}' data-branch-id="${br.id}" data-tooltip="Drinks" data-position="top left">
+                                                <i class="glass martini icon"></i> ${numerilize(br.menus.type.drinks, br.menus.type.drinks, 0)}
+                                                <div class="menu fluid">
+                                                    <div class="header">Drinks</div>
+                                                    ${br.menus.menus.filter(function(m){return m.type.id == 2}).map(function(m){
+                                                        return `<div class="item" data-value="${m.menu.id}">
+                                                                    <img class="ui mini avatar image" style="width: 30px; height: 30px;" src="${m.menu.images.images[0].image}">
+                                                                    <span class="text">${m.menu.name}</span>
+                                                                    <span class="description">${m.menu.currency} ${numerilize(m.menu.price, m.menu.price, 0)}</span>
+                                                                </div>`;
+                                                    }).join('')}
+                                                </div>
+                                            </div>
+                                            <div class="ui small labeled icon button top left pointing dropdown bt-popup ting-tab-btn" data-tab='{"id": "${br.id}", "type": "dish", "pos": ${i}}' data-branch-id="${br.id}" data-tooltip="Dishes" data-position="top left">
+                                                <i class="utensils icon"></i> ${numerilize(br.menus.type.dishes, br.menus.type.dishes, 0)}
+                                                <div class="menu fluid">
+                                                    <div class="header">Dishes</div>
+                                                    ${br.menus.menus.filter(function(m){return m.type.id == 3}).map(function(m){
+                                                        return `<div class="item" data-value="${m.menu.id}">
+                                                                    <img class="ui mini avatar image" style="width: 30px; height: 30px;" src="${m.menu.images.images[0].image}">
+                                                                    <span class="text">${m.menu.name}</span>
+                                                                    <span class="description">${m.menu.currency} ${numerilize(m.menu.price, m.menu.price, 0)}</span>
+                                                                </div>`;
+                                                    }).join('')}
+                                                </div>
+                                            </div>
+                                            <div class="ting-menus-list-item" id="ting-menus-list-item-${br.id}">
+                                                ${br.restaurant.foodCategories.count > 0 ? br.restaurant.foodCategories.categories.sort(function(a, b){
+                                                    if(Date.parse(a.createdAt) > Date.parse(b.createdAt)){return -1}
+                                                    if(Date.parse(a.createdAt) < Date.parse(b.createdAt)){return 1}
+                                                    return 0;
+                                                }).slice(0, 4).map(function(c){
+                                                    return `<div class="ting-menu-image-list lst-popup-${br.id}-${c.id}">
+                                                                <img src="${c.image}" />
                                                             </div>
-                                                            <div class="eight wide column ting-rate-wrapper">
-                                                                <div class="ting-rate-container"><div class="ting-rate-fill" style="width:${br.restaurant.reviews.percents[4]}%"></div></div>
-                                                                <div class="ting-rate-container"><div class="ting-rate-fill" style="width:${br.restaurant.reviews.percents[3]}%"></div></div>
-                                                                <div class="ting-rate-container"><div class="ting-rate-fill" style="width:${br.restaurant.reviews.percents[2]}%"></div></div>
-                                                                <div class="ting-rate-container"><div class="ting-rate-fill" style="width:${br.restaurant.reviews.percents[1]}%"></div></div>
-                                                                <div class="ting-rate-container"><div class="ting-rate-fill" style="width:${br.restaurant.reviews.percents[0]}%"></div></div>
-                                                                <div clsas="ting-reviews-count"><p>${numerilize(br.restaurant.reviews.count, br.restaurant.id, 0)} reviews</p></div>
+                                                            <div class="ui flowing popup basic transition hidden ting-menu-popup-${br.id}-${c.id}" style="top:-20px !important;">
+                                                                <div class="header">${c.name}</div>
+                                                                <div class="description">${c.description}</div>
+                                                            </div><script type="text/javascript">$(".lst-popup-${br.id}-${c.id}").popup({popup : ".ting-menu-popup-${br.id}-${c.id}", on : "hover", boundery: "body"});</script>`;
+                                                }).join("") : `<div class="ui red message">No Category To Show</div>`}
+                                                    
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="extra">
+                                            <div class="ui label ting-resto-item-map-direction" data-url="${decodeURIparams(window.__TING__URL_Load_Branch_Directions, {"restaurant": br.restaurant.id, "branch": br.id})}" data-position="${i}" data-branch-id="${br.id}"><i class="icon map marker alternate"></i> ${br.dist} Km</div>
+                                            <div class="ui ${br.isAvailable == true ? s.clr : "red"} label"><i class="clock outline icon"></i> ${br.isAvailable == true ? s.msg : "Not Available"}</div>
+                                            <div class="ui label" style="cursor:pointer;"><i class="heart outline icon"></i>${numerilize(br.restaurant.likes.count, null, 0)}</div>
+                                            <div class="ui label ting-rate-btn-${br.id}" style="cursor:pointer;"><i class="star outline icon"></i>${br.restaurant.reviews.average}</div>
+                                        </div>
+                                        <div class="ting-like-restaurant">
+                                            <button class="ting-like-restaurant ting-btn-animate ${likesresto(br.restaurant) == true ? 'liked' : ''}" id="ting-like-restaurant-${br.id}" data-like='{"resto":"${br.restaurant.id}", "tkn":"${br.restaurant.token}", "id":"${br.id}", "typ":"link"}'>${likerestobtn(br.restaurant)}</button>
+                                        </div>
+                                        <div class="ui flowing popup top left transition hidden ting-rate-popup-${br.id}">
+                                            <div class="header">Rating</div>
+                                            <div class="content" style="width:300px;">
+                                                <div class="ui huge star rating" data-rating="${br.restaurant.reviews.average}" data-max-rating="5"></div>
+                                                <div class="ui grid">
+                                                    <div class="row" style="padding:0 !important;">
+                                                        <div class="four wide column ting-rate-average">
+                                                            <h1>${br.restaurant.reviews.average}</h1>
+                                                            <p>Out Of 5</p>
+                                                        </div>
+                                                        <div class="twelve wide column" style="padding: 0 !important;">
+                                                            <div class="ui grid">
+                                                                <div class="row" style="padding-bottom:0 !important;">
+                                                                    <div class="eight wide column ting-rate-percent">
+                                                                        <div class="ting-star"><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i></div>
+                                                                        <div class="ting-star"><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i></div>
+                                                                        <div class="ting-star"><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i></div>
+                                                                        <div class="ting-star"><i class="star icon"></i><i class="star icon"></i></div>
+                                                                        <div class="ting-star"><i class="star icon"></i></div>
+                                                                    </div>
+                                                                    <div class="eight wide column ting-rate-wrapper">
+                                                                        <div class="ting-rate-container"><div class="ting-rate-fill" style="width:${br.restaurant.reviews.percents[4]}%"></div></div>
+                                                                        <div class="ting-rate-container"><div class="ting-rate-fill" style="width:${br.restaurant.reviews.percents[3]}%"></div></div>
+                                                                        <div class="ting-rate-container"><div class="ting-rate-fill" style="width:${br.restaurant.reviews.percents[2]}%"></div></div>
+                                                                        <div class="ting-rate-container"><div class="ting-rate-fill" style="width:${br.restaurant.reviews.percents[1]}%"></div></div>
+                                                                        <div class="ting-rate-container"><div class="ting-rate-fill" style="width:${br.restaurant.reviews.percents[0]}%"></div></div>
+                                                                        <div clsas="ting-reviews-count"><p>${numerilize(br.restaurant.reviews.count, br.restaurant.id, 0)} reviews</p></div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <script type="text/javascript">
+                                            $("div.rating, .rating, .ui.rating").rating(); $("#bt-popup").dropdown();
+                                            $(".ting-rate-btn-${br.id}").popup({popup : ".ting-rate-popup-${br.id}", on : "click"});
+                                            $(".bt-popup").popup();$("#ting-like-restaurant-${br.id}").likeRestaurant();
+                                            $("a.header").click(function(){window.open($(this).attr("href"), "_blank"); });
+                                        </script>
+                                    </div>
+                                `;
+
+                            var tb = ``;
+                            tc.html(ti);
+                            var mc = $(`<div class="five wide column" id="ting-menus-sticky" style="padding: 0;"></div>`);
+                            var h = `<h4 style="text-transform:uppercase; font-weight:100;">Popular Menus</h4>`
+                            mc.append(h);
+                            var mcnt = $(`<div class="ui divided items"></div>`);
+                            tc.click(function(e){
+                                e.preventDefault();
+                                mcnt.html(loader);
+                                var i = $(this).attr("data-position");
+                                var b = res[i];
+                                var m = b.menus.menus;
+                                var url = $(this).attr("data-top-url");
+
+                                $.ajax({
+                                    type: "GET",
+                                    url: url,
+                                    data: {},
+                                    success: function(r){mcnt.empty().html(r);},
+                                    error: function(_, t, e){mcnt.html(`<div class="ui red message">${e}</div>`);
+                                        setTimeout(function(){
+                                            mcnt.empty();
+                                            var max = b.menus.count > 5 ? 5 : b.menus.count
+                                            if(b.menus.count > 0){
+                                                m.sort(function(a, b){
+                                                    if ( a.menu.reviews.count < b.menu.reviews.count ){ return -1;}
+                                                    if ( a.menu.reviews.count > b.menu.reviews.count ){ return 1;}
+                                                    return 0;
+                                                });
+                                                var mm = m.slice(0, 5);
+                                                for(var j = 0; j < mm.length; j++){
+                                                    var bm = mm[j].menu;
+                                                    var bmc = `
+                                                            <div class="item">
+                                                                <div class="ui tiny image">
+                                                                    <img src="${bm.images.images[0].image}">
+                                                                </div>
+                                                                <div class="content" style="padding-left:1em;">
+                                                                    <a class="header" style="font-size:15px; font-weight:500;">${bm.name}</a>
+                                                                    <div class="meta" style="margin-top:5px;">
+                                                                        <span class="cinema"></span>
+                                                                    </div>
+                                                                    <div class="description">
+                                                                        <p></p>
+                                                                    </div>
+                                                                    <div class="extra">
+                                                                        <div class="ui tiny label"><i class="icon map marker alternate"></i></div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        `;
+                                                    mcnt.append(bmc);
+                                                }
+                                            } else { mcnt.html(`<div class="ui red message">No Menu To Show</div>`); }
+                                        }, 100);
+                                    }
+                                });
+                                mc.append(mcnt);
+                            });
+                            tc.find(".ting-tab-btn").click(function(e){
+                                e.preventDefault();
+                                if($(this).attr("data-tab") !== null && $(this).attr("data-tab") !== undefined){
+                                    var dtt = JSON.parse($(this).attr("data-tab"));
+                                    var cdtt = ctn.find("#ting-menus-list-item-" + dtt.id).empty();
+                                    var brt = res[dtt.pos];
+                                    if(dtt.type == "cat"){
+                                        if(brt.restaurant.foodCategories.count > 0){
+                                            var cs = brt.restaurant.foodCategories.categories.sort(function(a, b){
+                                                if(Date.parse(a.createdAt) > Date.parse(b.createdAt)){return -1}
+                                                if(Date.parse(a.createdAt) < Date.parse(b.createdAt)){return 1}
+                                                return 0;
+                                            }).slice(0, 4);
+                                            for(var i = 0; i < cs.length; i++){
+                                                cdtt.append(`<div class="ting-menu-image-list lst-popup-${brt.id}-${cs[i].id}">
+                                                                <img src="${cs[i].image}" />
+                                                            </div>
+                                                            <div class="ui flowing popup basic transition hidden ting-menu-popup-${brt.id}-${cs[i].id}" style="top:-20px !important;">
+                                                                <div class="header">${cs[i].name}</div>
+                                                                <div class="description">${cs[i].description}</div>
+                                                            </div><script type="text/javascript">$(".lst-popup-${brt.id}-${cs[i].id}").popup({popup : ".ting-menu-popup-${brt.id}-${cs[i].id}", on : "hover", boundery: "body"});</script>`);
+                                            }
+                                        } else {cdtt.html(`<div class="ui red message">No Category To Show</div>`)}
+                                    } else if (dtt.type == "food"){
+                                        var fds = brt.menus.menus.filter(function(f){return f.type.id == 1}).sort(function(a, b){
+                                            if(a.menu.likes.count > b.menu.likes.count){return 1}
+                                            if(a.menu.likes.count < b.menu.likes.count){return -1}
+                                            return 0
+                                        }).slice(0, 4);
+                                        if(fds.length > 0){
+                                            for(var i = 0; i < fds.length; i++){
+                                                cdtt.append(`<div class="ting-menu-image-list lst-popup-${brt.id}-${fds[i].menu.id}">
+                                                                <img src="${fds[i].menu.images.images[Math.floor(Math.random() * (fds[i].menu.images.count - 1))].image}" />
+                                                            </div>
+                                                            <div class="ui flowing popup basic transition hidden ting-menu-popup-${brt.id}-${fds[i].menu.id}">
+                                                                <div class="header">${fds[i].menu.name}</div>
+                                                                <div class="ui star rating" data-rating="${fds[i].menu.reviews.average}" data-max-rating="5" style="margin-top:5px;"></div>
+                                                                <div class="description">${fds[i].menu.description}</div>
+                                                                <p class="ui ${fds[i].menu.isAvailable == true ? `green` : `red`}" style="color: ${fds[i].menu.isAvailable == true ? `green` : `red`}">${fds[i].menu.isAvailable == true ? `<i class="icon check"></i> Available` : `<i class="icon times"></i> Not Available`}</p>
+                                                                <div class="extra">
+                                                                    <div class="ui label"><i class="icon boxes"></i> ${fds[i].menu.category.name}</div>
+                                                                    <div class="ui label"><i class="icon utensils spoon"></i> ${fds[i].menu.foodType}</div>
+                                                                    <div class="ui label"><i class="icon tag"></i> ${fds[i].menu.currency} ${numerilize(fds[i].menu.price, fds[i].menu.price, 0)} ${fds[i].menu.isCountable == true ? ` (${fds[i].menu.quantity} pieces)` : ``}</div>
+                                                                </div>
+                                                            </div><script type="text/javascript">$(".lst-popup-${brt.id}-${fds[i].menu.id}").popup({popup : ".ting-menu-popup-${brt.id}-${fds[i].menu.id}", on : "hover"});
+                                                                $("div.rating, .rating, .ui.rating").rating();
+                                                            </script>`);
+                                            }
+                                        } else {cdtt.html(`<div class="ui red message">No Food To Show</div>`)}
+                                    } else if (dtt.type == "drink"){
+                                        var fds = brt.menus.menus.filter(function(f){return f.type.id == 2}).sort(function(a, b){
+                                            if(a.menu.likes.count > b.menu.likes.count){return 1}
+                                            if(a.menu.likes.count < b.menu.likes.count){return -1}
+                                            return 0
+                                        }).slice(0, 4);
+                                        if(fds.length > 0){
+                                            for(var i = 0; i < fds.length; i++){
+                                                cdtt.append(`<div class="ting-menu-image-list lst-popup-${brt.id}-${fds[i].menu.id}">
+                                                                <img src="${fds[i].menu.images.images[Math.floor(Math.random() * (fds[i].menu.images.count - 1))].image}" />
+                                                            </div>
+                                                            <div class="ui flowing popup basic transition hidden ting-menu-popup-${brt.id}-${fds[i].menu.id}">
+                                                                <div class="header">${fds[i].menu.name}</div>
+                                                                <div class="ui star rating" data-rating="${fds[i].menu.reviews.average}" data-max-rating="5" style="margin-top:5px;"></div>
+                                                                <div class="description">${fds[i].menu.description}</div>
+                                                                <p class="ui ${fds[i].menu.isAvailable == true ? `green` : `red`}" style="color: ${fds[i].menu.isAvailable == true ? `green` : `red`}">${fds[i].menu.isAvailable == true ? `<i class="icon check"></i> Available` : `<i class="icon times"></i> Not Available`}</p>
+                                                                <div class="extra">
+                                                                    <div class="ui label"><i class="icon boxes"></i> ${fds[i].menu.drinkType}</div>
+                                                                    <div class="ui label"><i class="icon tag"></i> ${fds[i].menu.currency} ${numerilize(fds[i].menu.price, fds[i].menu.price, 0)} ${fds[i].menu.isCountable == true ? `(${fds[i].menu.quantity} pieces)` : ``}</div>
+                                                                </div>
+                                                            </div><script type="text/javascript">$(".lst-popup-${brt.id}-${fds[i].menu.id}").popup({popup : ".ting-menu-popup-${brt.id}-${fds[i].menu.id}", on : "hover", boundery: "body"});
+                                                                $("div.rating, .rating, .ui.rating").rating();
+                                                            </script>`);
+                                            }
+                                        } else {cdtt.html(`<div class="ui red message">No Drink To Show</div>`)}
+                                    } else if (dtt.type == "dish"){
+                                        var fds = brt.menus.menus.filter(function(f){return f.type.id == 3}).sort(function(a, b){
+                                            if(a.menu.likes.count > b.menu.likes.count){return 1}
+                                            if(a.menu.likes.count < b.menu.likes.count){return -1}
+                                            return 0
+                                        }).slice(0, 4);
+                                        if(fds.length > 0){
+                                            for(var i = 0; i < fds.length; i++){
+                                                cdtt.append(`<div class="ting-menu-image-list lst-popup-${brt.id}-${fds[i].menu.id}">
+                                                                <img src="${fds[i].menu.images.images[Math.floor(Math.random() * (fds[i].menu.images.count - 1))].image}" />
+                                                            </div>
+                                                            <div class="ui flowing popup basic transition hidden ting-menu-popup-${brt.id}-${fds[i].menu.id}">
+                                                                <div class="header">${fds[i].menu.name}</div>
+                                                                <div class="ui star rating" data-rating="${fds[i].menu.reviews.average}" data-max-rating="5" style="margin-top:5px;"></div>
+                                                                <div class="description">${fds[i].menu.description}</div>
+                                                                <p class="ui ${fds[i].menu.isAvailable == true ? `green` : `red`}" style="color: ${fds[i].menu.isAvailable == true ? `green` : `red`}">${fds[i].menu.isAvailable == true ? `<i class="icon check"></i> Available` : `<i class="icon times"></i> Not Available`}</p>
+                                                                <div class="extra">
+                                                                    <div class="ui label"><i class="icon boxes"></i> ${fds[i].menu.category.name}</div>
+                                                                    <div class="ui label"><i class="icon clock"></i> ${fds[i].menu.dishTime}</div>
+                                                                    <div class="ui label"><i class="icon tag"></i> ${fds[i].menu.currency} ${numerilize(fds[i].menu.price, fds[i].menu.price, 0)} ${fds[i].menu.isCountable == true ? `(${fds[i].menu.quantity} pieces)` : ``}</div>
+                                                                </div>
+                                                            </div><script type="text/javascript">$(".lst-popup-${brt.id}-${fds[i].menu.id}").popup({popup : ".ting-menu-popup-${brt.id}-${fds[i].menu.id}", on : "hover", boundery: "body"});
+                                                                $("div.rating, .rating, .ui.rating").rating();
+                                                            </script>`);
+                                            }
+                                        } else {cdtt.html(`<div class="ui red message">No Dish To Show</div>`)}
+                                    }
+                                } 
+                            });
+                            tc.find(".ting-resto-item-address").click(function(e){
+                                e.preventDefault();var p = $(this).attr("data-position");
+                                var b = res[p];var s = {lat: parseFloat(b.latitude), lng: parseFloat(b.longitude)}
+                                branchesmaps(res, s, true);window.scrollTo({ top: 0, behavior: 'smooth' });
+                            });
+                            tc.find(".ting-resto-item-map-direction").click(function(e){
+                                e.preventDefault();
+                                var m = $("#ting-resto-branch-direction").modal("show");
+                                m.find(".content").html(loader);
+                                var url = $(this).attr("data-url");
+                                $.ajax({
+                                    type:"GET", url: url, data: {"lat": lat, "long": long, "addr": addr, "count": cntr, "town": twn},
+                                    success: function(r){m.find(".content").html(r)},
+                                    error: function(_, t, e){m.find(".content").html(`<div class="ui red message">${e}</div>`)}
+                                });
+                            });
+                            ctn.append(tc);
+                        }
+                        md.html(ctn);
+                    } else {md.html(`<div class="ui red message">No Restaurants To Show</div>`)}
+                }
+            }
+        } else if(state.type == "restaurant"){
+
+            var branch = window.__TING__Restaurant
+            var usa = {lat: lat, lng: long}
+
+            if(usa.lat != 0 && usa.lat !== undefined && usa.lng != 0 && usa.lng !== undefined){
+                var _ds = new google.maps.LatLng(usa.lat, usa.lng)
+                var _de = new google.maps.LatLng(parseFloat(branch.latitude), parseFloat(branch.longitude))
+                branch.dist = calculateDistance(_ds, _de)
+            } else {branch.dist = 0.00 }
+
+            var bst = statusWorkTime(branch.restaurant.opening, branch.restaurant.closing)
+
+            var rb = $("#ting-restaurant-about");
+            var rb__ui = $(`<div class="ui grid"></div>`);
+            var rb__r = $(`<div class="row" style="padding:0 !important"></div>`);
+
+            var rb__ct = $(`<div class="ten wide column"></div>`);
+            var rb__cd = $(`<div class="six wide column" style="padding: 0 !important"></div>`);
+
+            var rb__ct__in = `<div class="ui ${branch.isAvailable == true ? bst.clr : "red"} label" style="width: 100%"><i class="clock outline icon"></i> ${branch.isAvailable == true ? bst.msg : "Not Available"}</div>`;
+            var rb__cd__in = `<div class="ui label ting-resto-item-map-direction" style="cursor:pointer; width: 100% !important;" data-url="${decodeURIparams(window.__TING__URL_Load_Branch_Directions, {"restaurant": branch.restaurant.id, "branch": branch.id})}" data-branch-id="${branch.id}"><i class="icon map marker alternate"></i> ${branch.dist} Km</div>`
+
+            rb__ct.html(rb__ct__in);
+            rb__cd.html(rb__cd__in);
+            rb__ui.html(rb__r.append(rb__ct).append(rb__cd));
+
+            rb__r.find(".ting-resto-item-map-direction").click(function(e){
+                e.preventDefault();
+                var m = $("#ting-resto-branch-direction").modal("show");
+                m.find(".content").html(loader);
+                var url = $(this).attr("data-url");
+                $.ajax({
+                    type:"GET", url: url, data: {"lat": lat, "long": long, "addr": addr, "count": cntr, "town": twn},
+                    success: function(r){m.find(".content").html(r)},
+                    error: function(_, t, e){m.find(".content").html(`<div class="ui red message">${e}</div>`)}
+                });
+            });
+
+            rb.append(rb__ui);
+
+            var rb__pi = $(".ting-session-profile-image");
+            rb__pi.append(`<button class="ting-btn-animate ting-like-restaurant-branch ${likesresto(branch.restaurant) == true ? 'liked' : ''}" id="ting-like-restaurant-branch-${branch.id}" style="margin-top:8px; margin-right:6px;" data-like='{"resto":"${branch.restaurant.id}", "tkn":"${branch.restaurant.token}", "id":"${branch.id}", "typ":"link"}'>${likerestobtn(branch.restaurant)}</button>
+                           <script type="text/javascript">$(".ting-like-restaurant-branch").likeRestaurant();</script>`);
+            
+            var bctn = $("#ting-menus-list");
+            var tmc = $("#ting-menus-container");
+
+            var pag__p = [];
+            var pag__s = 0;
+            var pag__m = 15;
+            var pag__cont = $(`<div class="ui right floated pagination menu"></div>`);
+            tmc.append(pag__cont);
+
+            if(state.name == "promos"){
+
+                
+            } else if (state.name == "foods"){
+
+                var foods = branch.menus.menus.filter(function(m){ return m.type.id == 1 });
+                creatempags(foods, true);
+                if(foods.length > 0){ getmenuslist(foods.sort(function(a, b){ if ( a.menu.price < b.menu.price ){ return -1;} if ( a.menu.price > b.menu.price ){ return 1;} return 0;}).slice(parseInt(pag__p[pag__s].from), parseInt(pag__p[pag__s].to)));} 
+                else { getmenuslist(foods.sort(function(a, b){ if ( a.menu.price < b.menu.price ){ return -1;} if ( a.menu.price > b.menu.price ){ return 1;} return 0;}));}
+            
+                var mf__fd = $("#ting-food-groups");
+
+                mf__fd.change(function(e){
+                    var v = $(this).val(); pag__s = 0;
+                    if (v == 0 ){ 
+                        creatempags(foods, true);
+                        if(foods.length > 0){getmenuslist(foods.sort(function(a, b){ if ( a.menu.price < b.menu.price ){ return -1;} if ( a.menu.price > b.menu.price ){ return 1;} return 0;}).slice(parseInt(pag__p[pag__s].from), parseInt(pag__p[pag__s].to)));} 
+                        else {getmenuslist(foods.sort(function(a, b){ if ( a.menu.price < b.menu.price ){ return -1;} if ( a.menu.price > b.menu.price ){ return 1;} return 0;}));}
+                    } else {
+                        var nfds = foods.filter(function(m) { return m.menu.foodTypeId == v });
+                        creatempags(nfds, true); 
+                        if(nfds.length > 0){getmenuslist(nfds.sort(function(a, b){ if ( a.menu.price < b.menu.price ){ return -1;} if ( a.menu.price > b.menu.price ){ return 1;} return 0;}).slice(parseInt(pag__p[pag__s].from), parseInt(pag__p[pag__s].to)));} 
+                        else { getmenuslist(nfds.sort(function(a, b){ if ( a.menu.price < b.menu.price ){ return -1;} if ( a.menu.price > b.menu.price ){ return 1;} return 0;}));}
+                    }
+                });
+            }
+
+            function getmenuslist(menus){
+
+                if (menus.length > 0){
+                    
+                    menus = menus.sort(function(a, b){
+                        if ( a.menu.price < b.menu.price ){ return -1;}
+                        if ( a.menu.price > b.menu.price ){ return 1;}
+                        return 0;
+                    });
+
+                    var ctn = $(`<div class="ui items"></div>`).empty();
+
+                    for(var i = 0; i < menus.length; i++){
+                        var m = menus[i].menu;
+                        var tc = $("<div class='item ting-resto-item'></div>");
+                        tc.attr("id", "ting-menu-item-" + m.id);
+                        tc.attr("data-position", i);
+                        tc.css("cursor", "pointer");
+                        var ti = `  
+                                <div class="ui medium image">
+                                    <img src="${m.images.images[Math.floor(Math.random() * (m.images.count - 1))].image}">
+                                </div>
+                                <div class="ui content">
+                                    <a class="header" href="#" style="font-size:19px; font-weight:500;">${m.name}</a>
+                                    <div class="meta" style="margin-top:5px;">
+                                        <div class="ui disabled star rating" data-rating="${m.reviews.average}" data-max-rating="5" style="margin-bottom:10px;"></div>
+                                        <p><i icon class="icon align left"></i> ${m.description}</p>
+                                        <div class="ting-price-promo" style="height:46px;">
+                                            <div class="ting-menu-promo">
+                                                ${m.promotions.count > 0 
+                                                    ? `
+                                                        <div class="ui green message ting-promo-btn-${menus[i].id}" sy><i class="icon check"></i> Promotion Available</div>
+                                                        <div class="ui flowing popup top left transition hidden ting-promo-popup-${menus[i].id}">
+                                                            <div class="header">${m.promotions.promotions[0].occasionEvent}</div>
+                                                            <hr/>
+                                                            <div class="description">
+                                                                <p><i class="icon clock outline"></i> ${m.promotions.promotions[0].period}</p>
+                                                                ${m.promotions.promotions[0].reduction.hasReduction == true ? `<p><i class="icon minus square outline"></i> Order this menu and get a ${m.promotions.promotions[0].reduction.amount} ${m.promotions.promotions[0].reduction.reductionType} reduction</p>` : ``}
+                                                                ${m.promotions.promotions[0].supplement.hasSupplement == true ? 
+                                                                    `<p>
+                                                                        <i class="icon plus square outline"></i>
+                                                                        Order ${m.promotions.promotions[0].supplement.minQuantity} pieces or packs of this menu and get ${m.promotions.promotions[0].supplement.quantity}
+                                                                        ${m.promotions.promotions[0].supplement.isSame == true ?
+                                                                            ` more for free` 
+                                                                            : ` free ${m.promotions.promotions[0].supplement.menu.menu.name} `}
+                                                                    </p>` 
+                                                                    : ``}
+                                                            </div>
+                                                        </div>
+                                                        <script type="text/javascript">$(".ting-promo-btn-${menus[i].id}").popup({popup : ".ting-promo-popup-${menus[i].id}", on : "hover"});</script>
+                                                      ` 
+                                                    : `<div class="ui red message">No Promotion For This Menu</div>`}
+                                            </div>
+                                            <div class="ting-menu-price" ${m.isCountable == false ? `style="margin-top:13px;"` : ``}>
+                                                ${m.isCountable == true ? `<p>${m.quantity} pieces / packs</p>` : ``}
+                                                <p>${m.price != m.lastPrice ? `<span style="font-size:14px; text-decoration: line-through;">${m.currency}${numerilize(m.lastPrice, m.lastPrice, 0)}</span>` : ``}<span style="font-weight:500; font-size: 20px;">${m.currency} ${numerilize(m.price, m.price, 0)}</span></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="description">
+                                        <div class="ting-menus-list-item" id="ting-menus-list-item-${menus[i].id}">
+                                            ${m.images.count > 0 ? m.images.images.map(function(m){
+                                                return `<div class="ting-menu-image-list">
+                                                            <img src="${m.image}" />
+                                                        </div>`;
+                                            }).join("") : `<div class="ui red message">No Images To Show</div>`}
+                                                
+                                        </div>
+                                    </div>
+                                    <div class="extra">
+                                        <div class="ui label"><i class="icon boxes"></i> ${m.category.name}</div>
+                                        <div class="ui ${m.isAvailable == true ? "green" : "red"} label"><i class="${m.isAvailable == true ? "check" : "times"} icon"></i> ${m.isAvailable == true ? "Available" : "Not Available"}</div>
+                                        <div class="ui label" style="cursor:pointer;"><i class="heart outline icon"></i>${numerilize(m.likes.count, null, 0)}</div>
+                                        <div class="ui label ting-rate-btn-${menus[i].id}" style="cursor:pointer;"><i class="star outline icon"></i>${m.reviews.average}</div>
+                                    </div>
+                                    <div class="ting-like-restaurant">
+                                        <button class="ting-like-restaurant ting-btn-animate ${likesresto(m) == true ? 'liked' : ''}" id="ting-like-menu-${menus[i].id}" data-like='{"menu":"${menus[i].id}", "pk":"${m.id}", "type": "${menus[i].type.id}", "typ":"link"}'>${likerestobtn(m)}</button>
+                                    </div>
+                                    <div class="ui flowing popup top left transition hidden ting-rate-popup-${menus[i].id}">
+                                        <div class="header">Rating</div>
+                                        <div class="content" style="width:300px;">
+                                            <div class="ui huge star rating" data-rating="${m.reviews.average}" data-max-rating="5"></div>
+                                            <div class="ui grid">
+                                                <div class="row" style="padding:0 !important;">
+                                                    <div class="four wide column ting-rate-average">
+                                                        <h1 style="font-weight:500; margin-top:0 !important;">${m.reviews.average}</h1>
+                                                        <p>Out Of 5</p>
+                                                    </div>
+                                                    <div class="twelve wide column" style="padding: 0 !important;">
+                                                        <div class="ui grid">
+                                                            <div class="row" style="padding-bottom:0 !important;">
+                                                                <div class="eight wide column ting-rate-percent">
+                                                                    <div class="ting-star"><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i></div>
+                                                                    <div class="ting-star"><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i></div>
+                                                                    <div class="ting-star"><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i></div>
+                                                                    <div class="ting-star"><i class="star icon"></i><i class="star icon"></i></div>
+                                                                    <div class="ting-star"><i class="star icon"></i></div>
+                                                                </div>
+                                                                <div class="eight wide column ting-rate-wrapper">
+                                                                    <div class="ting-rate-container"><div class="ting-rate-fill" style="width:${m.reviews.percents[4]}%"></div></div>
+                                                                    <div class="ting-rate-container"><div class="ting-rate-fill" style="width:${m.reviews.percents[3]}%"></div></div>
+                                                                    <div class="ting-rate-container"><div class="ting-rate-fill" style="width:${m.reviews.percents[2]}%"></div></div>
+                                                                    <div class="ting-rate-container"><div class="ting-rate-fill" style="width:${m.reviews.percents[1]}%"></div></div>
+                                                                    <div class="ting-rate-container"><div class="ting-rate-fill" style="width:${m.reviews.percents[0]}%"></div></div>
+                                                                    <div clsas="ting-reviews-count"><p>${numerilize(m.reviews.count, m.id, 0)} reviews</p></div>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -522,92 +1173,57 @@ function tingdotcom(lat, long, addr, cntr, twn){
                                             </div>
                                         </div>
                                     </div>
+                                    <script type="text/javascript">
+                                        $(".rating").rating(); $("#ting-like-menu-${menus[i].id}").likeMenu();
+                                        $(".ting-rate-btn-${menus[i].id}").popup({popup : ".ting-rate-popup-${menus[i].id}", on : "click"});
+                                    </script>
                                 </div>
-                                <script type="text/javascript">
-                                    $("div.rating, .rating, .ui.rating").rating();
-                                    $(".ting-rate-btn-${br.id}").popup({popup : ".ting-rate-popup-${br.id}", on : "click"});
-                                    $("#ting-like-restaurant-${br.id}").likeRestaurant();
-                                </script>
-                            </div>
-                        `;
+                            `;
+                        tc.html(ti);
+                        ctn.append(tc);
+                    }
+                    bctn.html(ctn);
+                } else { bctn.html(`<div class="ui red message">No Menu ${capitalize(state.name)} To Show</div>`) }
+            }
 
-                    var tb = ``;
-                    tc.html(ti);
-                    var mc = $(`<div class="five wide column" id="ting-menus-sticky" style="padding: 0;"></div>`);
-                    var h = `<h4 style="text-transform:uppercase; font-weight:100;">Popular Menus</h4>`
-                    mc.append(h);
-                    var mcnt = $(`<div class="ui divided items"></div>`);
-                    tc.click(function(e){
-                        e.preventDefault();
-                        mcnt.html(loader);
-                        var i = $(this).attr("data-position");
-                        var b = res[i];
-                        var m = b.menus.menus;
-                        var url = $(this).attr("data-top-url");
-
-                        $.ajax({
-                            type: "GET",
-                            url: url,
-                            data: {},
-                            success: function(r){mcnt.empty().html(r);},
-                            error: function(_, t, e){mcnt.html(`<div class="ui red message">${e}</div>`);
-                                setTimeout(function(){
-                                    mcnt.empty();
-                                    var max = b.menus.count > 5 ? 5 : b.menus.count
-                                    if(b.menus.count > 0){
-                                        m.sort(function(a, b){
-                                            if ( a.menu.reviews.count < b.menu.reviews.count ){ return -1;}
-                                            if ( a.menu.reviews.count > b.menu.reviews.count ){ return 1;}
-                                            return 0;
-                                        });
-                                        var mm = m.slice(0, 5);
-                                        for(var j = 0; j < mm.length; j++){
-                                            var bm = mm[j].menu;
-                                            var bmc = `
-                                                    <div class="item">
-                                                        <div class="ui tiny image">
-                                                            <img src="${bm.images.images[0].image}">
-                                                        </div>
-                                                        <div class="content" style="padding-left:1em;">
-                                                            <a class="header" style="font-size:15px; font-weight:500;">${bm.name}</a>
-                                                            <div class="meta" style="margin-top:5px;">
-                                                                <span class="cinema"></span>
-                                                            </div>
-                                                            <div class="description">
-                                                                <p></p>
-                                                            </div>
-                                                            <div class="extra">
-                                                                <div class="ui tiny label"><i class="icon map marker alternate"></i></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                `;
-                                            mcnt.append(bmc);
-                                        }
-                                    } else { mcnt.html(`<div class="ui red message">No Menu To Show</div>`); }
-                                }, 100);
-                            }
-                        });
-                        mc.append(mcnt);
+            function creatempags(mns, ev){
+                if(mns.length > 0){
+                    var pag__n = Math.floor(mns.length / pag__m);
+                    var pag__l = mns.length - (pag__n * pag__m);
+                    pag__cont.empty().show();
+                    pag__p = [];
+                    if(pag__l > 0){pag__n++}
+                    var pag__c = 0;
+                    for(var p = 0; p < pag__n; p++){pag__p.push({from: pag__c, to: pag__c + pag__m, pos: p}); pag__c += pag__m}
+                    if(pag__s != 0){ pag__cont.append(`<a class="item" data-position="prev"><i class="left chevron icon"></i></a>`)}
+                    if(pag__p.length > 1){
+                        for(var p = 0; p < pag__p.length; p++){
+                            pag__cont.append(`<a class="item" data-from="${pag__p[p].from}" data-to="${pag__p[p].to}" data-position="${pag__p[p].pos}">${pag__p[p].pos + 1}</a>`)
+                        }
+                    } else { pag__cont.hide() }
+                    if(pag__p.length > 1 && pag__s != pag__p.length - 1){pag__cont.append(`<a class="icon item" data-position="next"><i class="right chevron icon"></i></a>`)}
+                    pag__cont.find("a").click(function(){
+                        var p = $(this).attr("data-position");
+                        if(p == "next"){pag__s++} else if(p == "prev"){pag__s--;} else {pag__s = p;}
+                        creatempags(mns, true);
+                        getmenuslist(mns.slice(parseInt(pag__p[pag__s].from), parseInt(pag__p[pag__s].to)));
                     });
-                    ctn.append(tc);
-                }
-                rc.html(ctn);
-            } 
-            else {rc.html(`<div class="ui red message">No Restaurants To Show</div>`)}
+                    pag__cont.find("a[data-position="+pag__s+"]").addClass("active").siblings().removeClass("active");
+                } else { pag__p = []; pag__cont.empty().hide(); }
+            }
         }
-
-        function likesresto(r){
-            if (typeof window.__TING__Session === 'object'){
-                var l = r.likes.likes
-                for(var i = 0; i < l.length; i++){if(l[i].id == window.__TING__Session.id){return true;}}
-                return false
-            } else {return false}
-        }
-
-        function likerestobtn(r){ return likesresto(r) == true ? likedresto : unlikedresto }
     }
 }
+
+function likesresto(r){
+    if (typeof window.__TING__Session === 'object'){
+        var l = r.likes.likes;
+        for(var i = 0; i < l.length; i++){if(l[i].id == window.__TING__Session.id){return true;}}
+        return false
+    } else {return false}
+}
+
+function likerestobtn(r){ return likesresto(r) == true ? likedresto : unlikedresto }
 
 var likedresto = `<svg height="30px" style="enable-background:new 0 0 30 30;" version="1.1" viewBox="0 0 30 30" width="30px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M11.608,20.776c-22.647-12.354-6.268-27.713,0-17.369  C17.877-6.937,34.257,8.422,11.608,20.776z" style="fill-rule:evenodd;clip-rule:evenodd;fill:#b56fe8;"/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/></svg>`;
 
@@ -657,15 +1273,15 @@ function statusWorkTime(o, c){
     if(ot >= now){
         if(((ot - now) / (1000 * 60)) < 120){
             var r = (ot - now) / (1000 * 60) > 60 ? Math.round((ot - now) / (1000 * 60 * 60)) + " hr" : Math.round((ot - now) / (1000 * 60)) + " min"
-            return {"clr": "orange", "msg": "Opening in " + r}} 
-        else {return {"clr": "red", "msg": "Closed"}}
+            return {"clr": "orange", "msg": "Opening in " + r, "st": "closed"}} 
+        else {return {"clr": "red", "msg": "Closed", "st": "closed"}}
     } else if (now > ot){
-        if(now > ct){ return {"clr": "red", "msg": "Closed"}}
+        if(now > ct){ return {"clr": "red", "msg": "Closed", "st": "closed"}}
         else {
             if(((ct - now) / (1000 * 60)) < 120){
                 var r = (ct - now) / (1000 * 60) > 60 ? Math.round((ct - now) / (1000 * 60 * 60)) + " hr" : Math.round((ct - now) / (1000 * 60)) + " min"
-                return {"clr": "orange", "msg": "Closing in " + r}} 
-            else {return {"clr": "green", "msg": "Opened"}}}
+                return {"clr": "orange", "msg": "Closing in " + r, "st": "opened"}} 
+            else {return {"clr": "green", "msg": "Opened", "st": "opened"}}}
     }
 }
 
@@ -1099,8 +1715,8 @@ jQuery.fn.likeRestaurant = function(){
         e.preventDefault();
         var data = JSON.parse($(this).attr("data-like"));
         var csrftoken = getCookie("csrftoken") != null ? getCookie("csrftoken") : window.__TING__Token;
-        var url = decodeURIparams(window.__TING__URL_Like, {"restaurant":data.resto})
-        var auth = window.__TING__Session
+        var url = decodeURIparams(window.__TING__URL_Like, {"restaurant":data.resto});
+        var auth = window.__TING__Session;
         var f = new FormData();
         f.append("csrfmiddlewaretoken", csrftoken);
         f.append("link", window.location.href);
@@ -1118,8 +1734,43 @@ jQuery.fn.likeRestaurant = function(){
                 contentType: false,
                 success: function(response){
                     if(response.type == "success"){
-                        if(b.hasClass("liked")){ b.removeClass("liked").html(unlikedresto);} 
-                        else { b.addClass("liked").addClass("ting-btn-animate").html(likedresto);}
+                        if(b.hasClass("liked")){ b.removeClass("liked").empty().html(unlikedresto);} 
+                        else { b.addClass("liked").addClass("ting-btn-animate").empty().html(likedresto);}
+                    } else { showErrorMessage(response.type, response.message);}
+                }, error: function(_, t, e){ showErrorMessage(t, e); }
+            });
+        } else { $("#ting-user-login").click(); showErrorMessage(randomString(10), "Login Required !!!");}
+    });
+}
+
+jQuery.fn.likeMenu = function(){
+    $(this).click(function(e){
+        e.preventDefault();
+        var data = JSON.parse($(this).attr("data-like"));
+        var csrftoken = getCookie("csrftoken") != null ? getCookie("csrftoken") : window.__TING__Token;
+        var url = decodeURIparams(window.__TING__URL_Like_Menu, {"menu":data.menu});
+        var auth = window.__TING__Session;
+        var f = new FormData();
+        f.append("csrfmiddlewaretoken", csrftoken);
+        f.append("link", window.location.href);
+        f.append("os", window.navigator.appVersion);
+        f.append("menu", data.menu);
+        f.append("type", data.type);
+        f.append("pk", data.pk);
+        f.append("user", auth.id || auth.token);
+
+        if(typeof auth === 'object' && auth.id !== undefined && auth.token != undefined){
+            var b = $(this);
+            $.ajax({
+                url: url,
+                method: "POST",
+                data:f,
+                processData: false,
+                contentType: false,
+                success: function(response){
+                    if(response.type == "success"){
+                        if(b.hasClass("liked")){ b.removeClass("liked").empty().html(unlikedresto);} 
+                        else { b.addClass("liked").addClass("ting-btn-animate").empty().html(likedresto);}
                     } else { showErrorMessage(response.type, response.message);}
                 }, error: function(_, t, e){ showErrorMessage(t, e); }
             });
@@ -1158,11 +1809,11 @@ var decodeURIparams =  function(url, params){
 
 var numerilize = function(n, t, d){
     if(typeof t === undefined || t == null){
-        if(typeof n === 'number'){
-            if(n > 1000000000000) return (n / 1000000000000).toFixed(2) + " Tn";
-            else if(n > 1000000000) return (n / 1000000000).toFixed(2) + " Bn";
-            else if(n > 1000000) return (n / 1000000).toFixed(2) + " M";
-            else if(n > 1000) return (n / 1000).toFixed(2) + " K";
+        if(typeof n === 'number' || typeof n === 'string'){
+            if(n > 1000000000000) return (n / 1000000000000).toFixed(d) + " Tn";
+            else if(n > 1000000000) return (n / 1000000000).toFixed(d) + " Bn";
+            else if(n > 1000000) return (n / 1000000).toFixed(d) + " M";
+            else if(n > 1000) return (n / 1000).toFixed(d) + " K";
             return n;
         } else { return n; }
     } else {
@@ -1424,6 +2075,145 @@ function InitializePlaces(input) {
 
 function calculateDistance(end, start){
     return (google.maps.geometry.spherical.computeDistanceBetween(end, start) / 1000).toFixed(2);
+}
+
+function mapsDirection(s, e, cs, m) {
+
+    var directionsDisplay;
+    var directionsService = new google.maps.DirectionsService();
+    var map;
+
+    directionsDisplay = new google.maps.DirectionsRenderer();
+    directionsDisplay.setOptions({
+        suppressMarkers: true,
+        polylineOptions: {
+            strokeColor: '#b56fe8',
+            strokeOpacity: 0.7,
+            strokeWeight: 5
+        }
+    });
+
+    var myLatLng = {
+        lat: parseFloat(s.latitude),
+        lng: parseFloat(s.longitude)
+    };
+
+    map = new google.maps.Map(document.getElementById(cs.map), {
+        zoom: 17,
+        center: myLatLng,
+        gestureHandling: 'cooperative'
+    });
+
+    var end = new google.maps.LatLng(parseFloat(e.latitude), parseFloat(e.longitude));
+    var start = new google.maps.LatLng(parseFloat(s.latitude), parseFloat(s.longitude));
+
+    $("#" + cs.distance).text(calculateDistance(end, start) + " km");
+    $("#" + cs.from).text(s.location);$("#" + cs.to).text(e.branch)
+
+    var service = new google.maps.DistanceMatrixService();
+    var bounds = new google.maps.LatLngBounds();
+
+    bounds.extend(start);
+    bounds.extend(end);
+    map.fitBounds(bounds);
+
+    var is = {
+        url: s.pin,
+        size: new google.maps.Size(71, 71),
+        origin: new google.maps.Point(0, 0),
+        anchor: new google.maps.Point(30, 64),
+        scaledSize: new google.maps.Size(60, 60)
+    };
+
+    var ie = {
+        url: e.pin,
+        size: new google.maps.Size(71, 71),
+        origin: new google.maps.Point(0, 0),
+        anchor: new google.maps.Point(30, 64),
+        scaledSize: new google.maps.Size(60, 60)
+    };
+
+    new google.maps.Marker({
+        position: {lat: parseFloat(s.latitude), lng: parseFloat(s.longitude)},
+        map: map,
+        title: s.address,
+        icon: is
+    });
+
+    new google.maps.Marker({
+        position: {lat: parseFloat(e.latitude), lng: parseFloat(e.longitude)},
+        map: map,
+        title: e.address,
+        icon: ie
+    });
+
+    if(m == "d"){
+        service.getDistanceMatrix({
+            origins: [s.address],
+            destinations: [e.address],
+            travelMode: 'DRIVING',
+            drivingOptions: {
+                departureTime: new Date(Date.now()),
+                trafficModel: 'optimistic'
+            },
+            unitSystem: google.maps.UnitSystem.METRIC,
+            avoidHighways: true,
+            avoidTolls: true,
+
+        }, function (response) {
+            var time_drive = response.rows[0].elements[0].duration.text;
+            var time_with_traffic = response.rows[0].elements[0].duration_in_traffic.text;
+            var distance = response.rows[0].elements[0].distance.text;
+            $("#" + cs.time).text(time_drive);
+            $("#" + cs.distance).text(distance);
+        });
+
+        var request = {
+            origin: start,
+            destination: end,
+            travelMode: google.maps.TravelMode.DRIVING
+        };
+
+        directionsService.route(request, function (response, status) {
+            if (status == google.maps.DirectionsStatus.OK) {
+                directionsDisplay.setDirections(response);
+                directionsDisplay.setMap(map);
+            } else {showErrorMessage(randomString(8), status);}
+        });
+    } else if (m == "w"){
+
+        service.getDistanceMatrix({
+            origins: [s.address],
+            destinations: [e.address],
+            travelMode: 'WALKING',
+            drivingOptions: {
+                departureTime: new Date(Date.now()),
+                trafficModel: 'optimistic'
+            },
+            unitSystem: google.maps.UnitSystem.METRIC,
+            avoidHighways: true,
+            avoidTolls: true,
+
+        }, function (response) {
+            var time_walk = response.rows[0].elements[0].duration.text;
+            var distance = response.rows[0].elements[0].distance.text;
+            $("#" + cs.time).text(time_walk);
+            $("#" + cs.distance).text(distance);
+        });
+
+        var request = {
+            origin: start,
+            destination: end,
+            travelMode: google.maps.TravelMode.WALKING
+        };
+
+        directionsService.route(request, function (response, status) {
+            if (status == google.maps.DirectionsStatus.OK) {
+                directionsDisplay.setDirections(response);
+                directionsDisplay.setMap(map);
+            } else {showErrorMessage(randomString(8), status);}
+        });
+    }
 }
 
 function HTMLMarker(lat, lng, img, map){

@@ -32,6 +32,7 @@ users = [
 	url(r'usr/restaurants/(?P<user>\d+)-(?P<username>[^/]+)/$', views.user_restaurants, name='ting_usr_restaurants'),
 	url(r'usr/orders/(?P<user>\d+)-(?P<username>[^/]+)/$', views.user_orders, name='ting_usr_orders'),
 	url(r'usr/bookings/(?P<user>\d+)-(?P<username>[^/]+)/$', views.user_bookings, name='ting_usr_bookings'),
+	url(r'usr/get/map/pin/(?P<user>\d+)/$', views.get_user_map_pin_svg, name='ting_usr_get_user_map_pin_svg'),
 
 	# User Profile
 
@@ -58,7 +59,19 @@ users = [
 	url(r'usr/restaurant/get/map/pin/(?P<restaurant>\d+)/svg/$', views.get_restaurant_map_pin_svg, name='ting_usr_restaurant_get_map_pin_svg'),
 	url(r'usr/restaurant/get/map/pin/(?P<restaurant>\d+)/img/$', views.get_restaurant_map_pin_img, name='ting_usr_restaurant_get_map_pin_img'),
 	url(r'usr/restaurant/like/toggle/(?P<restaurant>[^/]+)/$', views.like_restaurant, name='ting_usr_like_restaurant_toggle'),
-	url(r'usr/restaurant/load/menus/(?P<restaurant>[^/]+)/branch/top/five/(?P<branch>[^/]+)/$', views.load_branch_top_five, name='ting_usr_load_branch_top_five')
+	url(r'usr/restaurant/load/menus/(?P<restaurant>[^/]+)/branch/top/five/(?P<branch>[^/]+)/$', views.load_branch_top_five, name='ting_usr_load_branch_top_five'),
+	url(r'usr/restaurant/load/maps/(?P<restaurant>[^/]+)/directions/to/branch/(?P<branch>[^/]+)/$', views.load_branch_directions, name='ting_usr_load_branch_directions'),
+	url(r'usr/restaurant/promos/(?P<restaurant>\d+)-(?P<branch>\d+)-(?P<slug>[^/]+)$', views.get_restaurant_promotions, name='ting_usr_get_restaurant_promotions'),
+	url(r'usr/restaurant/foods/(?P<restaurant>\d+)-(?P<branch>\d+)-(?P<slug>[^/]+)$', views.get_restaurant_foods, name='ting_usr_get_restaurant_foods'),
+	url(r'usr/restaurant/drinks/(?P<restaurant>\d+)-(?P<branch>\d+)-(?P<slug>[^/]+)$', views.get_restaurant_drinks, name='ting_usr_get_restaurant_drinks'),
+	url(r'usr/restaurant/dishes/(?P<restaurant>\d+)-(?P<branch>\d+)-(?P<slug>[^/]+)$', views.get_restaurant_dishes, name='ting_usr_get_restaurant_dishes'),
+	url(r'usr/restaurant/reviews/(?P<restaurant>\d+)-(?P<branch>\d+)-(?P<slug>[^/]+)$', views.get_restaurant_reviews, name='ting_usr_get_restaurant_reviews'),
+	url(r'usr/restaurant/likes/(?P<restaurant>\d+)-(?P<branch>\d+)-(?P<slug>[^/]+)$', views.get_restaurant_likes, name='ting_usr_get_restaurant_likes'),
+	url(r'usr/restaurant/about/(?P<restaurant>\d+)-(?P<branch>\d+)-(?P<slug>[^/]+)$', views.get_restaurant_about, name='ting_usr_get_restaurant_about'),
+
+	# Menus
+
+	url(r'usr/menu/like/toogle/(?P<menu>[^/]+)/$', views.like_menu, name='ting_usr_menu_like'),
 ]
 
 admins = [

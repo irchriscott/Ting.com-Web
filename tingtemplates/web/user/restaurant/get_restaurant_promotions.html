@@ -1,0 +1,95 @@
+{% extends '../../navbar.html' %}
+{% load staticfiles %}
+{% block title %}
+<title>Ting.com - Promotions / {{restaurant.restaurant.name}}, {{restaurant.name}}</title>
+{% endblock %}
+{% block body %}
+<div class="ting-user-top-fixed-menu">
+	<div class="container">
+		<div class="ui grid">
+			<div class="row">
+				<div class="col-lg-3">
+					<img src="{{restaurant.restaurant.logo.url}}" alt="{{restaurant.name}}">
+					<p class="ting-username">{{restaurant.restaurant.name}}</p>
+				</div>
+				<div class="col-lg-9">
+					<div class="ui secondary pointing menu">
+					  	<a href="{% url 'ting_usr_get_restaurant_promotions' restaurant.restaurant.pk restaurant.pk restaurant.restaurant.slug %}" class="item active">
+					   		Promotions
+					  	</a>
+					  	<a href="{% url 'ting_usr_get_restaurant_foods' restaurant.restaurant.pk restaurant.pk restaurant.restaurant.slug %}" class="item">
+					   		Foods
+					  	</a>
+					  	<a href="{% url 'ting_usr_get_restaurant_drinks' restaurant.restaurant.pk restaurant.pk restaurant.restaurant.slug %}" class="item">
+					   		Drinks
+					  	</a>
+					  	<a href="{% url 'ting_usr_get_restaurant_dishes' restaurant.restaurant.pk restaurant.pk restaurant.restaurant.slug %}" class="item">
+					   		Dishes
+					  	</a>
+					  	<a href="{% url 'ting_usr_get_restaurant_reviews' restaurant.restaurant.pk restaurant.pk restaurant.restaurant.slug %}" class="item">
+					    	Reviews
+					  	</a>
+					  	<a href="{% url 'ting_usr_get_restaurant_likes' restaurant.restaurant.pk restaurant.pk restaurant.restaurant.slug %}" class="item">
+					    	Likes
+					  	</a>
+					  	
+					  	<a href="{% url 'ting_usr_get_restaurant_about' restaurant.restaurant.pk restaurant.pk restaurant.restaurant.slug %}" class="item">
+					    	About
+					  	</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<section class="container">
+	<div class="ting-user-container">
+		<div class="ui grid">
+			<div class="row">
+				<div class="col-lg-3">
+					{% include '../restaurant/restaurant_about.html' %}
+				</div>
+				<div class="col-lg-9">
+					<div class="ui secondary pointing menu">
+					  	<a href="{% url 'ting_usr_get_restaurant_promotions' restaurant.restaurant.pk restaurant.pk restaurant.restaurant.slug %}" class="item active">
+					   		Promotions
+					  	</a>
+					  	<a href="{% url 'ting_usr_get_restaurant_foods' restaurant.restaurant.pk restaurant.pk restaurant.restaurant.slug %}" class="item">
+					   		Foods
+					  	</a>
+					  	<a href="{% url 'ting_usr_get_restaurant_drinks' restaurant.restaurant.pk restaurant.pk restaurant.restaurant.slug %}" class="item">
+					   		Drinks
+					  	</a>
+					  	<a href="{% url 'ting_usr_get_restaurant_dishes' restaurant.restaurant.pk restaurant.pk restaurant.restaurant.slug %}" class="item">
+					   		Dishes
+					  	</a>
+					  	<a href="{% url 'ting_usr_get_restaurant_reviews' restaurant.restaurant.pk restaurant.pk restaurant.restaurant.slug %}" class="item">
+					    	Reviews
+					  	</a>
+					  	<a href="{% url 'ting_usr_get_restaurant_likes' restaurant.restaurant.pk restaurant.pk restaurant.restaurant.slug %}" class="item">
+					    	Likes
+					  	</a>
+					  	
+					  	<a href="{% url 'ting_usr_get_restaurant_about' restaurant.restaurant.pk restaurant.pk restaurant.restaurant.slug %}" class="item">
+					    	About
+					  	</a>
+					</div>
+					<div class="ui">
+					  	<p></p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<script type="text/javascript">
+	window.__TING__Session = {{session_json|safe}}
+	window.__TING__Restaurant = {{restaurant_json|safe}}
+	window.__TING__Menus = {{menus_json|safe}}
+	window.__TING__Link = {type: "restaurant", name: "promos"} || {};
+	window.__TING__Token = $("input[name=csrfmiddlewaretoken]").val() || null;
+	window.__TING__URL_Like = decodeURI("{% url 'ting_usr_like_restaurant_toggle' '{restaurant}' %}");
+	window.__TING__URL_Load_Branch_Directions = decodeURI("{% url 'ting_usr_load_branch_directions' '{restaurant}' '{branch}' %}");
+</script>
+{% endblock %}

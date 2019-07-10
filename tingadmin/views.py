@@ -96,12 +96,14 @@ def add_restaurant(request):
 		
 		restaurant_form = RestaurantFormAdmin(request.POST, instance=Restaurant(
 				token=token,
-				slug=slug,
+				slug=slug.lower(),
 				logo=utils.DEFAULT_RESTAURANT_IMAGE
 			))
 
 		branch_form = BranchForm(request.POST, instance=Branch(
-				name=request.POST.get('branch')
+				name=request.POST.get('branch'),
+				phone=phone,
+				email=email
 			))
 
 		if restaurant_form.is_valid() and branch_form.is_valid():

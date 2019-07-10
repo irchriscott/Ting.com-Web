@@ -35,7 +35,7 @@ class AddNewBranch(forms.ModelForm):
 
 	class Meta:
 		model = Branch
-		fields = ('name', 'country', 'town', 'address', 'longitude', 'latitude', 'place_id')
+		fields = ('name', 'country', 'town', 'address', 'longitude', 'latitude', 'place_id', 'email', 'phone')
 
 
 class AddAdministrator(forms.ModelForm):

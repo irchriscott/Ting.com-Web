@@ -333,8 +333,11 @@ def update_restaurant_profile(request):
 		if form.is_valid() and email != '' and phone != '' and password != '':
 			if check_password(password, admin.password) is True:
 				
+				slug = '%s-%s'.lower() % (form.cleaned_data['name'].replace(' ', '-'), get_random_string(16))
+
 				restaurant = Restaurant.objects.get(pk=admin.restaurant.pk)
 				restaurant.name = form.cleaned_data['name']
+				restaurant.slug = slug.lowe()
 				restaurant.branch = form.cleaned_data['branch']
 				restaurant.motto = form.cleaned_data['motto']
 				restaurant.opening = form.cleaned_data['opening']
@@ -496,6 +499,8 @@ def update_branch(request, branch):
 			branch.longitude = branch_form.cleaned_data['longitude']
 			branch.latitude = branch_form.cleaned_data['latitude']
 			branch.place_id = branch_form.cleaned_data['place_id']
+			branch.email = branch_form.cleaned_data['email']
+			branch.phone = branch_form.cleaned_data['phone']
 			branch.updated_at = timezone.now()
 			branch.save()
 			
