@@ -22,7 +22,7 @@
                             <div class="twelve wide column">
                                 <h1>Promotions</h1>
                             </div>
-                             {% if admin.pk|has_p:"can_add_admin" == True %}
+                             {% if admin.pk|has_p:"can_add_promotion" == True %}
                             <div class="four wide column ting-no-p-right">
                                 <button class="ui twitter button" style="float:right" id="ting-admin-add-new-promotion">
                                 <i class="plus icon"></i>
@@ -212,7 +212,7 @@
 </div>
 
 
-{% if admin.pk|has_p:"can_add_admin" == True %}
+{% if admin.pk|has_p:"can_add_promotion" == True %}
 
 <div class="ui modal" data-modal="ting-admin-add-new-promotion">
     <div class="header">

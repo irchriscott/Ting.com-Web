@@ -17,7 +17,7 @@ from tingweb.backend import UserAuthentication
 from tingweb.mailer import SendUserResetPasswordMail, SendUserUpdateEmailMail, SendUserSuccessResetPasswordMail
 from tingweb.models import (
                                 Restaurant, User, UserResetPassword, UserAddress, Branch, UserRestaurant, Menu,
-                                MenuLike
+                                MenuLike, MenuReview
                             )
 from tingweb.forms import (
                                 GoogleSignUpForm, UserLocationForm, EmailSignUpForm, UserImageForm
@@ -817,7 +817,6 @@ def get_restaurant_map_pin_img(request, restaurant):
     }
 
     config = imgkit.config(wkhtmltoimage='C:\\wkhtmltopdf\\bin\\wkhtmltoimage.exe')
-
     image = imgkit.from_url('{0}{1}'.format('http://localhost:8000', 
                                         reverse('ting_usr_restaurant_get_map_pin_html', kwargs={'restaurant':restaurant.pk})), 
                                                 '%s.png' % restaurant.name.replace(' ', '-').lower(), config=config, options=options)
@@ -874,4 +873,31 @@ def like_menu(request, menu):
 
 
 def get_menu(request, menu, slug):
-    pass
+    template = 'web/user/menu/get_menu.html'
+    menu = Menu.objects.get(pk=menu)
+    menu_dic = menu.to_json_f()
+    return render(request, template, {
+            'is_logged_in': True if 'user' in request.session else False,
+            'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
+            'menu_json': json.dumps(menu_dic, default=str),
+            'menu': menu_dic
+        })
+
+
+@check_user_login
+def add_menu_review(request, menu):
+    if request.method == 'POST':
+        pass
+    else:
+        return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
+
+
+def load_menu_reviews(request, menu):
+    template = 'web/user/menu/load_menu_reviews.html'
+    reviews = MenuReview.objects.filter(menu__pk=menu).order_by('-updated_at')
+    return render(request, template, {
+            'is_logged_in': True if 'user' in request.session else False,
+            'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
+            'reviews': reviews
+        })

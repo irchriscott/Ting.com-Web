@@ -70,6 +70,12 @@
                                     Edit Profile
                                 </button>
                                 {% endif %}
+                                {% if admin.pk|has_p:"can_update_branch" == True %}
+                                <button class="large ui button left icon positive labeled" id="ting-admin-edit-branch-profile">
+                                    <i class="icon pencil"></i>
+                                    Edit Branch
+                                </button>
+                                {% endif %}
                             </div>
                             <div class="col-lg-6">
                                 <h3>CONFIGURATION</h3>
@@ -235,6 +241,64 @@
                         </div>
                     </div>
                     <button type="submit" class="ui positive right labeled icon button" id="ting-save-edit-restaurant-config">
+                        Save
+                        <i class="checkmark icon"></i>
+                    </button>
+                    <div class="ui right ting-loader ting-form-loader">
+                        <img src="{% static 'imgs/loading.gif' %}">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+
+{% if admin.pk|has_p:"can_update_branch" == True %}
+
+<div class="ui tiny modal" data-modal="ting-admin-edit-branch-profile">
+    <div class="header">
+        Edit Restaurant Branch
+    </div>
+    <div class="content">
+        <div class="ting-search-place">
+            <form class="ui form" action="{% url 'ting_wb_adm_restaurant_update_branch_profile' %}" method="POST" id="ting-admin-branch-profile-form">
+                {% csrf_token %}
+                <div class="field">
+                    <label>Enter Branch Name :</label>
+                    <input type="text" name="name" placeholder="Branch Name" value="{{branch.name}}" autocomplete="off" required>
+                </div>
+                <div class="field">
+                    <label>Enter Branch Email :</label>
+                    <input type="email" name="email" placeholder="Branch Email" value="{{branch.email}}" autocomplete="off" required>
+                </div>
+                <div class="field">
+                    <label>Enter Branch Phone :</label>
+                    <input type="text" name="phone" placeholder="Branch Phone" value="{{branch.phone}}" autocomplete="off" required>
+                </div>
+                <div class="field">
+                    <label style="margin-bottom: 15px;">Specials</label>
+                    {% for special in specials %}
+                        <div class="field">
+                            <div class="ui checkbox">
+                                <input type="checkbox" name="specials" value="{{special.id}}" {% if branch.pk|has_s:special.id == True %} checked {% endif %}>
+                                <label style="line-height: 1.3 !important;"><i class="icon {{special.icon}}"></i> {{special.name}}</label>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="field">
+                    <label>Enter Administrator Password :</label>
+                    <input type="password" name="password" placeholder="Administrator Password" autocomplete="off" required>
+                </div>
+                <div class="ting-action-modal">
+                    <div class="actions">
+                        <div class="ui red deny button">
+                            Cancel
+                        </div>
+                    </div>
+                    <button type="submit" class="ui positive right labeled icon button" id="ting-save-edit-restaurant-branch-profile">
                         Save
                         <i class="checkmark icon"></i>
                     </button>

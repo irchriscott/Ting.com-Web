@@ -140,6 +140,7 @@ $(document).ready(function(){
     $("#ting-user-login").openModal();
     $("#ting-edit-email-address").openModal();
     $("#ting-edit-password").openModal();
+    $("#ting-admin-edit-branch-profile").openModal();
 
     $("#ting-map-form").submit(function(e){
         e.preventDefault();
@@ -171,6 +172,7 @@ $(document).ready(function(){
     $("#ting-add-branch-form").submitFormAjax();
     $("#ting-add-table-form").submitFormAjax();
     $("#ting-add-promotion-form").submitFormAjax();
+    $("#ting-admin-branch-profile-form").submitFormAjax();
     $("#ting-user-registration-form").submit(function(e){
         e.preventDefault();
         var action = $(this).attr("action");
@@ -747,6 +749,7 @@ function tingdotcom(lat, long, addr, cntr, twn){
                                             <div class="ui ${br.isAvailable == true ? s.clr : "red"} label"><i class="clock outline icon"></i> ${br.isAvailable == true ? s.msg : "Not Available"}</div>
                                             <div class="ui label" style="cursor:pointer;"><i class="heart outline icon"></i>${numerilize(br.restaurant.likes.count, null, 0)}</div>
                                             <div class="ui label ting-rate-btn-${br.id}" style="cursor:pointer;"><i class="star outline icon"></i>${br.restaurant.reviews.average}</div>
+                                            <div class="ui label ting-specials-btn-${br.id}" style="cursor:pointer;"><i class="plus icon"></i>${br.specials.length}</div>
                                         </div>
                                         <div class="ting-like-restaurant">
                                             <button class="ting-like-restaurant ting-btn-animate ${likesresto(br.restaurant) == true ? 'liked' : ''}" id="ting-like-restaurant-${br.id}" data-like='{"resto":"${br.restaurant.id}", "tkn":"${br.restaurant.token}", "id":"${br.id}", "typ":"link"}'>${likerestobtn(br.restaurant)}</button>
@@ -777,7 +780,7 @@ function tingdotcom(lat, long, addr, cntr, twn){
                                                                         <div class="ting-rate-container"><div class="ting-rate-fill" style="width:${br.restaurant.reviews.percents[2]}%"></div></div>
                                                                         <div class="ting-rate-container"><div class="ting-rate-fill" style="width:${br.restaurant.reviews.percents[1]}%"></div></div>
                                                                         <div class="ting-rate-container"><div class="ting-rate-fill" style="width:${br.restaurant.reviews.percents[0]}%"></div></div>
-                                                                        <div clsas="ting-reviews-count"><p>${numerilize(br.restaurant.reviews.count, br.restaurant.id, 0)} reviews</p></div>
+                                                                        <div class="ting-reviews-count"><p>${numerilize(br.restaurant.reviews.count, br.restaurant.id, 0)} reviews</p></div>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -786,9 +789,21 @@ function tingdotcom(lat, long, addr, cntr, twn){
                                                 </div>
                                             </div>
                                         </div>
+                                        <div class="ui flowing popup top left transition hidden ting-specials-popup-${br.id}">
+                                            <div class="header">Specials</div>
+                                            <hr/>
+                                            <div class="content" style="min-width:130px;">
+                                                ${br.specials.length > 0 
+                                                    ? `${br.specials.map(function(s){
+                                                        return `<p><i class="icon ${s.icon}"></i> ${s.name}</p>`
+                                                    }).join("")}` 
+                                                    : `<div class="ui red message">No Specials Available</div>`}
+                                            </div>
+                                        </div>
                                         <script type="text/javascript">
                                             $("div.rating, .rating, .ui.rating").rating(); $("#bt-popup").dropdown();
                                             $(".ting-rate-btn-${br.id}").popup({popup : ".ting-rate-popup-${br.id}", on : "click"});
+                                            $(".ting-specials-btn-${br.id}").popup({popup : ".ting-specials-popup-${br.id}", on : "click"});
                                             $(".bt-popup").popup();$("#ting-like-restaurant-${br.id}").likeRestaurant();
                                             $("a.header").click(function(){window.open($(this).attr("href"), "_blank"); });
                                         </script>
@@ -886,7 +901,7 @@ function tingdotcom(lat, long, addr, cntr, twn){
                                         if(fds.length > 0){
                                             for(var i = 0; i < fds.length; i++){
                                                 cdtt.append(`<div class="ting-menu-image-list lst-popup-${brt.id}-${fds[i].menu.id}">
-                                                                <img src="${fds[i].menu.images.images[Math.floor(Math.random() * (fds[i].menu.images.count - 1))].image}" />
+                                                                <a href="${fds[i].menu.url}" target="_blank" class="ting-menu-url"><img src="${fds[i].menu.images.images[Math.floor(Math.random() * (fds[i].menu.images.count - 1))].image}" /></a>
                                                             </div>
                                                             <div class="ui flowing popup basic transition hidden ting-menu-popup-${brt.id}-${fds[i].menu.id}">
                                                                 <div class="header">${fds[i].menu.name}</div>
@@ -900,6 +915,7 @@ function tingdotcom(lat, long, addr, cntr, twn){
                                                                 </div>
                                                             </div><script type="text/javascript">$(".lst-popup-${brt.id}-${fds[i].menu.id}").popup({popup : ".ting-menu-popup-${brt.id}-${fds[i].menu.id}", on : "hover"});
                                                                 $("div.rating, .rating, .ui.rating").rating();
+                                                                $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
                                                             </script>`);
                                             }
                                         } else {cdtt.html(`<div class="ui red message">No Food To Show</div>`)}
@@ -912,7 +928,7 @@ function tingdotcom(lat, long, addr, cntr, twn){
                                         if(fds.length > 0){
                                             for(var i = 0; i < fds.length; i++){
                                                 cdtt.append(`<div class="ting-menu-image-list lst-popup-${brt.id}-${fds[i].menu.id}">
-                                                                <img src="${fds[i].menu.images.images[Math.floor(Math.random() * (fds[i].menu.images.count - 1))].image}" />
+                                                                <a href="${fds[i].menu.url}" target="_blank" class="ting-menu-url"><img src="${fds[i].menu.images.images[Math.floor(Math.random() * (fds[i].menu.images.count - 1))].image}" /></a>
                                                             </div>
                                                             <div class="ui flowing popup basic transition hidden ting-menu-popup-${brt.id}-${fds[i].menu.id}">
                                                                 <div class="header">${fds[i].menu.name}</div>
@@ -925,6 +941,7 @@ function tingdotcom(lat, long, addr, cntr, twn){
                                                                 </div>
                                                             </div><script type="text/javascript">$(".lst-popup-${brt.id}-${fds[i].menu.id}").popup({popup : ".ting-menu-popup-${brt.id}-${fds[i].menu.id}", on : "hover", boundery: "body"});
                                                                 $("div.rating, .rating, .ui.rating").rating();
+                                                                $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
                                                             </script>`);
                                             }
                                         } else {cdtt.html(`<div class="ui red message">No Drink To Show</div>`)}
@@ -937,7 +954,7 @@ function tingdotcom(lat, long, addr, cntr, twn){
                                         if(fds.length > 0){
                                             for(var i = 0; i < fds.length; i++){
                                                 cdtt.append(`<div class="ting-menu-image-list lst-popup-${brt.id}-${fds[i].menu.id}">
-                                                                <img src="${fds[i].menu.images.images[Math.floor(Math.random() * (fds[i].menu.images.count - 1))].image}" />
+                                                                <a href="${fds[i].menu.url}" target="_blank" class="ting-menu-url"><img src="${fds[i].menu.images.images[Math.floor(Math.random() * (fds[i].menu.images.count - 1))].image}" /></a>
                                                             </div>
                                                             <div class="ui flowing popup basic transition hidden ting-menu-popup-${brt.id}-${fds[i].menu.id}">
                                                                 <div class="header">${fds[i].menu.name}</div>
@@ -951,6 +968,7 @@ function tingdotcom(lat, long, addr, cntr, twn){
                                                                 </div>
                                                             </div><script type="text/javascript">$(".lst-popup-${brt.id}-${fds[i].menu.id}").popup({popup : ".ting-menu-popup-${brt.id}-${fds[i].menu.id}", on : "hover", boundery: "body"});
                                                                 $("div.rating, .rating, .ui.rating").rating();
+                                                                $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
                                                             </script>`);
                                             }
                                         } else {cdtt.html(`<div class="ui red message">No Dish To Show</div>`)}
@@ -976,7 +994,7 @@ function tingdotcom(lat, long, addr, cntr, twn){
                             ctn.append(tc);
                         }
                         md.html(ctn);
-                    } else {md.html(`<div class="ui red message">No Restaurants To Show</div>`)}
+                    } else {md.html(`<div class="ting-empty-data"><i class="icon utensils"></i><p>No Restaurant To Show</p></div>`)}
                 }
             }
         } else if(state.type == "restaurant"){
@@ -1018,7 +1036,17 @@ function tingdotcom(lat, long, addr, cntr, twn){
                 });
             });
 
-            rb.append(rb__ui);
+            rb.append(rb__ui).append(`<hr/>`);
+            rb.append(`
+                <div class="header" style="font-size:16px; font-weight:500;">Specials</div>
+                <hr/>
+                <div class="content">
+                    ${branch.specials.length > 0 
+                        ? `${branch.specials.map(function(s){
+                            return `<p><i class="icon ${s.icon}"></i> ${s.name}</p>`
+                        }).join("")}` 
+                        : `<div class="ui red message">No Specials Available</div>`}
+                </div>`);
 
             var rb__pi = $(".ting-session-profile-image");
             rb__pi.append(`<button class="ting-btn-animate ting-like-restaurant-branch ${likesresto(branch.restaurant) == true ? 'liked' : ''}" id="ting-like-restaurant-branch-${branch.id}" style="margin-top:8px; margin-right:6px;" data-like='{"resto":"${branch.restaurant.id}", "tkn":"${branch.restaurant.token}", "id":"${branch.id}", "typ":"link"}'>${likerestobtn(branch.restaurant)}</button>
@@ -1083,7 +1111,7 @@ function tingdotcom(lat, long, addr, cntr, twn){
                                     <img src="${m.images.images[Math.floor(Math.random() * (m.images.count - 1))].image}">
                                 </div>
                                 <div class="ui content">
-                                    <a class="header" href="#" style="font-size:19px; font-weight:500;">${m.name}</a>
+                                    <a class="header" href="${m.url}" target="_blank" style="font-size:19px; font-weight:500;">${m.name}</a>
                                     <div class="meta" style="margin-top:5px;">
                                         <div class="ui disabled star rating" data-rating="${m.reviews.average}" data-max-rating="5" style="margin-bottom:10px;"></div>
                                         <p><i icon class="icon align left"></i> ${m.description}</p>
@@ -1136,7 +1164,7 @@ function tingdotcom(lat, long, addr, cntr, twn){
                                         <div class="ui label ting-rate-btn-${menus[i].id}" style="cursor:pointer;"><i class="star outline icon"></i>${m.reviews.average}</div>
                                     </div>
                                     <div class="ting-like-restaurant">
-                                        <button class="ting-like-restaurant ting-btn-animate ${likesresto(m) == true ? 'liked' : ''}" id="ting-like-menu-${menus[i].id}" data-like='{"menu":"${menus[i].id}", "pk":"${m.id}", "type": "${menus[i].type.id}", "typ":"link"}'>${likerestobtn(m)}</button>
+                                        <button class="ting-like-restaurant ting-btn-animate ${likesmenu(m) == true ? 'liked' : ''}" id="ting-like-menu-${menus[i].id}" data-like='{"menu":"${menus[i].id}", "pk":"${m.id}", "type": "${menus[i].type.id}", "typ":"link"}'>${likemenubtn(m)}</button>
                                     </div>
                                     <div class="ui flowing popup top left transition hidden ting-rate-popup-${menus[i].id}">
                                         <div class="header">Rating</div>
@@ -1164,7 +1192,7 @@ function tingdotcom(lat, long, addr, cntr, twn){
                                                                     <div class="ting-rate-container"><div class="ting-rate-fill" style="width:${m.reviews.percents[2]}%"></div></div>
                                                                     <div class="ting-rate-container"><div class="ting-rate-fill" style="width:${m.reviews.percents[1]}%"></div></div>
                                                                     <div class="ting-rate-container"><div class="ting-rate-fill" style="width:${m.reviews.percents[0]}%"></div></div>
-                                                                    <div clsas="ting-reviews-count"><p>${numerilize(m.reviews.count, m.id, 0)} reviews</p></div>
+                                                                    <div class="ting-reviews-count"><p>${numerilize(m.reviews.count, m.id, 0)} reviews</p></div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1183,7 +1211,7 @@ function tingdotcom(lat, long, addr, cntr, twn){
                         ctn.append(tc);
                     }
                     bctn.html(ctn);
-                } else { bctn.html(`<div class="ui red message">No Menu ${capitalize(state.name)} To Show</div>`) }
+                } else { bctn.html(`<div class="ting-empty-data"><i class="icon utensils"></i><p>No Menu ${capitalize(state.name)} To Show</p></div>`) }
             }
 
             function creatempags(mns, ev){
@@ -1211,6 +1239,252 @@ function tingdotcom(lat, long, addr, cntr, twn){
                     pag__cont.find("a[data-position="+pag__s+"]").addClass("active").siblings().removeClass("active");
                 } else { pag__p = []; pag__cont.empty().hide(); }
             }
+        } else if (state.type == "menu"){
+
+            var menu = window.__TING__Menu;
+            var m = menu.menu;
+            var mcnt = $("#ting-menu-container");
+            var macnt = $(`<div></div>`);
+
+            var usa = {lat: lat, lng: long}
+
+            if(usa.lat != 0 && usa.lat !== undefined && usa.lng != 0 && usa.lng !== undefined){
+                var _ds = new google.maps.LatLng(usa.lat, usa.lng)
+                var _de = new google.maps.LatLng(parseFloat(m.branch.latitude), parseFloat(m.branch.longitude))
+                m.branch.dist = calculateDistance(_ds, _de)
+            } else {m.branch.dist = 0.00 }
+
+            var bst = statusWorkTime(m.restaurant.opening, m.restaurant.closing)
+
+            var bg__grid = $(`<div class="ui grid"></div>`);
+            var bg__row = $(`<div class="row" style="padding:0;"></div>`);
+
+            var img__cnt = $(`<div class="col-lg-6"></div>`);
+            var desc__cnt = $(`<div class="col-lg-6"></div>`);
+
+            var img__grid = $(`<div class="ui grid"></div>`);
+            var img__row = $(`<div class="row" style="padding-top:0;"></div>`);
+
+            var img__lst = $(`<div class="two wide column" style="padding-right:0"></div>`);
+            var img__bg = $(`<div class="fourteen wide column" style="padding-right:0;"></div>`);
+
+            var img__lst__itms = $(`<div class="ui items ting-menu-image-big-list"></div>`);
+
+            var m__imgs = menu.menu.images;
+            var rand__img__p = Math.floor(Math.random() * (m__imgs.count - 1));
+
+            for(var i = 0; i < m__imgs.count; i++){
+                img__lst__itms.append(`<div class="item"><img src="${m__imgs.images[i].image}" class="ui image fluid ${i == rand__img__p ? `active` : ``}"/></div>`)
+            }
+
+            img__bg.append(`<div class="ting-menu-image-big ui image fluid"><img id="ting-menu-image-big" src="${m__imgs.images[rand__img__p].image}"/></div>`);
+
+            img__lst__itms.find("img").click(function(){
+                var src = $(this).attr("src");
+                $(this).addClass("active").parent().siblings().find("img").removeClass("active");
+                $("#ting-menu-image-big").attr("src", src);
+            });
+
+            desc__cnt.append(`
+                    <div class="ui ting-menu-description">
+                        <div class="header"><h3>${m.name}</h3></div>
+                        <div class="ui disabled star large rating" style="margin-top:5px;" data-rating="${m.reviews.average}" data-max-rating="5" style="margin-bottom:10px;"></div>
+                        <p style="margin-top:5px;"><i icon class="icon align left"></i> ${m.description}</p>
+                        <div class="extra">
+                            ${menu.type.id != 2 ? `<div class="ui image label"><img src="${m.category.image}">${m.category.name}</div>` : ``}
+                            ${menu.type.id == 1 ? `<div class="ui label"><i class="utensils spoon icon"></i> ${menu.type.name}</div> <div class="ui label"><i class="icon boxes"></i> ${m.foodType}</div>` : ``}
+                            ${menu.type.id == 2 ? `<div class="ui label"><i class="icon martini glass"></i> ${menu.type.name}</div> <div class="ui label"><i class="icon boxes"></i> ${m.drinkType}</div>` : ``}
+                            ${menu.type.id == 3 ? `<div class="ui label"><i class="icon utensils"></i> ${menu.type.name}</div> <div class="ui label"><i class="icon clock alternate"></i> ${m.dishTime}</div>` : ``}
+                            <div class="ui ${m.isAvailable == true ? "green" : "red"} label"><i class="${m.isAvailable == true ? "check" : "times"} icon"></i> ${m.isAvailable == true ? "Available" : "Not Available"}</div>
+                            <div class="ui label" style="cursor:pointer;"><i class="heart outline icon"></i>${numerilize(m.likes.count, null, 0)}</div>
+                        </div>
+                    </div>
+                    <div class="ting-menu-desc-ingredients">
+                        <h6 style="font-size:15px;">Ingredients</h6>
+                        <hr/>
+                        ${m.ingredients}
+                    </div>
+                    <div class="ting-menu-promos">
+                        ${m.promotions.count > 0 
+                            ? `
+                                <div class="ui items">
+                                    ${m.promotions.promotions.map(function(p){
+                                        return `
+                                        <div class="item ting-resto-item" style="padding:1rem !important;">
+                                            <div class="ui small image">
+                                                <div class="ui yellow ribbon label">
+                                                    <i class="star icon"></i> Promotion
+                                                </div>
+                                                <img src="${p.posterImage}" />
+                                            </div>
+                                            <div class="ui content">
+                                                <a href="#" class="header" style="color:#666; font-weight:400;">${p.occasionEvent}</a>
+                                                <div class="description">
+                                                    <p><i class="icon clock outline"></i> ${p.period}</p>
+                                                    ${p.reduction.hasReduction == true ? `<p><i class="icon minus square outline"></i> Order this menu and get a ${p.reduction.amount} ${p.reduction.reductionType} reduction</p>` : ``}
+                                                    ${p.supplement.hasSupplement == true ? 
+                                                        `<p>
+                                                            <i class="icon plus square outline"></i>
+                                                            Order ${p.supplement.minQuantity} pieces or packs of this menu and get ${p.supplement.quantity}
+                                                            ${p.supplement.isSame == true ?
+                                                                ` more for free` 
+                                                                : ` free ${p.supplement.menu.menu.name} `}
+                                                        </p>` 
+                                                        : ``}
+                                                </div>
+                                            </div>
+                                        </div>`;
+                                    }).join("")}
+                                </div>
+                            ` 
+                            : `<div class="ui red message" style="margin-bottom:1.5rem;">No Available Promotion</div>`}
+                    </div>
+                    <hr/>
+                    <div class="ting-meny-price">
+                        ${menu.type.id == 1 ? `${m.isCountable == true ? `<p style="margin-bottom:5px;">${m.quantity} pieces / packs</p>` : ``}`:``}
+                        ${menu.type.id == 2 ? `${m.isCountable == true ? `<p style="margin-bottom:5px;">${m.quantity} cups / bottles</p>` : ``}`:``}
+                        ${menu.type.id == 3 ? `${m.isCountable == true ? `<p style="margin-bottom:5px;">${m.quantity} plates / packs</p>` : ``}`:``}
+                        <p><span style="font-weight:500; font-size: 28px;">${m.currency} ${numerilize(m.price, m.price, 0)}</span>${m.price != m.lastPrice ? `<br/><span style="font-size:14px; text-decoration: line-through;">${m.currency}${numerilize(m.lastPrice, m.lastPrice, 0)}</span>` : ``}</p>
+                        <div class="ting-like-restaurant">
+                            <button class="ting-like-restaurant ting-btn-animate ${likesmenu(m) == true ? 'liked' : ''}" id="ting-like-menu-${menu.id}" data-like='{"menu":"${menu.id}", "pk":"${m.id}", "type": "${menu.type.id}", "typ":"link"}'>${likemenubtn(m)}</button>
+                        </div>
+                    </div>
+                    <hr/>
+                    <div class="extra">
+                        <div class="ui image label" style="font-size:17px;">
+                            <img src="${m.restaurant.logo}" />
+                            <span class="text">${m.restaurant.name}, ${m.branch.name}</span>
+                        </div>
+                        <div class="ui ${m.branch.isAvailable == true ? bst.clr : "red"} label" style="padding-top: 0.85rem; padding-bottom:0.85rem;"><i class="clock outline icon"></i> ${m.branch.isAvailable == true ? bst.msg : "Not Available"}</div>
+                        <div class="ui label ting-resto-item-map-direction" style="cursor:pointer; padding-top: 0.85rem; padding-bottom:0.85rem;" data-url="${decodeURIparams(window.__TING__URL_Load_Branch_Directions, {"restaurant": m.restaurant.id, "branch": m.branch.id})}" data-branch-id="${m.branch.id}"><i class="icon map marker alternate"></i> ${m.branch.dist} Km</div>
+                    </div>
+                    <script type="text/javascript">
+                        $(".rating").rating();$("#ting-like-menu-${menu.id}").likeMenu();
+                    </script>
+                `);
+
+            desc__cnt.find(".ting-resto-item-map-direction").click(function(e){
+                e.preventDefault();
+                var m = $("#ting-resto-branch-direction").modal("show");
+                m.find(".content").html(loader);
+                var url = $(this).attr("data-url");
+                $.ajax({
+                    type:"GET", url: url, data: {"lat": lat, "long": long, "addr": addr, "count": cntr, "town": twn},
+                    success: function(r){m.find(".content").html(r)},
+                    error: function(_, t, e){m.find(".content").html(`<div class="ui red message">${e}</div>`)}
+                });
+            });
+
+            img__lst.html(img__lst__itms);
+            img__row.append(img__lst).append(img__bg);
+            img__grid.html(img__row);
+            img__cnt.html(img__grid);
+
+            bg__row.append(img__cnt).append(desc__cnt);
+            bg__grid.html(bg__row);
+            macnt.append(bg__grid).append(`<hr/>`);
+
+            var br__grid = $(`<div class="ui divided grid"></div>`);
+            var br__row = $(`<div class="row" style="padding:0;"></div>`);
+
+            var br__reviews = $(`<div class="col-lg-8"></div>`);
+            var br__omenu = $(`<div class="col-lg-4"></div>`);
+
+            br__reviews.append(`
+                    <div class="ui grid">
+                        <div class="row" style="padding:0">
+                            <div class="eleven wide column"><h3 style="font-weight: 200; text-transform:uppercase">Menu's Reviews</h3></div>
+                            <div class="five wide column" style="padding:0; margin-left:-3px;"><button class="ui icon labeled primary button fluid" id="ting-open-menu-review-modal"><i class="icon pencil"></i>Write a Review</div></div>
+                        </div>
+                    </div>
+                    <div class="content">
+                        <div class="ui grid">
+                            <div class="row" style="padding:0 !important;">
+                                <div class="four wide column ting-rate-average">
+                                    <h1 style="font-weight:500; margin-top:0 !important; font-size:50px !important;">${m.reviews.average}</h1>
+                                    <p>Out Of 5</p>
+                                    <div class="ui huge star rating" data-rating="${m.reviews.average}" data-max-rating="5"></div>
+                                </div>
+                                <div class="twelve wide column" style="padding: 0 !important;">
+                                    <div class="ui grid">
+                                        <div class="row" style="padding-bottom:0 !important;">
+                                            <div class="eight wide column ting-rate-percent">
+                                                <div class="ting-star"><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i></div>
+                                                <div class="ting-star"><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i></div>
+                                                <div class="ting-star"><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i></div>
+                                                <div class="ting-star"><i class="star icon"></i><i class="star icon"></i></div>
+                                                <div class="ting-star"><i class="star icon"></i></div>
+                                            </div>
+                                            <div class="eight wide column ting-rate-wrapper">
+                                                <div class="ting-rate-container"><div class="ting-rate-fill" style="width:${m.reviews.percents[4]}%"></div></div>
+                                                <div class="ting-rate-container"><div class="ting-rate-fill" style="width:${m.reviews.percents[3]}%"></div></div>
+                                                <div class="ting-rate-container"><div class="ting-rate-fill" style="width:${m.reviews.percents[2]}%"></div></div>
+                                                <div class="ting-rate-container"><div class="ting-rate-fill" style="width:${m.reviews.percents[1]}%"></div></div>
+                                                <div class="ting-rate-container"><div class="ting-rate-fill" style="width:${m.reviews.percents[0]}%"></div></div>
+                                                <div class="ting-reviews-count"><p>${numerilize(m.reviews.count, m.id, 0)} reviews</p></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr/>
+                    <div class="content" id="ting-menu-reviews">${loader}</div>
+                `);
+
+            br__reviews.ready(function(){
+                var c = br__reviews.find("#ting-menu-reviews");
+                $.ajax({
+                    type:"GET", url: menu.urls.loadReviews,
+                    success: function(r){c.html(r);},
+                    error: function(_, t, e){c.html(`<div class="ui red message">${e}</div>`)}
+                });
+                br__reviews.find("#ting-open-menu-review-modal").click(function(e){
+                    e.preventDefault();
+                    var auth = window.__TING__Session;
+                    if(typeof auth == 'object' && auth.id !== undefined && auth.token !== undefined){
+                        $("#ting-menu-review-modal").modal("show");
+                    } else {$("#ting-user-login").click(); showErrorMessage(randomString(10), "Login Required !!!");}
+                });
+            });
+
+            $("#ting-menu-review-rate").rating({onRate: function(value){$(this).attr("data-value", value);}}).rating();
+
+            $("#ting-menu-review-form").submit(function(e){
+                e.preventDefault();
+                var method = $(this).attr("method");
+                var url = menu.urls.addReview;
+                var form = new FormData($(this)[0]);
+
+                var rate = $("#ting-menu-review-rate").rating("get rating");
+                form.append("rate", rate);
+
+                $.ajax({
+                    type: method,
+                    url: url,
+                    data: form,
+                    processData: false,
+                    contentType: false,
+                    success: function(r){
+                        if(r.type == "success"){
+                            showSuccessMessage(r.type, r.message);
+                            var c = br__reviews.find("#ting-menu-reviews");
+                            $.ajax({
+                                type:"GET", url: menu.urls.loadReviews,
+                                success: function(r){c.html(r);},
+                                error: function(_, t, e){c.html(`<div class="ui red message">${e}</div>`)}
+                            });
+                        } else { showErrorMessage(r.type, r.message);}
+                    },
+                    error: function(_, t, e){showErrorMessage(randomString(8), e)}
+                })
+            });
+
+            br__row.append(br__reviews).append(br__omenu);
+            br__grid.html(br__row);
+            macnt.append(br__grid);
+            mcnt.html(macnt);
         }
     }
 }
@@ -1223,7 +1497,17 @@ function likesresto(r){
     } else {return false}
 }
 
+function likesmenu(r){
+    if (typeof window.__TING__Session === 'object'){
+        var l = r.likes.likes;
+        for(var i = 0; i < l.length; i++){if(l[i].user.id == window.__TING__Session.id){return true;}}
+        return false
+    } else {return false}
+}
+
 function likerestobtn(r){ return likesresto(r) == true ? likedresto : unlikedresto }
+
+function likemenubtn(r){ return likesmenu(r) == true ? likedresto : unlikedresto }
 
 var likedresto = `<svg height="30px" style="enable-background:new 0 0 30 30;" version="1.1" viewBox="0 0 30 30" width="30px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M11.608,20.776c-22.647-12.354-6.268-27.713,0-17.369  C17.877-6.937,34.257,8.422,11.608,20.776z" style="fill-rule:evenodd;clip-rule:evenodd;fill:#b56fe8;"/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/></svg>`;
 

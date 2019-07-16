@@ -25,7 +25,7 @@ from tingweb.forms import (
 							AdministratorUpdateEmail, AddAdministrator, FoodCategoryForm, EditFoodCategoryForm,
 							AddMenuFood, FoodImageForm, EditMenuFood, AddMenuDrink, DrinkImageForm, EditMenuDrink,
 							AddMenuDish, DishImageForm, EditMenuDish, AddNewBranch, RestaurantTableForm, PromotionForm,
-							PromotionEditForm
+							PromotionEditForm, UpdateBranchProfile
 						) 
 import ting.utils as utils
 from datetime import datetime, timedelta
@@ -293,7 +293,9 @@ def restaurant(request):
 	return render(request, template, {
 			'admin': admin,
 			'restaurant': admin.restaurant,
-			'currencies': currencies
+			'currencies': currencies,
+			'specials': utils.RESTAURANT_SPECIALS,
+			'branch': admin.branch
 		})
 
 
@@ -333,7 +335,7 @@ def update_restaurant_profile(request):
 		if form.is_valid() and email != '' and phone != '' and password != '':
 			if check_password(password, admin.password) is True:
 				
-				slug = '%s-%s'.lower() % (form.cleaned_data['name'].replace(' ', '-'), get_random_string(16))
+				slug = '%s-%s' % (form.cleaned_data['name'].replace(' ', '-').lower(), get_random_string(16))
 
 				restaurant = Restaurant.objects.get(pk=admin.restaurant.pk)
 				restaurant.name = form.cleaned_data['name']
@@ -389,6 +391,38 @@ def update_restaurant_config(request):
 
 				messages.success(request, 'Restaurant Config Updated Successfully !!!')
 				return HttpJsonResponse(ResponseObject('success', 'Restaurant Config Updated Successfully !!!', 200, 
+							reverse('ting_wb_adm_restaurant')))
+			else:
+				return HttpJsonResponse(ResponseObject('error', 'Incorrect Password !!!', 401))
+		else:
+			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, msgs=form.errors.items()))
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_branch')
+def update_branch_profile(request):
+	if request.method == 'POST':
+		admin = Administrator.objects.get(pk=request.session['admin'])
+		form = UpdateBranchProfile(request.POST)
+		
+		password = request.POST.get('password')
+		specials = request.POST.getlist('specials')
+
+		if form.is_valid() and password != '':
+			if check_password(password, admin.password) is True:
+				
+				branch = Branch.objects.get(pk=admin.branch.pk)
+				branch.phone = form.cleaned_data['phone']
+				branch.email = form.cleaned_data['email']
+				branch.specials = ','.join(specials)
+				branch.updated_at = timezone.now()
+				branch.save()
+
+				messages.success(request, 'Branch Profile Updated Successfully !!!')
+				return HttpJsonResponse(ResponseObject('success', 'Branch Profile Updated Successfully !!!', 200, 
 							reverse('ting_wb_adm_restaurant')))
 			else:
 				return HttpJsonResponse(ResponseObject('error', 'Incorrect Password !!!', 401))
@@ -619,7 +653,8 @@ def add_new_admin(request):
 				mail = SendAdminRegistrationMail(email=admin.email, context={
 						'admin': admin,
 						'restaurant': admin.restaurant,
-						'password': password
+						'password': password,
+						'branch': admin.branch
 					})
 				mail.send()
 
@@ -761,7 +796,7 @@ def disable_admin_account_toggle(request, token):
 			messages.success(request, 'Administrator Account Disabled !!!')
 			return HttpJsonResponse(ResponseObject('success', 'Administrator Account Disabled !!!', 200, 
 					reverse('ting_wb_adm_administrators')))
-		elif admin.is_valid == True:
+		elif admin.is_disabled == True:
 			admin.is_disabled = False
 			admin.updated_at = timezone.now()
 			admin.save()
@@ -1039,7 +1074,7 @@ def add_new_menu_food(request):
 				restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
 				branch=Branch.objects.get(pk=admin.branch.pk),
 				admin=Administrator.objects.get(pk=admin.pk),
-				slug='{0}-{1}'.format(request.POST.get('name').replace(' ', '-'), get_random_string(32)).lower(),
+				slug='{0}-{1}'.format(request.POST.get('name').replace(' ', '-').lower(), get_random_string(32)),
 				category=FoodCategory.objects.get(pk=request.POST.get('category')),
 				is_countable=is_countable,
 				show_ingredients=show_ingredients,
@@ -1334,7 +1369,7 @@ def add_new_menu_drink(request):
 				restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
 				branch=Branch.objects.get(pk=admin.branch.pk),
 				admin=Administrator.objects.get(pk=admin.pk),
-				slug='{0}-{1}'.format(request.POST.get('name').replace(' ', '-'), get_random_string(32)).lower(),
+				slug='{0}-{1}'.format(request.POST.get('name').replace(' ', '-').lower(), get_random_string(32)),
 				is_countable=is_countable,
 				show_ingredients=show_ingredients,
 				quantity=int(request.POST.get('quantity')) if is_countable == True else 1
@@ -1600,7 +1635,7 @@ def add_new_menu_dish(request):
 				restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
 				branch=Branch.objects.get(pk=admin.branch.pk),
 				admin=Administrator.objects.get(pk=admin.pk),
-				slug='{0}-{1}'.format(request.POST.get('name').replace(' ', '-'), get_random_string(32)).lower(),
+				slug='{0}-{1}'.format(request.POST.get('name').replace(' ', '-').lower(), get_random_string(32)),
 				category=FoodCategory.objects.get(pk=request.POST.get('category')),
 				is_countable=is_countable,
 				show_ingredients=show_ingredients,

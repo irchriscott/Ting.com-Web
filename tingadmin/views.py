@@ -88,7 +88,7 @@ def add_restaurant(request):
 	if request.method == 'POST':
 		
 		token = get_random_string(128)
-		slug = '%s-%s'.lower() % (request.POST.get('name').replace(' ', '-'), get_random_string(16))
+		slug = '%s-%s' % (request.POST.get('name').replace(' ', '-').lower(), get_random_string(16))
 		email = request.POST.get('email')
 		phone = request.POST.get('phone')
 
@@ -96,7 +96,7 @@ def add_restaurant(request):
 		
 		restaurant_form = RestaurantFormAdmin(request.POST, instance=Restaurant(
 				token=token,
-				slug=slug.lower(),
+				slug=slug,
 				logo=utils.DEFAULT_RESTAURANT_IMAGE
 			))
 

@@ -71,7 +71,10 @@ users = [
 
 	# Menus
 
+	url(r'usr/menu/(?P<menu>\d+)-(?P<slug>[^/]+)$', views.get_menu, name='ting_usr_menu_get'),
 	url(r'usr/menu/like/toogle/(?P<menu>[^/]+)/$', views.like_menu, name='ting_usr_menu_like'),
+	url(r'usr/menu/reviews/add/(?P<menu>\d+)/$', views.add_menu_review, name='ting_usr_menu_add_review'),
+	url(r'usr/menu/reviews/load/(?P<menu>\d+)/$', views.load_menu_reviews, name='ting_usr_menu_load_reviews'),
 ]
 
 admins = [
@@ -122,6 +125,7 @@ admins = [
 	url(r'adm/restaurant/update/logo/$', admin.update_restaurant_logo, name='ting_wb_adm_restaurant_update_logo'),
 	url(r'adm/restaurant/update/profile/$', admin.update_restaurant_profile, name='ting_wb_adm_restaurant_update_profile'),	
 	url(r'adm/restaurant/update/config/$', admin.update_restaurant_config, name='ting_wb_adm_restaurant_update_config'),
+	url(r'adm/restaurant/update/branch/profile/$', admin.update_branch_profile, name='ting_wb_adm_restaurant_update_branch_profile'),
 
 	# Categories
 

@@ -292,6 +292,14 @@
                     </div>
                 </div>
                 <div class="field">
+                    <label>Select Administrator Branch :</label>
+                    <select class="dropdown" name="branch" required>
+                        {% for branch in branches %}
+                            <option value="{{branch.pk}}">{{branch.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field">
                     <label>Enter Administrator Phone :</label>
                     <input type="text" name="phone" placeholder="Administrator Phone" autocomplete="off" required>
                 </div>

@@ -916,13 +916,13 @@ textarea{
 
 .ting-reviews-count{
     width: calc(100% + 30px);
+    text-align: left !important;
     margin-left: -20px;
-    text-align: right !important;
 }
 
 .ting-reviews-count p{
     display: block;
-    text-align: right !important;
+    text-align: left !important;
 }
 
 .ting-like-restaurant{
@@ -978,6 +978,7 @@ textarea{
     border:1px solid #DDD !important;
     border-radius: 8px !important;
     margin-bottom: 1.5rem !important;
+    cursor: pointer;
 }
 
 .ting-resto-item:hover{
@@ -1146,3 +1147,69 @@ textarea{
     right: 0;
     top: 0;
 }
+
+.ting-menu-container{
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+.ting-menu-image-big-list img{
+    border: 1px solid #DDD;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+.ting-menu-image-big-list img.active{
+    border: 2px solid #908ced;
+}
+
+.ting-menu-image-big img{
+    border-radius: 3px;
+}
+
+.ting-menu-description{
+    position: relative;
+    display: block;
+}
+
+.ting-menu-description h2{
+
+}
+
+.ting-menu-desc-ingredients{
+    margin: 1.5rem 0;
+}
+
+.ting-menu-desc-ingredients ul{
+    margin-left: 17px !important;
+}
+
+.ting-menu-desc-ingredients ul li{
+    list-style: initial !important;
+}
+
+.ting-menu-price{
+    display: block;
+    position: relative;
+}
+
+.ting-empty-data{
+    display: block;
+    position: relative;
+    padding: 80px 0;
+    text-align: center;
+}
+
+.ting-empty-data i{
+    color: rgba(211,211,211, .5);
+    font-size: 100px !important;
+    text-align: center;
+}
+
+.ting-empty-data p{
+    color: rgba(211,211,211, .5);
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+}
+

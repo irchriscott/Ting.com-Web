@@ -1,0 +1,14 @@
+<div class="ui items">
+	{% for review in reviews %}
+		<div class="item ting-resto-item">
+			<div class="ui small image">
+				<img src="{{review.user.image.url}}">
+			</div>
+			<div class="content">
+				<a href="#" class="header">{{review.user.name}}</a>
+			</div>
+		</div>
+	{% empty %}
+		<div class="ting-empty-data"><i class="icon comments"></i><p>No Reviews For This Menu</p></div>
+	{% endfor %}
+</div>

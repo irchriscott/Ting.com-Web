@@ -38,6 +38,13 @@ class AddNewBranch(forms.ModelForm):
 		fields = ('name', 'country', 'town', 'address', 'longitude', 'latitude', 'place_id', 'email', 'phone')
 
 
+class UpdateBranchProfile(forms.ModelForm):
+
+	class Meta:
+		model = Branch
+		fields = ('name', 'email', 'phone')
+
+
 class AddAdministrator(forms.ModelForm):
 
 	class Meta:

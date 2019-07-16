@@ -286,7 +286,7 @@ class Restaurant(models.Model):
 				'count': self.categories.count(),
 				'categories': [category.to_json() for category in self.categories]
 			},
-			'logo': self.logo,
+			'logo': self.logo.url,
 			'pin': self.map_pin_svg,
 			'country': self.country,
 			'town': self.town,
@@ -349,7 +349,7 @@ class Restaurant(models.Model):
 				'count': self.categories.count(),
 				'categories': [category.to_json() for category in self.categories]
 			},
-			'logo': self.logo,
+			'logo': self.logo.url,
 			'pin': self.map_pin_svg,
 			'country': self.country,
 			'town': self.town,
@@ -459,6 +459,7 @@ class Branch(models.Model):
 	place_id = models.CharField(max_length=200, null=False, blank=False)
 	email = models.EmailField(null=True, blank=True)
 	phone = models.CharField(max_length=255, null=True, blank=True)
+	specials = models.CharField(max_length=255, null=True, blank=True)
 	is_available = models.BooleanField(default=True)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
@@ -545,6 +546,17 @@ class Branch(models.Model):
 	def dishes_count(self):
 		return self.dishes.count()
 
+	@property
+	def specials_ids(self):
+		return self.specials.split(',') if self.specials != None else []
+
+	def has_special(self, s):
+		return True if str(s) in self.specials else False
+
+	@property
+	def get_specials(self):
+		return [utils.get_from_dict(utils.RESTAURANT_SPECIALS, 'id', int(s)) for s in self.specials_ids]
+
 	def to_json(self):
 		return {
 			'id': self.pk,
@@ -558,6 +570,7 @@ class Branch(models.Model):
 			'email': self.email,
 			'phone': self.phone,
 			'isAvailable': self.is_available,
+			'specials': self.get_specials,
 			'tables':{
 				'count': self.tables_count,
 				'iron': self.tables.filter(chair_type=1).count(),
@@ -609,6 +622,7 @@ class Branch(models.Model):
 			'email': self.email,
 			'phone': self.phone,
 			'isAvailable': self.is_available,
+			'specials': self.get_specials,
 			'tables':{
 				'count': self.tables_count,
 				'iron': self.tables.filter(chair_type=1).count(),
@@ -1300,7 +1314,7 @@ class Food(models.Model):
 	def promotions(self):
 		return Promotion.objects.filter(Q(promotion_menu_type='00') | 
 				Q(promotion_menu_type='01') | Q(menu__pk=self.menu.pk) |
-				Q(category__pk=self.category.pk)).filter(is_on=True).order_by('-created_at')
+				Q(category__pk=self.category.pk)).filter(branch__pk=self.branch.pk, is_on=True).order_by('-created_at')
 
 	@property
 	def promotions_count(self):
@@ -1324,6 +1338,7 @@ class Food(models.Model):
 			'isCountable': self.is_countable,
 			'isAvailable': self.is_available,
 			'quantity': self.quantity,
+			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
 				'count': self.promotions_count,
 				'promotions': [promo.to_json() for promo in self.promotions]
@@ -1362,6 +1377,7 @@ class Food(models.Model):
 			'isCountable': self.is_countable,
 			'isAvailable': self.is_available,
 			'quantity': self.quantity,
+			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
 				'count': self.promotions_count,
 				'promotions': [promo.to_json() for promo in self.promotions]
@@ -1400,6 +1416,7 @@ class Food(models.Model):
 			'isCountable': self.is_countable,
 			'isAvailable': self.is_available,
 			'quantity': self.quantity,
+			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
@@ -1524,7 +1541,7 @@ class Drink(models.Model):
 	@property
 	def promotions(self):
 		return Promotion.objects.filter(Q(promotion_menu_type='00') | 
-				Q(promotion_menu_type='02') | Q(menu__pk=self.menu.pk) ).filter(is_on=True).order_by('-created_at')
+				Q(promotion_menu_type='02') | Q(menu__pk=self.menu.pk) ).filter(branch__pk=self.branch.pk, is_on=True).order_by('-created_at')
 
 	@property
 	def promotions_count(self):
@@ -1546,6 +1563,7 @@ class Drink(models.Model):
 			'isCountable': self.is_countable,
 			'isAvailable': self.is_available,
 			'quantity': self.quantity,
+			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
 				'count': self.promotions_count,
 				'promotions': [promo.to_json() for promo in self.promotions]
@@ -1583,6 +1601,7 @@ class Drink(models.Model):
 			'isCountable': self.is_countable,
 			'isAvailable': self.is_available,
 			'quantity': self.quantity,
+			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
 				'count': self.promotions_count,
 				'promotions': [promo.to_json() for promo in self.promotions]
@@ -1619,6 +1638,7 @@ class Drink(models.Model):
 			'isCountable': self.is_countable,
 			'isAvailable': self.is_available,
 			'quantity': self.quantity,
+			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
@@ -1759,7 +1779,7 @@ class Dish(models.Model):
 	def promotions(self):
 		return Promotion.objects.filter(Q(promotion_menu_type='00') | 
 				Q(promotion_menu_type='03') | Q(menu__pk=self.menu.pk) |
-				Q(category__pk=self.category.pk)).filter(is_on=True).order_by('-created_at')
+				Q(category__pk=self.category.pk)).filter(branch__pk=self.branch.pk, is_on=True).order_by('-created_at')
 
 	@property
 	def promotions_count(self):
@@ -1784,6 +1804,7 @@ class Dish(models.Model):
 			'quantity': self.quantity,
 			'hasDrink': self.has_drink,
 			'drink': self.drink.to_json_r() if self.has_drink == True else {},
+			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
 				'count': self.promotions_count,
 				'promotions': [promo.to_json() for promo in self.promotions]
@@ -1827,6 +1848,7 @@ class Dish(models.Model):
 			'quantity': self.quantity,
 			'hasDrink': self.has_drink,
 			'drink': self.drink.to_json_r() if self.has_drink == True else {},
+			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
 				'count': self.promotions_count,
 				'promotions': [promo.to_json() for promo in self.promotions]
@@ -1870,6 +1892,7 @@ class Dish(models.Model):
 			'quantity': self.quantity,
 			'hasDrink': self.has_drink,
 			'drink': self.drink.to_json_r() if self.has_drink == True else {},
+			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
@@ -1971,6 +1994,13 @@ class Menu(models.Model):
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
 				'id': self.pk,
+				'urls':{
+					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
+					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
+					'loadReviews': reverse('ting_usr_menu_load_reviews', kwargs={'menu': self.pk}),
+					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk})
+				},
+				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
 				'menu': food.to_json_r()
 			}
 		elif self.menu_type == 2:
@@ -1981,6 +2011,13 @@ class Menu(models.Model):
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
 				'id': self.pk,
+				'urls':{
+					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
+					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
+					'loadReviews': reverse('ting_usr_menu_load_reviews', kwargs={'menu': self.pk}),
+					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk})
+				},
+				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
 				'menu': drink.to_json_r()
 			}
 		elif self.menu_type == 3:
@@ -1991,6 +2028,13 @@ class Menu(models.Model):
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
 				'id': self.pk,
+				'urls':{
+					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': dish.slug}),
+					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
+					'loadReviews': reverse('ting_usr_menu_load_reviews', kwargs={'menu': self.pk}),
+					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk})
+				},
+				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': dish.slug}),
 				'menu': dish.to_json_r()
 			}
 
@@ -2003,6 +2047,13 @@ class Menu(models.Model):
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
 				'id': self.pk,
+				'urls':{
+					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
+					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
+					'loadReviews': reverse('ting_usr_menu_load_reviews', kwargs={'menu': self.pk}),
+					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk})
+				},
+				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
 				'menu': food.to_json_p()
 			}
 		elif self.menu_type == 2:
@@ -2013,6 +2064,13 @@ class Menu(models.Model):
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
 				'id': self.pk,
+				'urls':{
+					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
+					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
+					'loadReviews': reverse('ting_usr_menu_load_reviews', kwargs={'menu': self.pk}),
+					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk})
+				},
+				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
 				'menu': drink.to_json_p()
 			}
 		elif self.menu_type == 3:
@@ -2023,6 +2081,13 @@ class Menu(models.Model):
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
 				'id': self.pk,
+				'urls':{
+					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': dish.slug}),
+					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
+					'loadReviews': reverse('ting_usr_menu_load_reviews', kwargs={'menu': self.pk}),
+					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk})
+				},
+				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': dish.slug}),
 				'menu': dish.to_json_p()
 			}
 
@@ -2035,6 +2100,13 @@ class Menu(models.Model):
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
 				'id': self.pk,
+				'urls':{
+					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
+					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
+					'loadReviews': reverse('ting_usr_menu_load_reviews', kwargs={'menu': self.pk}),
+					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk})
+				},
+				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
 				'menu': food.to_json()
 			}
 		elif self.menu_type == 2:
@@ -2045,6 +2117,13 @@ class Menu(models.Model):
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
 				'id': self.pk,
+				'urls':{
+					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
+					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
+					'loadReviews': reverse('ting_usr_menu_load_reviews', kwargs={'menu': self.pk}),
+					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk})
+				},
+				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
 				'menu': drink.to_json()
 			}
 		elif self.menu_type == 3:
@@ -2055,6 +2134,13 @@ class Menu(models.Model):
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
 				'id': self.pk,
+				'urls':{
+					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': dish.slug}),
+					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
+					'loadReviews': reverse('ting_usr_menu_load_reviews', kwargs={'menu': self.pk}),
+					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk})
+				},
+				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': dish.slug}),
 				'menu': dish.to_json()
 			}
 

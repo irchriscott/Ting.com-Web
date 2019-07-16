@@ -121,6 +121,18 @@ USER_ADDRESS_TYPE = (
 USER_ADDRESS_TYPE_LIST = ['Home', 'Work', 'School', 'Other']
 
 
+RESTAURANT_SPECIALS = [
+	{'id': 1, 'name': 'Wi-Fi', 'icon': 'wifi'},
+	{'id': 2, 'name': 'Phone Booth', 'icon': 'phone'},
+	{'id': 3, 'name': 'TV', 'icon': 'tv'},
+	{'id': 4, 'name': 'Parking', 'icon': 'car'},
+	{'id': 5, 'name': 'Karaoke', 'icon': 'microphone'},
+	{'id': 6, 'name': 'Jazz', 'icon': 'music'},
+	{'id': 7, 'name': 'Bar', 'icon': 'glass martini'},
+	{'id': 8, 'name': 'Guards', 'icon': 'shield alternate'}
+]
+
+
 def get_from_tuple(data, key):
 	if isinstance(data, tuple) is True:
 		for t in data:
@@ -133,6 +145,15 @@ def get_from_tuple(data, key):
 						if key in i:
 							return t[1] if str(t[0]) == str(key) else key
 	return key
+
+def get_from_dict(data, k, v):
+	if isinstance(data, list) is True:
+		for d in data:
+			if isinstance(d, dict):
+				if d[k] == v:
+					return d
+	return v
+
 
 DEFAULT_USER_IMAGE = 'users/default.jpg'
 

@@ -1,5 +1,5 @@
 from django import template
-from tingweb.models import Administrator, DishFood, Menu, Food, Dish, Drink, FoodCategory
+from tingweb.models import Administrator, DishFood, Menu, Food, Dish, Drink, FoodCategory, Branch
 import ting.utils as utils
 
 register = template.Library()
@@ -49,6 +49,12 @@ def has_permission(value, arg):
 	return admin.has_permission(arg)
 
 
+@register.filter(name='has_s')
+def has_special(value, arg):
+	branch = Branch.objects.get(pk=value)
+	return branch.has_special(arg)
+
+
 @register.filter(name='prefix')
 def prefix(value, arg):
 	return '{0} {1}'.format(arg, value)
@@ -58,10 +64,12 @@ def prefix(value, arg):
 def from_tupple(value, arg):
 	return utils.get_from_tuple(arg, value)
 
+
 @register.filter(name='dish_food_q')
 def dish_food_quantity(value, arg):
 	food = DishFood.objects.filter(food=int(value), dish=int(arg)).last()
 	return food.quantity
+
 
 @register.filter(name='menu_name')
 def get_menu_name(value):
@@ -76,6 +84,7 @@ def get_menu_name(value):
 		dish = Dish.objects.get(pk=menu.menu_id)
 		return dish.name
 
+
 @register.filter(name='menu_image')
 def get_menu_image(value):
 	menu = Menu.objects.get(pk=value)
@@ -88,6 +97,7 @@ def get_menu_image(value):
 	elif menu.menu_type == 3:
 		dish = Dish.objects.get(pk=menu.menu_id)
 		return dish.images[0].image.url
+
 
 @register.filter(name='menu_type')
 def get_menu_type(value):
