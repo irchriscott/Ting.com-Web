@@ -17,16 +17,18 @@ from tingweb.backend import UserAuthentication
 from tingweb.mailer import SendUserResetPasswordMail, SendUserUpdateEmailMail, SendUserSuccessResetPasswordMail
 from tingweb.models import (
                                 Restaurant, User, UserResetPassword, UserAddress, Branch, UserRestaurant, Menu,
-                                MenuLike, MenuReview
+                                MenuLike, MenuReview, Promotion, PromotionInterest, RestaurantReview, Booking
                             )
 from tingweb.forms import (
-                                GoogleSignUpForm, UserLocationForm, EmailSignUpForm, UserImageForm
+                                GoogleSignUpForm, UserLocationForm, EmailSignUpForm, UserImageForm, MenuReviewForm,
+                                RestaurantReviewForm, ReservationForm
                             )
 import ting.utils as utils
 from datetime import datetime, timedelta
 import json
 import imgkit
 import os
+import re
 
 
 # Create your views here.
@@ -291,6 +293,8 @@ def user_profile(request, user, username):
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
+            'user_json': json.dumps(user.to_json(), default=str),
             'user': user,
             'address_types': utils.USER_ADDRESS_TYPE,
         })
@@ -554,6 +558,8 @@ def user_moments(request, user, username):
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
+            'user_json': json.dumps(user.to_json(), default=str),
             'user': user,
             'address_types': utils.USER_ADDRESS_TYPE,
         })
@@ -565,6 +571,8 @@ def user_restaurants(request, user, username):
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
+            'user_json': json.dumps(user.to_json(), default=str),
             'user': user,
             'address_types': utils.USER_ADDRESS_TYPE,
         })
@@ -582,7 +590,10 @@ def user_orders(request, user, username):
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
-            'user': user
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
+            'user_json': json.dumps(user.to_json(), default=str),
+            'user': user,
+            'address_types': utils.USER_ADDRESS_TYPE,
         })
 
 
@@ -598,8 +609,134 @@ def user_bookings(request, user, username):
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
-            'user': user
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
+            'user_json': json.dumps(user.to_json(), default=str),
+            'user': user,
+            'address_types': utils.USER_ADDRESS_TYPE,
         })
+
+
+def load_user_restaurants(request, user):
+    template = 'web/user/user/load_user_restaurants.html'
+    restaurants = UserRestaurant.objects.filter(user__pk=user)
+    return render(request, template, {'restaurants': restaurants})
+
+
+@check_user_login(xhr='ajax')
+def make_reservation(request, restaurant, branch):
+    if request.method == 'POST':
+        restaurant = Restaurant.objects.get(pk=restaurant)
+        booking = ReservationForm(request.POST, instance=Booking(
+                user=User.objects.get(pk=request.session['user']),
+                restaurant=Restaurant.objects.get(pk=restaurant.pk),
+                branch=Branch.objects.get(pk=branch),
+                token=get_random_string(100)
+            ))
+
+        bk_date = datetime.strptime(request.POST.get('date'), '%Y-%m-%d')
+        date = datetime.now() + timedelta(days=restaurant.config.days_before_reservation)
+
+        if bk_date < date:
+            return HttpJsonResponse(ResponseObject('error', 'Booking date should be %s from now !!!' % str(restaurant.config.days_before_reservation), 406))
+
+        time = datetime.strptime(request.POST.get('time'), '%I:%M %p').time()
+
+        if time <= restaurant.opening or time >= restaurant.closing:
+            return HttpJsonResponse(ResponseObject('error', 'Booking time should be between %s and %s !!!' % (restaurant.opening, restaurant.closing), 406))
+
+        if booking.is_valid():
+            reservation = booking.save(commit=False)
+            reservation.time = time
+            reservation.save()
+            return HttpJsonResponse(ResponseObject('success', 'Reservation Booked Successfully !!!', 200))
+        else:
+            return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, 
+                    msgs=booking.errors.items()))
+    else:
+        return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
+
+
+@check_user_login(xhr='ajax')
+def load_user_reservations(request, user):
+    template = 'web/user/user/load_user_reservations.html'
+    reservations =  Booking.objects.filter(user__pk=request.session['user']).order_by('-updated_at')
+    return render(request, template, {'reservations': reservations})
+
+
+@check_user_login(xhr='ajax')
+def load_edit_reservation(request, reservation):
+    book = Booking.objects.get(pk=reservation)
+    
+    if book.user.pk != request.session['user']:
+        return HttpJsonResponse(ResponseObject('error', 'Unauthorized !!!', 401))
+    
+    if book.status == 2 or book.status == 1:
+        template = 'web/user/user/load_edit_reservation.html'
+        return render(request, template, {'reservation': book, 'restaurant': book.branch, 'table_locations': utils.TABLE_LOCATION})
+    else: 
+        return HttpJsonResponse(ResponseObject('error', 'Cannot Update This Reservation For It Is %s !!!' % book.status_str, 401))
+
+
+@check_user_login(xhr='ajax')
+def update_reservation(request, reservation):
+    if request.method == 'POST':
+        booking = Booking.objects.get(pk=reservation)
+        restaurant = booking.restaurant
+        form = ReservationForm(request.POST)
+        link = request.POST.get('link')
+
+        if booking.user.pk != request.session['user']:
+            return HttpJsonResponse(ResponseObject('error', 'Unauthorized !!!', 401))
+
+        if booking.status != 2 and booking.status != 1:
+            return HttpJsonResponse(ResponseObject('error', 'Cannot Update This Reservation For It Is %s !!!' % booking.status_str, 401))
+        
+        bk_date = datetime.strptime(request.POST.get('date'), '%Y-%m-%d')
+        date = datetime.now() + timedelta(days=restaurant.config.days_before_reservation)
+
+        if bk_date < date:
+            return HttpJsonResponse(ResponseObject('error', 'Booking date should be %s from now !!!' % str(restaurant.config.days_before_reservation), 406))
+
+        time = datetime.strptime(request.POST.get('time'), '%I:%M %p').time()
+
+        if time <= restaurant.opening or time >= restaurant.closing:
+            return HttpJsonResponse(ResponseObject('error', 'Booking time should be between %s and %s !!!' % (restaurant.opening, restaurant.closing), 406))
+
+        if form.is_valid():
+            booking.status = 1
+            booking.people = form.cleaned_data['people']
+            booking.date = form.cleaned_data['date']
+            booking.time = time
+            booking.location = form.cleaned_data['location']
+            booking.updated_at = timezone.now()
+            booking.save()
+
+            messages.success(request, 'Reservation Updated Successfully !!!')
+            return HttpJsonResponse(ResponseObject('success', 'Reservation Updated Successfully !!!', 200, link))
+        else:
+            return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, 
+                    msgs=booking.errors.items()))
+    else:
+        return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
+
+
+@check_user_login(xhr='ajax')
+def cancel_reservation(request, reservation):
+    booking = Booking.objects.get(pk=reservation)
+
+    if booking.user.pk != request.session['user']:
+        return HttpJsonResponse(ResponseObject('error', 'Unauthorized !!!', 401))
+
+    if booking.status != 5 and booking.status != 6:
+        return HttpJsonResponse(ResponseObject('error', 'This Reservation Is Completed !!!', 401))
+        
+    booking.status = 7 if booking.restaurant.config.booking_cancelation_refund == True else 6
+    booking.updated_at = timezone.now()
+    booking.save()
+
+    url = reverse('ting_usr_bookings', kwargs={'user': booking.user.pk, 'username': booking.user.username})
+    return HttpJsonResponse(ResponseObject('success', 'Reservation Canceled Successfully !!!', 200, url))
+        
 
 
 # GLOBAL LINKS
@@ -634,7 +771,6 @@ def moments(request):
         })
 
 
-
 # FOR RESTAURANTS
 
 
@@ -662,7 +798,9 @@ def get_restaurant_promotions(request, restaurant, branch, slug):
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
             'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
             'restaurant_json': json.dumps(restaurant.to_json_r(), default=str),
-            'restaurant': restaurant
+            'restaurant': restaurant,
+            'address_types': utils.USER_ADDRESS_TYPE,
+            'table_locations': utils.TABLE_LOCATION
         })
 
 
@@ -676,7 +814,9 @@ def get_restaurant_foods(request, restaurant, branch, slug):
             'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
             'restaurant_json': json.dumps(restaurant.to_json_r(), default=str),
             'restaurant': restaurant,
-            'types': utils.FOOD_TYPE
+            'types': utils.FOOD_TYPE,
+            'address_types': utils.USER_ADDRESS_TYPE,
+            'table_locations': utils.TABLE_LOCATION
         })
 
 
@@ -689,7 +829,10 @@ def get_restaurant_drinks(request, restaurant, branch, slug):
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
             'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
             'restaurant_json': json.dumps(restaurant.to_json_r(), default=str),
-            'restaurant': restaurant
+            'restaurant': restaurant,
+            'types': utils.DRINK_TYPE,
+            'address_types': utils.USER_ADDRESS_TYPE,
+            'table_locations': utils.TABLE_LOCATION
         })
 
 
@@ -702,7 +845,10 @@ def get_restaurant_dishes(request, restaurant, branch, slug):
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
             'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
             'restaurant_json': json.dumps(restaurant.to_json_r(), default=str),
-            'restaurant': restaurant
+            'restaurant': restaurant,
+            'types': utils.DISH_TIME,
+            'address_types': utils.USER_ADDRESS_TYPE,
+            'table_locations': utils.TABLE_LOCATION
         })
 
 
@@ -715,7 +861,9 @@ def get_restaurant_reviews(request, restaurant, branch, slug):
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
             'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
             'restaurant_json': json.dumps(restaurant.to_json_r(), default=str),
-            'restaurant': restaurant
+            'restaurant': restaurant,
+            'address_types': utils.USER_ADDRESS_TYPE,
+            'table_locations': utils.TABLE_LOCATION
         })
 
 
@@ -728,7 +876,9 @@ def get_restaurant_likes(request, restaurant, branch, slug):
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
             'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
             'restaurant_json': json.dumps(restaurant.to_json_r(), default=str),
-            'restaurant': restaurant
+            'restaurant': restaurant,
+            'address_types': utils.USER_ADDRESS_TYPE,
+            'table_locations': utils.TABLE_LOCATION
         })
 
 
@@ -741,17 +891,19 @@ def get_restaurant_about(request, restaurant, branch, slug):
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
             'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
             'restaurant_json': json.dumps(restaurant.to_json_r(), default=str),
-            'restaurant': restaurant
+            'restaurant': restaurant,
+            'address_types': utils.USER_ADDRESS_TYPE,
+            'table_locations': utils.TABLE_LOCATION
         })
 
 
 @check_user_login(xhr='ajax')
-def like_restaurant(request, restaurant):
+def like_restaurant(request, restaurant, branch):
     if request.method == 'POST':
         user = User.objects.get(pk=request.session['user'])
         restaurant = request.POST.get('restaurant')
 
-        check = UserRestaurant.objects.filter(user__pk=user.pk, restaurant__pk=restaurant)
+        check = UserRestaurant.objects.filter(user__pk=user.pk, branch__pk=branch, restaurant__pk=restaurant)
 
         if check.count() > 0:
             check.delete()
@@ -759,7 +911,8 @@ def like_restaurant(request, restaurant):
         else:
             like = UserRestaurant(
                     user=User.objects.get(pk=user.pk),
-                    restaurant=Restaurant.objects.get(pk=restaurant)
+                    restaurant=Restaurant.objects.get(pk=restaurant),
+                    branch=Branch.objects.get(pk=branch)
                 )
             like.save()
             return HttpJsonResponse(ResponseObject('success', 'Restaurant Liked !!!', 200))
@@ -847,6 +1000,62 @@ def load_branch_directions(request, restaurant, branch):
         })
 
 
+@check_user_login(xhr='ajax')
+def add_restaurant_review(request, restaurant, branch):
+
+    check = RestaurantReview.objects.filter(branch__pk=branch, restaurant__pk=restaurant, user__pk=request.session['user'])
+
+    if request.method == 'POST':
+        review = RestaurantReviewForm(request.POST, instance=RestaurantReview(
+                user=User.objects.get(pk=request.session['user']),
+                branch=Branch.objects.get(pk=branch),
+                restaurant=Restaurant.objects.get(pk=restaurant)
+            ))
+        if review.is_valid():
+            
+            if check.count() > 0:
+                user_review = check.first()
+                user_review.review = review.cleaned_data['review']
+                user_review.comment = review.cleaned_data['comment']
+                user_review.updated_at = timezone.now()
+                user_review.save()
+                return HttpJsonResponse(ResponseObject('success', 'Restaurant Reviewed !!!', 200))
+            else:
+                review.save()
+                return HttpJsonResponse(ResponseObject('success', 'Restaurant Reviewed !!!', 200))
+        else:
+            return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, 
+                    msgs=review.errors.items()))
+    else:
+        return HttpResponse(
+            json.dumps({"type": True, "data": {"review": check[0].review, "comment": check[0].comment}}, default=str)) if check.count() > 0 else HttpResponse(
+                json.dumps({"type": False}))
+
+
+def load_restaurant_reviews(request, restaurant, branch):
+    template = 'web/user/restaurant/load_restaurant_reviews.html'
+    restaurant = Restaurant.objects.get(pk=restaurant)
+    branch = Branch.objects.get(pk=branch)
+    reviews = RestaurantReview.objects.filter(branch__pk=branch.pk, restaurant__pk=restaurant.pk)
+    return render(request, template, {
+            'branch': branch,
+            'restaurant': restaurant,
+            'reviews': reviews
+        })
+
+
+def load_restaurant_likes(request, restaurant, branch):
+    template = 'web/user/restaurant/load_restaurant_likes.html'
+    restaurant = Restaurant.objects.get(pk=restaurant)
+    branch = Branch.objects.get(pk=branch)
+    likes = UserRestaurant.objects.filter(branch__pk=branch.pk, restaurant__pk=restaurant.pk)
+    return render(request, template, {
+            'branch': branch,
+            'restaurant': restaurant,
+            'likes': likes
+        })
+
+
 # FOR MENUS
 
 
@@ -872,6 +1081,28 @@ def like_menu(request, menu):
         return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
+@check_user_login(xhr='ajax')
+def interest_promotion(request, promo):
+    if request.method == 'POST':
+        user = User.objects.get(pk=request.session['user'])
+        promo = request.POST.get('promo')
+
+        check = PromotionInterest.objects.filter(user__pk=user.pk, promotion__pk=promo)
+
+        if check.count() > 0:
+            check.delete()
+            return HttpJsonResponse(ResponseObject('success', 'Interested In Promotion !!!', 200))
+        else:
+            like = PromotionInterest(
+                    user=User.objects.get(pk=user.pk),
+                    promotion=Promotion.objects.get(pk=promo)
+                )
+            like.save()
+            return HttpJsonResponse(ResponseObject('success', 'Not Interested In Promotion !!!', 200))
+    else:
+        return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
+
+
 def get_menu(request, menu, slug):
     template = 'web/user/menu/get_menu.html'
     menu = Menu.objects.get(pk=menu)
@@ -881,16 +1112,53 @@ def get_menu(request, menu, slug):
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
             'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
             'menu_json': json.dumps(menu_dic, default=str),
-            'menu': menu_dic
+            'menu': menu_dic,
+            'address_types': utils.USER_ADDRESS_TYPE,
         })
 
 
-@check_user_login
+def get_promotion(request, promotion, slug):
+    template = 'web/user/menu/get_promotion.html'
+    promotion = Promotion.objects.get(pk=promotion)
+    return render(request, template, {
+            'is_logged_in': True if 'user' in request.session else False,
+            'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
+            'promotion_json': json.dumps(promotion.to_json_f(), default=str),
+            'promotion': promotion.to_json_f(),
+            'address_types': utils.USER_ADDRESS_TYPE,
+        })
+
+
+@check_user_login(xhr='ajax')
 def add_menu_review(request, menu):
+
+    check = MenuReview.objects.filter(menu__pk=menu, user__pk=request.session['user'])
+
     if request.method == 'POST':
-        pass
+        review = MenuReviewForm(request.POST, instance=MenuReview(
+                menu=Menu.objects.get(pk=menu),
+                user=User.objects.get(pk=request.session['user'])
+            ))
+        if review.is_valid():
+            
+            if check.count() > 0:
+                user_review = check.first()
+                user_review.review = review.cleaned_data['review']
+                user_review.comment = review.cleaned_data['comment']
+                user_review.updated_at = timezone.now()
+                user_review.save()
+                return HttpJsonResponse(ResponseObject('success', 'Menu Reviewed !!!', 200))
+            else:
+                review.save()
+                return HttpJsonResponse(ResponseObject('success', 'Menu Reviewed !!!', 200))
+        else:
+            return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, 
+                    msgs=review.errors.items()))
     else:
-        return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
+        return HttpResponse(
+            json.dumps({"type": True, "data": {"review": check[0].review, "comment": check[0].comment}}, default=str)) if check.count() > 0 else HttpResponse(
+                json.dumps({"type": False}))
 
 
 def load_menu_reviews(request, menu):

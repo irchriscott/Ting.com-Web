@@ -1,6 +1,7 @@
 {% extends '../../navbar.html' %}
 {% load staticfiles %}
 {% load ting_tags %}
+{% load humanize %}
 {% block title %}
 <title>Ting.com - {{user.name}}</title>
 {% endblock %}
@@ -70,12 +71,34 @@
 					  	{% endif %}
 					</div>
 					<div class="ui">
-					  	<p></p>
+					  	<secltion class="ting-restaurants-list-container">
+							<div class="container" style="padding: 0" id="ting-menus-container">
+								<div class="ui grid">
+									<div class="row">
+										<div class="nine wide column"><h2 style="font-size: 25px;">User's Reservations</h2></div>
+										<div class="seven wide column" style="padding: 0; text-align: right;">
+											<h2>{{session.bookings_count|intcomma}} {% if session.bookings_count == 1 %}Reservation{% else %}Reservations{% endif %}</h2>
+										</div>
+									</div>
+								</div>
+								<hr style="margin-bottom: 0;" />
+								<div class="ting-restaurants-list" id="ting-menus-list" style="padding-bottom: 0px;">
+									<div class="ui right ting-loader" style="margin: auto; text-align: center; padding: 40px 0;">
+							            <img src="{% static 'imgs/loading.gif' %}">
+							        </div>
+								</div>
+							</div>
+						</secltion>
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
 </section>
-
+<script type="text/javascript">
+	window.__TING__Session = {{session_json|safe}}
+	window.__TING__User = {{user_json|safe}}
+	window.__TING__Link = {type: "user", name: "bookings"} || {};
+	window.__TING__Token = $("input[name=csrfmiddlewaretoken]").val() || null;
+</script>
 {% endblock %}

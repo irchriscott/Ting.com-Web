@@ -88,6 +88,10 @@
                                     <p><b>Waiter Should See All Orders : </b>{{restaurant.config.waiter_see_all_orders|yesno}}</p>
                                     <p><b>Book With Advance : </b>{{restaurant.config.book_with_advance|yesno}}</p>
                                     <p><b>Booking Advance : </b>{{restaurant.config.booking_advance}} {{restaurant.config.currency|none}}</p>
+                                    <p><b>Refund After Cancelation : </b>{{restaurant.config.booking_cancelation_refund|yesno}}</p>
+                                    <p><b>Cancelation Refund : </b>{{restaurant.config.booking_cancelation_refund_percent}} %</p>
+                                    <p><b>Booking Payement Mode : </b>{{restaurant.config.payement_mode}}</p>
+                                    <p><b>Days Before Booking : </b>{{restaurant.config.days_before_reservation}} days</p>
                                 </div>
                                 {% if admin.pk|has_p:"can_update_configurations" == True %}
                                 <button class="large ui button left icon positive labeled" id="ting-admin-edit-restau-config">
@@ -111,7 +115,7 @@
 
 {% if admin.pk|has_p:"can_update_restaurant" == True %}
 
-<div class="ui modal" data-modal="ting-admin-edit-restau-profile">
+<div class="ui small modal" data-modal="ting-admin-edit-restau-profile">
     <div class="header">
         Edit Restaurant Profile
     </div>
@@ -174,7 +178,7 @@
 
 {% if admin.pk|has_p:"can_update_configurations" == True %}
 
-<div class="ui modal" data-modal="ting-admin-edit-restau-config">
+<div class="ui small modal" data-modal="ting-admin-edit-restau-config">
     <div class="header">
         Edit Restaurant Configurations
     </div>
@@ -229,6 +233,41 @@
                 <div class="field">
                     <label>Time To Cancel Booking After It Beeing Late (in minutes) :</label>
                     <input type="number" name="cancel_late_booking" placeholder="Cancel Late Booking Time" value="{{restaurant.config.cancel_late_booking}}" autocomplete="off" required>
+                </div>
+                <div class="field">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Refund After Cancelation Of Reservation :</label>
+                            <select class="dropdown" name="booking_cancelation_refund">
+                                <option value="True" {% if restaurant.config.booking_cancelation_refund == True %} selected {% endif %}>Yes</option>
+                                <option value="False" {% if restaurant.config.booking_cancelation_refund == False %} selected {% endif %}>No</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Cancelation Refund in Percent :</label>
+                            <input type="number" name="booking_cancelation_refund_percent" placeholder="Refund In Percent" value="{{restaurant.config.booking_cancelation_refund_percent}}" autocomplete="off" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Booking Payement Mode :</label>
+                            <select class="dropdown" name="booking_payement_mode">
+                                {% for mode in modes %}
+                                    {% if mode.0 == restaurant.config.booking_payement_mode %}
+                                        <option value="{{mode.0}}" selected>{{mode.1}}</option>
+                                    {% else %}
+                                        <option value="{{mode.0}}">{{mode.1}}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Enter Days Before Booking : </label>
+                            <input type="number" name="days_before_reservation" min="1" value="{{restaurant.config.days_before_reservation}}" placeholder="Days Before Booking" required>
+                        </div>
+                    </div>
                 </div>
                 <div class="field">
                     <label>Enter Administrator Password :</label>

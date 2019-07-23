@@ -13,11 +13,12 @@ from ting.responses import ResponseObject, HttpJsonResponse
 from tingweb.models import (
 							Restaurant, Administrator, AdminPermission, RestaurantLicenceKey, RestaurantConfig,
 							Menu, Food, Drink, Dish, FoodCategory, FoodImage, AdministratorResetPassword, DrinkImage,
-							DishImage, DishFood, RestaurantTable, Branch, Promotion, User
+							DishImage, DishFood, RestaurantTable, Branch, Promotion, User, Booking, UserNotification
 						)
 from tingweb.backend import AdminAuthentication
 from tingweb.mailer import (
-							SendAdminRegistrationMail, SendAdminResetPasswordMail, SendAdminSuccessResetPasswordMail
+							SendAdminRegistrationMail, SendAdminResetPasswordMail, SendAdminSuccessResetPasswordMail,
+							SendAcceptedReservationMail, SendDeclinedReservationMail
 							)
 from tingweb.forms import (
 							RestaurantUpdateLogo, RestaurantUpdateProfile, RestaurantUpdateConfig, 
@@ -28,7 +29,7 @@ from tingweb.forms import (
 							PromotionEditForm, UpdateBranchProfile
 						) 
 import ting.utils as utils
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import tingadmin.permissions as permissions
 from tingweb.views import get_restaurant_map_pin_svg
 
@@ -66,13 +67,14 @@ def has_admin_permissions(permission=None, xhr=None):
 	def decorator_wrapper(func):
 		def wrapper(request, *args, **kwargs):
 			if 'admin' in request.session:
-				admin = Administrator.objects.get(pk=request.session['admin'])
-				if admin.has_permission(permission) == False:
-					if request.method == 'POST' or request.is_ajax():
-						return HttpJsonResponse(ResponseObject('error', 'Permission Denied !!!', 401))
-					else:
-						messages.error(request, 'Permission Denied !!! !!!')
-						return HttpResponseRedirect(reverse('ting_wb_adm_dashboard'))
+				if isinstance(permission, list) == False:
+					admin = Administrator.objects.get(pk=request.session['admin'])
+					if admin.has_permission(permission) == False:
+						if request.method == 'POST' or request.is_ajax():
+							return HttpJsonResponse(ResponseObject('error', 'Permission Denied !!!', 401))
+						else:
+							messages.error(request, 'Permission Denied !!! !!!')
+							return HttpResponseRedirect(reverse('ting_wb_adm_dashboard'))
 	        
 			return func(request, *args, **kwargs)
 	    
@@ -295,7 +297,8 @@ def restaurant(request):
 			'restaurant': admin.restaurant,
 			'currencies': currencies,
 			'specials': utils.RESTAURANT_SPECIALS,
-			'branch': admin.branch
+			'branch': admin.branch,
+			'modes': utils.BOOKING_PAYEMENT_MODE
 		})
 
 
@@ -386,6 +389,10 @@ def update_restaurant_config(request):
 				config.waiter_see_all_orders = form.cleaned_data['waiter_see_all_orders']
 				config.book_with_advance = form.cleaned_data['book_with_advance']
 				config.booking_advance = form.cleaned_data['booking_advance']
+				config.booking_cancelation_refund = form.cleaned_data['booking_cancelation_refund']
+				config.booking_cancelation_refund_percent = form.cleaned_data['booking_cancelation_refund_percent']
+				config.booking_payement_mode = form.cleaned_data['booking_payement_mode']
+				config.days_before_reservation = form.cleaned_data['days_before_reservation']
 				config.updated_at = timezone.now()
 				config.save()
 
@@ -2172,7 +2179,7 @@ def add_new_promotion(request):
 				restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
 				admin=Administrator.objects.get(pk=admin.pk),
 				branch=Branch.objects.get(pk=admin.branch.pk),
-				uuid=get_random_string(32).lower(),
+				uuid=get_random_string(32),
 				is_on=True
 			))
 
@@ -2440,3 +2447,139 @@ def load_promotion(request, promotion):
 			'admin': admin,
 			'restaurant': admin.restaurant
 		})
+
+
+# Reservations
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_booking')
+def reservations(request):
+	template = 'web/admin/reservations.html'
+	dt = date.today() if request.GET.get('date') == None else datetime.strptime(request.GET.get('date'), '%Y-%m-%d')
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	today_bookings = Booking.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, date=dt).order_by('-updated_at')
+	other_bookings = Booking.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk).order_by('-updated_at')
+	return render(request, template, {
+			'admin': admin,
+			'restaurant': admin.restaurant,
+			'bookings': today_bookings,
+			'today': dt,
+			'tables': RestaurantTable.objects.filter(restaurant__pk=admin.restaurant.pk, branch__pk=admin.branch.pk).order_by('-created_at')
+		})
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_booking')
+def load_reservation(request, reservation):
+	template = 'web/admin/ajax/load_reservation.html'
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	booking = Booking.objects.get(pk=reservation)
+	return render(request, template, {
+			'admin': admin,
+			'restaurant': admin.restaurant,
+			'booking': booking
+		})
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission=['can_accept_booking', 'can_cancel_booking'])
+def accept_reservation(request, reservation):
+	if request.method == 'POST':
+		
+		admin = Administrator.objects.get(pk=request.session['admin'])
+		book = get_object_or_404(Booking, pk=reservation)
+
+		if admin.restaurant.pk != book.restaurant.pk or admin.branch.pk != book.branch.pk:
+			messages.error(request, 'Data Not For This Restaurant !!!')
+			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
+					reverse('ting_wb_adm_reservations')))
+
+		table = RestaurantTable.objects.get(pk=request.POST.get('table'))
+		if table.max_people < book.people:
+			return HttpJsonResponse(ResponseObject('error', 'Table Has Few People Than Required !!!', 406))
+
+		if table.restaurant.pk != admin.restaurant.pk or admin.branch.pk != table.branch.pk:
+			messages.error(request, 'Table Not For This Restaurant !!!')
+			return HttpJsonResponse(ResponseObject('error', 'Table Not For This Restaurant !!!', 403, 
+					reverse('ting_wb_adm_reservations')))
+
+		if book.status == 1:
+			book.status = 3 if book.restaurant.config.book_with_advance == True else 4
+			book.table = RestaurantTable.objects.get(pk=table.pk)
+			book.updated_at = timezone.now()
+			book.save()
+
+			notif = UserNotification(
+					user=User.objects.get(pk=book.user.pk),
+					from_type=1,
+					from_id=admin.branch.pk,
+					message='has accepted your reservation of %s at %s.' % (str(book.date), str(book.time)) if admin.restaurant.config.book_with_advance == False else 'has accepted your reservation of %s at %s. Please, proceed with the payements.' % (str(book.date), str(book.time)),
+					notif_type='book',
+					url=reverse('ting_usr_bookings', kwargs={'user': book.user.pk, 'username': book.user.username})
+				)
+			notif.save()
+
+			mail = SendAcceptedReservationMail(email=book.user.email, context={
+					'name': book.user.name,
+					'book': book,
+					'link': reverse('ting_usr_bookings', kwargs={'user': book.user.pk, 'username': book.user.username})
+				})
+			mail.send()
+
+			messages.success(request, 'Reservation Accepted Successfully !!!')
+			return HttpJsonResponse(ResponseObject('success', 'Reservation Accepted Successfully !!!', 200, 
+					reverse('ting_wb_adm_reservations')))
+		else:
+			return HttpJsonResponse(ResponseObject('error', 'Cannot Accept This Reservation For Status Is %s !!!' % book.status_str, 406))
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission=['can_accept_booking', 'can_cancel_booking'])
+def decline_reservation(request, reservation):
+	if request.method == 'POST':
+		
+		admin = Administrator.objects.get(pk=request.session['admin'])
+		book = get_object_or_404(Booking, pk=reservation)
+
+		if admin.restaurant.pk != book.restaurant.pk or admin.branch.pk != book.branch.pk:
+			messages.error(request, 'Data Not For This Restaurant !!!')
+			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
+					reverse('ting_wb_adm_reservations')))
+
+		if book.status == 1:
+			book.status = 2
+			book.updated_at = timezone.now()
+			book.save()
+
+			notif = UserNotification(
+					user=User.objects.get(pk=book.user.pk),
+					from_type=1,
+					from_id=admin.branch.pk,
+					message='has declined your reservation of %s at %s. Plase, Update your reservation' % (str(book.date), str(book.time)) ,
+					notif_type='book',
+					url=reverse('ting_usr_bookings', kwargs={'user': book.user.pk, 'username': book.user.username})
+				)
+			notif.save()
+
+			mail = SendDeclinedReservationMail(email=book.user.email, context={
+					'name': book.user.name,
+					'book': book,
+					'reasons': request.POST.get('reasons'),
+					'link': reverse('ting_usr_bookings', kwargs={'user': book.user.pk, 'username': book.user.username})
+				})
+			mail.send()
+			
+			messages.success(request, 'Reservation Declined Successfully !!!')
+			return HttpJsonResponse(ResponseObject('success', 'Reservation Declined Successfully !!!', 200, 
+					reverse('ting_wb_adm_reservations')))
+		else:
+			return HttpJsonResponse(ResponseObject('error', 'Cannot Accept This Reservation For It Is %s !!!' % book.status_str, 406))
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))

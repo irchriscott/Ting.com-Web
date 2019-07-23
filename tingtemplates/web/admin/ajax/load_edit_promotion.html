@@ -11,7 +11,7 @@
                 </div>
                 <div class="field">
                     <label>Enter Promotion Description:</label>
-                    <textarea name="description" class="ting-textarea-froala-editor" placeholder="Promotion Description" required>{{promotion.description}}</textarea>
+                    <textarea name="description" id="ting-textarea-froala-editor-edit" class="ting-textarea-froala-editor" placeholder="Promotion Description" required>{{promotion.description}}</textarea>
                 </div>
                 <div class="field">
                     <label>Select Promotion On :</label>
@@ -176,7 +176,7 @@
     $(document).ready(function(){
         $("#ting-update-promotion-form").submitFormAjax();
         $(".dropdown").dropdown();
-        $(".ting-textarea-froala-editor").setFroalaEditor();
+        $("#ting-textarea-froala-editor-edit").setFroalaEditor();
         {% comment %}
         $("#ting-specific-menu-select-{{promotion.pk}}").change(function(){
             var value = $(this).val();
@@ -209,6 +209,7 @@
         else if("{{promotion.promotion_menu_type}}" == "05"){$("#ting-specific-category-input-{{promotion.pk}}").dropdown("set selected", "{{promotion.category.pk}}");}
         if("{{promotion.supplement.pk}}" != "" && "{{promotion.supplement.pk}}" != null){$("#ting-has-supplement-supplement-{{promotion.pk}}").dropdown("set selected", "{{promotion.supplement.pk}}");}
         if("{{promotion.promotion_period}}" != null && "{{promotion.promotion_period}}" != ""){$("#ting-promotion-period-{{promotion.pk}}").dropdown("set selected", "{{promotion.promotion_period}}".split(","))}
+        var today = new Date();
         $("#ting-datepicker-start-date-else, #ting-datepicker-end-date-else").calendar({
             type: 'date',
             minDate: new Date(today.getFullYear(), today.getMonth(), today.getDate()),

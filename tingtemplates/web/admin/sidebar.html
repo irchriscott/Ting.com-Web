@@ -99,6 +99,18 @@
                 </a>
             </div>
             {% endif %}
+            {% if admin.pk|has_p:"can_view_booking" == True %}
+            <div class="ting-menu-item">
+                <a href="{% url 'ting_wb_adm_reservations' %}">
+                    <div class="ting-menu-icon">
+                        <i class="clipboard list link icon"></i>
+                    </div>
+                    <div class="ting-menu-legend">
+                        <p>Reservations</p>
+                    </div>
+                </a>
+            </div>
+            {% endif %}
             <div class="ting-menu-item">
                 <a href="{% url 'ting_wb_adm_logout' %}">
                     <div class="ting-menu-icon">

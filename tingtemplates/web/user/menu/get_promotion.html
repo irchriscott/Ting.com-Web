@@ -1,0 +1,74 @@
+{% extends '../../navbar.html' %}
+{% load staticfiles %}
+{% block title %}
+<title>Ting.com - Promotion / {{promotion.occasionEvent}}</title>
+{% endblock %}
+{% block body %}
+
+<section class="generic-banner relative ting-banner">		
+	<div class="container">
+		<div class="d-flex align-items-center">
+			<div class="generic-banner-content ting-banner-content">
+				<h1 class="text-white" style="text-transform:uppercase;">{{promotion.occasionEvent}}</h1>
+                <p class="text-white"><i class="icon map marker alternate"></i> {{promotion.branch.address}}</p>
+			</div>							
+        </div>
+    </div>
+</section>
+<section class="container">
+	<div class="ting-menu-container" id="ting-menu-container">
+		<div class="ui right ting-loader" style="margin: auto; text-align: center; padding: 40px 0;">
+			<img src="{% static 'imgs/loading.gif' %}">
+		</div>
+	</div>	
+</section>
+<div class="ui modal" id="ting-resto-branch-direction" data-modal="ting-resto-branch-directions">
+    <div class="header">
+        Directions
+    </div>
+    <div class="content"></div>
+    <div class="actions">
+        <div class="ui red deny button left">
+            Close
+        </div>
+    </div>
+</div>
+<div class="ui tiny modal" id="ting-menu-review-modal">
+    <div class="header">
+        Review Menu
+    </div>
+    <div class="content">
+        <form class="ui form" method="POST" action="#" id="ting-menu-review-form">
+        	{% csrf_token %}
+        	<div class="field">
+        		<div class="ui massive star rating" data-rating="1" data-value="1" data-max-rating="5" id="ting-menu-review-rate"></div>
+        	</div>
+        	<div class="field">
+        		<label>Enter Review Comment :</label>
+        		<textarea name="comment" id="ting-menu-review-comment" placeholder="Review Comment" required></textarea>
+        	</div>
+        	<div class="ting-action-modal">
+                <div class="actions">
+                    <div class="ui red deny button">
+                        Cancel
+                    </div>
+                </div>
+                <button type="submit" class="ui positive right labeled icon button">
+                    Save
+                    <i class="checkmark icon"></i>
+                </button>
+                <div class="ui right ting-loader ting-form-loader">
+                    <img src="{% static 'imgs/loading.gif' %}">
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script type="text/javascript">
+	window.__TING__Session = {{session_json|safe}}
+	window.__TING__Promotion = {{promotion_json|safe}}
+	window.__TING__Link = {type: "promotion", name: "about"} || {};
+	window.__TING__Token = $("input[name=csrfmiddlewaretoken]").val() || null;
+	window.__TING__URL_Load_Branch_Directions = decodeURI("{% url 'ting_usr_load_branch_directions' '{restaurant}' '{branch}' %}");
+</script>
+{% endblock %}

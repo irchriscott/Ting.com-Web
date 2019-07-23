@@ -5,6 +5,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
+
 class SendAdminRegistrationMail(object):
 
 	def __init__(self, email, context):
@@ -101,6 +102,42 @@ class SendUserUpdateEmailMail(object):
 		self.subject = '[Ting.com] New Email'
 		self.context = context
 		self.template = 'emails/user_update_email.html'
+
+
+	def send(self):
+		html_content = render_to_string(self.template, self.context)
+		text_content = strip_tags(html_content)
+
+		message = EmailMultiAlternatives(self.subject, text_content, settings.EMAIL_HOST_USER, [self.email])
+		message.attach_alternative(html_content, 'text/html')
+		message.send()
+
+
+class SendAcceptedReservationMail(object):
+
+	def __init__(self, email, context):
+		self.email = email
+		self.subject = '[Ting.com] Reservation Status'
+		self.context = context
+		self.template = 'emails/reservation_accepted.html'
+
+
+	def send(self):
+		html_content = render_to_string(self.template, self.context)
+		text_content = strip_tags(html_content)
+
+		message = EmailMultiAlternatives(self.subject, text_content, settings.EMAIL_HOST_USER, [self.email])
+		message.attach_alternative(html_content, 'text/html')
+		message.send()
+
+
+class SendDeclinedReservationMail(object):
+
+	def __init__(self, email, context):
+		self.email = email
+		self.subject = '[Ting.com] Reservation Status'
+		self.context = context
+		self.template = 'emails/reservation_declined.html'
 
 
 	def send(self):

@@ -132,6 +132,23 @@ RESTAURANT_SPECIALS = [
 	{'id': 8, 'name': 'Guards', 'icon': 'shield alternate'}
 ]
 
+BOOKING_PAYEMENT_MODE = (
+		(1, 'Online (Credit Card)'),
+		(2, 'Cash (On Site)'),
+		(3, 'Both (Online / Cash)')
+	)
+
+
+BOOKING_STATUSES = (
+		(1, 'Pending'),
+		(2, 'Declined'),
+		(3, 'Accepted'),
+		(4, 'Paid'),
+		(5, 'Completed'),
+		(6, 'Refunded'),
+		(7, 'Canceled')
+	)
+
 
 def get_from_tuple(data, key):
 	if isinstance(data, tuple) is True:

@@ -3,7 +3,7 @@ from django import forms
 from tingweb.models import (
 							Restaurant, RestaurantConfig, Administrator, Food, Drink, Dish, FoodImage,
 							FoodCategory, DrinkImage, DishImage, Branch, RestaurantTable, Promotion,
-							User, UserAddress
+							User, UserAddress, MenuReview, RestaurantReview, Booking
 						)
 
 
@@ -28,7 +28,7 @@ class RestaurantUpdateConfig(forms.ModelForm):
 
 	class Meta:
 		model = RestaurantConfig
-		fields = ('currency', 'use_default_currency', 'tax', 'cancel_late_booking', 'waiter_see_all_orders', 'book_with_advance', 'booking_advance',)
+		fields = ('currency', 'use_default_currency', 'tax', 'cancel_late_booking', 'waiter_see_all_orders', 'book_with_advance', 'booking_advance', 'booking_cancelation_refund', 'booking_cancelation_refund_percent', 'booking_payement_mode', 'days_before_reservation')
 
 
 class AddNewBranch(forms.ModelForm):
@@ -208,3 +208,24 @@ class UserImageForm(forms.ModelForm):
 	class Meta:
 		model = User
 		fields = ('image',)
+
+
+class MenuReviewForm(forms.ModelForm):
+
+	class Meta:
+		model = MenuReview
+		fields = ('review', 'comment')
+
+
+class RestaurantReviewForm(forms.ModelForm):
+
+	class Meta:
+		model = RestaurantReview
+		fields = ('review', 'comment')
+
+
+class ReservationForm(forms.ModelForm):
+
+	class Meta:
+		model =  Booking
+		fields = ('people', 'location', 'date')

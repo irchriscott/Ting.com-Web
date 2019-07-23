@@ -77,5 +77,10 @@
 		</div>
 	</div>
 </section>
-
+<script type="text/javascript">
+	window.__TING__Session = {{session_json|safe}}
+	window.__TING__User = {{user_json|safe}}
+	window.__TING__Link = {type: "user", name: "moments"} || {};
+	window.__TING__Token = $("input[name=csrfmiddlewaretoken]").val() || null;
+</script>
 {% endblock %}

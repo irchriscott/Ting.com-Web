@@ -1,0 +1,99 @@
+{% load staticfiles %}
+{% load humanize %}
+{% load tz %}
+<div class="ui items">
+	{% for book in reservations %}
+		<div class="item ting-resto-item">
+			<div class="ui small image">
+				<img src="{{book.restaurant.logo.url}}">
+			</div>
+			<div class="content">
+				{% if book.status != 5 and book.status != 6 %}
+				<div class="ting-like-restaurant">
+	                <button class="ui ting-like-restaurant right dropdown">
+	                	<i class="lnr lnr-chevron-down" style="font-size: 18px;"></i>
+	                	<div class="menu">
+                            <div class="header">Options</div>
+                            {% if book.status == 1 or book.status == 2 %}
+                            <a class="item ting-open-ajax-modal" ting-modal-type="ajax-form" ting-modal-form="ting-update-reservation-form" ting-data-url="{% url 'ting_usr_load_edit_reservation' book.pk %}" ting-modal-target="ting-load-edit-reservation" style="align-self: flex-start; width: 100%"><i class="pencil alternate icon"></i> Edit</a>
+                            {% endif %}
+                            {% if book.status == 3 and book.restaurant.config.book_with_advance == True and book.amount == 0 %}
+                            	<!-- PAY ADVANCE -->
+                            {% endif %}
+                            <a class="item ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_usr_cancel_reservation' book.pk %}" ting-modal-target="ting-cancel-reservation-toggle-{{book.id}}" style="align-self: flex-start; width: 100%"><i class="times icon"></i> Cancel</a>
+                        </div>
+	                </button>
+	            </div>
+	            {% endif %}
+				<a href="{% url 'ting_usr_get_restaurant_promotions' book.restaurant.pk book.branch.pk book.restaurant.slug %}" class="header">{{book.restaurant.name}}, {{book.branch.name}}</a>
+				<div class="meta" style="margin-top: 0;">
+					<div class="ui disabled-rating star rating" data-rating="{{book.branch.review_average}}" data-max-rating="5" style="margin-bottom:8px;"></div>
+                    <p style="margin-bottom: 3px;"><i icon class="icon map marker alternate"></i> {{book.branch.address}}</p>
+                    <p style="margin-bottom: 3px;"><i class="icon users" style="margin-right: 4px;"></i>  {{book.people}} {% if book.people == 1 %} Person {% else %} People {% endif %}</p>
+                    <p style="margin-bottom: 3px;"><i class="icon calendar alternate"></i>  {{book.date}} at <span style="text-transform: uppercase;">{{book.time}}</span> ({{book.date_time|naturaltime}})</p>
+                </div>
+                <div class="extra">
+                    {% if book.status == 1 %}
+                        <div class="ui orange icon label"><i class="icon hourglass half"></i> {{book.status_str}}</div>
+                    {% elif book.status == 2 or book.status == 7 %}
+                        <div class="ui red icon label"><i class="icon times"></i> {{book.status_str}}</div>
+                    {% else %}
+                        <div class="ui green icon label"><i class="icon check"></i> {{book.status_str}}</div>
+                    {% endif %}
+                    <div class="ui icon label"><i class="icon clock"></i> <span id="ting-book-time-{{book.id}}">{{book.created_at|naturaltime}}</span></div>            
+                    <script type="text/javascript">$("#ting-book-time-{{book.id}}").text(makeMoment("{{book.created_at|date:'Y-m-d H:i:s'}}"))</script>
+                </div>
+			</div>
+		</div>
+		<div class="ui modal mini" data-modal="ting-cancel-reservation-toggle-{{book.id}}">
+            <div class="header">Cancel Reservation</div>
+            <div class="content">
+                <p>Do you really want to cancel this reservation?</p>
+                {% if book.restaurant.config.book_with_advance == True and book.amount != 0 %}
+                    {% if book.restaurant.config.booking_cancelation_refund == True %}
+                    <p>You will only be refunded {{book.restaurant.config.booking_cancelation_refund_percent}} % of the paid amount.</p>
+                    {% else %}
+                    <p>You will not be refunded of the advance amount you paid.</p>
+                    {% endif %}
+                {% endif %}
+            </div>
+            <div class="actions">
+            	<div class="ui positive button right labeled icon">
+                    Yes <i class="icon check"></i>
+                </div>
+                <div class="ui red deny button right labeled icon">
+                    No <i class="icon times"></i>
+                </div>
+            </div>
+        </div>
+	{% empty %}
+		<div class="ting-empty-data" style="width: 100%"><i class="icon book"></i><p>No Reservations For This User</p></div>
+	{% endfor %}
+</div>
+<div class="ui small modal" data-modal="ting-load-edit-reservation">
+    <div class="header">
+        Edit Reservation
+    </div>
+    <div class="content">
+        <div class="ting-data-content"></div>
+        <div class="ui right ting-loader" style="margin: auto; text-align: center;">
+            <img src="{% static 'imgs/loading.gif' %}">
+        </div>
+    </div>
+    <div class="actions">
+        <div class="ui right ting-loader ting-form-loader-else">
+            <img src="{% static 'imgs/loading.gif' %}">
+        </div>
+        <button type="submit" class="ui positive right labeled icon button">
+            Save
+            <i class="checkmark icon"></i>
+        </button>
+        <div class="ui red deny button left">
+            Close
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+	$(".rating").rating("disable"); $(".dropdown").dropdown();
+	$(".ting-open-ajax-modal").openModal();
+</script>

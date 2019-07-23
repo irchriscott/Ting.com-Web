@@ -1,0 +1,74 @@
+{% load ting_tags %}
+{% load tz %}
+{% load staticfiles %}
+<div class="content">
+    <div class="content">
+        <div class="ting-search-place">
+            <form class="ui form" action="{% url 'ting_usr_update_reservation' reservation.pk %}" method="POST" id="ting-update-reservation-form">
+                {% csrf_token %}
+                <div class="field">
+                    <label>Enter Number of People :</label>
+                    <input type="number" name="people" min="1" placeholder="Number of People" value="{{reservation.people}}" required autocomplete="off">
+                </div>
+                <div class="field">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Enter Date ({{restaurant.restaurant.config.days_before_reservation}} days before) :</label>
+                            <div class="ui calendar"  id="ting-datepicker-book-date">
+                                <div class="ui input">
+                                    <input type="text" placeholder="Reservation Date" name="date" value="{{reservation.date|date:'Y-m-d'}}" autocomplete="off" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Enter Time (between {{restaurant.restaurant.opening}} and {{restaurant.restaurant.closing}}):</label>
+                            <div class="ui calendar"  id="ting-datepicker-book-time">
+                                <div class="ui input">
+                                    <input type="text" name="time" placeholder="Reservation Time" value="{{reservation.time|time:'g:i A'}}" autocomplete="off" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="ting-restaurant-motto">Select Table Location : </label>
+                    <select class="ui dropdown" name="location">
+                        {% if restaurant.available_table_location|length > 0 %}
+                            {% for table in table_locations %}
+                                {% if table.0 in restaurant.available_table_location %}
+                                    {% if table.0 == reservation.location %}
+                                        <option value="{{table.0}}" selected>{{table.1}}</option>
+                                    {% else %}
+                                        <option value="{{table.0}}">{{table.1}}</option>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <option>No Table Added Yet</option>
+                        {% endif %}
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $("#ting-update-reservation-form").submitFormAjax();
+    $(".dropdown").dropdown();
+    var today = new Date();
+    $("#ting-datepicker-book-date").calendar({
+        type: 'date',
+        minDate: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+        monthFirst: false,
+        formatter: {
+            date: function (date, settings) {
+                if (!date) return '';
+                var day = date.getDate();
+                var month = date.getMonth() + 1;
+                var year = date.getFullYear();
+                return year + '-' + month + '-' + day;
+            }
+        }
+    });
+    $("#ting-datepicker-book-time").calendar({type: 'time'});
+</script>

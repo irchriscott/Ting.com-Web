@@ -30,8 +30,10 @@ users = [
 	url(r'usr/profile/(?P<user>\d+)-(?P<username>[^/]+)/$', views.user_profile, name='ting_usr_profile'),
 	url(r'usr/moments/(?P<user>\d+)-(?P<username>[^/]+)/$', views.user_moments, name='ting_usr_moments'),
 	url(r'usr/restaurants/(?P<user>\d+)-(?P<username>[^/]+)/$', views.user_restaurants, name='ting_usr_restaurants'),
+	url(r'usr/restaurants/load/(?P<user>\d+)/$', views.load_user_restaurants, name='ting_usr_load_restaurants'),
 	url(r'usr/orders/(?P<user>\d+)-(?P<username>[^/]+)/$', views.user_orders, name='ting_usr_orders'),
 	url(r'usr/bookings/(?P<user>\d+)-(?P<username>[^/]+)/$', views.user_bookings, name='ting_usr_bookings'),
+	url(r'usr/reservation/load/(?P<user>\d+)/$', views.load_user_reservations, name='ting_usr_load_reservations'),
 	url(r'usr/get/map/pin/(?P<user>\d+)/$', views.get_user_map_pin_svg, name='ting_usr_get_user_map_pin_svg'),
 
 	# User Profile
@@ -58,7 +60,8 @@ users = [
 	url(r'usr/restaurant/get/map/pin/(?P<restaurant>\d+)/html/$', views.get_restaurant_map_pin_html, name='ting_usr_restaurant_get_map_pin_html'),
 	url(r'usr/restaurant/get/map/pin/(?P<restaurant>\d+)/svg/$', views.get_restaurant_map_pin_svg, name='ting_usr_restaurant_get_map_pin_svg'),
 	url(r'usr/restaurant/get/map/pin/(?P<restaurant>\d+)/img/$', views.get_restaurant_map_pin_img, name='ting_usr_restaurant_get_map_pin_img'),
-	url(r'usr/restaurant/like/toggle/(?P<restaurant>[^/]+)/$', views.like_restaurant, name='ting_usr_like_restaurant_toggle'),
+	url(r'usr/restaurant/like/toggle/(?P<restaurant>[^/]+)/(?P<branch>[^/]+)$', views.like_restaurant, name='ting_usr_like_restaurant_toggle'),
+	url(r'usr/restaurant/like/load/(?P<restaurant>[^/]+)/(?P<branch>[^/]+)$', views.load_restaurant_likes, name='ting_usr_load_restaurant_likes'),
 	url(r'usr/restaurant/load/menus/(?P<restaurant>[^/]+)/branch/top/five/(?P<branch>[^/]+)/$', views.load_branch_top_five, name='ting_usr_load_branch_top_five'),
 	url(r'usr/restaurant/load/maps/(?P<restaurant>[^/]+)/directions/to/branch/(?P<branch>[^/]+)/$', views.load_branch_directions, name='ting_usr_load_branch_directions'),
 	url(r'usr/restaurant/promos/(?P<restaurant>\d+)-(?P<branch>\d+)-(?P<slug>[^/]+)$', views.get_restaurant_promotions, name='ting_usr_get_restaurant_promotions'),
@@ -66,15 +69,26 @@ users = [
 	url(r'usr/restaurant/drinks/(?P<restaurant>\d+)-(?P<branch>\d+)-(?P<slug>[^/]+)$', views.get_restaurant_drinks, name='ting_usr_get_restaurant_drinks'),
 	url(r'usr/restaurant/dishes/(?P<restaurant>\d+)-(?P<branch>\d+)-(?P<slug>[^/]+)$', views.get_restaurant_dishes, name='ting_usr_get_restaurant_dishes'),
 	url(r'usr/restaurant/reviews/(?P<restaurant>\d+)-(?P<branch>\d+)-(?P<slug>[^/]+)$', views.get_restaurant_reviews, name='ting_usr_get_restaurant_reviews'),
+	url(r'usr/restaurant/reviews/load/(?P<restaurant>\d+)-(?P<branch>\d+)/$', views.load_restaurant_reviews, name='ting_usr_load_restaurant_reviews'),
+	url(r'usr/restaurant/reviews/add/(?P<restaurant>\d+)-(?P<branch>\d+)/$', views.add_restaurant_review, name='ting_usr_add_restaurant_review'),
 	url(r'usr/restaurant/likes/(?P<restaurant>\d+)-(?P<branch>\d+)-(?P<slug>[^/]+)$', views.get_restaurant_likes, name='ting_usr_get_restaurant_likes'),
 	url(r'usr/restaurant/about/(?P<restaurant>\d+)-(?P<branch>\d+)-(?P<slug>[^/]+)$', views.get_restaurant_about, name='ting_usr_get_restaurant_about'),
 
-	# Menus
+	# Menus & Promotions
 
 	url(r'usr/menu/(?P<menu>\d+)-(?P<slug>[^/]+)$', views.get_menu, name='ting_usr_menu_get'),
+	url(r'usr/promo/(?P<promotion>\d+)-(?P<slug>[^/]+)$', views.get_promotion, name='ting_usr_promotion_get'),
 	url(r'usr/menu/like/toogle/(?P<menu>[^/]+)/$', views.like_menu, name='ting_usr_menu_like'),
+	url(r'usr/promo/interest/toogle/(?P<promo>[^/]+)/$', views.interest_promotion, name='ting_usr_promotion_interest'),
 	url(r'usr/menu/reviews/add/(?P<menu>\d+)/$', views.add_menu_review, name='ting_usr_menu_add_review'),
 	url(r'usr/menu/reviews/load/(?P<menu>\d+)/$', views.load_menu_reviews, name='ting_usr_menu_load_reviews'),
+
+	# Reservation
+
+	url(r'usr/reservation/make/resto/(?P<restaurant>\d+)/branch/(?P<branch>\d+)/$', views.make_reservation, name='ting_usr_make_reservation'),
+	url(r'usr/reservation/edit/load/(?P<reservation>\d+)/$', views.load_edit_reservation, name='ting_usr_load_edit_reservation'),
+	url(r'usr/reservation/update/(?P<reservation>\d+)/$', views.update_reservation, name='ting_usr_update_reservation'),
+	url(r'usr/reservation/cancel/(?P<reservation>\d+)/$', views.cancel_reservation, name='ting_usr_cancel_reservation'),
 ]
 
 admins = [
@@ -197,6 +211,13 @@ admins = [
 	url(r'adm/promotions/avail/toggle/(?P<promotion>\d+)/$', admin.avail_promotion_toggle, name='ting_wb_adm_avail_promotion'),	
 	url(r'adm/promotions/delete/(?P<promotion>\d+)/$', admin.delete_promotion, name='ting_wb_adm_delete_promotion'),
 	url(r'adm/promotions/load/(?P<promotion>\d+)/$', admin.load_promotion, name='ting_wb_adm_load_promotion'),
+
+	# Bookings
+
+	url(r'adm/reservations/all/$', admin.reservations, name='ting_wb_adm_reservations'),
+	url(r'adm/reservations/load/(?P<reservation>\d+)/$', admin.load_reservation, name='ting_wb_adm_load_reservation'),
+	url(r'adm/reservations/accept/(?P<reservation>\d+)/$', admin.accept_reservation, name='ting_wb_adm_accept_reservation'),
+	url(r'adm/reservations/decline/(?P<reservation>\d+)/$', admin.decline_reservation, name='ting_wb_adm_decline_reservation'),
 ]
 
 urlpatterns = admins + users

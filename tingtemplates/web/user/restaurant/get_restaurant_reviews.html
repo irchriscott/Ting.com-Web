@@ -75,21 +75,66 @@
 					  	</a>
 					</div>
 					<div class="ui">
-					  	<p></p>
+					  	<secltion class="ting-restaurants-list-container">
+							<div class="container" style="padding: 0" id="ting-menus-container">
+								<div class="ui grid">
+									<div class="row">
+										<div class="eleven wide column"><h2 style="font-size: 25px;">Restaurant's Reviews</h2></div>
+										<div class="five wide column" style="padding:0; margin-left:-3px;"><button class="ui icon labeled primary button fluid" id="ting-open-resto-review-modal"><i class="icon pencil"></i>Write a Review</div>
+									</div>
+								</div>
+								<div class="content" id="ting-restaurant-reviews"></div>
+			                    <hr style="margin-bottom: 0;" />
+								<div class="ting-restaurants-list" id="ting-menus-list" style="padding-bottom: 0px;">
+									<div class="ui right ting-loader" style="margin: auto; text-align: center; padding: 40px 0;">
+							            <img src="{% static 'imgs/loading.gif' %}">
+							        </div>
+								</div>
+							</div>
+						</secltion>
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
 </section>
-
+<div class="ui tiny modal" id="ting-resto-review-modal">
+    <div class="header">
+        Review Restaurant
+    </div>
+    <div class="content">
+        <form class="ui form" method="POST" action="#" id="ting-resto-review-form">
+        	{% csrf_token %}
+        	<div class="field">
+        		<div class="ui massive star rating" data-rating="1" data-value="1" data-max-rating="5" id="ting-resto-review-rate"></div>
+        	</div>
+        	<div class="field">
+        		<label>Enter Review Comment :</label>
+        		<textarea name="comment" id="ting-resto-review-comment" placeholder="Review Comment" required></textarea>
+        	</div>
+        	<div class="ting-action-modal">
+                <div class="actions">
+                    <div class="ui red deny button">
+                        Cancel
+                    </div>
+                </div>
+                <button type="submit" class="ui positive right labeled icon button">
+                    Save
+                    <i class="checkmark icon"></i>
+                </button>
+                <div class="ui right ting-loader ting-form-loader">
+                    <img src="{% static 'imgs/loading.gif' %}">
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
 <script type="text/javascript">
 	window.__TING__Session = {{session_json|safe}}
 	window.__TING__Restaurant = {{restaurant_json|safe}}
-	window.__TING__Menus = {{menus_json|safe}}
 	window.__TING__Link = {type: "restaurant", name: "reviews"} || {};
 	window.__TING__Token = $("input[name=csrfmiddlewaretoken]").val() || null;
-	window.__TING__URL_Like = decodeURI("{% url 'ting_usr_like_restaurant_toggle' '{restaurant}' %}");
+	window.__TING__URL_Like = decodeURI("{% url 'ting_usr_like_restaurant_toggle' '{restaurant}' '{branch}' %}");
 	window.__TING__URL_Load_Branch_Directions = decodeURI("{% url 'ting_usr_load_branch_directions' '{restaurant}' '{branch}' %}");
 </script>
 {% endblock %}

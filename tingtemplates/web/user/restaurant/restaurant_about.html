@@ -1,3 +1,4 @@
+{% load staticfiles %}
 <div class="ting-profile-image-else ui fluid">
     <div class="ting-profile-image-container">
         <div class="box ting-session-profile-image">
@@ -9,7 +10,8 @@
 </div>
 <div class="ting-user-about" id="ting-restaurant-about">
     <p style="font-size: 22px; font-weight: 500;"> {{restaurant.restaurant.name}}</p>
-    <p style="margin-top: -15px;"> {{restaurant.name}}</p>
+    <p style="margin-top: -15px; margin-bottom: 8px;"> {{restaurant.name}}</p>
+    <div class="ui disabled-rating star large rating" data-rating="{{restaurant.review_average}}" data-max-rating="5"></div>
     <hr>
     <p><i class="lnr lnr-envelope"></i> {{restaurant.email}}</p>
     <p><i class="lnr lnr-phone-handset"></i> {{restaurant.phone}}</p>
@@ -28,3 +30,72 @@
         </div>
     </div>
 </div>
+
+{% if is_logged_in == True %}
+
+<div class="ui small modal" id="ting-make-reservation-modal">
+    <div class="header">
+        Make Reservation at {{restaurant.name}}, {{restaurant.restaurant.name}}
+    </div>
+    <div class="content">
+        <div class="ting-search-place">
+            <form class="ui form" action="{% url 'ting_usr_make_reservation' restaurant.restaurant.pk restaurant.pk %}" method="POST" id="ting-make-reservation-modal-form" >
+                {% csrf_token %}
+                <div class="field">
+                    <label>Enter Number of People :</label>
+                    <input type="number" name="people" min="1" placeholder="Number of People" required autocomplete="off">
+                </div>
+                <div class="field">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Enter Date ({{restaurant.restaurant.config.days_before_reservation}} days before) :</label>
+                            <div class="ui calendar"  id="ting-datepicker-book-date">
+                                <div class="ui input">
+                                    <input type="text" placeholder="Reservation Date" name="date" autocomplete="off" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Enter Time (between {{restaurant.restaurant.opening}} and {{restaurant.restaurant.closing}}):</label>
+                            <div class="ui calendar"  id="ting-datepicker-book-time">
+                                <div class="ui input">
+                                    <input type="text" name="time" placeholder="Reservation Time" autocomplete="off" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="ting-restaurant-motto">Select Table Location : </label>
+                    <select class="ui dropdown" name="location">
+                        {% if restaurant.available_table_location|length > 0 %}
+                            {% for table in table_locations %}
+                                {% if table.0 in restaurant.available_table_location %}
+                                    <option value="{{table.0}}">{{table.1}}</option>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <option>No Table Added Yet</option>
+                        {% endif %}
+                    </select>
+                </div>
+                <div class="ting-action-modal">
+                    <div class="actions">
+                        <div class="ui red deny button">
+                            Cancel
+                        </div>
+                    </div>
+                    <button type="submit" class="ui positive right labeled icon button" id="ting-save-restaurant-reservation">
+                        Save
+                        <i class="checkmark icon"></i>
+                    </button>
+                    <div class="ui right ting-loader ting-form-loader">
+                        <img src="{% static 'imgs/loading.gif' %}">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endif %}

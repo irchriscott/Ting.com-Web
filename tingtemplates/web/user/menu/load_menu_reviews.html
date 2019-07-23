@@ -1,14 +1,22 @@
+{% load humanize %}
+{% load tz %}
 <div class="ui items">
 	{% for review in reviews %}
 		<div class="item ting-resto-item">
-			<div class="ui small image">
+			<div class="ui tiny image">
 				<img src="{{review.user.image.url}}">
 			</div>
 			<div class="content">
-				<a href="#" class="header">{{review.user.name}}</a>
+				<a href="{% url 'ting_usr_moments' review.user.pk review.user.username %}" class="header" style="font-size:16px !important;">{{review.user.name}}</a>
+				<div style="margin-left: 10px;" class="ui disabled-rating star rating" data-rating="{{review.review}}" data-max-rating="5"></div>
+				<p>{{review.comment}}</p>
+				<div class="extra"><div class="ui icon label"><i class="icon clock"></i> <span id="ting-review-date-{{review.id}}">{{review.updated_at|naturalday}}</span></div></div>
+				<script type="text/javascript">$("#ting-review-date-{{review.id}}").text(makeMoment("{{review.updated_at|date:'Y-m-d H:i:s'}}"))</script>
 			</div>
+
 		</div>
 	{% empty %}
 		<div class="ting-empty-data"><i class="icon comments"></i><p>No Reviews For This Menu</p></div>
 	{% endfor %}
 </div>
+<script type="text/javascript">$(".disabled-rating").rating("disable");</script>

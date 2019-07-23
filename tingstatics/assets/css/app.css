@@ -17,7 +17,7 @@ input,
 button,
 li, ol, ul,
 textarea{
-    font-family: Poppins, Lato, 'Helvetica Neue', Arial, Helvetica, sans-serif !important;
+    font-family: Poppins, Avenir, 'Avenir Next', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
     color: #666666;
     font-weight: 300;
     line-height: 1.625em;
@@ -133,7 +133,7 @@ textarea{
     padding: 50px;
     margin-left: 15rem;
     padding-bottom: 0px;
-    padding-top: 10px;
+    padding-top: 0px;
 }
 
 .ting-menu-logo{
@@ -461,7 +461,7 @@ textarea{
 .ting-side-orders{
     display: block;
     position: relative;
-    height: calc(100vh - 100px);
+    height: calc(100vh - 105px);
 }
 
 .ting-side-orders h2{
@@ -774,6 +774,7 @@ textarea{
     height: 42px;
     background: #FFF;
     box-shadow: inset -21.213px 21.213px 30px 0px rgba(158, 158, 158, 0.3);
+    white-space: nowrap;
 }
 
 .ting-user-top-fixed-menu img{
@@ -799,6 +800,10 @@ textarea{
 
 .ting-user-top-fixed-menu .ui.secondary.pointing.menu{
     border-bottom: none !important;
+}
+
+.ting-user-container .ui.secondary.pointing.menu{
+    white-space: nowrap;
 }
 
 .ting-restaurants-map{
@@ -953,8 +958,8 @@ textarea{
     display: block;
 }
 
-.ting-like-restaurant-branch i,
-.ting-like-restaurant button i{
+.ting-like-restaurant-branch > i,
+.ting-like-restaurant > button > i{
     font-size: 25px;
     color: #DDD;
 }
@@ -966,8 +971,8 @@ textarea{
     right: 1px;
 }
 
-.ting-like-restaurant-branch:active i,
-.ting-like-restaurant button:active i{
+.ting-like-restaurant-branch:active > i,
+.ting-like-restaurant button:active > i{
     transform: scale(0.9);
     background-color: darken(#b56fe8, 5%);
     box-shadow: 0 2px 25px rgba(255, 0, 130, 0.2);
@@ -1211,5 +1216,9 @@ textarea{
     font-size: 20px;
     font-weight: bold;
     text-align: center;
+}
+
+.ting-menu-other{
+    padding-top: 8px;
 }
 

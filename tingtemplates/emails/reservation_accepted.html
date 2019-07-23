@@ -1,0 +1,12 @@
+{% extends '../emails/header.html' %}
+{% block content %}
+<p>Hello {{name}},</p>
+<p>
+	Your reservation at <b>{{book.restaurant.name}}, {{book.branch.name}}</b> of <b>{{book.date}} at {{book.time}}</b> has been <b>Accepted</b>. Your table number will be <b>{{book.table.number}}</b>
+</p>
+{% if book.restaurant.config.book_with_advance == True %}
+	<p>Please, proceed with the payment in the next 24 hours to keep the table.</p>
+{% endif %}
+<p><a href="{{link}}" class="ting-link-btn">Your Reservations</a></p>
+<p>Regards</p>
+{% endblock %}

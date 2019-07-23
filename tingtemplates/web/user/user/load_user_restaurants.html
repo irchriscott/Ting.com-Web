@@ -1,0 +1,25 @@
+{% load humanize %}
+{% load tz %}
+<div class="ui items">
+	<div class="ui grid">
+		<div class="row" style="padding: 0">
+			{% for resto in restaurants %}
+				<div class="eight wide column ui items" style="padding-right: 0;">
+					<div class="item ting-resto-item">
+						<div class="ui tiny image">
+							<img src="{{resto.restaurant.logo.url}}">
+						</div>
+						<div class="content" style="overflow: hidden;">
+							<a href="{% url 'ting_usr_get_restaurant_promotions' resto.restaurant.pk resto.branch.pk resto.restaurant.slug %}" class="header" style="font-size:16px !important;">{{resto.restaurant.name}}, {{resto.branch.name}}</a>
+							<p style="white-space: nowrap; text-overflow: ellipsis;"><i class="icon map marker alternate"></i> {{resto.branch.address}}</p>
+							<div class="extra"><div class="ui icon label"><i class="icon clock"></i> <span id="ting-review-date-{{resto.id}}">{{resto.updated_at|naturalday}}</span></div></div>
+							<script type="text/javascript">$("#ting-review-date-{{resto.id}}").text(makeMoment("{{resto.updated_at|date:'Y-m-d H:i:s'}}"))</script>
+						</div>
+					</div>
+				</div>
+			{% empty %}
+				<div class="ting-empty-data" style="width: 100%"><i class="icon utensils"></i><p>No Restaurant For This User</p></div>
+			{% endfor %}
+		</div>
+	</div>
+</div>

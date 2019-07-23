@@ -1,5 +1,7 @@
 {% extends '../../navbar.html' %}
 {% load staticfiles %}
+{% load humanize %}
+{% load ting_tags %}
 {% block title %}
 <title>Ting.com - About / {{restaurant.restaurant.name}}, {{restaurant.name}}</title>
 {% endblock %}
@@ -75,7 +77,148 @@
 					  	</a>
 					</div>
 					<div class="ui">
-					  	<p></p>
+					  	<h1>RESTAURANT'S PROFILE</h1>
+					  	<br>
+						<h4>About</h4>
+						<hr>
+						<div class="ui grid">
+							<div class="row" style="padding-bottom: 0;">
+								<div class="eight wide column"><p style="text-align: right; font-weight: bold;">Name : </p></div>
+								<div class="eight wide column"><p>{{restaurant.restaurant.name}}</p></div>
+							</div>
+							<div class="row" style="padding-bottom: 0;">
+								<div class="eight wide column"><p style="text-align: right; font-weight: bold;">Branch : </p></div>
+								<div class="eight wide column"><p>{{restaurant.name}}</p></div>
+							</div>
+							<div class="row" style="padding-bottom: 0;">
+								<div class="eight wide column"><p style="text-align: right; font-weight: bold;">Address : </p></div>
+								<div class="eight wide column"><p>{{restaurant.town}} {{restaurant.country}}</p></div>
+							</div>
+							<div class="row" style="padding-bottom: 0;">
+								<div class="eight wide column"><p style="text-align: right; font-weight: bold;">Open, Close : </p></div>
+								<div class="eight wide column"><p>{{restaurant.restaurant.opening}} - {{restaurant.restaurant.closing}}</p></div>
+							</div>
+							<div class="row" style="padding-bottom: 0;">
+								<div class="eight wide column"><p style="text-align: right; font-weight: bold;">Motto : </p></div>
+								<div class="eight wide column"><p>{{restaurant.restaurant.motto}}</p></div>
+							</div>
+						</div>
+						<br>
+						<h4>Contact</h4>
+						<hr/>
+						<div class="ui grid">
+							<div class="row" style="padding-bottom: 0;">
+								<div class="eight wide column"><p style="text-align: right; font-weight: bold;">E-mail : </p></div>
+								<div class="eight wide column"><p>{{restaurant.email}}</p></div>
+							</div>
+							<div class="row" style="padding-bottom: 0;">
+								<div class="eight wide column"><p style="text-align: right; font-weight: bold;">Phone : </p></div>
+								<div class="eight wide column"><p>{{restaurant.phone}}</p></div>
+							</div>
+							<div class="row" style="padding-bottom: 0;">
+								<div class="eight wide column"><p style="text-align: right; font-weight: bold;">Address : </p></div>
+								<div class="eight wide column"><p>{{restaurant.address}}</p></div>
+							</div>
+						</div>
+						<br>
+						<h4>Data Stats</h4>
+						<hr>
+						<div class="ui grid">
+							<div class="row" style="padding-bottom: 0;">
+								<div class="eight wide column"><p style="text-align: right; font-weight: bold;">Foods : </p></div>
+								<div class="eight wide column"><p>{{restaurant.foods_count|intcomma}} Foods</p></div>
+							</div>
+							<div class="row" style="padding-bottom: 0;">
+								<div class="eight wide column"><p style="text-align: right; font-weight: bold;">Drinks : </p></div>
+								<div class="eight wide column"><p>{{restaurant.drinks_count|intcomma}} Drinks</p></div>
+							</div>
+							<div class="row" style="padding-bottom: 0;">
+								<div class="eight wide column"><p style="text-align: right; font-weight: bold;">Dishes : </p></div>
+								<div class="eight wide column"><p>{{restaurant.dishes_count|intcomma}} Dishes</p></div>
+							</div>
+							<div class="row" style="padding-bottom: 0;">
+								<div class="eight wide column"><p style="text-align: right; font-weight: bold;">Likes : </p></div>
+								<div class="eight wide column"><p>{{restaurant.likes_count|intcomma}} Likes</p></div>
+							</div>
+							<div class="row" style="padding-bottom: 0;">
+								<div class="eight wide column"><p style="text-align: right; font-weight: bold;">Reviews : </p></div>
+								<div class="eight wide column"><p>{{restaurant.reviews_count|intcomma}} Reviews</p></div>
+							</div>
+							<div class="row" style="padding-bottom: 0;">
+								<div class="eight wide column"><p style="text-align: right; font-weight: bold;">Stars : </p></div>
+								<div class="eight wide column"><div class="ui disabled-rating star large rating" data-rating="{{restaurant.review_average}}" data-max-rating="5"></div></div>
+							</div>
+						</div>
+						<br>
+						<h4>Config</h4>
+						<hr>
+						<div class="ui grid">
+							<div class="row" style="padding-bottom: 0;">
+								<div class="eight wide column"><p style="text-align: right; font-weight: bold;">Currency : </p></div>
+								<div class="eight wide column"><p>{{restaurant.restaurant.config.currency}}</p></div>
+							</div>
+							<div class="row" style="padding-bottom: 0;">
+								<div class="eight wide column"><p style="text-align: right; font-weight: bold;">VAT : </p></div>
+								<div class="eight wide column"><p>{{restaurant.restaurant.config.tax}} %</p></div>
+							</div>
+							<div class="row" style="padding-bottom: 0;">
+								<div class="eight wide column"><p style="text-align: right; font-weight: bold;">Late Reservation Time : </p></div>
+								<div class="eight wide column"><p>{{restaurant.restaurant.config.cancel_late_booking}} min</p></div>
+							</div>
+							<div class="row" style="padding-bottom: 0;">
+								<div class="eight wide column"><p style="text-align: right; font-weight: bold;">Make Reservation With Advance : </p></div>
+								<div class="eight wide column"><p>{{restaurant.restaurant.config.book_with_advance|yesno}}</p></div>
+							</div>
+							<div class="row" style="padding-bottom: 0;">
+								<div class="eight wide column"><p style="text-align: right; font-weight: bold;">Reservation Advance : </p></div>
+								<div class="eight wide column"><p>{% if restaurant.restaurant.config.book_with_advance == true %} {{restaurant.restaurant.config.currency}} {{restaurant.restaurant.config.book_with_advance}}{% else %} - {% endif %}</p></div>
+							</div>
+							<div class="row" style="padding-bottom: 0;">
+								<div class="eight wide column"><p style="text-align: right; font-weight: bold;">Refund After Cancelation : </p></div>
+								<div class="eight wide column"><p>{{restaurant.restaurant.config.booking_cancelation_refund|yesno}}</p></div>
+							</div>
+							{% if restaurant.restaurant.config.booking_cancelation_refund == True %}
+								<div class="row" style="padding-bottom: 0;">
+									<div class="eight wide column"><p style="text-align: right; font-weight: bold;">Cancelation Refund : </p></div>
+									<div class="eight wide column"><p>{{restaurant.restaurant.config.booking_cancelation_refund_percent}} %</p></div>
+								</div>
+							{% endif %}
+							<div class="row" style="padding-bottom: 0;">
+								<div class="eight wide column"><p style="text-align: right; font-weight: bold;">Booking Payement Mode : </p></div>
+								<div class="eight wide column"><p>{{restaurant.restaurant.config.payement_mode}}</p></div>
+							</div>
+							<div class="row" style="padding-bottom: 0;">
+								<div class="eight wide column"><p style="text-align: right; font-weight: bold;">Days Before Booking : </p></div>
+								<div class="eight wide column"><p>{{restaurant.restaurant.config.days_before_reservation}} days</p></div>
+							</div>
+						</div>
+						<br>
+						<h4>Other Branches</h4>
+						<hr>
+						<div class="ui items">
+							{% for branch in restaurant.restaurant.branches %}
+								{% if branch.id != restaurant.id %}
+									<div class="item ting-resto-item">
+										<div class="ui image small">
+											<img src="{{branch.restaurant.logo.url}}">
+										</div>
+										<div class="content">
+											<a class="header" href="{% url 'ting_usr_get_restaurant_promotions' branch.restaurant.pk branch.pk branch.restaurant.slug %}">{{branch.restaurant.name}}, {{branch.name}}</a>
+											<div class="description">
+												<div class="ui disabled-rating star large rating" data-rating="{{branch.review_average}}" data-max-rating="5"></div>
+												<p style="margin-top: 5px;"><i class="icon map marker alternate"></i> {{branch.address}}</p>
+												<p><i class="icon envelope"></i> {{branch.email}}</p>
+												<!-- <p><i class="icon phone"></i> {{branch.phone}}</p> -->
+											</div>
+											<div class="extra">
+												<div class="ui label"><i class="icon heart outline"></i> {{branch.likes_count|intcomma}} Likes</div>
+												<div class="ui label"><i class="icon star outline"></i> {{branch.reviews_count|intcomma}} Reviews</div>
+											</div>
+										</div>
+									</div>
+								{% endif %}
+							{% endfor %}
+						</div>
 					</div>
 				</div>
 			</div>
@@ -86,10 +229,9 @@
 <script type="text/javascript">
 	window.__TING__Session = {{session_json|safe}}
 	window.__TING__Restaurant = {{restaurant_json|safe}}
-	window.__TING__Menus = {{menus_json|safe}}
 	window.__TING__Link = {type: "restaurant", name: "about"} || {};
 	window.__TING__Token = $("input[name=csrfmiddlewaretoken]").val() || null;
-	window.__TING__URL_Like = decodeURI("{% url 'ting_usr_like_restaurant_toggle' '{restaurant}' %}");
+	window.__TING__URL_Like = decodeURI("{% url 'ting_usr_like_restaurant_toggle' '{restaurant}' '{branch}' %}");
 	window.__TING__URL_Load_Branch_Directions = decodeURI("{% url 'ting_usr_load_branch_directions' '{restaurant}' '{branch}' %}");
 </script>
 {% endblock %}

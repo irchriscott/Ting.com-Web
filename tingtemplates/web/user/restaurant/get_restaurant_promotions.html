@@ -75,7 +75,30 @@
 					  	</a>
 					</div>
 					<div class="ui">
-					  	<p></p>
+					  	<secltion class="ting-restaurants-list-container">
+							<div class="container" style="padding: 0" id="ting-menus-container">
+								<div class="ui grid">
+									<div class="row">
+										<div class="nine wide column"><h2 style="font-size: 25px;">Today's Promotions</h2></div>
+									</div>
+								</div>
+								<div class="ting-restaurants-list" id="ting-menus-list" style="padding-bottom: 0px;">
+									<div class="ui right ting-loader" style="margin: auto; text-align: center; padding: 40px 0;">
+							            <img src="{% static 'imgs/loading.gif' %}">
+							        </div>
+								</div>
+								<div class="ui grid">
+									<div class="row">
+										<div class="nine wide column"><h2 style="font-size: 25px;">Other Promotions</h2></div>
+									</div>
+								</div>
+								<div class="ting-restaurants-list" id="ting-other-menus-list" style="padding-bottom: 0px;">
+									<div class="ui right ting-loader" style="margin: auto; text-align: center; padding: 40px 0;">
+							            <img src="{% static 'imgs/loading.gif' %}">
+							        </div>
+								</div>
+							</div>
+						</secltion>
 					</div>
 				</div>
 			</div>
@@ -89,7 +112,7 @@
 	window.__TING__Menus = {{menus_json|safe}}
 	window.__TING__Link = {type: "restaurant", name: "promos"} || {};
 	window.__TING__Token = $("input[name=csrfmiddlewaretoken]").val() || null;
-	window.__TING__URL_Like = decodeURI("{% url 'ting_usr_like_restaurant_toggle' '{restaurant}' %}");
+	window.__TING__URL_Like = decodeURI("{% url 'ting_usr_like_restaurant_toggle' '{restaurant}' '{branch}' %}");
 	window.__TING__URL_Load_Branch_Directions = decodeURI("{% url 'ting_usr_load_branch_directions' '{restaurant}' '{branch}' %}");
 </script>
 {% endblock %}

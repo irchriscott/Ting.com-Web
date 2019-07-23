@@ -4,8 +4,9 @@ from django.db import models
 from django.conf import settings
 from django.urls import reverse
 from django.db.models import Q
+from django.utils import timezone
 from tingadmin.models import RestaurantCategory, TingLicenceKey, Permission
-from time import time
+from datetime import date, datetime
 import ting.utils as utils
 import os
 
@@ -24,7 +25,7 @@ def user_image_path(instance, filename):
 	return "users/%s_%s" % (str(time()).replace('.','_'), filename)
 
 def food_image_path(instance, filename):
-	return "foods/%s_%s" % (str(time()).replace('.','_'), filename)
+	return "menus/%s_%s" % (str(time()).replace('.','_'), filename)
 
 def category_image_path(instance, filename):
 	return "categories/%s_%s" % (str(time()).replace('.','_'), filename)
@@ -324,12 +325,6 @@ class Restaurant(models.Model):
 				'count': self.likes_count,
 				'likes': [like.user.to_json_b() for like in self.likes]
 			},
-			'reviews': {
-				'count': self.reviews_count,
-				'average': self.review_average,
-				'percents': self.review_percent,
-				'reviews': [review.to_json() for review in self.reviews]
-			},
 			'foodCategories':{
 				'count': self.food_categories_count,
 				'categories': [category.to_json() for category in self.food_categories]
@@ -372,8 +367,7 @@ class Restaurant(models.Model):
 				}
 			},
 			'branches': {
-				'count': self.branches.count(),
-				'branches': [branch.to_json() for branch in self.branches]
+				'count': self.branches.count()
 			},
 			'images': {
 				'count': self.images.count(),
@@ -428,16 +422,6 @@ class Restaurant(models.Model):
 				'count': self.images.count(),
 				'images': [image.to_json() for image in self.images]
 			},
-			'likes':{
-				'count': self.likes_count,
-				'likes': [like.user.to_json_b() for like in self.likes]
-			},
-			'reviews': {
-				'count': self.reviews_count,
-				'average': self.review_average,
-				'percents': self.review_percent,
-				'reviews': [review.to_json() for review in self.reviews]
-			},
 			'foodCategories':{
 				'count': self.food_categories_count,
 				'categories': [category.to_json() for category in self.food_categories]
@@ -475,12 +459,66 @@ class Branch(models.Model):
 		return self.name.replace(' ', '-').lower()
 
 	@property
+	def likes(self):
+		return UserRestaurant.objects.filter(restaurant=self.restaurant.pk, branch=self.pk).order_by('-created_at')
+
+	@property
+	def likes_count(self):
+		return self.likes.count()
+
+	@property
+	def reviews(self):
+		return RestaurantReview.objects.filter(restaurant=self.restaurant.pk, branch=self.pk).order_by('created_at')
+
+	@property
+	def reviews_count(self):
+		return self.reviews.count()
+
+	@property
+	def review_average(self):
+		if self.reviews_count > 0:
+			total = 0
+			for review in self.reviews:
+				total += review.review
+			return round(total / self.reviews_count, 1)
+		else:
+			return 0
+
+	@property
+	def review_percent(self):
+		one = self.reviews.filter(review=1).count()
+		two = self.reviews.filter(review=2).count()
+		three = self.reviews.filter(review=3).count()
+		four = self.reviews.filter(review=4).count()
+		five = self.reviews.filter(review=5).count()
+		return [
+					(one * 100) / self.reviews_count if one != 0 else 0,
+					(two * 100) / self.reviews_count if two != 0 else 0,
+					(three * 100) / self.reviews_count if three != 0 else 0,
+					(four * 100) / self.reviews_count if four != 0 else 0,
+					(five * 100) / self.reviews_count if five != 0 else 0
+				]
+
+	@property
 	def tables(self):
 		return RestaurantTable.objects.filter(branch=self.pk)
 
 	@property
 	def tables_count(self):
 		return self.tables.count()
+
+	@property
+	def available_table_location(self):
+		tables = []
+		if self.tables.filter(location=1).count() > 0:
+			tables.append(1)
+		if self.tables.filter(location=2).count() > 0:
+			tables.append(2)
+		if self.tables.filter(location=3).count() > 0:
+			tables.append(3)
+		if self.tables.filter(location=4).count() > 0:
+			tables.append(4)
+		return tables
 
 	@property
 	def menus(self):
@@ -557,6 +595,14 @@ class Branch(models.Model):
 	def get_specials(self):
 		return [utils.get_from_dict(utils.RESTAURANT_SPECIALS, 'id', int(s)) for s in self.specials_ids]
 
+	@property
+	def promotions(self):
+		return Promotion.objects.filter(branch__pk=self.pk).order_by('-updated_at')
+	
+	@property
+	def promotions_count(self):
+		return self.promotions.count()
+	
 	def to_json(self):
 		return {
 			'id': self.pk,
@@ -601,8 +647,26 @@ class Branch(models.Model):
 				},
 				'menus': [menu.to_json() for menu in self.menus]
 			},
+			'promotions':{
+				'count': self.promotions_count,
+				'promotions': [promo.to_json() for promo in self.promotions]
+			},
+			'reviews': {
+				'count': self.reviews_count,
+				'average': self.review_average,
+				'percents': self.review_percent,
+				'reviews': [review.to_json_b() for review in self.reviews]
+			},
+			'likes':{
+				'count': self.likes_count,
+				'likes': [like.user.to_json_b() for like in self.likes]
+			},
 			'urls':{
-				'relative': reverse('ting_usr_get_restaurant_promotions', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk, 'slug': self.restaurant.slug})
+				'relative': reverse('ting_usr_get_restaurant_promotions', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk, 'slug': self.restaurant.slug}),
+				'loadReviews': reverse('ting_usr_load_restaurant_reviews', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk}),
+				'addReview': reverse('ting_usr_add_restaurant_review', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk}),
+				'likeBranch': reverse('ting_usr_like_restaurant_toggle', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk}),
+				'loadLikes': reverse('ting_usr_load_restaurant_likes', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk})
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
@@ -653,8 +717,91 @@ class Branch(models.Model):
 				},
 				'menus': [menu.to_json() for menu in self.menus]
 			},
+			'reviews': {
+				'count': self.reviews_count,
+				'average': self.review_average,
+				'percents': self.review_percent,
+				'reviews': [review.to_json_b() for review in self.reviews]
+			},
+			'likes':{
+				'count': self.likes_count,
+				'likes': [like.user.to_json_b() for like in self.likes]
+			},
 			'urls':{
-				'relative': reverse('ting_usr_get_restaurant_promotions', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk, 'slug': self.restaurant.slug})
+				'relative': reverse('ting_usr_get_restaurant_promotions', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk, 'slug': self.restaurant.slug}),
+				'loadReviews': reverse('ting_usr_load_restaurant_reviews', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk}),
+				'addReview': reverse('ting_usr_add_restaurant_review', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk}),
+				'likeBranch': reverse('ting_usr_like_restaurant_toggle', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk}),
+				'loadLikes': reverse('ting_usr_load_restaurant_likes', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk})
+			},
+			'promotions':{
+				'count': self.promotions_count,
+				'promotions': [promo.to_json() for promo in self.promotions]
+			},
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+	def to_json_u(self):
+		return {
+			'id': self.pk,
+			'name': self.name,
+			'country': self.country,
+			'town': self.town,
+			'address': self.address,
+			'latitude': self.latitude,
+			'longitude': self.longitude,
+			'placeId': self.place_id,
+			'email': self.email,
+			'phone': self.phone,
+			'isAvailable': self.is_available,
+			'specials': self.get_specials,
+			'tables':{
+				'count': self.tables_count,
+				'iron': self.tables.filter(chair_type=1).count(),
+				'wooden': self.tables.filter(chair_type=2).count(),
+				'plastic': self.tables.filter(chair_type=3).count(),
+				'couch': self.tables.filter(chair_type=4).count(),
+				'mixture': self.tables.filter(chair_type=5).count(),
+				'inside': self.tables.filter(location=1).count(),
+				'outside': self.tables.filter(location=2).count(),
+				'balcony': self.tables.filter(location=3).count(),
+				'rooftop': self.tables.filter(location=4).count(),
+				'tables': [table.to_json() for table in self.tables]
+			},
+			'menus':{
+				'count': self.menus_count,
+				'type': {
+					'foods':{
+						'count': self.foods_count,
+						'type': {
+							'appetizers': self.appetizers_count,
+							'meals': self.meals_count,
+							'desserts': self.desserts_count,
+							'sauces': self.sauces_count
+						}
+					},
+					'drinks': self.drinks_count,
+					'dishes': self.dishes_count
+				}
+			},
+			'promotions':{
+				'count': self.promotions_count
+			},
+			'reviews': {
+				'count': self.reviews_count,
+				'average': self.review_average,
+				'percents': self.review_percent
+			},
+			'likes':{
+				'count': self.likes_count
+			},
+			'urls':{
+				'relative': reverse('ting_usr_get_restaurant_promotions', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk, 'slug': self.restaurant.slug}),
+				'loadReviews': reverse('ting_usr_load_restaurant_reviews', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk}),
+				'addReview': reverse('ting_usr_add_restaurant_review', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk}),
+				'likeBranch': reverse('ting_usr_like_restaurant_toggle', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk}),
+				'loadLikes': reverse('ting_usr_load_restaurant_likes', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk})
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
@@ -825,7 +972,6 @@ class Administrator(models.Model):
 		}
 
 
-
 class AdministratorResetPassword(models.Model):
 	admin = models.ForeignKey(Administrator)
 	email = models.EmailField(max_length=200, null=False, blank=False)
@@ -839,7 +985,6 @@ class AdministratorResetPassword(models.Model):
 
 	def __unicode__(self):
 		return self.email
-
 
 
 class AdminPermission(models.Model):
@@ -869,6 +1014,10 @@ class RestaurantConfig(models.Model):
 	waiter_see_all_orders = models.BooleanField(default=False)
 	book_with_advance = models.BooleanField(default=False)
 	booking_advance = models.DecimalField(max_digits=18, decimal_places=2, default=0, null=True, blank=True)
+	booking_cancelation_refund = models.BooleanField(default=False)
+	booking_cancelation_refund_percent = models.DecimalField(max_digits=18, decimal_places=2, default=50.00)
+	booking_payement_mode = models.IntegerField(default=3)
+	days_before_reservation = models.IntegerField(default=3)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -878,6 +1027,10 @@ class RestaurantConfig(models.Model):
 	def __unicode__(self):
 		return self.restaurant.name
 
+	@property
+	def payement_mode(self):
+		return utils.get_from_tuple(utils.BOOKING_PAYEMENT_MODE, self.booking_payement_mode)
+
 	def to_json(self):
 		return {
 			'id': self.pk,
@@ -886,7 +1039,10 @@ class RestaurantConfig(models.Model):
 			'email': self.email,
 			'cancelLateBooking': self.cancel_late_booking,
 			'bookWithAdvance': self.book_with_advance,
-			'phone': self.phone
+			'phone': self.phone,
+			'bookingCancelationRefund': self.booking_cancelation_refund,
+			'bookingCancelationRefundPercent': self.booking_cancelation_refund_percent,
+			'daysBeforeReservation': self.days_before_reservation
 		}
 
 
@@ -916,6 +1072,8 @@ class User(models.Model):
 	gender = models.CharField(max_length=20, blank=False, null=False)
 	country = models.CharField(max_length=200, null=False, blank=False)
 	town = models.CharField(max_length=255, null=False, blank=False)
+	is_authenticated = models.BooleanField(default=False)
+	is_top = models.BooleanField(default=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -1011,11 +1169,15 @@ class User(models.Model):
 			},
 			'reviews': {
 				'count': self.restaurant_reviews_count,
-				'reviews': [review.to_json() for review in self.restaurant_reviews]
+				'reviews': [review.to_json_u() for review in self.restaurant_reviews]
 			},
 			'addresses': {
 				'count': self.addresses_count,
 				'addresses': [address.to_json() for address in self.addresses]
+			},
+			'urls':{
+				'loadRestaurants': reverse('ting_usr_load_restaurants', kwargs={'user': self.pk}),
+				'loadReservations': reverse('ting_usr_load_reservations', kwargs={'user': self.pk})
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
@@ -1038,6 +1200,10 @@ class User(models.Model):
 			'addresses': {
 				'count': self.addresses_count,
 				'addresses': [address.to_json() for address in self.addresses]
+			},
+			'urls':{
+				'loadRestaurants': reverse('ting_usr_load_restaurants', kwargs={'user': self.pk}),
+				'loadReservations': reverse('ting_usr_load_reservations', kwargs={'user': self.pk})
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
@@ -1122,6 +1288,7 @@ class UserResetPassword(models.Model):
 class UserRestaurant(models.Model):
 	user = models.ForeignKey(User)
 	restaurant = models.ForeignKey(Restaurant)
+	branch = models.ForeignKey(Branch)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -1140,9 +1307,11 @@ class UserRestaurant(models.Model):
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+
 class RestaurantReview(models.Model):
 	user = models.ForeignKey(User)
 	restaurant = models.ForeignKey(Restaurant)
+	branch = models.ForeignKey(Branch)
 	review = models.IntegerField(null=False, blank=False)
 	comment = models.TextField(null=True, blank=True)
 	created_at = models.DateTimeField(auto_now_add=True)
@@ -1159,11 +1328,51 @@ class RestaurantReview(models.Model):
 			'id': self.pk,
 			'user': self.user.to_json_b(),
 			'restaurant': self.restaurant.to_json_u(),
+			'branch': self.branch.to_json_u(),
 			'review': self.review,
 			'comment': self.comment,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
+
+	def to_json_u(self):
+		return {
+			'id': self.pk,
+			'restaurant': self.restaurant.to_json_u(),
+			'branch': self.branch.to_json_u(),
+			'review': self.review,
+			'comment': self.comment,
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+	def to_json_b(self):
+		return {
+			'id': self.pk,
+			'user': self.user.to_json_b(),
+			'review': self.review,
+			'comment': self.comment,
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+
+class UserNotification(models.Model):
+	user = models.ForeignKey(User)
+	from_type = models.IntegerField(null=False, blank=False) # user, restaurant
+	from_id = models.IntegerField(null=False, blank=False)
+	message = models.CharField(max_length=255, null=False, blank=False)
+	notif_type = models.CharField(max_length=100, null=False, blank=False)
+	url = models.CharField(max_length=255, null=False, blank=False)
+	is_read = models.BooleanField(default=False)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now_add=True)
+
+	def __str__(self):
+		return self.message
+
+	def __unicode__(self):
+		return self.message
 
 
 ### MENU AND FOOD
@@ -1553,6 +1762,7 @@ class Drink(models.Model):
 			'restaurant': self.restaurant.to_json(),
 			'branch': self.branch.to_json(),
 			'name': self.name,
+			'drinkTypeId': self.drink_type,
 			'drinkType': self.type_str,
 			'description': self.description,
 			'ingredients': self.ingredients,
@@ -1591,6 +1801,7 @@ class Drink(models.Model):
 		return {
 			'id': self.pk,
 			'name': self.name,
+			'drinkTypeId': self.drink_type,
 			'drinkType': self.type_str,
 			'description': self.description,
 			'ingredients': self.ingredients,
@@ -1628,6 +1839,7 @@ class Drink(models.Model):
 		return {
 			'id': self.pk,
 			'name': self.name,
+			'drinkTypeId': self.drink_type,
 			'drinkType': self.type_str,
 			'description': self.description,
 			'ingredients': self.ingredients,
@@ -1792,6 +2004,7 @@ class Dish(models.Model):
 			'branch': self.branch.to_json(),
 			'name': self.name,
 			'category': self.category.to_json(),
+			'dishTimeId': self.dish_time,
 			'dishTime': self.dish_time_str,
 			'description': self.description,
 			'ingredients': self.ingredients,
@@ -1836,6 +2049,7 @@ class Dish(models.Model):
 			'id': self.pk,
 			'name': self.name,
 			'category': self.category.to_json(),
+			'dishTimeId': self.dish_time,
 			'dishTime': self.dish_time_str,
 			'description': self.description,
 			'ingredients': self.ingredients,
@@ -1880,6 +2094,7 @@ class Dish(models.Model):
 			'id': self.pk,
 			'name': self.name,
 			'category': self.category.to_json(),
+			'dishTimeId': self.dish_time,
 			'dishTime': self.dish_time_str,
 			'description': self.description,
 			'ingredients': self.ingredients,
@@ -2225,6 +2440,10 @@ class Promotion(models.Model):
 		return self.occasion_event
 
 	@property
+	def uuid_url(self):
+		return '%s-%s' % (self.occasion_event.replace(' ', '-').lower(), self.uuid)
+
+	@property
 	def promo_type(self):
 		return utils.get_from_tuple(utils.PROMOTION_MENU, self.promotion_menu_type)
 
@@ -2255,6 +2474,7 @@ class Promotion(models.Model):
 	def interests(self):
 		return PromotionInterest.objects.filter(promotion=self.pk)
 
+	@property
 	def interests_count(self):
 		return self.interests.count()
 
@@ -2268,6 +2488,23 @@ class Promotion(models.Model):
 	@property
 	def reduction(self):
 		return '%s %s' % (self.amount, self.reduction_type) if self.has_reduction else 'None'
+
+	@property
+	def is_on_today(self):
+		today = date.today()
+		if self.is_special == True:
+			return True if today >= self.start_date and today < self.end_date else False
+		else:
+			periods = self.promotion_period.split(',')
+			if str(1) in periods:
+				return True
+			else:
+				dayofw = today.strftime('%w')
+				if str(int(dayofw) + 1) in periods:
+					return True
+				elif str(8) in periods and (int(dayofw) == 6 or int(dayofw) == 0):
+					return True
+		return False
 
 	@property
 	def supplement_html(self):
@@ -2291,6 +2528,7 @@ class Promotion(models.Model):
 			'id': self.pk,
 			'occasionEvent': self.occasion_event,
 			'uuid': self.uuid,
+			'uuidUrl': self.uuid_url,
 			'promotionItem': {
 				'type':{'id': self.promotion_menu_type, 'name': utils.get_from_tuple(utils.PROMOTION_MENU, self.promotion_menu_type)},
 				'category': self.category.to_json() if self.promotion_menu_type == '05' else {},
@@ -2312,6 +2550,58 @@ class Promotion(models.Model):
 			'description': self.description,
 			'posterImage': self.poster_image.url,
 			'isOn': self.is_on,
+			'isOnToday': self.is_on_today,
+			'interests':{
+				'count': self.interests_count,
+				'interests': [interest.to_json() for interest in self.interests]
+			},
+			'urls':{
+				'relative': reverse('ting_usr_promotion_get', kwargs={'promotion': self.pk, 'slug': self.uuid_url}),
+				'interest': reverse('ting_usr_promotion_interest', kwargs={'promo': self.pk})
+			},
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+
+	def to_json_f(self):
+		return {
+			'id': self.pk,
+			'restaurant': self.restaurant.to_json(),
+			'branch': self.branch.to_json(),
+			'occasionEvent': self.occasion_event,
+			'uuid': self.uuid,
+			'uuidUrl': self.uuid_url,
+			'promotionItem': {
+				'type':{'id': self.promotion_menu_type, 'name': utils.get_from_tuple(utils.PROMOTION_MENU, self.promotion_menu_type)},
+				'category': self.category.to_json() if self.promotion_menu_type == '05' else {},
+				'menu': self.menu.to_json_p() if self.promotion_menu_type == '04' else {}
+			},
+			'reduction':{
+				'hasReduction': self.has_reduction,
+				'amount': self.amount,
+				'reductionType': self.reduction_type
+			},
+			'supplement':{
+				'hasSupplement': self.has_supplement,
+				'minQuantity': self.supplement_min_quantity,
+				'isSame': self.is_supplement_same,
+				'supplement': self.supplement.to_json() if self.is_supplement_same == False else {},
+				'quantity': self.supplement_quantity
+			},
+			'period': self.promo_period,
+			'description': self.description,
+			'posterImage': self.poster_image.url,
+			'isOn': self.is_on,
+			'isOnToday': self.is_on_today,
+			'interests':{
+				'count': self.interests_count,
+				'interests': [interest.to_json() for interest in self.interests]
+			},
+			'urls':{
+				'relative': reverse('ting_usr_promotion_get', kwargs={'promotion': self.pk, 'slug': self.uuid_url}),
+				'interest': reverse('ting_usr_promotion_interest', kwargs={'promo': self.pk})
+			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
@@ -2333,7 +2623,7 @@ class PromotionInterest(models.Model):
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'user': self.user.to_json(),
+			'user': self.user.to_json_b(),
 			'isInterested': self.is_interested
 		}
 
@@ -2345,13 +2635,14 @@ class Booking(models.Model):
 	restaurant = models.ForeignKey(Restaurant)
 	branch = models.ForeignKey(Branch)
 	user = models.ForeignKey(User)
-	table = models.ForeignKey(RestaurantTable)
+	table = models.ForeignKey(RestaurantTable, null=True, blank=True)
 	token = models.CharField(max_length=100, null=False, blank=False)
 	people = models.IntegerField(null=False, blank=False)
+	location = models.IntegerField(null=False, blank=False)
+	amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
 	date = models.DateField(null=False, blank=False)
 	time = models.TimeField(null=False, blank=False)
-	is_complete = models.BooleanField(default=False)
-	is_canceled = models.BooleanField(default=False)
+	status = models.IntegerField(default=1)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -2361,19 +2652,32 @@ class Booking(models.Model):
 	def __unicode__(self):
 		return self.user.name
 
+	@property
+	def status_str(self):
+		return utils.get_from_tuple(utils.BOOKING_STATUSES, self.status)
+
+	@property
+	def location_str(self):
+		return utils.get_from_tuple(utils.TABLE_LOCATION, self.location)
+
+	@property
+	def date_time(self):
+		return datetime.combine(self.date, self.time)
+
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'restaurant': self.restaurant.to_json(),
-			'branch': self.branch.to_json(),
-			'user': self.user.to_json(),
-			'table': self.table.to_json(),
+			'restaurant': self.restaurant.to_json_u(),
+			'branch': self.branch.to_json_u(),
+			'table': self.table.to_json() if self.table != None else {},
 			'token': self.token,
 			'people': self.people,
 			'date': self.date,
 			'time': self.time,
 			'isComplete': self.is_complete,
 			'isCanceled': self.is_canceled,
+			'isAccepted': self. is_accepted,
+			'isRefunded': self.is_refunded,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}

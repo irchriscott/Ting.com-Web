@@ -259,9 +259,7 @@
     </div>
 </div>
 
-
-
-{% if admin.admin_type|to_int == 1 %}
+{% if admin.pk|has_p:"can_add_menu" == True %}
 
 <div class="ui modal" data-modal="ting-admin-add-new-menu-drink">
     <div class="header">
