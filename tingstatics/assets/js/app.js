@@ -1051,7 +1051,7 @@ function tingdotcom(lat, long, addr, cntr, twn){
                         }).join("")}` 
                         : `<div class="ui red message">No Specials Available</div>`}
                 </div><hr/>`);
-            rb.append(`<button class="ui primary fluid button" style="text-transform:uppercase;" ${branch.isAvailable == false ? `disabled` : ``}  id="ting-open-make-reservation">Make a Reservation</button>`)
+            if(branch.restaurant.purposeId == 2){ rb.append(`<button class="ui primary fluid button" style="text-transform:uppercase;" ${branch.isAvailable == false ? `disabled` : ``}  id="ting-open-make-reservation">Make a Reservation</button>`)}
 
             var rb__pi = $(".ting-session-profile-image");
             rb__pi.append(`<button class="ting-btn-animate ting-like-restaurant-branch ${likesresto(branch) == true ? 'liked' : ''}" id="ting-like-restaurant-branch-${branch.id}" style="margin-top:8px; margin-right:6px;" data-like='{"resto":"${branch.restaurant.id}", "tkn":"${branch.restaurant.token}", "branch": "${branch.id}", "id":"${branch.id}", "typ":"link"}'>${likerestobtn(branch)}</button>

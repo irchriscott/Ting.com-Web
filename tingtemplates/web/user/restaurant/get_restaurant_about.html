@@ -150,6 +150,7 @@
 							</div>
 						</div>
 						<br>
+						{% if restaurant.restaurant.purpose == 2 %}
 						<h4>Config</h4>
 						<hr>
 						<div class="ui grid">
@@ -191,8 +192,17 @@
 								<div class="eight wide column"><p style="text-align: right; font-weight: bold;">Days Before Booking : </p></div>
 								<div class="eight wide column"><p>{{restaurant.restaurant.config.days_before_reservation}} days</p></div>
 							</div>
+							<div class="row" style="padding-bottom: 0;">
+								<div class="eight wide column"><p style="text-align: right; font-weight: bold;">Can Take Away : </p></div>
+								<div class="eight wide column"><p>{{restaurant.restaurant.config.can_take_away|yesno}}</p></div>
+							</div>
+							<div class="row" style="padding-bottom: 0;">
+								<div class="eight wide column"><p style="text-align: right; font-weight: bold;">Pay Before Receiving Order : </p></div>
+								<div class="eight wide column"><p>{{restaurant.restaurant.config.user_should_pay_before|yesno}}</p></div>
+							</div>
 						</div>
 						<br>
+						{% endif %}
 						<h4>Other Branches</h4>
 						<hr>
 						<div class="ui items">

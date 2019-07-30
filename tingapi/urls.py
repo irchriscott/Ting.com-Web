@@ -13,16 +13,14 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url, include, static
-from django.conf import settings
-from tingweb.views import index
+
+from django.conf.urls import url
+from tingapi import views
 
 urlpatterns = [
-	url(r'^$', index, name='ting_index'),
-    url(r'^admin/', include('tingadmin.urls')),
-    url(r'^wb/', include('tingweb.urls')),
-    url(r'^api/v1/', include('tingapi.urls'))
+	url(r'usr/check/email-username/$', views.api_check_user_email_username),
+	url(r'usr/signup/email/$', views.api_sign_up_with_email),
+	url(r'usr/signup/google/$', views.api_sign_up_with_google),
+	url(r'usr/auth/login/$', views.api_login),
+	url(r'usr/auth/password/reset/$', views.api_submit_reset_password)
 ]
-
-urlpatterns += static.static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-urlpatterns += static.static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

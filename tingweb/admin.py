@@ -393,6 +393,8 @@ def update_restaurant_config(request):
 				config.booking_cancelation_refund_percent = form.cleaned_data['booking_cancelation_refund_percent']
 				config.booking_payement_mode = form.cleaned_data['booking_payement_mode']
 				config.days_before_reservation = form.cleaned_data['days_before_reservation']
+				config.can_take_away = form.cleaned_data['can_take_away']
+				config.user_should_pay_before = form.cleaned_data['user_should_pay_before']
 				config.updated_at = timezone.now()
 				config.save()
 
@@ -2459,13 +2461,14 @@ def reservations(request):
 	template = 'web/admin/reservations.html'
 	dt = date.today() if request.GET.get('date') == None else datetime.strptime(request.GET.get('date'), '%Y-%m-%d')
 	admin = Administrator.objects.get(pk=request.session['admin'])
-	today_bookings = Booking.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, date=dt).order_by('-updated_at')
-	other_bookings = Booking.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk).order_by('-updated_at')
+	today_bookings = Booking.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, date=dt).exclude(status=1).order_by('-updated_at')
+	new_bookings = Booking.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, status=1).order_by('-updated_at')
 	return render(request, template, {
 			'admin': admin,
 			'restaurant': admin.restaurant,
 			'bookings': today_bookings,
 			'today': dt,
+			'new_bookings': new_bookings,
 			'tables': RestaurantTable.objects.filter(restaurant__pk=admin.restaurant.pk, branch__pk=admin.branch.pk).order_by('-created_at')
 		})
 

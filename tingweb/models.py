@@ -283,6 +283,8 @@ class Restaurant(models.Model):
 			'token': self.token,
 			'name': self.name,
 			'motto': self.motto,
+			'purposeId': self.purpose,
+			'purpose': self.purpose_str,
 			'categories': {
 				'count': self.categories.count(),
 				'categories': [category.to_json() for category in self.categories]
@@ -340,6 +342,8 @@ class Restaurant(models.Model):
 			'token': self.token,
 			'name': self.name,
 			'motto': self.motto,
+			'purposeId': self.purpose,
+			'purpose': self.purpose_str,
 			'categories': {
 				'count': self.categories.count(),
 				'categories': [category.to_json() for category in self.categories]
@@ -392,6 +396,8 @@ class Restaurant(models.Model):
 			'token': self.token,
 			'name': self.name,
 			'motto': self.motto,
+			'purposeId': self.purpose,
+			'purpose': self.purpose_str,
 			'categories': {
 				'count': self.categories.count(),
 				'categories': [category.to_json() for category in self.categories]
@@ -1018,6 +1024,8 @@ class RestaurantConfig(models.Model):
 	booking_cancelation_refund_percent = models.DecimalField(max_digits=18, decimal_places=2, default=50.00)
 	booking_payement_mode = models.IntegerField(default=3)
 	days_before_reservation = models.IntegerField(default=3)
+	can_take_away = models.BooleanField(default=True)
+	user_should_pay_before = models.BooleanField(default=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -1042,7 +1050,9 @@ class RestaurantConfig(models.Model):
 			'phone': self.phone,
 			'bookingCancelationRefund': self.booking_cancelation_refund,
 			'bookingCancelationRefundPercent': self.booking_cancelation_refund_percent,
-			'daysBeforeReservation': self.days_before_reservation
+			'daysBeforeReservation': self.days_before_reservation,
+			'canTakeAway': self.can_take_away,
+			'userShouldPayBefore': self.user_should_pay_before
 		}
 
 
@@ -1197,10 +1207,6 @@ class User(models.Model):
 			'gender': self.gender,
 			'country': self.country,
 			'town': self.town,
-			'addresses': {
-				'count': self.addresses_count,
-				'addresses': [address.to_json() for address in self.addresses]
-			},
 			'urls':{
 				'loadRestaurants': reverse('ting_usr_load_restaurants', kwargs={'user': self.pk}),
 				'loadReservations': reverse('ting_usr_load_reservations', kwargs={'user': self.pk})
@@ -2624,7 +2630,8 @@ class PromotionInterest(models.Model):
 		return {
 			'id': self.pk,
 			'user': self.user.to_json_b(),
-			'isInterested': self.is_interested
+			'isInterested': self.is_interested,
+			'createdAt': self.created_at
 		}
 
 

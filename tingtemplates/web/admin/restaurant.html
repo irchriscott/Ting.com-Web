@@ -92,6 +92,8 @@
                                     <p><b>Cancelation Refund : </b>{{restaurant.config.booking_cancelation_refund_percent}} %</p>
                                     <p><b>Booking Payement Mode : </b>{{restaurant.config.payement_mode}}</p>
                                     <p><b>Days Before Booking : </b>{{restaurant.config.days_before_reservation}} days</p>
+                                    <p><b>Can Take Away : </b>{{restaurant.config.can_take_away|yesno}}</p>
+                                    <p><b>Customer Should Pay Before : </b>{{restaurant.config.user_should_pay_before|yesno}}</p>
                                 </div>
                                 {% if admin.pk|has_p:"can_update_configurations" == True %}
                                 <button class="large ui button left icon positive labeled" id="ting-admin-edit-restau-config">
@@ -210,9 +212,25 @@
                     </select>
                 </div>
                 <div class="field">
-                    <label for="">Tax Rate (For the account) : </label>
-                    <div class="ui action input">
-                        <input type="number" name="tax" value="{{restaurant.config.tax|none}}" placeholder="Tax Rate" autocomplete="off">
+                    <div class="three fields">
+                        <div class="field">
+                            <label>Tax Rate (For the account) : </label>
+                            <input type="number" name="tax" value="{{restaurant.config.tax|none}}" placeholder="Tax Rate" autocomplete="off">
+                        </div>  
+                        <div class="field">
+                            <label>Can Take Away : </label>
+                            <select class="dropdown" name="can_take_away">
+                                <option value="True" {% if restaurant.config.can_take_away == True %} selected {% endif %}>Yes</option>
+                                <option value="False" {% if restaurant.config.can_take_away == False %} selected {% endif %}>No</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Customer Should Pay Before : </label>
+                            <select class="dropdown" name="user_should_pay_before">
+                                <option value="True" {% if restaurant.config.user_should_pay_before == True %} selected {% endif %}>Yes</option>
+                                <option value="False" {% if restaurant.config.user_should_pay_before == False %} selected {% endif %}>No</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div class="field">

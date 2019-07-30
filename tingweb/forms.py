@@ -28,7 +28,10 @@ class RestaurantUpdateConfig(forms.ModelForm):
 
 	class Meta:
 		model = RestaurantConfig
-		fields = ('currency', 'use_default_currency', 'tax', 'cancel_late_booking', 'waiter_see_all_orders', 'book_with_advance', 'booking_advance', 'booking_cancelation_refund', 'booking_cancelation_refund_percent', 'booking_payement_mode', 'days_before_reservation')
+		fields = ('currency', 'use_default_currency', 'tax', 
+					'cancel_late_booking', 'waiter_see_all_orders', 'book_with_advance', 
+					'booking_advance', 'booking_cancelation_refund', 'booking_cancelation_refund_percent', 
+					'booking_payement_mode', 'days_before_reservation', 'can_take_away', 'user_should_pay_before')
 
 
 class AddNewBranch(forms.ModelForm):

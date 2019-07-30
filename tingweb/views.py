@@ -29,6 +29,7 @@ import json
 import imgkit
 import os
 import re
+import random
 
 
 # Create your views here.
@@ -70,7 +71,7 @@ def sign_up_with_google(request):
     if request.method == 'POST':
         user_form = GoogleSignUpForm(request.POST, instance=User(
                 image=utils.DEFAULT_USER_IMAGE,
-                username=request.POST.get('name').replace(' ', '_').lower(),
+                username='%s_%s' % (request.POST.get('name').replace(' ', '_').lower(), str(random.randint(1, 101))),
                 phone=''
             ))
         token = request.POST.get('token')
@@ -83,7 +84,7 @@ def sign_up_with_google(request):
             check_user = User.objects.get(email=email)
             if 'user' in request.session:
                 if request.session['user'] == check_user.pk:
-                    return HttpJsonResponse(ResponseObject('success', 'User Logged In Successfully !!!', 200, link))
+                    return HttpJsonResponse(ResponseObject('success', 'User Logged In Successfully !!!', 200, link, msgs=[check_user.to_json()]))
             else:
                 if check_user.token.split('-')[0] == token_id:
                     try:
@@ -96,7 +97,7 @@ def sign_up_with_google(request):
                     
                     request.session['user'] = check_user.pk
                     messages.success(request, 'User Logged In Successfully !!!')
-                    return HttpJsonResponse(ResponseObject('success', 'User Logged In Successfully !!!', 200, link))
+                    return HttpJsonResponse(ResponseObject('success', 'User Logged In Successfully !!!', 200, link, msgs=[check_user.to_json()]))
                 else:
                     check_user.token = token
                     check_user.updated_at = timezone.now()
@@ -104,7 +105,7 @@ def sign_up_with_google(request):
                     request.session['user'] = check_user.pk
                     
                     messages.success(request, 'User Logged In Successfully !!!')
-                    return HttpJsonResponse(ResponseObject('success', 'User Logged In Successfully !!!', 200, link))
+                    return HttpJsonResponse(ResponseObject('success', 'User Logged In Successfully !!!', 200, link, msgs=[check_user.to_json()]))
 
         except User.DoesNotExist:
             address_form = UserLocationForm(request.POST)
@@ -117,7 +118,7 @@ def sign_up_with_google(request):
                 request.session['user'] = user.pk
                 get_user_map_pin_svg(request, user.pk, False)
                 messages.success(request, 'User Signed In Successfully !!!')
-                return HttpJsonResponse(ResponseObject('success', 'User Signed In Successfully !!!', 200, link))
+                return HttpJsonResponse(ResponseObject('success', 'User Signed In Successfully !!!', 200, link, msgs=[user.to_json()]))
             else:
                 return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, 
                         msgs=user_form.errors.items() + address_form.errors.items()))
@@ -155,7 +156,7 @@ def sign_up_with_email(request):
             request.session['user'] = user.pk
             get_user_map_pin_svg(request, user.pk, False)
             messages.success(request, 'User Registered Successfully !!!')
-            return HttpJsonResponse(ResponseObject('success', 'User Registered Successfully !!!', 200, link))
+            return HttpJsonResponse(ResponseObject('success', 'User Registered Successfully !!!', 200, link, msgs=[user.to_json()]))
         else:
             return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, 
                     msgs=user_form.errors.items() + address_form.errors.items()))
@@ -174,7 +175,7 @@ def login(request):
         if auth.authenticate != None:
             request.session['user'] = auth.authenticate.pk
             messages.success(request, 'User Logged In Successfully !!!')
-            return HttpJsonResponse(ResponseObject('success', 'User Logged In Successfully !!!', 200, link))
+            return HttpJsonResponse(ResponseObject('success', 'User Logged In Successfully !!!', 200, link, msgs=[auth.authenticate.to_json()]))
         else:
             return HttpJsonResponse(ResponseObject('error', 'Invalid Email or Password !!!', 404))
     else:
@@ -201,7 +202,7 @@ def submit_reset_password(request):
                 })
             mail.send()
 
-            return HttpJsonResponse(ResponseObject('success', 'Reset Password Link Mail Sent Successfully !!!', 400))
+            return HttpJsonResponse(ResponseObject('success', 'Reset Password Link Mail Sent Successfully !!!', 200))
 
         except User.DoesNotExist as e:
             return HttpJsonResponse(ResponseObject('error', 'Unknown User Email', 404))
@@ -626,12 +627,16 @@ def load_user_restaurants(request, user):
 def make_reservation(request, restaurant, branch):
     if request.method == 'POST':
         restaurant = Restaurant.objects.get(pk=restaurant)
+        branch = Branch.objects.get(pk=branch)
         booking = ReservationForm(request.POST, instance=Booking(
                 user=User.objects.get(pk=request.session['user']),
                 restaurant=Restaurant.objects.get(pk=restaurant.pk),
-                branch=Branch.objects.get(pk=branch),
+                branch=Branch.objects.get(pk=branch.pk),
                 token=get_random_string(100)
             ))
+
+        if restaurant.purpose != 2 or branch.is_available == False:
+            return HttpJsonResponse(ResponseObject('error', 'Restaurant Doesnt Support This Feature !!!', 406))
 
         bk_date = datetime.strptime(request.POST.get('date'), '%Y-%m-%d')
         date = datetime.now() + timedelta(days=restaurant.config.days_before_reservation)
@@ -639,6 +644,7 @@ def make_reservation(request, restaurant, branch):
         if bk_date < date:
             return HttpJsonResponse(ResponseObject('error', 'Booking date should be %s from now !!!' % str(restaurant.config.days_before_reservation), 406))
 
+        times = re.findall(r'\d{1,2}(:\d{1,2})?(AM|PM)?', request.POST.get('time'))
         time = datetime.strptime(request.POST.get('time'), '%I:%M %p').time()
 
         if time <= restaurant.opening or time >= restaurant.closing:
@@ -737,8 +743,7 @@ def cancel_reservation(request, reservation):
     url = reverse('ting_usr_bookings', kwargs={'user': booking.user.pk, 'username': booking.user.username})
     return HttpJsonResponse(ResponseObject('success', 'Reservation Canceled Successfully !!!', 200, url))
         
-
-
+        
 # GLOBAL LINKS
 
 
