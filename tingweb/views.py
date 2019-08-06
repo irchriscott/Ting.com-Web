@@ -142,6 +142,8 @@ def sign_up_with_email(request):
 
         try:
             bd = datetime.strptime(request.POST.get('date_of_birth'), '%Y-%m-%d')
+            if bd > datetime.now():
+                HttpJsonResponse(ResponseObject('error', 'Insert Valid Birth Date !!!', 406))
         except ValueError as e:
             return HttpJsonResponse(ResponseObject('error', 'Insert Valid Birth Date !!!', 406))
 
