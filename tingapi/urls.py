@@ -18,9 +18,24 @@ from django.conf.urls import url
 from tingapi import views
 
 urlpatterns = [
+
+	# AUTH & USER
+
 	url(r'usr/check/email-username/$', views.api_check_user_email_username),
 	url(r'usr/signup/email/$', views.api_sign_up_with_email),
 	url(r'usr/signup/google/$', views.api_sign_up_with_google),
 	url(r'usr/auth/login/$', views.api_login),
-	url(r'usr/auth/password/reset/$', views.api_submit_reset_password)
+	url(r'usr/auth/password/reset/$', views.api_submit_reset_password),
+	url(r'usr/profile/image/update/$', views.api_update_user_profile_image),
+	url(r'usr/profile/email/update/$', views.api_update_user_email),
+	url(r'usr/profile/password/update/$', views.api_update_user_password),
+	url(r'usr/profile/identity/update/$', views.api_update_user_identity),
+	url(r'usr/profile/address/add/$', views.api_add_user_address),
+	url(r'usr/profile/address/delete/(?P<address>\d+)/$', views.api_delete_user_address),
+	url(r'usr/profile/address/update/(?P<address>\d+)/$', views.api_update_user_address),
+
+	# RESTAURANT
+
+	url(r'usr/g/restaurants/all/$', views.api_restaurants)
+
 ]

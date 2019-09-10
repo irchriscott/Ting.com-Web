@@ -37,8 +37,8 @@
 <script type="text/javascript">
 	$("#ting-direction-from, #ting-resto-directions-map-travel-mode").dropdown();
 	var session = window.__TING__Session
-	var branch = JSON.parse('{{branch|safe}}');
-	var curloc = JSON.parse('{{location|safe}}');
+	var branch = {{branch|safe}}
+	var curloc = {{location|safe}}
 	curloc.location = "Current Location";
 	curloc.pin = session.pin;
 	var loc = $("#ting-direction-from");

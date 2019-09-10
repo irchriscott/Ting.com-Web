@@ -84,7 +84,7 @@ def sign_up_with_google(request):
             check_user = User.objects.get(email=email)
             if 'user' in request.session:
                 if request.session['user'] == check_user.pk:
-                    return HttpJsonResponse(ResponseObject('success', 'User Logged In Successfully !!!', 200, link, msgs=[check_user.to_json()]))
+                    return HttpJsonResponse(ResponseObject('success', 'User Logged In Successfully !!!', 200, link, user=check_user.to_json()))
             else:
                 if check_user.token.split('-')[0] == token_id:
                     try:
@@ -97,7 +97,7 @@ def sign_up_with_google(request):
                     
                     request.session['user'] = check_user.pk
                     messages.success(request, 'User Logged In Successfully !!!')
-                    return HttpJsonResponse(ResponseObject('success', 'User Logged In Successfully !!!', 200, link, msgs=[check_user.to_json()]))
+                    return HttpJsonResponse(ResponseObject('success', 'User Logged In Successfully !!!', 200, link, user=check_user.to_json()))
                 else:
                     check_user.token = token
                     check_user.updated_at = timezone.now()
@@ -105,7 +105,7 @@ def sign_up_with_google(request):
                     request.session['user'] = check_user.pk
                     
                     messages.success(request, 'User Logged In Successfully !!!')
-                    return HttpJsonResponse(ResponseObject('success', 'User Logged In Successfully !!!', 200, link, msgs=[check_user.to_json()]))
+                    return HttpJsonResponse(ResponseObject('success', 'User Logged In Successfully !!!', 200, link, user=check_user.to_json(), msgs=[]))
 
         except User.DoesNotExist:
             address_form = UserLocationForm(request.POST)
@@ -118,7 +118,7 @@ def sign_up_with_google(request):
                 request.session['user'] = user.pk
                 get_user_map_pin_svg(request, user.pk, False)
                 messages.success(request, 'User Signed In Successfully !!!')
-                return HttpJsonResponse(ResponseObject('success', 'User Signed In Successfully !!!', 200, link, msgs=[user.to_json()]))
+                return HttpJsonResponse(ResponseObject('success', 'User Signed In Successfully !!!', 200, link, user=user.to_json(), msgs=[]))
             else:
                 return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, 
                         msgs=user_form.errors.items() + address_form.errors.items()))
@@ -158,7 +158,7 @@ def sign_up_with_email(request):
             request.session['user'] = user.pk
             get_user_map_pin_svg(request, user.pk, False)
             messages.success(request, 'User Registered Successfully !!!')
-            return HttpJsonResponse(ResponseObject('success', 'User Registered Successfully !!!', 200, link, msgs=[user.to_json()]))
+            return HttpJsonResponse(ResponseObject('success', 'User Registered Successfully !!!', 200, link, user=user.to_json(), msgs=[]))
         else:
             return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, 
                     msgs=user_form.errors.items() + address_form.errors.items()))
@@ -177,7 +177,7 @@ def login(request):
         if auth.authenticate != None:
             request.session['user'] = auth.authenticate.pk
             messages.success(request, 'User Logged In Successfully !!!')
-            return HttpJsonResponse(ResponseObject('success', 'User Logged In Successfully !!!', 200, link, msgs=[auth.authenticate.to_json()]))
+            return HttpJsonResponse(ResponseObject('success', 'User Logged In Successfully !!!', 200, link, user=auth.authenticate.to_json(), msgs=[]))
         else:
             return HttpJsonResponse(ResponseObject('error', 'Invalid Email or Password !!!', 404))
     else:
@@ -314,7 +314,7 @@ def update_user_profile_image(request):
             user.updated_at = timezone.now()
             user.save()
             get_user_map_pin_svg(request, user.pk, False)
-            return HttpJsonResponse(ResponseObject('success', 'User Image Updated Successfully !!!', 200))
+            return HttpJsonResponse(ResponseObject('success', 'User Image Updated Successfully !!!', 200, user=user.to_json()))
         else:
             return HttpJsonResponse(ResponseObject('error', 'Insert A Valid Image !!!', 400, msgs=form.errors.items()))
     else:
@@ -332,16 +332,16 @@ def get_user_map_pin_svg(request, user, create=True):
     
     f = open(os.path.join(settings.MEDIA_ROOT, 'users', 'pins', filename), 'w+')
     f.write(
-            """
-            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" xmlns:xlink="http://www.w3.org/1999/xlink">
-              <path stroke-width="2" stroke-miterlimit="10" stroke="#b56fe8" fill="#b56fe8" d="M55.9 28.3c.1-.8.1-1.5.1-2.3a24 24 0 0 0-48 0c0 .8 0 1.6.1 2.3v.3C10.1 47.6 32 61 32 61s21.9-13.6 23.8-32.3z" data-name="layer2" stroke-linejoin="round" stroke-linecap="round"></path>
-              <defs>
-                <pattern id="image" x="0" y="0" patternUnits="userSpaceOnUse" height="64" width="64">
-                  <image height="40" width="40" x="12" y="6" xlink:href="%s"></image>
-                </pattern>
-              </defs>
-              <circle stroke-width="2" stroke-miterlimit="10" stroke="#b56fe8" fill="url(#image)" r="17" cy="26" cx="32" data-name="layer1" stroke-linejoin="round" stroke-linecap="round"></circle>
-            </svg>
+            """ <?xml version="1.0" encoding="utf-8"?>
+                <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" xmlns:xlink="http://www.w3.org/1999/xlink">
+                    <path stroke-width="2" stroke-miterlimit="10" stroke="#b56fe8" fill="#b56fe8" d="M55.9 28.3c.1-.8.1-1.5.1-2.3a24 24 0 0 0-48 0c0 .8 0 1.6.1 2.3v.3C10.1 47.6 32 61 32 61s21.9-13.6 23.8-32.3z" data-name="layer2" stroke-linejoin="round" stroke-linecap="round"></path>
+                    <defs>
+                        <pattern id="image" x="0" y="0" patternUnits="userSpaceOnUse" height="64" width="64">
+                            <image height="40" width="40" x="12" y="6" xlink:href="%s"></image>
+                        </pattern>
+                    </defs>
+                    <circle stroke-width="2" stroke-miterlimit="10" stroke="#b56fe8" fill="url(#image)" r="17" cy="26" cx="32" data-name="layer1" stroke-linejoin="round" stroke-linecap="round"></circle>
+                </svg>
             """ % user.get_cover_base64()
         )
     f.close()
@@ -358,13 +358,13 @@ def update_user_password(request):
         new_password = request.POST.get('new_password')
         conf_password = request.POST.get('confirm_password')
 
-        if check_password(user.password, old_password) == True or old_password == None:
+        if check_password(old_password, user.password) == True or old_password == None:
             if conf_password == new_password:
                 user.password = make_password(conf_password)
                 user.updated_at = timezone.now()
                 user.save()
 
-                return HttpJsonResponse(ResponseObject('success', 'User Password Updated Successfully !!!', 200))
+                return HttpJsonResponse(ResponseObject('success', 'User Password Updated Successfully !!!', 200, user=user.to_json()))
             else:
                 return HttpJsonResponse(ResponseObject('error', 'Passwords Didnt Match !!!', 400))
         else:
@@ -403,7 +403,7 @@ def update_user_email(request):
                         })
                     mail.send()
 
-                    return HttpJsonResponse(ResponseObject('success', 'User Email Updated Successfully !!!', 200))
+                    return HttpJsonResponse(ResponseObject('success', 'User Email Updated Successfully !!!', 200, user=user.to_json()))
                 else:
                     return HttpJsonResponse(ResponseObject('error', 'Passwords Didnt Match !!!', 400))
             else:
@@ -480,7 +480,7 @@ def add_user_address(request):
             address.save()
             
             messages.success(request, 'Address Added Successfully !!!')
-            return HttpJsonResponse(ResponseObject('success', 'Address Added Successfully !!!', 200, link))
+            return HttpJsonResponse(ResponseObject('success', 'Address Added Successfully !!!', 200, link, user=user.to_json()))
         else:
             return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, 
                     msgs=address_form.errors.items()))
@@ -526,7 +526,7 @@ def update_user_address(request, address):
             address.save()
 
             messages.success(request, 'Address Updated Successfully !!!')
-            return HttpJsonResponse(ResponseObject('success', 'Address Updated Successfully !!!', 200, link))
+            return HttpJsonResponse(ResponseObject('success', 'Address Updated Successfully !!!', 200, link, user=user.to_json()))
         else:
             return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, 
                     msgs=address_form.errors.items()))
@@ -547,8 +547,8 @@ def delete_user_address(request, address):
     if addresses > 1:
         address.delete()
         messages.success(request, 'Address Deleted Successfully !!!')
-        return HttpJsonResponse(ResponseObject('success', 'Address Deleted Successfully !!!', 403, 
-                reverse('ting_usr_profile', kwargs={'user':user.pk, 'username':user.username})))
+        return HttpJsonResponse(ResponseObject('success', 'Address Deleted Successfully !!!', 200, 
+                reverse('ting_usr_profile', kwargs={'user':user.pk, 'username':user.username}), user=user.to_json()))
     else:
         messages.error(request, 'You Need At Least 1 Address !!!')
         return HttpJsonResponse(ResponseObject('error', 'You Need At Least 1 Address !!!', 403, 
@@ -944,16 +944,15 @@ def get_restaurant_map_pin_svg(request, restaurant, create=True):
     
     f = open(os.path.join(settings.MEDIA_ROOT, 'restaurants', 'pins', filename), 'w+')
     f.write(
-            """
-            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" xmlns:xlink="http://www.w3.org/1999/xlink">
-              <path stroke-width="2" stroke-miterlimit="10" stroke="#b56fe8" fill="#b56fe8" d="M55.9 28.3c.1-.8.1-1.5.1-2.3a24 24 0 0 0-48 0c0 .8 0 1.6.1 2.3v.3C10.1 47.6 32 61 32 61s21.9-13.6 23.8-32.3z" data-name="layer2" stroke-linejoin="round" stroke-linecap="round"></path>
-              <defs>
-                <pattern id="image" x="0" y="0" patternUnits="userSpaceOnUse" height="64" width="64">
-                  <image height="40" width="40" x="12" y="6" xlink:href="%s"></image>
-                </pattern>
-              </defs>
-              <circle stroke-width="2" stroke-miterlimit="10" stroke="#b56fe8" fill="url(#image)" r="17" cy="26" cx="32" data-name="layer1" stroke-linejoin="round" stroke-linecap="round"></circle>
-            </svg>
+            """ <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" xmlns:xlink="http://www.w3.org/1999/xlink">
+                    <path stroke-width="2" stroke-miterlimit="10" stroke="#b56fe8" fill="#b56fe8" d="M55.9 28.3c.1-.8.1-1.5.1-2.3a24 24 0 0 0-48 0c0 .8 0 1.6.1 2.3v.3C10.1 47.6 32 61 32 61s21.9-13.6 23.8-32.3z" data-name="layer2" stroke-linejoin="round" stroke-linecap="round"></path>
+                    <defs>
+                        <pattern id="image" x="0" y="0" patternUnits="userSpaceOnUse" height="64" width="64">
+                            <image height="40" width="40" x="12" y="6" xlink:href="%s"></image>
+                        </pattern>
+                    </defs>
+                    <circle stroke-width="2" stroke-miterlimit="10" stroke="#b56fe8" fill="url(#image)" r="17" cy="26" cx="32" data-name="layer1" stroke-linejoin="round" stroke-linecap="round"></circle>
+                </svg>
             """ % restaurant.get_cover_base64()
         )
     f.close()

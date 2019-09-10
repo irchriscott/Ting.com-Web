@@ -57,6 +57,28 @@ def api_check_user_email_username(request):
 		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
+# USER && AUTH
+
+
+def authenticate_user(xhr=None):
+	def decorator_wrapper(func):
+		def wrapper(request, *args, **kwargs):
+			token = request.META.get('HTTP_AUTHORIZATION')
+			try:
+				user = User.objects.filter(token=token).first()
+				request.session['user'] = user.pk
+			except User.DoesNotExist:
+				return HttpJsonResponse(ResponseObject('error', 'Mismatch Token', 401))
+            
+			return func(request, *args, **kwargs)
+        
+		wrapper.__doc__ = func.__doc__
+		wrapper.__name__ = func.__name__
+		return wrapper
+    
+	return decorator_wrapper
+
+
 @csrf_exempt
 def api_sign_up_with_email(request):
 	return web.sign_up_with_email(request)
@@ -75,3 +97,87 @@ def api_login(request):
 @csrf_exempt
 def api_submit_reset_password(request):
 	return web.submit_reset_password(request)
+
+
+@csrf_exempt
+@authenticate_user(xhr='api')
+def api_update_user_profile_image(request):
+	return web.update_user_profile_image(request)
+
+
+@csrf_exempt
+@authenticate_user(xhr='api')
+def api_update_user_email(request):
+	return web.update_user_email(request)
+
+
+@csrf_exempt
+@authenticate_user(xhr='api')
+def api_update_user_password(request):
+	return web.update_user_password(request)
+
+
+@csrf_exempt
+@authenticate_user(xhr='api')
+def api_update_user_identity(request):
+	if request.method == 'POST':
+		user = User.objects.get(pk=request.session['user'])
+        
+		phone = request.POST.get('phone')
+		dob = request.POST.get('date_of_birth')
+
+		user.phone = phone if phone != None or phone != '' else  ''
+
+		if dob != None or dob != '':
+			try:
+				date = datetime.strptime(dob, '%Y-%m-%d')
+			except ValueError:
+				return HttpJsonResponse(ResponseObject('error', 'Insert Valid Date Of Birth !!!', 406))
+
+		name = request.POST.get('name')
+		username = request.POST.get('username')
+		gender = request.POST.get('gender')
+
+		if username != user.username:
+			check_username = User.objects.filter(username=username).count()
+			if check_username == 0:
+				user.username = username
+			else:
+				return HttpJsonResponse(ResponseObject('error', 'Username Is Already Taken !!!', 406))
+
+
+		user.name = name
+		user.gender = gender
+		user.date_of_birth = dob if dob != None or dob != '' else ''
+		user.updated_at = timezone.now()
+		user.save()
+
+		return HttpJsonResponse(ResponseObject('success', 'User Info Updated Successfully !!!', 200, user=user.to_json()))
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
+
+
+@csrf_exempt
+@authenticate_user(xhr='api')
+def api_add_user_address(request):
+	return web.add_user_address(request)
+
+
+@csrf_exempt
+@authenticate_user(xhr='api')
+def api_delete_user_address(request, address):
+	return web.delete_user_address(request, address)
+
+
+@csrf_exempt
+@authenticate_user(xhr='api')
+def api_update_user_address(request, address):
+	return web.update_user_address(request, address)
+
+
+# RESTAURANT
+
+
+def api_restaurants(request):
+	branches = json.dumps([branch.to_json_r() for branch in Branch.objects.all()], default=str)
+	return HttpResponse(branches, content_type='application/json')

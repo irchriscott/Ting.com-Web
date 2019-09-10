@@ -2054,7 +2054,7 @@ function tingdotcom(lat, long, addr, cntr, twn){
                 if(usa.lat != 0 && usa.lat !== undefined && usa.lng != 0 && usa.lng !== undefined){
                     var _ds = new google.maps.LatLng(usa.lat, usa.lng)
                     var _de = new google.maps.LatLng(parseFloat(promo.branch.latitude), parseFloat(promo.branch.longitude))
-                    m.branch.dist = calculateDistance(_ds, _de)
+                    promo.branch.dist = calculateDistance(_ds, _de)
                 } else {promo.branch.dist = 0.00 }
 
                 var branch = promo.branch;
@@ -2419,14 +2419,14 @@ function statusWorkTime(o, c){
 
     if(ot >= now){
         if(((ot - now) / (1000 * 60)) < 120){
-            var r = (ot - now) / (1000 * 60) > 60 ? Math.round((ot - now) / (1000 * 60 * 60)) + " hr" : Math.round((ot - now) / (1000 * 60)) + " min"
+            var r = (ot - now) / (1000 * 60) >= 60 ? Math.round((ot - now) / (1000 * 60 * 60)) + " hr" : Math.round((ot - now) / (1000 * 60)) + " min"
             return {"clr": "orange", "msg": "Opening in " + r, "st": "closed"}} 
         else {return {"clr": "red", "msg": "Closed", "st": "closed"}}
     } else if (now > ot){
         if(now > ct){ return {"clr": "red", "msg": "Closed", "st": "closed"}}
         else {
             if(((ct - now) / (1000 * 60)) < 120){
-                var r = (ct - now) / (1000 * 60) > 60 ? Math.round((ct - now) / (1000 * 60 * 60)) + " hr" : Math.round((ct - now) / (1000 * 60)) + " min"
+                var r = (ct - now) / (1000 * 60) >= 60 ? Math.round((ct - now) / (1000 * 60 * 60)) + " hr" : Math.round((ct - now) / (1000 * 60)) + " min"
                 return {"clr": "orange", "msg": "Closing in " + r, "st": "opened"}} 
             else {return {"clr": "green", "msg": "Opened", "st": "opened"}}}
     }
@@ -2440,9 +2440,7 @@ function singleImagePreview(input, img) {
             var extVid = $(input).val().split('.').pop();
             if($.inArray(ext, ['gif','png','jpg','jpeg']) > 0) {
                 $("#" + img).attr('src', e.target.result).show();
-            }else{
-                showErrorMessage("img", "Please, Insert Only Image");
-            }
+            } else { showErrorMessage("img", "Please, Insert Only Image");}
         };
         reader.readAsDataURL(input.files[0]);
     }
@@ -3094,10 +3092,13 @@ function getUserCurrentLocation(lt, lg, ad, tc, cc, ads, id) {
         $.getJSON('https://ipapi.co/json/', function(data) {
             document.getElementById(lt).value = data.latitude;
             document.getElementById(lg).value = data.longitude;
-            document.getElementById(ad).value = data.city + ", " + data.region + ", " + data.country;
+            document.getElementById(ad).value = data.city + ", " + data.region + ", " + data.country_name;
             document.getElementById(tc).value = data.city;
             document.getElementById(cc).value = data.country_name;
             document.getElementById(id).value = data.ip
+            
+            let inputElse = document.getElementById(ads);
+            if(inputElse != null){ inputElse.value = data.city + ", " + data.region + ", " + data.country_name;}
         });
         return showErrorMessage('error_geolocation', 'Geolocation not supported by your browser');
     }
@@ -3126,11 +3127,7 @@ function getUserCurrentLocation(lt, lg, ad, tc, cc, ads, id) {
                 document.getElementById(id).value = results[0].place_id
 
                 let inputElse = document.getElementById(ads);
-
-                if(inputElse != null){
-                    inputElse.value = address;
-                }
-
+                if(inputElse != null){ inputElse.value = address;}
             }
         });
     }, function () { 
@@ -3138,10 +3135,13 @@ function getUserCurrentLocation(lt, lg, ad, tc, cc, ads, id) {
         $.getJSON('https://ipapi.co/json/', function(data) {
             document.getElementById(lt).value = data.latitude;
             document.getElementById(lg).value = data.longitude;
-            document.getElementById(ad).value = data.city + ", " + data.region + ", " + data.country;
+            document.getElementById(ad).value = data.city + ", " + data.region + ", " + data.country_name;
             document.getElementById(tc).value = data.city;
             document.getElementById(cc).value = data.country_name;
             document.getElementById(id).value = data.ip
+
+            let inputElse = document.getElementById(ads);
+            if(inputElse != null){ inputElse.value = data.city + ", " + data.region + ", " + data.country_name;}
         });
 
     }, {
@@ -3321,7 +3321,7 @@ function mapsDirection(s, e, cs, m) {
     var start = new google.maps.LatLng(parseFloat(s.latitude), parseFloat(s.longitude));
 
     $("#" + cs.distance).text(calculateDistance(end, start) + " km");
-    $("#" + cs.from).text(s.location);$("#" + cs.to).text(e.branch)
+    $("#" + cs.from).text(s.location);$("#" + cs.to).text(e.branch);
 
     var service = new google.maps.DistanceMatrixService();
     var bounds = new google.maps.LatLngBounds();

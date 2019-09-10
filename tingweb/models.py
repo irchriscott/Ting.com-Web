@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.utils import timezone
 from tingadmin.models import RestaurantCategory, TingLicenceKey, Permission
 from datetime import date, datetime
+from time import time
 import ting.utils as utils
 import os
 
@@ -268,14 +269,27 @@ class Restaurant(models.Model):
 		return self.branches.count()
 
 	@property
-	def map_pin_svg(self):
+	def map_ping_svg_name(self):
 		namedata = self.logo.url.split('/')
 		name = namedata[len(namedata) - 1]
 		svgname = '%s.svg' % name.split('.')[0]
-		return '/tinguploads/restaurants/pins/' + svgname
+		return svgname
+
+	@property
+	def map_pin_svg(self):
+		return '/tinguploads/restaurants/pins/' + self.map_ping_svg_name
 	
 	def get_cover_base64(self):
 		return utils.image_as_base64(self.logo.path)
+
+	@property
+	def get_pin_base64(self):
+		return utils.image_as_base64(self.map_pin_svg).replace('data:image/png;base64,', '')
+
+	@property
+	def get_pin_string(self):
+		file = open('tinguploads/restaurants/pins/' + self.map_ping_svg_name, 'r')
+		return file.read()
 
 	def to_json(self):
 		return {
@@ -291,6 +305,7 @@ class Restaurant(models.Model):
 			},
 			'logo': self.logo.url,
 			'pin': self.map_pin_svg,
+			'pinImg': self.get_pin_string,
 			'country': self.country,
 			'town': self.town,
 			'opening': self.opening.strftime('%H:%M'),
@@ -350,6 +365,7 @@ class Restaurant(models.Model):
 			},
 			'logo': self.logo.url,
 			'pin': self.map_pin_svg,
+			'pinImg': self.get_pin_string,
 			'country': self.country,
 			'town': self.town,
 			'opening': self.opening.strftime('%H:%M'),
@@ -404,6 +420,7 @@ class Restaurant(models.Model):
 			},
 			'logo': self.logo.url,
 			'pin': self.map_pin_svg,
+			'pinImg': self.get_pin_string,
 			'country': self.country,
 			'town': self.town,
 			'opening': self.opening.strftime('%H:%M'),
@@ -1150,14 +1167,28 @@ class User(models.Model):
 		return self.addresses.count()
 
 	@property
-	def map_pin_svg(self):
+	def map_ping_svg_name(self):
 		namedata = self.image.url.split('/')
 		name = namedata[len(namedata) - 1]
 		svgname = '%s.svg' % name.split('.')[0]
-		return '/tinguploads/users/pins/' + svgname
+		return svgname
+	
+	@property
+	def map_pin_svg(self):
+		return '/tinguploads/users/pins/' + self.map_ping_svg_name
 	
 	def get_cover_base64(self):
 		return utils.image_as_base64(self.image.path)
+
+	@property
+	def get_pin_base64(self):
+		return utils.image_as_base64(self.map_pin_svg).replace('data:image/png;base64,', '')
+
+	@property
+	def get_pin_string(self):
+		file = open('tinguploads/users/pins/' + self.map_ping_svg_name, 'r')
+		return file.read()
+	
 
 	def to_json(self):
 		return {
@@ -1168,6 +1199,7 @@ class User(models.Model):
 			'email': self.email,
 			'image': self.image,
 			'pin': self.map_pin_svg,
+			'pinImg': self.get_pin_string,
 			'phone': self.phone,
 			'dob': self.date_of_birth,
 			'gender': self.gender,
@@ -1196,7 +1228,6 @@ class User(models.Model):
 	def to_json_b(self):
 		return {
 			'id': self.pk,
-			'token': self.token,
 			'name': self.name,
 			'username': self.username,
 			'email': self.email,
@@ -1269,7 +1300,7 @@ class UserCategory(models.Model):
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'user': self.user.to_json(),
+			'user': self.user.to_json_b(),
 			'category': self.category.to_json(),
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
@@ -1307,8 +1338,8 @@ class UserRestaurant(models.Model):
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'user': self.user.to_json(),
-			'restaurant': self.restaurant.to_json_u(),
+			'user': self.user.to_json_b(),
+			'branch': self.branch.to_json_u(),
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
@@ -2383,7 +2414,7 @@ class MenuReview(models.Model):
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'user': self.user.to_json(),
+			'user': self.user.to_json_b(),
 			'review': self.review,
 			'comment': self.comment,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
@@ -2406,7 +2437,7 @@ class MenuLike(models.Model):
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'user': self.user.to_json(),
+			'user': self.user.to_json_b(),
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
@@ -2721,7 +2752,7 @@ class Placement(models.Model):
 			'id': self.pk,
 			'restaurant': self.restaurant.to_json(),
 			'branch': self.branch.to_json(),
-			'user': self.user.to_json(),
+			'user': self.user.to_json_b(),
 			'table': self.table.to_json(),
 			'booking': self.booking.to_json(),
 			'waiter': self.waiter.to_json(),

@@ -4,7 +4,7 @@ import json
 
 class ResponseObject(object):
 
-    def __init__(self, type, message, status, redirect=None, msgs=[], *args):
+    def __init__(self, type, message, status, redirect=None, user=None, msgs=[], *args):
         if isinstance(status, int) is False : 
             raise TypeError('{0} must be an integer'.format(status))
         
@@ -12,6 +12,7 @@ class ResponseObject(object):
         self.message = message
         self.status = status
         self.redirect = redirect
+        self.user = user
         self.msgs = msgs
 
     def __str__(self):
@@ -23,6 +24,7 @@ class ResponseObject(object):
             'message': self.message,
             'status': self.status,
             'redirect': self.redirect,
+            'user': self.user,
             'msgs': self.msgs
         }
     
