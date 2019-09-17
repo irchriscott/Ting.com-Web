@@ -73,8 +73,9 @@ DISH_TIME = (
 		(2, 'Lunch'),
 		(3, 'Dinner'),
 		(4, 'Supper'),
-		(5, 'Snack'),
-		(6, 'Other')
+		(5, 'Brunch'),
+		(6, 'Snack'),
+		(7, 'Other')
 	)
 
 PAID_BY = (
@@ -122,14 +123,14 @@ USER_ADDRESS_TYPE_LIST = ['Home', 'Work', 'School', 'Other']
 
 
 RESTAURANT_SPECIALS = [
-	{'id': 1, 'name': 'Wi-Fi', 'icon': 'wifi'},
-	{'id': 2, 'name': 'Phone Booth', 'icon': 'phone'},
-	{'id': 3, 'name': 'TV', 'icon': 'tv'},
-	{'id': 4, 'name': 'Parking', 'icon': 'car'},
-	{'id': 5, 'name': 'Karaoke', 'icon': 'microphone'},
-	{'id': 6, 'name': 'Jazz', 'icon': 'music'},
-	{'id': 7, 'name': 'Bar', 'icon': 'glass martini'},
-	{'id': 8, 'name': 'Guards', 'icon': 'shield alternate'}
+	{'id': 1, 'name': 'Wi-Fi',			'icon': 'wifi'},
+	{'id': 2, 'name': 'Phone Booth', 	'icon': 'phone'},
+	{'id': 3, 'name': 'TV', 			'icon': 'tv'},
+	{'id': 4, 'name': 'Parking', 		'icon': 'car'},
+	{'id': 5, 'name': 'Karaoke', 		'icon': 'microphone'},
+	{'id': 6, 'name': 'Jazz', 			'icon': 'music'},
+	{'id': 7, 'name': 'Bar', 			'icon': 'glass martini'},
+	{'id': 8, 'name': 'Guards', 		'icon': 'shield alternate'}
 ]
 
 BOOKING_PAYEMENT_MODE = (

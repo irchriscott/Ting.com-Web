@@ -2241,11 +2241,11 @@ class Menu(models.Model):
 		if self.menu_type == 1:
 			food = Food.objects.get(pk=self.menu_id)
 			return {
+				'id': self.pk,
 				'type':{
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
-				'id': self.pk,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
@@ -2258,11 +2258,11 @@ class Menu(models.Model):
 		elif self.menu_type == 2:
 			drink = Drink.objects.get(pk=self.menu_id)
 			return {
+				'id': self.pk,
 				'type':{
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
-				'id': self.pk,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
@@ -2275,11 +2275,11 @@ class Menu(models.Model):
 		elif self.menu_type == 3:
 			dish = Dish.objects.get(pk=self.menu_id)
 			return {
+				'id': self.pk,
 				'type':{
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
-				'id': self.pk,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': dish.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
@@ -2294,11 +2294,11 @@ class Menu(models.Model):
 		if self.menu_type == 1:
 			food = Food.objects.get(pk=self.menu_id)
 			return {
+				'id': self.pk,
 				'type':{
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
-				'id': self.pk,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
@@ -2311,11 +2311,11 @@ class Menu(models.Model):
 		elif self.menu_type == 2:
 			drink = Drink.objects.get(pk=self.menu_id)
 			return {
+				'id': self.pk,
 				'type':{
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
-				'id': self.pk,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
@@ -2328,11 +2328,11 @@ class Menu(models.Model):
 		elif self.menu_type == 3:
 			dish = Dish.objects.get(pk=self.menu_id)
 			return {
+				'id': self.pk,
 				'type':{
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
-				'id': self.pk,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': dish.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
@@ -2347,11 +2347,11 @@ class Menu(models.Model):
 		if self.menu_type == 1:
 			food = Food.objects.get(pk=self.menu_id)
 			return {
+				'id': self.pk,
 				'type':{
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
-				'id': self.pk,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
@@ -2364,11 +2364,11 @@ class Menu(models.Model):
 		elif self.menu_type == 2:
 			drink = Drink.objects.get(pk=self.menu_id)
 			return {
+				'id': self.pk,
 				'type':{
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
-				'id': self.pk,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
@@ -2381,11 +2381,11 @@ class Menu(models.Model):
 		elif self.menu_type == 3:
 			dish = Dish.objects.get(pk=self.menu_id)
 			return {
+				'id': self.pk,
 				'type':{
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
-				'id': self.pk,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': dish.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),

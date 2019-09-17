@@ -2404,8 +2404,8 @@ function isObjEmpty(obj){
 }
 
 function compare( a, b ) {
-    if ( a.dist < b.dist ){ return -1;}
-    if ( a.dist > b.dist ){ return 1;}
+    if ( a.dist < b.dist ) { return -1; }
+    if ( a.dist > b.dist ) { return 1; }
     return 0;
 }
 
@@ -2417,18 +2417,18 @@ function statusWorkTime(o, c){
     var ot = Date.parse(td + " " + o)
     var ct = Date.parse(td + " " + c)
 
-    if(ot >= now){
-        if(((ot - now) / (1000 * 60)) < 120){
+    if (ot >= now) {
+        if (((ot - now) / (1000 * 60)) < 120){
             var r = (ot - now) / (1000 * 60) >= 60 ? Math.round((ot - now) / (1000 * 60 * 60)) + " hr" : Math.round((ot - now) / (1000 * 60)) + " min"
             return {"clr": "orange", "msg": "Opening in " + r, "st": "closed"}} 
-        else {return {"clr": "red", "msg": "Closed", "st": "closed"}}
-    } else if (now > ot){
+        else { return {"clr": "red", "msg": "Closed", "st": "closed"} }
+    } else if (now > ot) {
         if(now > ct){ return {"clr": "red", "msg": "Closed", "st": "closed"}}
         else {
             if(((ct - now) / (1000 * 60)) < 120){
                 var r = (ct - now) / (1000 * 60) >= 60 ? Math.round((ct - now) / (1000 * 60 * 60)) + " hr" : Math.round((ct - now) / (1000 * 60)) + " min"
-                return {"clr": "orange", "msg": "Closing in " + r, "st": "opened"}} 
-            else {return {"clr": "green", "msg": "Opened", "st": "opened"}}}
+                return {"clr": "orange", "msg": "Closing in " + r, "st": "opened"} } 
+            else { return {"clr": "green", "msg": "Opened", "st": "opened"} } }
     }
 }
 
@@ -2489,20 +2489,20 @@ function makeMoment(time){
     real_time = (current_time - post_time);
     if (real_time < 60) {
         return 'Just Now';
-    }else if (real_time >= 60 && real_time < 3600) {
+    } else if (real_time >= 60 && real_time < 3600) {
         time_be = moment(timee).fromNow();
         return time_be;
-    }else if (real_time >= 3600 && real_time < 86400) {
+    } else if (real_time >= 3600 && real_time < 86400) {
         time_be = moment(timee).fromNow();
         return time_be;
-    }else if (real_time >= 86400 && real_time < 604800) {
+    } else if (real_time >= 86400 && real_time < 604800) {
         time_b = Math.floor(real_time / (60 * 60 * 24));
         time_be = moment(timee).calendar();
         return time_be;
-    }else if (real_time >= 604800 && real_time < 31104000 ) {
+    } else if (real_time >= 604800 && real_time < 31104000 ) {
         time_be = moment(timee).format('MMMM Do [at] h:mm a');
         return time_be;
-    }else{
+    } else {
         time_be = moment(timee).format('DD MMM YYYY [at] h:mm a');
         return time_be;
     }
