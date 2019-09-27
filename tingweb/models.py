@@ -629,6 +629,7 @@ class Branch(models.Model):
 	def to_json(self):
 		return {
 			'id': self.pk,
+			'restaurant': self.restaurant.to_json_b(),
 			'name': self.name,
 			'country': self.country,
 			'town': self.town,
@@ -768,6 +769,7 @@ class Branch(models.Model):
 	def to_json_u(self):
 		return {
 			'id': self.pk,
+			'restaurant': self.restaurant.to_json_u(),
 			'name': self.name,
 			'country': self.country,
 			'town': self.town,
@@ -2250,7 +2252,9 @@ class Menu(models.Model):
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
 					'loadReviews': reverse('ting_usr_menu_load_reviews', kwargs={'menu': self.pk}),
-					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk})
+					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk}),
+					'apiGet': reverse('api_restaurant_menu_get', kwargs={'menu': self.pk}),
+					'apiLike': reverse('api_restaurant_menu_like', kwargs={'menu': self.pk})
 				},
 				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
 				'menu': food.to_json_r()
@@ -2267,7 +2271,9 @@ class Menu(models.Model):
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
 					'loadReviews': reverse('ting_usr_menu_load_reviews', kwargs={'menu': self.pk}),
-					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk})
+					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk}),
+					'apiGet': reverse('api_restaurant_menu_get', kwargs={'menu': self.pk}),
+					'apiLike': reverse('api_restaurant_menu_like', kwargs={'menu': self.pk})
 				},
 				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
 				'menu': drink.to_json_r()
@@ -2284,7 +2290,9 @@ class Menu(models.Model):
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': dish.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
 					'loadReviews': reverse('ting_usr_menu_load_reviews', kwargs={'menu': self.pk}),
-					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk})
+					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk}),
+					'apiGet': reverse('api_restaurant_menu_get', kwargs={'menu': self.pk}),
+					'apiLike': reverse('api_restaurant_menu_like', kwargs={'menu': self.pk})
 				},
 				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': dish.slug}),
 				'menu': dish.to_json_r()
@@ -2303,7 +2311,9 @@ class Menu(models.Model):
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
 					'loadReviews': reverse('ting_usr_menu_load_reviews', kwargs={'menu': self.pk}),
-					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk})
+					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk}),
+					'apiGet': reverse('api_restaurant_menu_get', kwargs={'menu': self.pk}),
+					'apiLike': reverse('api_restaurant_menu_like', kwargs={'menu': self.pk})
 				},
 				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
 				'menu': food.to_json_p()
@@ -2320,7 +2330,9 @@ class Menu(models.Model):
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
 					'loadReviews': reverse('ting_usr_menu_load_reviews', kwargs={'menu': self.pk}),
-					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk})
+					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk}),
+					'apiGet': reverse('api_restaurant_menu_get', kwargs={'menu': self.pk}),
+					'apiLike': reverse('api_restaurant_menu_like', kwargs={'menu': self.pk})
 				},
 				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
 				'menu': drink.to_json_p()
@@ -2337,7 +2349,9 @@ class Menu(models.Model):
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': dish.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
 					'loadReviews': reverse('ting_usr_menu_load_reviews', kwargs={'menu': self.pk}),
-					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk})
+					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk}),
+					'apiGet': reverse('api_restaurant_menu_get', kwargs={'menu': self.pk}),
+					'apiLike': reverse('api_restaurant_menu_like', kwargs={'menu': self.pk})
 				},
 				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': dish.slug}),
 				'menu': dish.to_json_p()
@@ -2356,7 +2370,9 @@ class Menu(models.Model):
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
 					'loadReviews': reverse('ting_usr_menu_load_reviews', kwargs={'menu': self.pk}),
-					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk})
+					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk}),
+					'apiGet': reverse('api_restaurant_menu_get', kwargs={'menu': self.pk}),
+					'apiLike': reverse('api_restaurant_menu_like', kwargs={'menu': self.pk})
 				},
 				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
 				'menu': food.to_json()
@@ -2373,7 +2389,9 @@ class Menu(models.Model):
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
 					'loadReviews': reverse('ting_usr_menu_load_reviews', kwargs={'menu': self.pk}),
-					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk})
+					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk}),
+					'apiGet': reverse('api_restaurant_menu_get', kwargs={'menu': self.pk}),
+					'apiLike': reverse('api_restaurant_menu_like', kwargs={'menu': self.pk})
 				},
 				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
 				'menu': drink.to_json()
@@ -2390,7 +2408,9 @@ class Menu(models.Model):
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': dish.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
 					'loadReviews': reverse('ting_usr_menu_load_reviews', kwargs={'menu': self.pk}),
-					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk})
+					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk}),
+					'apiGet': reverse('api_restaurant_menu_get', kwargs={'menu': self.pk}),
+					'apiLike': reverse('api_restaurant_menu_like', kwargs={'menu': self.pk})
 				},
 				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': dish.slug}),
 				'menu': dish.to_json()
@@ -2580,7 +2600,7 @@ class Promotion(models.Model):
 				'hasSupplement': self.has_supplement,
 				'minQuantity': self.supplement_min_quantity,
 				'isSame': self.is_supplement_same,
-				'supplement': self.supplement.to_json() if self.is_supplement_same == False else {},
+				'supplement': self.supplement.to_json_p() if self.is_supplement_same == False else {},
 				'quantity': self.supplement_quantity
 			},
 			'period': self.promo_period,
@@ -2623,7 +2643,7 @@ class Promotion(models.Model):
 				'hasSupplement': self.has_supplement,
 				'minQuantity': self.supplement_min_quantity,
 				'isSame': self.is_supplement_same,
-				'supplement': self.supplement.to_json() if self.is_supplement_same == False else {},
+				'supplement': self.supplement.to_json_p() if self.is_supplement_same == False else {},
 				'quantity': self.supplement_quantity
 			},
 			'period': self.promo_period,

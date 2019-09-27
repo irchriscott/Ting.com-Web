@@ -752,7 +752,7 @@ function tingdotcom(lat, long, addr, cntr, twn){
                                             <div class="ui label ting-resto-item-map-direction" data-url="${decodeURIparams(window.__TING__URL_Load_Branch_Directions, {"restaurant": br.restaurant.id, "branch": br.id})}" data-position="${i}" data-branch-id="${br.id}"><i class="icon map marker alternate"></i> ${br.dist} Km</div>
                                             <div class="ui ${br.isAvailable == true ? s.clr : "red"} label"><i class="clock outline icon"></i> ${br.isAvailable == true ? s.msg : "Not Available"}</div>
                                             <div class="ui label" style="cursor:pointer;"><i class="heart outline icon"></i>${numerilize(br.likes.count, null, 0)}</div>
-                                            <div class="ui label" id="ting-rate-btn-${br.id}" style="cursor:pointer;"><i class="star outline icon"></i>${br.reviews.average}</div>
+                                            <div class="ui label" id="ting-rate-btn-${br.id}" style="cursor:pointer;"><i class="star outline icon"></i>${numerilize(br.reviews.count, null, 0)}</div>
                                             <div class="ui label" id="ting-specials-btn-${br.id}" style="cursor:pointer;"><i class="plus icon"></i>${br.specials.length}</div>
                                         </div>
                                         <div class="ting-like-restaurant">
@@ -1544,7 +1544,7 @@ function tingdotcom(lat, long, addr, cntr, twn){
                                         <p><i icon class="icon align left"></i> ${m.description}</p>
                                         <div class="ting-price-promo" style="height:46px;">
                                             <div class="ting-menu-promo">
-                                                ${m.promotions.promotions.filter(function(p){return p.isOn == true && p.isOnToday == true}).length > 0 
+                                                ${m.promotions.promotions.filter(function(p){return p.isOn == true && p.isOnToday == true }).length > 0 
                                                     ? `
                                                         <div class="ui green message ting-promo-btn-${menus[i].id}" sy><i class="icon check"></i> Promotion Available</div>
                                                         <div class="ui flowing popup top left transition hidden ting-promo-popup-${menus[i].id}">
@@ -1803,7 +1803,7 @@ function tingdotcom(lat, long, addr, cntr, twn){
                                 : ``}
                             ${m.promotions.promotions.filter(function(p){return p.isOn == true && p.isOnToday == true}).length > 0 
                                 ? `
-                                ${m.promotions.promotions.map(function(p){
+                                ${m.promotions.promotions.filter(function(p){return p.isOn == true && p.isOnToday == true}).map(function(p){
                                     return `
                                     <div class="item ting-resto-item" style="padding:1rem !important;">
                                         <div class="ui small image">
@@ -2418,15 +2418,15 @@ function statusWorkTime(o, c){
     var ct = Date.parse(td + " " + c)
 
     if (ot >= now) {
-        if (((ot - now) / (1000 * 60)) < 120){
-            var r = (ot - now) / (1000 * 60) >= 60 ? Math.round((ot - now) / (1000 * 60 * 60)) + " hr" : Math.round((ot - now) / (1000 * 60)) + " min"
+        if (((ot - now) / (1000 * 60)) < 119){
+            var r = (ot - now) / (1000 * 60) >= 60 ? Math.round(((ot - now) / (1000 * 60) - 1) / 60) + " hr" : Math.round((ot - now) / (1000 * 60) + 1) + " min"
             return {"clr": "orange", "msg": "Opening in " + r, "st": "closed"}} 
         else { return {"clr": "red", "msg": "Closed", "st": "closed"} }
     } else if (now > ot) {
         if(now > ct){ return {"clr": "red", "msg": "Closed", "st": "closed"}}
         else {
-            if(((ct - now) / (1000 * 60)) < 120){
-                var r = (ct - now) / (1000 * 60) >= 60 ? Math.round((ct - now) / (1000 * 60 * 60)) + " hr" : Math.round((ct - now) / (1000 * 60)) + " min"
+            if(((ct - now) / (1000 * 60)) < 119){
+                var r = (ct - now) / (1000 * 60) >= 60 ? Math.round(((ct - now) / (1000 * 60) - 1) / 60) + " hr" : Math.round((ct - now) / (1000 * 60) + 1) + " min"
                 return {"clr": "orange", "msg": "Closing in " + r, "st": "opened"} } 
             else { return {"clr": "green", "msg": "Opened", "st": "opened"} } }
     }

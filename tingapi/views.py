@@ -181,3 +181,17 @@ def api_update_user_address(request, address):
 def api_restaurants(request):
 	branches = json.dumps([branch.to_json_r() for branch in Branch.objects.all()], default=str)
 	return HttpResponse(branches, content_type='application/json')
+
+
+# MENU
+
+
+def api_get_menu(request, menu):
+	menu = Menu.objects.get(pk=menu)
+	return HttpResponse(json.dumps(menu.to_json_f(), default=str), content_type='application/json')
+
+
+@csrf_exempt
+@authenticate_user(xhr='api')
+def api_like_menu(request, menu):
+	return web.like_menu(request, menu)

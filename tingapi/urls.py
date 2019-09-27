@@ -36,6 +36,11 @@ urlpatterns = [
 
 	# RESTAURANT
 
-	url(r'usr/g/restaurants/all/$', views.api_restaurants)
+	url(r'usr/g/restaurants/all/$', views.api_restaurants),
+
+	# MENU
+
+	url(r'usr/restaurant/menu/(?P<menu>\d+)/$', views.api_get_menu, name='api_restaurant_menu_get'),
+	url(r'usr/menu/like/toogle/(?P<menu>\d+)/$', views.api_like_menu, name='api_restaurant_menu_like')
 
 ]
