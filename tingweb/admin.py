@@ -32,6 +32,11 @@ import ting.utils as utils
 from datetime import datetime, timedelta, date
 import tingadmin.permissions as permissions
 from tingweb.views import get_restaurant_map_pin_svg
+import pytz
+
+
+utc = pytz.UTC
+today = datetime.now().replace(tzinfo=utc)
 
 
 # Create your views here.

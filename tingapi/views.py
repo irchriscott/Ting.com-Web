@@ -183,6 +183,36 @@ def api_restaurants(request):
 	return HttpResponse(branches, content_type='application/json')
 
 
+def api_load_restaurant_promotions(request, branch):
+	promotions = Promotion.objects.filter(branch__pk=branch).order_by('-created_at')
+	return HttpResponse(json.dumps([promotion.to_json_f() for promotion in promotions], default=str), content_type='application/json')
+
+
+def api_load_restaurant_foods(request, branch):
+	foods = Menu.objects.filter(branch__pk=branch, menu_type=1).order_by('-created_at')
+	return HttpResponse(json.dumps([food.to_json() for food in foods], default=str), content_type='application/json')
+
+
+def api_load_restaurant_drinks(request, branch):
+	drinks = Menu.objects.filter(branch__pk=branch, menu_type=2).order_by('-created_at')
+	return HttpResponse(json.dumps([drink.to_json() for drink in drinks], default=str), content_type='application/json')
+
+
+def api_load_restaurant_dishes(request, branch):
+	dishes = Menu.objects.filter(branch__pk=branch, menu_type=3).order_by('-created_at')
+	return HttpResponse(json.dumps([dish.to_json() for dish in dishes], default=str), content_type='application/json')
+
+
+def api_load_restaurant_reviews(request, branch):
+	reviews = RestaurantReview.objects.filter(branch__pk=branch).order_by('-created_at')
+	return HttpResponse(json.dumps([review.to_json_b() for review in reviews], default=str), content_type='application/json')
+
+
+def api_load_restaurant_likes(request, branch):
+	likes = UserRestaurant.objects.filter(branch__pk=branch).order_by('-created_at')
+	return HttpResponse(json.dumps([like.to_json() for like in likes], default=str), content_type='application/json')
+
+
 # MENU
 
 
@@ -195,3 +225,14 @@ def api_get_menu(request, menu):
 @authenticate_user(xhr='api')
 def api_like_menu(request, menu):
 	return web.like_menu(request, menu)
+
+
+def api_load_menu_reviews(request, menu):
+	reviews = MenuReview.objects.filter(menu__pk=menu).order_by('-created_at')
+	return HttpResponse(json.dumps([review.to_json() for review in reviews], default=str), content_type='application/json')
+
+
+@csrf_exempt
+@authenticate_user(xhr='api')
+def api_add_menu_review(request, menu):
+	return web.add_menu_review(request, menu)
