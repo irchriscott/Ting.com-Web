@@ -183,6 +183,11 @@ def api_restaurants(request):
 	return HttpResponse(branches, content_type='application/json')
 
 
+def api_get_restaurant(request, branch):
+	branch = Branch.objects.get(pk=branch)
+	return HttpResponse(json.dumps(branch.to_json(), default=str), content_type='application/json')
+
+
 def api_load_restaurant_promotions(request, branch):
 	promotions = Promotion.objects.filter(branch__pk=branch).order_by('-created_at')
 	return HttpResponse(json.dumps([promotion.to_json_f() for promotion in promotions], default=str), content_type='application/json')
@@ -236,3 +241,11 @@ def api_load_menu_reviews(request, menu):
 @authenticate_user(xhr='api')
 def api_add_menu_review(request, menu):
 	return web.add_menu_review(request, menu)
+
+
+# PROMOTION
+
+
+def api_get_promotion(request, promo):
+	promotion = Promotion.objects.get(pk=promo)
+	return HttpResponse(json.dumps(promotion.to_json_f(), default=str), content_type='application/json') 

@@ -37,6 +37,7 @@ urlpatterns = [
 	# RESTAURANT
 
 	url(r'usr/g/restaurants/all/$', views.api_restaurants),
+	url(r'usr/g/restaurants/get/(?P<branch>\d+)/$', views.api_get_restaurant, name='api_restaurant_get'),
 	url(r'usr/g/restaurants/promotions/(?P<branch>\d+)/$', views.api_load_restaurant_promotions, name='api_restaurant_promotions'),
 	url(r'usr/g/restaurants/foods/(?P<branch>\d+)/$', views.api_load_restaurant_foods, name='api_restaurant_foods'),
 	url(r'usr/g/restaurants/drinks/(?P<branch>\d+)/$', views.api_load_restaurant_drinks, name='api_restaurant_drinks'),
@@ -49,6 +50,10 @@ urlpatterns = [
 	url(r'usr/restaurant/menu/(?P<menu>\d+)/$', views.api_get_menu, name='api_restaurant_menu_get'),
 	url(r'usr/menu/like/toogle/(?P<menu>\d+)/$', views.api_like_menu, name='api_restaurant_menu_like'),
 	url(r'usr/menu/reviews/(?P<menu>\d+)/$', views.api_load_menu_reviews, name='api_restaurant_menu_reviews'),
-	url(r'usr/menu/reviews/add/(?P<menu>\d+)/$', views.api_add_menu_review, name='api_restaurant_menu_add_review')
+	url(r'usr/menu/reviews/add/(?P<menu>\d+)/$', views.api_add_menu_review, name='api_restaurant_menu_add_review'),
+
+	# PROMOTION
+
+	url(r'usr/menu/promotion/get/(?P<promo>\d+)/$', views.api_get_promotion, name='api_promotion_get'),
 
 ]
