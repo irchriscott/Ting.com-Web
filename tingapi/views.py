@@ -213,6 +213,13 @@ def api_load_restaurant_reviews(request, branch):
 	return HttpResponse(json.dumps([review.to_json_b() for review in reviews], default=str), content_type='application/json')
 
 
+@csrf_exempt
+@authenticate_user(xhr='api')
+def api_add_restaurant_review(request, branch):
+	b = Branch.objects.get(pk=branch)
+	return web.add_restaurant_review(request, b.restaurant.pk, branch)
+
+
 def api_load_restaurant_likes(request, branch):
 	likes = UserRestaurant.objects.filter(branch__pk=branch).order_by('-created_at')
 	return HttpResponse(json.dumps([like.to_json() for like in likes], default=str), content_type='application/json')
@@ -248,4 +255,10 @@ def api_add_menu_review(request, menu):
 
 def api_get_promotion(request, promo):
 	promotion = Promotion.objects.get(pk=promo)
-	return HttpResponse(json.dumps(promotion.to_json_f(), default=str), content_type='application/json') 
+	return HttpResponse(json.dumps(promotion.to_json_f(), default=str), content_type='application/json')
+
+
+@csrf_exempt
+@authenticate_user(xhr='api')
+def api_interest_promotion(request, promo):
+	return web.interest_promotion(request, promo)

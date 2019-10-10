@@ -43,6 +43,7 @@ urlpatterns = [
 	url(r'usr/g/restaurants/drinks/(?P<branch>\d+)/$', views.api_load_restaurant_drinks, name='api_restaurant_drinks'),
 	url(r'usr/g/restaurants/dishes/(?P<branch>\d+)/$', views.api_load_restaurant_dishes, name='api_restaurant_dishes'),
 	url(r'usr/g/restaurants/reviews/(?P<branch>\d+)/$', views.api_load_restaurant_reviews, name='api_restaurant_reviews'),
+	url(r'usr/g/restaurants/reviews/add/(?P<branch>\d+)/$', views.api_add_restaurant_review, name='api_add_restaurant_review'),
 	url(r'usr/g/restaurants/likes/(?P<branch>\d+)/$', views.api_load_restaurant_likes, name='api_restaurant_likes'),
 
 	# MENU
@@ -55,5 +56,6 @@ urlpatterns = [
 	# PROMOTION
 
 	url(r'usr/menu/promotion/get/(?P<promo>\d+)/$', views.api_get_promotion, name='api_promotion_get'),
+	url(r'usr/menu/promotion/interest/(?P<promo>\d+)/$', views.api_interest_promotion, name='api_promotion_interest'),
 
 ]

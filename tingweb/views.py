@@ -1098,14 +1098,14 @@ def interest_promotion(request, promo):
 
         if check.count() > 0:
             check.delete()
-            return HttpJsonResponse(ResponseObject('success', 'Interested In Promotion !!!', 200))
+            return HttpJsonResponse(ResponseObject('success', 'Not Interested In Promotion !!!', 200))
         else:
             like = PromotionInterest(
                     user=User.objects.get(pk=user.pk),
                     promotion=Promotion.objects.get(pk=promo)
                 )
             like.save()
-            return HttpJsonResponse(ResponseObject('success', 'Not Interested In Promotion !!!', 200))
+            return HttpJsonResponse(ResponseObject('success', 'Interested In Promotion !!!', 200))
     else:
         return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 

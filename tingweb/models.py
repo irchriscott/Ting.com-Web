@@ -721,7 +721,7 @@ class Branch(models.Model):
 			},
 			'likes':{
 				'count': self.likes_count,
-				'likes': [like.user.to_json_b() for like in self.likes]
+				'likes': [like.to_json() for like in self.likes]
 			},
 			'urls':{
 				'relative': reverse('ting_usr_get_restaurant_promotions', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk, 'slug': self.restaurant.slug}),
@@ -735,6 +735,7 @@ class Branch(models.Model):
 				'apiDrinks': reverse('api_restaurant_drinks', kwargs={'branch': self.pk}),
 				'apiDishes': reverse('api_restaurant_dishes', kwargs={'branch': self.pk}),
 				'apiReviews': reverse('api_restaurant_reviews', kwargs={'branch': self.pk}),
+				'apiAddReview': reverse('api_add_restaurant_review', kwargs={'branch': self.pk}),
 				'apiLikes': reverse('api_restaurant_likes', kwargs={'branch': self.pk})
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
@@ -794,7 +795,7 @@ class Branch(models.Model):
 			},
 			'likes':{
 				'count': self.likes_count,
-				'likes': [like.user.to_json_b() for like in self.likes]
+				'likes': [like.to_json() for like in self.likes]
 			},
 			'urls':{
 				'relative': reverse('ting_usr_get_restaurant_promotions', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk, 'slug': self.restaurant.slug}),
@@ -808,6 +809,7 @@ class Branch(models.Model):
 				'apiDrinks': reverse('api_restaurant_drinks', kwargs={'branch': self.pk}),
 				'apiDishes': reverse('api_restaurant_dishes', kwargs={'branch': self.pk}),
 				'apiReviews': reverse('api_restaurant_reviews', kwargs={'branch': self.pk}),
+				'apiAddReview': reverse('api_add_restaurant_review', kwargs={'branch': self.pk}),
 				'apiLikes': reverse('api_restaurant_likes', kwargs={'branch': self.pk})
 			},
 			'promotions':{
@@ -885,6 +887,7 @@ class Branch(models.Model):
 				'apiDrinks': reverse('api_restaurant_drinks', kwargs={'branch': self.pk}),
 				'apiDishes': reverse('api_restaurant_dishes', kwargs={'branch': self.pk}),
 				'apiReviews': reverse('api_restaurant_reviews', kwargs={'branch': self.pk}),
+				'apiAddReview': reverse('api_add_restaurant_review', kwargs={'branch': self.pk}),
 				'apiLikes': reverse('api_restaurant_likes', kwargs={'branch': self.pk})
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
@@ -956,6 +959,7 @@ class Branch(models.Model):
 				'apiDrinks': reverse('api_restaurant_drinks', kwargs={'branch': self.pk}),
 				'apiDishes': reverse('api_restaurant_dishes', kwargs={'branch': self.pk}),
 				'apiReviews': reverse('api_restaurant_reviews', kwargs={'branch': self.pk}),
+				'apiAddReview': reverse('api_add_restaurant_review', kwargs={'branch': self.pk}),
 				'apiLikes': reverse('api_restaurant_likes', kwargs={'branch': self.pk})
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
@@ -3118,7 +3122,8 @@ class Promotion(models.Model):
 			'urls':{
 				'relative': reverse('ting_usr_promotion_get', kwargs={'promotion': self.pk, 'slug': self.uuid_url}),
 				'interest': reverse('ting_usr_promotion_interest', kwargs={'promo': self.pk}),
-				'apiGet': reverse('api_promotion_get', kwargs={'promo': self.pk})
+				'apiGet': reverse('api_promotion_get', kwargs={'promo': self.pk}),
+				'apiInterest': reverse('api_promotion_interest', kwargs={'promo': self.pk})
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
@@ -3162,7 +3167,8 @@ class Promotion(models.Model):
 			'urls':{
 				'relative': reverse('ting_usr_promotion_get', kwargs={'promotion': self.pk, 'slug': self.uuid_url}),
 				'interest': reverse('ting_usr_promotion_interest', kwargs={'promo': self.pk}),
-				'apiGet': reverse('api_promotion_get', kwargs={'promo': self.pk})
+				'apiGet': reverse('api_promotion_get', kwargs={'promo': self.pk}),
+				'apiInterest': reverse('api_promotion_interest', kwargs={'promo': self.pk})
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
@@ -3203,7 +3209,8 @@ class Promotion(models.Model):
 			'urls':{
 				'relative': reverse('ting_usr_promotion_get', kwargs={'promotion': self.pk, 'slug': self.uuid_url}),
 				'interest': reverse('ting_usr_promotion_interest', kwargs={'promo': self.pk}),
-				'apiGet': reverse('api_promotion_get', kwargs={'promo': self.pk})
+				'apiGet': reverse('api_promotion_get', kwargs={'promo': self.pk}),
+				'apiInterest': reverse('api_promotion_interest', kwargs={'promo': self.pk})
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
