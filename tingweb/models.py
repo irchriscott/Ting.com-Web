@@ -1345,7 +1345,7 @@ class User(models.Model):
 			'town': self.town,
 			'restaurants': {
 				'count': self.restaurants_count,
-				'restaurants': [restaurant.restaurant.to_json_u() for restaurant in self.restaurants]
+				'restaurants': [restaurant.to_json_u() for restaurant in self.restaurants]
 			},
 			'reviews': {
 				'count': self.restaurant_reviews_count,
@@ -1357,7 +1357,54 @@ class User(models.Model):
 			},
 			'urls':{
 				'loadRestaurants': reverse('ting_usr_load_restaurants', kwargs={'user': self.pk}),
-				'loadReservations': reverse('ting_usr_load_reservations', kwargs={'user': self.pk})
+				'loadReservations': reverse('ting_usr_load_reservations', kwargs={'user': self.pk}),
+				'apiGet': reverse('api_user_get', kwargs={'user': self.pk}),
+				'apiGetAuth': reverse('api_user_get_auth'),
+				'apiRestaurants': '',
+				'apiReservations': '',
+				'apiMoments': '',
+				'apiOrders': ''
+			},
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+
+	def to_json_u(self):
+
+		return {
+			'id': self.pk,
+			'name': self.name,
+			'username': self.username,
+			'email': self.email,
+			'image': self.image,
+			'pin': self.map_pin_svg,
+			'pinImg': self.get_pin_string,
+			'phone': self.phone,
+			'dob': self.date_of_birth,
+			'gender': self.gender,
+			'country': self.country,
+			'town': self.town,
+			'restaurants': {
+				'count': self.restaurants_count,
+				'restaurants': [restaurant.to_json_u() for restaurant in self.restaurants]
+			},
+			'reviews': {
+				'count': self.restaurant_reviews_count,
+				'reviews': [review.to_json_u() for review in self.restaurant_reviews]
+			},
+			'addresses': {
+				'count': self.addresses_count
+			},
+			'urls':{
+				'loadRestaurants': reverse('ting_usr_load_restaurants', kwargs={'user': self.pk}),
+				'loadReservations': reverse('ting_usr_load_reservations', kwargs={'user': self.pk}),
+				'apiGet': reverse('api_user_get', kwargs={'user': self.pk}),
+				'apiGetAuth': reverse('api_user_get_auth'),
+				'apiRestaurants': '',
+				'apiReservations': '',
+				'apiMoments': '',
+				'apiOrders': ''
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
@@ -1378,7 +1425,13 @@ class User(models.Model):
 			'town': self.town,
 			'urls':{
 				'loadRestaurants': reverse('ting_usr_load_restaurants', kwargs={'user': self.pk}),
-				'loadReservations': reverse('ting_usr_load_reservations', kwargs={'user': self.pk})
+				'loadReservations': reverse('ting_usr_load_reservations', kwargs={'user': self.pk}),
+				'apiGet': reverse('api_user_get', kwargs={'user': self.pk}),
+				'apiGetAuth': reverse('api_user_get_auth'),
+				'apiRestaurants': '',
+				'apiReservations': '',
+				'apiMoments': '',
+				'apiOrders': ''
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
@@ -1399,7 +1452,13 @@ class User(models.Model):
 			'town': self.town,
 			'urls':{
 				'loadRestaurants': reverse('ting_usr_load_restaurants', kwargs={'user': self.pk}),
-				'loadReservations': reverse('ting_usr_load_reservations', kwargs={'user': self.pk})
+				'loadReservations': reverse('ting_usr_load_reservations', kwargs={'user': self.pk}),
+				'apiGet': reverse('api_user_get', kwargs={'user': self.pk}),
+				'apiGetAuth': reverse('api_user_get_auth'),
+				'apiRestaurants': '',
+				'apiReservations': '',
+				'apiMoments': '',
+				'apiOrders': ''
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
@@ -1499,6 +1558,15 @@ class UserRestaurant(models.Model):
 			'id': self.pk,
 			'user': self.user.to_json_s(),
 			'branch': self.branch.to_json_s(),
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+	def to_json_u(self):
+		return {
+			'id': self.pk,
+			'user': self.user.to_json_s(),
+			'branch': self.branch.to_json_u(),
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}

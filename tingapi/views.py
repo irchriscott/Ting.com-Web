@@ -66,7 +66,10 @@ def authenticate_user(xhr=None):
 			token = request.META.get('HTTP_AUTHORIZATION')
 			try:
 				user = User.objects.filter(token=token).first()
-				request.session['user'] = user.pk
+				if user != None:
+					request.session['user'] = user.pk
+				else:
+					return HttpJsonResponse(ResponseObject('error', 'Mismatch Token', 401))
 			except User.DoesNotExist:
 				return HttpJsonResponse(ResponseObject('error', 'Mismatch Token', 401))
             
@@ -173,6 +176,17 @@ def api_delete_user_address(request, address):
 @authenticate_user(xhr='api')
 def api_update_user_address(request, address):
 	return web.update_user_address(request, address)
+
+
+def api_user_get(request, user):
+	usr = User.objects.get(pk=user)
+	return HttpResponse(json.dumps(usr.to_json_u(), default=str), content_type='application/json')
+
+
+@authenticate_user(xhr='api')
+def api_user_get_auth(request):
+	user = User.objects.get(pk=request.session['user'])
+	return HttpResponse(json.dumps(user.to_json_u(), default=str), content_type='application/json')
 
 
 # RESTAURANT

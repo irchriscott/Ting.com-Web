@@ -34,6 +34,9 @@ urlpatterns = [
 	url(r'usr/profile/address/delete/(?P<address>\d+)/$', views.api_delete_user_address),
 	url(r'usr/profile/address/update/(?P<address>\d+)/$', views.api_update_user_address),
 
+	url(r'usr/profile/get/(?P<user>\d+)/$', views.api_user_get, name='api_user_get'),
+	url(r'usr/profile/get/auth/$', views.api_user_get_auth, name='api_user_get_auth'),
+
 	# RESTAURANT
 
 	url(r'usr/g/restaurants/all/$', views.api_restaurants),
