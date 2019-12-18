@@ -750,11 +750,17 @@ function tingdotcom(lat, long, addr, cntr, twn){
                                         
                                         <div class="extra">
                                             <div class="ui label ting-resto-item-map-direction" data-url="${decodeURIparams(window.__TING__URL_Load_Branch_Directions, {"restaurant": br.restaurant.id, "branch": br.id})}" data-position="${i}" data-branch-id="${br.id}"><i class="icon map marker alternate"></i> ${br.dist} Km</div>
-                                            <div class="ui ${br.isAvailable == true ? s.clr : "red"} label"><i class="clock outline icon"></i> ${br.isAvailable == true ? s.msg : "Not Available"}</div>
+                                            <span id="ting-resto-open-time-${br.id}"><div class="ui ${br.isAvailable == true ? s.clr : "red"} label"><i class="clock outline icon"></i> ${br.isAvailable == true ? s.msg : "Not Available"}</div></span>
                                             <div class="ui label" style="cursor:pointer;"><i class="heart outline icon"></i>${numerilize(br.likes.count, null, 0)}</div>
                                             <div class="ui label" id="ting-rate-btn-${br.id}" style="cursor:pointer;"><i class="star outline icon"></i>${numerilize(br.reviews.count, null, 0)}</div>
                                             <div class="ui label" id="ting-specials-btn-${br.id}" style="cursor:pointer;"><i class="plus icon"></i>${br.specials.length}</div>
                                         </div>
+                                        <script>
+                                            setInterval(function(){
+                                                var time = statusWorkTime("${br.restaurant.opening}", "${br.restaurant.closing}")
+                                                $("#ting-resto-open-time-${br.id}").html('<div class="ui ${br.isAvailable == true ? " ' + time.clr + ' " : "red"} label"><i class="clock outline icon"></i> ${br.isAvailable == true ? " ' + time.msg + ' " : "Not Available"}</div>')
+                                            }, 30000)
+                                        </script>
                                         <div class="ting-like-restaurant">
                                             <button class="ting-like-restaurant ting-btn-animate ${likesresto(br) == true ? 'liked' : ''}" id="ting-like-restaurant-${br.id}" data-like='{"resto":"${br.restaurant.id}", "branch": "${br.id}", "tkn":"${br.restaurant.token}", "id":"${br.id}", "typ":"link"}'>${likerestobtn(br)}</button>
                                         </div>
@@ -1021,7 +1027,13 @@ function tingdotcom(lat, long, addr, cntr, twn){
             var rb__ct = $(`<div class="ten wide column"></div>`);
             var rb__cd = $(`<div class="six wide column" style="padding: 0 !important"></div>`);
 
-            var rb__ct__in = `<div class="ui ${branch.isAvailable == true ? bst.clr : "red"} label" style="width: 100%"><i class="clock outline icon"></i> ${branch.isAvailable == true ? bst.msg : "Not Available"}</div>`;
+            var rb__ct__in = `<span id="ting-resto-open-time-${branch.id}"><div class="ui ${branch.isAvailable == true ? bst.clr : "red"} label" style="width: 100%"><i class="clock outline icon"></i> ${branch.isAvailable == true ? bst.msg : "Not Available"}</div></span>
+                <script>
+                    setInterval(function(){
+                        var time = statusWorkTime("${branch.restaurant.opening}", "${branch.restaurant.closing}")
+                        $("#ting-resto-open-time-${branch.id}").html('<div class="ui ${branch.isAvailable == true ? " ' + time.clr + ' " : "red"} label"><i class="clock outline icon"></i> ${branch.isAvailable == true ? " ' + time.msg + ' " : "Not Available"}</div>')
+                    }, 30000)
+                </script>`;
             var rb__cd__in = `<div class="ui label ting-resto-item-map-direction" style="cursor:pointer; width: 100% !important;" data-url="${decodeURIparams(window.__TING__URL_Load_Branch_Directions, {"restaurant": branch.restaurant.id, "branch": branch.id})}" data-branch-id="${branch.id}"><i class="icon map marker alternate"></i> ${branch.dist} Km</div>`
 
             rb__ct.html(rb__ct__in);
@@ -1851,11 +1863,15 @@ function tingdotcom(lat, long, addr, cntr, twn){
                             <img src="${m.restaurant.logo}" />
                             <span class="text" style="cursor:pointer;" onclick="window.location = '${m.branch.urls.relative}'" >${m.restaurant.name}, ${m.branch.name}</span>
                         </div>
-                        <div class="ui ${m.branch.isAvailable == true ? bst.clr : "red"} label" style="padding-top: 0.85rem; padding-bottom:0.85rem;"><i class="clock outline icon"></i> ${m.branch.isAvailable == true ? bst.msg : "Not Available"}</div>
+                        <span id="ting-resto-open-time-${m.branch.id}"><div class="ui ${m.branch.isAvailable == true ? bst.clr : "red"} label" style="padding-top: 0.85rem; padding-bottom:0.85rem;"><i class="clock outline icon"></i> ${m.branch.isAvailable == true ? bst.msg : "Not Available"}</div></span>
                         <div class="ui label ting-resto-item-map-direction" style="cursor:pointer; padding-top: 0.85rem; padding-bottom:0.85rem;" data-url="${decodeURIparams(window.__TING__URL_Load_Branch_Directions, {"restaurant": m.restaurant.id, "branch": m.branch.id})}" data-branch-id="${m.branch.id}"><i class="icon map marker alternate"></i> ${m.branch.dist} Km</div>
                     </div>
                     <script type="text/javascript">
                         $(".disabled-rating").rating("disable");$("#ting-like-menu-${menu.id}").likeMenu();
+                        setInterval(function(){
+                            var time = statusWorkTime("${m.restaurant.opening}", "${m.restaurant.closing}")
+                            $("#ting-resto-open-time-${m.branch.id}").html('<div class="ui ${m.branch.isAvailable == true ? " ' + time.clr + ' " : "red"} label"><i class="clock outline icon"></i> ${m.branch.isAvailable == true ? " ' + time.msg + ' " : "Not Available"}</div>')
+                        }, 30000)
                     </script>
                 `);
 
@@ -2202,11 +2218,17 @@ function tingdotcom(lat, long, addr, cntr, twn){
                                 <img src="${promo.restaurant.logo}" />
                                 <span class="text" style="cursor:pointer;" onclick="window.location = '${promo.branch.urls.relative}'" >${promo.restaurant.name}, ${promo.branch.name}</span>
                             </div>
-                            <div class="ui ${promo.branch.isAvailable == true ? bst.clr : "red"} label" style="padding-top: 0.85rem; padding-bottom:0.85rem;"><i class="clock outline icon"></i> ${promo.branch.isAvailable == true ? bst.msg : "Not Available"}</div>
+                            <span id="ting-resto-open-time-${promo.branch.id}"><div class="ui ${promo.branch.isAvailable == true ? bst.clr : "red"} label" style="padding-top: 0.85rem; padding-bottom:0.85rem;"><i class="clock outline icon"></i> ${promo.branch.isAvailable == true ? bst.msg : "Not Available"}</div></span>
                             <div class="ui label ting-resto-item-map-direction" style="cursor:pointer; padding-top: 0.85rem; padding-bottom:0.85rem;" data-url="${decodeURIparams(window.__TING__URL_Load_Branch_Directions, {"restaurant": promo.restaurant.id, "branch": promo.branch.id})}" data-branch-id="${promo.branch.id}"><i class="icon map marker alternate"></i> ${promo.branch.dist} Km</div>
                         </div>
                         <hr/>
-                        <script type="text/javascript">$("#ting-interest-promo").interestPromotion();</script>
+                        <script type="text/javascript">
+                            $("#ting-interest-promo").interestPromotion();
+                            setInterval(function(){
+                                var time = statusWorkTime("${promo.restaurant.opening}", "${promo.restaurant.closing}")
+                                $("#ting-resto-open-time-${promo.branch.id}").html('<div class="ui ${promo.branch.isAvailable == true ? " ' + time.clr + ' " : "red"} label"><i class="clock outline icon"></i> ${promo.branch.isAvailable == true ? " ' + time.msg + ' " : "Not Available"}</div>')
+                            }, 30000)
+                        </script>
                     `);
 
                 function _getmenu(m){
@@ -3456,3 +3478,6 @@ HTMLMarker.prototype.draw = function(){
     panes.overlayImage.style.left = position.x + 30 + 'px';
     panes.overlayImage.style.top = position.y + 52 + 'px';
 }
+
+//0115
+//https://www.youtube.com/watch?v=EwQ-ETXSpGA

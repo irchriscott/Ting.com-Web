@@ -1155,7 +1155,7 @@ def add_menu_review(request, menu):
                 user_review.comment = review.cleaned_data['comment']
                 user_review.updated_at = timezone.now()
                 user_review.save()
-                return HttpJsonResponse(ResponseObject('success', 'Menu Reviewed !!!', 200))
+                return HttpJsonResponse(ResponseObject('success', 'Menu Review Updated !!!', 200))
             else:
                 review.save()
                 return HttpJsonResponse(ResponseObject('success', 'Menu Reviewed !!!', 200))

@@ -69,9 +69,9 @@ def authenticate_user(xhr=None):
 				if user != None:
 					request.session['user'] = user.pk
 				else:
-					return HttpJsonResponse(ResponseObject('error', 'Mismatch Token', 401))
+					return HttpJsonResponse(ResponseObject('error', 'Mismatch Token !!!', 401))
 			except User.DoesNotExist:
-				return HttpJsonResponse(ResponseObject('error', 'Mismatch Token', 401))
+				return HttpJsonResponse(ResponseObject('error', 'Mismatch Token !!!', 401))
             
 			return func(request, *args, **kwargs)
         
@@ -262,6 +262,22 @@ def api_load_menu_reviews(request, menu):
 @authenticate_user(xhr='api')
 def api_add_menu_review(request, menu):
 	return web.add_menu_review(request, menu)
+
+
+@csrf_exempt
+@authenticate_user(xhr='api')
+def api_check_menu_review(request):
+	if request.method == 'POST':
+		user = User.objects.get(pk=request.session['user'])
+		menu = request.POST.get('menu')
+		review = MenuReview.objects.filter(menu__pk=menu, user__pk=user.pk).first()
+
+		if review != None:
+			return HttpResponse(json.dumps(review.to_json_s(), default=str), content_type='application/json', status=200)
+		else:
+			return HttpResponse(json.dumps(ResponseObject('error', 'Review Not Found', 404), default=str), content_type='application/json', status=404)
+	else:
+		return HttpResponse(json.dumps(ResponseObject('error', 'Method Not Allowed', 405), default=str), content_type='application/json', status=404)
 
 
 # PROMOTION

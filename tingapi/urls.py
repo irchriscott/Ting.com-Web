@@ -55,6 +55,7 @@ urlpatterns = [
 	url(r'usr/menu/like/toogle/(?P<menu>\d+)/$', views.api_like_menu, name='api_restaurant_menu_like'),
 	url(r'usr/menu/reviews/(?P<menu>\d+)/$', views.api_load_menu_reviews, name='api_restaurant_menu_reviews'),
 	url(r'usr/menu/reviews/add/(?P<menu>\d+)/$', views.api_add_menu_review, name='api_restaurant_menu_add_review'),
+	url(r'usr/menu/reviews/check/$', views.api_check_menu_review, name='api_restaurant_menu_check_review'),
 
 	# PROMOTION
 
