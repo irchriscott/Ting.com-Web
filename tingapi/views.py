@@ -239,6 +239,22 @@ def api_load_restaurant_likes(request, branch):
 	return HttpResponse(json.dumps([like.to_json() for like in likes], default=str), content_type='application/json')
 
 
+@csrf_exempt
+@authenticate_user(xhr='api')
+def api_check_restaurant_review(request):
+	if request.method == 'POST':
+		user = User.objects.get(pk=request.session['user'])
+		resto = request.POST.get('resto')
+		review = RestaurantReview.objects.filter(branch__pk=resto, user__pk=user.pk).first()
+
+		if review != None:
+			return HttpResponse(json.dumps(review.to_json_b(), default=str), content_type='application/json', status=200)
+		else:
+			return HttpResponse(json.dumps(ResponseObject('error', 'Review Not Found', 404), default=str), content_type='application/json', status=404)
+	else:
+		return HttpResponse(json.dumps(ResponseObject('error', 'Method Not Allowed', 405), default=str), content_type='application/json', status=404)
+
+
 # MENU
 
 

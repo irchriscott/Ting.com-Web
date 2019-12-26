@@ -48,6 +48,7 @@ urlpatterns = [
 	url(r'usr/g/restaurants/reviews/(?P<branch>\d+)/$', views.api_load_restaurant_reviews, name='api_restaurant_reviews'),
 	url(r'usr/g/restaurants/reviews/add/(?P<branch>\d+)/$', views.api_add_restaurant_review, name='api_add_restaurant_review'),
 	url(r'usr/g/restaurants/likes/(?P<branch>\d+)/$', views.api_load_restaurant_likes, name='api_restaurant_likes'),
+	url(r'usr/g/restaurants/reviews/check/$', views.api_check_restaurant_review, name='api_restaurant_check_review'),
 
 	# MENU
 
