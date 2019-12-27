@@ -229,6 +229,13 @@ def api_load_restaurant_reviews(request, branch):
 
 @csrf_exempt
 @authenticate_user(xhr='api')
+def api_like_restaurant(request, branch):
+	b = Branch.objects.get(pk=branch)
+	return web.like_restaurant(request, b.restaurant.pk, branch)
+
+
+@csrf_exempt
+@authenticate_user(xhr='api')
 def api_add_restaurant_review(request, branch):
 	b = Branch.objects.get(pk=branch)
 	return web.add_restaurant_review(request, b.restaurant.pk, branch)

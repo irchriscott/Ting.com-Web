@@ -736,7 +736,8 @@ class Branch(models.Model):
 				'apiDishes': reverse('api_restaurant_dishes', kwargs={'branch': self.pk}),
 				'apiReviews': reverse('api_restaurant_reviews', kwargs={'branch': self.pk}),
 				'apiAddReview': reverse('api_add_restaurant_review', kwargs={'branch': self.pk}),
-				'apiLikes': reverse('api_restaurant_likes', kwargs={'branch': self.pk})
+				'apiLikes': reverse('api_restaurant_likes', kwargs={'branch': self.pk}),
+				'apiAddLike': reverse('api_like_restaurant', kwargs={'branch': self.pk})
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
@@ -810,7 +811,8 @@ class Branch(models.Model):
 				'apiDishes': reverse('api_restaurant_dishes', kwargs={'branch': self.pk}),
 				'apiReviews': reverse('api_restaurant_reviews', kwargs={'branch': self.pk}),
 				'apiAddReview': reverse('api_add_restaurant_review', kwargs={'branch': self.pk}),
-				'apiLikes': reverse('api_restaurant_likes', kwargs={'branch': self.pk})
+				'apiLikes': reverse('api_restaurant_likes', kwargs={'branch': self.pk}),
+				'apiAddLike': reverse('api_like_restaurant', kwargs={'branch': self.pk})
 			},
 			'promotions':{
 				'count': self.promotions_count,
@@ -888,7 +890,8 @@ class Branch(models.Model):
 				'apiDishes': reverse('api_restaurant_dishes', kwargs={'branch': self.pk}),
 				'apiReviews': reverse('api_restaurant_reviews', kwargs={'branch': self.pk}),
 				'apiAddReview': reverse('api_add_restaurant_review', kwargs={'branch': self.pk}),
-				'apiLikes': reverse('api_restaurant_likes', kwargs={'branch': self.pk})
+				'apiLikes': reverse('api_restaurant_likes', kwargs={'branch': self.pk}),
+				'apiAddLike': reverse('api_like_restaurant', kwargs={'branch': self.pk})
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
@@ -960,7 +963,8 @@ class Branch(models.Model):
 				'apiDishes': reverse('api_restaurant_dishes', kwargs={'branch': self.pk}),
 				'apiReviews': reverse('api_restaurant_reviews', kwargs={'branch': self.pk}),
 				'apiAddReview': reverse('api_add_restaurant_review', kwargs={'branch': self.pk}),
-				'apiLikes': reverse('api_restaurant_likes', kwargs={'branch': self.pk})
+				'apiLikes': reverse('api_restaurant_likes', kwargs={'branch': self.pk}),
+				'apiAddLike': reverse('api_like_restaurant', kwargs={'branch': self.pk})
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
