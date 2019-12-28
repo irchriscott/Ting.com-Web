@@ -124,6 +124,13 @@ class Restaurant(models.Model):
 		return CategoryRestaurant.objects.filter(restaurant=self.pk).order_by('-created_at')
 
 	@property
+	def categories_ids(self):
+		return [category.category.id for category in self.categories]
+	
+	def has_category(self, c):
+		return True if c in self.categories_ids else False
+
+	@property
 	def tables(self):
 		return RestaurantTable.objects.filter(restaurant=self.pk).order_by('-created_at')
 
@@ -505,6 +512,7 @@ class Branch(models.Model):
 	email = models.EmailField(null=True, blank=True)
 	phone = models.CharField(max_length=255, null=True, blank=True)
 	specials = models.CharField(max_length=255, null=True, blank=True)
+	services = models.CharField(max_length=255, null=True, blank=True, default='')
 	is_available = models.BooleanField(default=True)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
@@ -657,6 +665,17 @@ class Branch(models.Model):
 		return [utils.get_from_dict(utils.RESTAURANT_SPECIALS, 'id', int(s)) for s in self.specials_ids]
 
 	@property
+	def services_ids(self):
+		return self.services.split(',') if self.specials != None or self.specials != '' else []
+	
+	def has_service(self, s):
+		return True if str(s) in self.services else False
+
+	@property
+	def get_services(self):
+		return [utils.get_from_dict(utils.RESTAURANT_SERVICES, 'id', int(s)) for s in self.services_ids]
+	
+	@property
 	def promotions(self):
 		return Promotion.objects.filter(branch__pk=self.pk).order_by('-updated_at')
 	
@@ -679,6 +698,10 @@ class Branch(models.Model):
 			'phone': self.phone,
 			'isAvailable': self.is_available,
 			'specials': self.get_specials,
+			'categories': {
+				'count': self.restaurant.categories.count(),
+				'categories': [category.to_json() for category in self.restaurant.categories]
+			},
 			'tables':{
 				'count': self.tables_count,
 				'iron': self.tables.filter(chair_type=1).count(),
@@ -758,6 +781,10 @@ class Branch(models.Model):
 			'phone': self.phone,
 			'isAvailable': self.is_available,
 			'specials': self.get_specials,
+			'categories': {
+				'count': self.restaurant.categories.count(),
+				'categories': [category.to_json() for category in self.restaurant.categories]
+			},
 			'tables':{
 				'count': self.tables_count,
 				'iron': self.tables.filter(chair_type=1).count(),
@@ -837,6 +864,10 @@ class Branch(models.Model):
 			'phone': self.phone,
 			'isAvailable': self.is_available,
 			'specials': self.get_specials,
+			'categories': {
+				'count': self.restaurant.categories.count(),
+				'categories': [category.to_json() for category in self.restaurant.categories]
+			},
 			'tables':{
 				'count': self.tables_count,
 				'iron': self.tables.filter(chair_type=1).count(),
@@ -911,6 +942,10 @@ class Branch(models.Model):
 			'phone': self.phone,
 			'isAvailable': self.is_available,
 			'specials': self.get_specials,
+			'categories': {
+				'count': self.restaurant.categories.count(),
+				'categories': [category.to_json() for category in self.restaurant.categories]
+			},
 			'tables':{
 				'count': self.tables_count,
 				'iron': self.tables.filter(chair_type=1).count(),
@@ -1711,6 +1746,7 @@ class Food(models.Model):
 	name = models.CharField(max_length=250, null=False, blank=False)
 	slug = models.CharField(max_length=250, null=False, blank=False)
 	category = models.ForeignKey(FoodCategory)
+	cuisine = models.ForeignKey(RestaurantCategory, null=True, blank=True)
 	food_type = models.IntegerField(null=False, blank=False)
 	description = models.TextField(blank=True, null=True)
 	ingredients = models.TextField(blank=True, null=True)
@@ -1804,6 +1840,7 @@ class Food(models.Model):
 			'branch': self.branch.to_json_u(),
 			'name': self.name,
 			'category': self.category.to_json(),
+			'cuisine': self.cuisine.to_json(),
 			'foodType': utils.get_from_tuple(utils.FOOD_TYPE, self.food_type),
 			'foodTypeId' : self.food_type,
 			'description': self.description,
@@ -1923,6 +1960,7 @@ class Food(models.Model):
 			'id': self.pk,
 			'name': self.name,
 			'category': self.category.to_json(),
+			'cuisine': self.cuisine.to_json(),
 			'foodType': utils.get_from_tuple(utils.FOOD_TYPE, self.food_type),
 			'foodTypeId' : self.food_type,
 			'description': self.description,
@@ -1958,6 +1996,7 @@ class Food(models.Model):
 			'id': self.pk,
 			'name': self.name,
 			'category': self.category.to_json(),
+			'cuisine': self.cuisine.to_json(),
 			'foodType': utils.get_from_tuple(utils.FOOD_TYPE, self.food_type),
 			'foodTypeId' : self.food_type,
 			'description': self.description,
@@ -2322,6 +2361,7 @@ class Dish(models.Model):
 	name = models.CharField(max_length=250, null=False, blank=False)
 	slug = models.CharField(max_length=250, null=False, blank=False)
 	category = models.ForeignKey(FoodCategory)
+	cuisine = models.ForeignKey(RestaurantCategory, null=True, blank=True)
 	dish_time = models.IntegerField(null=False, blank=False)
 	description = models.TextField(blank=True, null=True)
 	ingredients = models.TextField(blank=True, null=True)
@@ -2429,6 +2469,7 @@ class Dish(models.Model):
 			'branch': self.branch.to_json_u(),
 			'name': self.name,
 			'category': self.category.to_json(),
+			'cuisine': self.cuisine.to_json(),
 			'dishTimeId': self.dish_time,
 			'dishTime': self.dish_time_str,
 			'description': self.description,
@@ -2476,6 +2517,7 @@ class Dish(models.Model):
 			'branch': self.branch.to_json(),
 			'name': self.name,
 			'category': self.category.to_json(),
+			'cuisine': self.cuisine.to_json(),
 			'dishTimeId': self.dish_time,
 			'dishTime': self.dish_time_str,
 			'description': self.description,
@@ -2521,6 +2563,7 @@ class Dish(models.Model):
 			'id': self.pk,
 			'name': self.name,
 			'category': self.category.to_json(),
+			'cuisine': self.cuisine.to_json(),
 			'dishTimeId': self.dish_time,
 			'dishTime': self.dish_time_str,
 			'description': self.description,
@@ -2566,6 +2609,7 @@ class Dish(models.Model):
 			'id': self.pk,
 			'name': self.name,
 			'category': self.category.to_json(),
+			'cuisine': self.cuisine.to_json(),
 			'dishTimeId': self.dish_time,
 			'dishTime': self.dish_time_str,
 			'description': self.description,
@@ -2607,6 +2651,7 @@ class Dish(models.Model):
 			'id': self.pk,
 			'name': self.name,
 			'category': self.category.to_json(),
+			'cuisine': self.cuisine.to_json(),
 			'dishTimeId': self.dish_time,
 			'dishTime': self.dish_time_str,
 			'description': self.description,

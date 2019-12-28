@@ -9,6 +9,9 @@ from time import time
 def package_image_path(instance, filename):
 	return "packages/%s_%s" % (str(time()).replace('.','_'), filename)
 
+def restaurants_category_image_path(instance, filename):
+	return "restaurants/categories/%s_%s" % (str(time()).replace('.','_'), filename)
+
 class TingPackage(models.Model):
 	name = models.CharField(max_length=200, null=False, blank=False)
 	image = models.ImageField(upload_to=package_image_path, null=False, blank=False)
@@ -54,6 +57,7 @@ class TingLicenceKey(models.Model):
 class RestaurantCategory(models.Model):
 	name = models.CharField(max_length=200, null=False, blank=True)
 	country = models.CharField(max_length=200, null=False, blank=False)
+	image = models.ImageField(upload_to=restaurants_category_image_path, null=False, blank=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -67,6 +71,7 @@ class RestaurantCategory(models.Model):
 		return {
 			'name': self.name,
 			'country': self.country,
+			'image': self.image.url,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}

@@ -215,7 +215,7 @@ def categories(request):
 @check_admin_login
 def add_category(request):
 	if request.method == 'POST':
-		category = RestaurantCategoryForm(request.POST)
+		category = RestaurantCategoryForm(request.POST, request.FILES)
 		if category.is_valid():
 			category.save()
 			messages.success(request, 'Category Added Successfully !!!')

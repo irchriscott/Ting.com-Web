@@ -57,6 +57,7 @@
                                     <th>Category</th>
                                     <th>Price</th>
                                     <th>Type</th>
+                                    <th>Cuisine</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -70,6 +71,7 @@
                                             <td>{{food.category.name}}</td>
                                             <td>{{food.price|intcomma}} {{food.currency}}</td>
                                             <td>{{food.type_str}}</td>
+                                            <td>{{food.cuisine.name}}</td>
                                             <td>
                                                 <div class="ui small blue labeled icon button ting-open-ajax-modal" ting-modal-type="ajax" ting-data-url="{% url 'ting_wb_adm_menu_food_load' food.pk %}" ting-modal-target="ting-load-menu-food">
                                                     <i class="utensils spoon icon"></i> Load
@@ -118,6 +120,20 @@
                                                                     <a class="item ting-open-ajax-modal active selected" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_menu_food_move_to_category' food.pk category.pk %}" ting-modal-target="ting-move-to-category-{{food.id}}" style="align-self: flex-start; width: 100%"><img class="ui avatar image" src="{{category.image.url}}" style="width: 30px;"> {{category.name}}</a>
                                                                     {% else %}
                                                                     <a class="item ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_menu_food_move_to_category' food.pk category.pk %}" ting-modal-target="ting-move-to-category-{{food.id}}" style="align-self: flex-start; width: 100%"><img class="ui avatar image" src="{{category.image.url}}" style="width: 30px;"> {{category.name}}</a>
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                            </div>
+                                                        </div>
+                                                        <div class="item">
+                                                            <i class="dropdown icon" style="margin-top: 5px;"></i>
+                                                            <a class="item ting-open-ajax-modal" style="align-self: flex-start; width: 100%"><i class="angle double right icon"></i>Move To Cuisisne</a>
+                                                            <div class="menu">
+                                                                <div class="header">Cuisines</div>
+                                                                {% for cuisine in cuisines %}
+                                                                    {% if food.cuisine.id == cuisine.category.id %}
+                                                                    <a class="item ting-open-ajax-modal active selected" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_menu_food_move_to_cuisine' food.pk cuisine.category.pk %}" ting-modal-target="ting-move-to-cuisine-{{food.id}}" style="align-self: flex-start; width: 100%"><img class="ui avatar image" src="{{cuisine.category.image.url}}" style="width: 30px;"> {{cuisine.category.name}}</a>
+                                                                    {% else %}
+                                                                    <a class="item ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_menu_food_move_to_cuisine' food.pk cuisine.category.pk %}" ting-modal-target="ting-move-to-cuisine-{{food.id}}" style="align-self: flex-start; width: 100%"><img class="ui avatar image" src="{{cuisine.category.image.url}}" style="width: 30px;"> {{cuisine.category.name}}</a>
                                                                     {% endif %}
                                                                 {% endfor %}
                                                             </div>
@@ -176,6 +192,24 @@
                                             </div>
                                             <div class="content">
                                                 <p>Do you really want to change this menu food's category ?</p>
+                                            </div>
+                                            <div class="actions">
+                                                <div class="ui positive button right labeled icon">
+                                                    Yes
+                                                    <i class="icon check"></i>
+                                                </div>
+                                                <div class="ui red deny button right labeled icon">
+                                                    No
+                                                    <i class="icon times"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="ui modal mini" data-modal="ting-move-to-cuisine-{{food.id}}">
+                                            <div class="header">
+                                                Change Menu Food Cuisine
+                                            </div>
+                                            <div class="content">
+                                                <p>Do you really want to change this menu food's cuisine ?</p>
                                             </div>
                                             <div class="actions">
                                                 <div class="ui positive button right labeled icon">
@@ -309,7 +343,7 @@
                 </div>
 
                 <div class="field">
-                    <div class="two fields">
+                    <div class="three fields">
                         <div class="field">
                             <label>Select Menu Category :</label>
                             <select class="ui scrolling dropdown" name="category">
@@ -323,6 +357,14 @@
                             <select class="ui dropdown" name="food_type">
                                 {% for type in types %}
                                     <option value="{{type.0}}">{{type.1}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Select Food Cuisine :</label>
+                            <select class="ui dropdown" name="cuisine">
+                                {% for cuisine in cuisines %}
+                                    <option value="{{cuisine.category.id}}">{{cuisine.category.name}}</option>
                                 {% endfor %}
                             </select>
                         </div>

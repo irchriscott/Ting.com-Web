@@ -89,7 +89,7 @@
     </div>
     <div class="content">
         <div class="ting-search-place">
-            <form class="ui form" action="{% url 'ting_admin_add_category' %}" method="POST" id="ting-new-category-form">
+            <form class="ui form" action="{% url 'ting_admin_add_category' %}" method="POST" enctype="multipart/form-data" id="ting-new-category-form">
                 {% csrf_token %}
                 <div class="field">
                     <label>Enter Category Name :</label>
@@ -99,7 +99,14 @@
                     <label>Enter Category Country :</label>
                     <input type="text" name="country" placeholder="Category Country" autocomplete="off">
                 </div>
-                
+                <div class="field ting-file-input">
+                    <span>Add Category Image</span>
+                    <input type="file" name="image" id="ting-single-image-input" accept=".jpg, .png, .jpeg" required>
+                </div>
+                <div class="ting-item-images-preview"><img style="display: none;" id="ting-single-image-preview"></div>
+                <div class="ui indicating progress small ting-progress-form" style="display: none;" data-value="0" data-total="100">
+                  <div class="bar"></div>
+                </div>
                 <div class="ting-action-modal">
                     <div class="actions">
                         <div class="ui red deny button">

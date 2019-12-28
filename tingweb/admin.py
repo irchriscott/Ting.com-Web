@@ -13,7 +13,8 @@ from ting.responses import ResponseObject, HttpJsonResponse
 from tingweb.models import (
 							Restaurant, Administrator, AdminPermission, RestaurantLicenceKey, RestaurantConfig,
 							Menu, Food, Drink, Dish, FoodCategory, FoodImage, AdministratorResetPassword, DrinkImage,
-							DishImage, DishFood, RestaurantTable, Branch, Promotion, User, Booking, UserNotification
+							DishImage, DishFood, RestaurantTable, Branch, Promotion, User, Booking, UserNotification,
+							CategoryRestaurant
 						)
 from tingweb.backend import AdminAuthentication
 from tingweb.mailer import (
@@ -28,6 +29,7 @@ from tingweb.forms import (
 							AddMenuDish, DishImageForm, EditMenuDish, AddNewBranch, RestaurantTableForm, PromotionForm,
 							PromotionEditForm, UpdateBranchProfile
 						) 
+from tingadmin.models import RestaurantCategory
 import ting.utils as utils
 from datetime import datetime, timedelta, date
 import tingadmin.permissions as permissions
@@ -295,6 +297,7 @@ def dashboard(request):
 def restaurant(request):
 	template = 'web/admin/restaurant.html'
 	admin = Administrator.objects.get(pk=request.session['admin'])
+	categories = RestaurantCategory.objects.all()
 	currencies = utils.CURRENCIES
 	
 	return render(request, template, {
@@ -303,7 +306,9 @@ def restaurant(request):
 			'currencies': currencies,
 			'specials': utils.RESTAURANT_SPECIALS,
 			'branch': admin.branch,
-			'modes': utils.BOOKING_PAYEMENT_MODE
+			'modes': utils.BOOKING_PAYEMENT_MODE,
+			'services': utils.RESTAURANT_SERVICES,
+			'categories': categories
 		})
 
 
@@ -347,7 +352,7 @@ def update_restaurant_profile(request):
 
 				restaurant = Restaurant.objects.get(pk=admin.restaurant.pk)
 				restaurant.name = form.cleaned_data['name']
-				restaurant.slug = slug.lowe()
+				restaurant.slug = slug.lower()
 				restaurant.branch = form.cleaned_data['branch']
 				restaurant.motto = form.cleaned_data['motto']
 				restaurant.opening = form.cleaned_data['opening']
@@ -424,6 +429,7 @@ def update_branch_profile(request):
 		
 		password = request.POST.get('password')
 		specials = request.POST.getlist('specials')
+		services = request.POST.getlist('services')
 
 		if form.is_valid() and password != '':
 			if check_password(password, admin.password) is True:
@@ -432,6 +438,7 @@ def update_branch_profile(request):
 				branch.phone = form.cleaned_data['phone']
 				branch.email = form.cleaned_data['email']
 				branch.specials = ','.join(specials)
+				branch.services = ','.join(services)
 				branch.updated_at = timezone.now()
 				branch.save()
 
@@ -442,6 +449,37 @@ def update_branch_profile(request):
 				return HttpJsonResponse(ResponseObject('error', 'Incorrect Password !!!', 401))
 		else:
 			return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, msgs=form.errors.items()))
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_restaurant')
+def update_restaurant_categories(request):
+	if request.method == 'POST':
+		admin = Administrator.objects.get(pk=request.session['admin'])
+		restaurant = request.POST.get('restaurant')
+		password = request.POST.get('password')
+
+		categories = request.POST.getlist('categories')
+
+		if check_password(password, admin.password) is True:
+			
+			CategoryRestaurant.objects.filter(restaurant__pk=admin.restaurant.pk).delete()
+			
+			for cat in categories:
+				category = CategoryRestaurant(
+						restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
+						category=RestaurantCategory.objects.get(pk=cat)
+					)
+				category.save()
+
+			messages.success(request, 'Restaurant Categories Updated Successfully !!!')
+			return HttpJsonResponse(ResponseObject('success', 'Restaurant Categories Updated Successfully !!!', 200, 
+							reverse('ting_wb_adm_restaurant')))
+		else:
+			return HttpJsonResponse(ResponseObject('error', 'Incorrect Password !!!', 401))
 	else:
 		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
@@ -1064,14 +1102,15 @@ def menu_food(request):
 	categories = FoodCategory.objects.filter(restaurant__pk=admin.restaurant.pk)
 	types = utils.FOOD_TYPE
 	currencies = utils.CURRENCIES
-
+	cuisines = CategoryRestaurant.objects.filter(restaurant__pk=admin.restaurant.pk)
 	return render(request, template, {
 			'admin': admin,
 			'restaurant': admin.restaurant,
 			'foods': foods,
 			'categories': categories,
 			'types': types,
-			'currencies': currencies
+			'currencies': currencies,
+			'cuisines': cuisines
 		})
 
 
@@ -1090,6 +1129,7 @@ def add_new_menu_food(request):
 				admin=Administrator.objects.get(pk=admin.pk),
 				slug='{0}-{1}'.format(request.POST.get('name').replace(' ', '-').lower(), get_random_string(32)),
 				category=FoodCategory.objects.get(pk=request.POST.get('category')),
+				cuisine=RestaurantCategory.objects.get(pk=request.POST.get('cuisine')),
 				is_countable=is_countable,
 				show_ingredients=show_ingredients,
 				quantity=int(request.POST.get('quantity')) if is_countable == True else 1
@@ -1224,6 +1264,33 @@ def move_menu_food_to_category(request, food, category):
 	return HttpJsonResponse(ResponseObject('success', 'Menu Food Moved To Category %s !!!' % category.name, 200, 
 					reverse('ting_wb_adm_menu_food')))
 
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu', xhr='ajax')
+def move_menu_food_to_cuisine(request, food, category):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	food = get_object_or_404(Food, pk=food)
+	category = get_object_or_404(RestaurantCategory, pk=category)
+
+	if admin.restaurant.pk != food.restaurant.pk or admin.branch.pk != food.branch.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
+				reverse('ting_wb_adm_menu_food')))
+
+	food.cuisine = RestaurantCategory.objects.get(pk=category.pk)
+	food.admin = Administrator.objects.get(pk=admin.pk)
+	food.updated_at = timezone.now()
+	food.save()
+
+	menu = Menu.objects.filter(menu_type=1, menu_id=food.pk).first()
+	menu.admin = Administrator.objects.get(pk=admin.pk)
+	menu.updated_at = timezone.now()
+	menu.save()
+
+	messages.success(request, 'Menu Food Moved To Category %s !!!' % category.name)
+	return HttpJsonResponse(ResponseObject('success', 'Menu Food Moved To Category %s !!!' % category.name, 200, 
+					reverse('ting_wb_adm_menu_food')))
 
 
 @check_admin_login
@@ -1625,6 +1692,7 @@ def menu_dishes(request):
 	dishes = Dish.objects.filter(restaurant__pk=admin.restaurant.pk, branch__pk=admin.restaurant.pk)
 	categories = FoodCategory.objects.filter(restaurant__pk=admin.restaurant.pk)
 	drinks = Drink.objects.filter(restaurant__pk=admin.restaurant.pk, branch__pk=admin.branch.pk)
+	cuisines = CategoryRestaurant.objects.filter(restaurant__pk=admin.restaurant.pk)
 	return render(request, template, {
 			'admin': admin,
 			'restaurant': admin.restaurant,
@@ -1632,7 +1700,8 @@ def menu_dishes(request):
 			'categories': categories,
 			'currencies': utils.CURRENCIES,
 			'types': utils.DISH_TIME,
-			'drinks': drinks
+			'drinks': drinks,
+			'cuisines': cuisines
 		})
 
 
@@ -1651,6 +1720,7 @@ def add_new_menu_dish(request):
 				admin=Administrator.objects.get(pk=admin.pk),
 				slug='{0}-{1}'.format(request.POST.get('name').replace(' ', '-').lower(), get_random_string(32)),
 				category=FoodCategory.objects.get(pk=request.POST.get('category')),
+				cuisine=RestaurantCategory.objects.get(pk=request.POST.get('cuisine')),
 				is_countable=is_countable,
 				show_ingredients=show_ingredients,
 				quantity=int(request.POST.get('quantity')) if is_countable == True else 1
@@ -1771,6 +1841,34 @@ def move_menu_dish_to_category(request, dish, category):
 				reverse('ting_wb_adm_menu_dishes')))
 
 	dish.category = FoodCategory.objects.get(pk=category.pk)
+	dish.admin = Administrator.objects.get(pk=admin.pk)
+	dish.updated_at = timezone.now()
+	dish.save()
+
+	menu = Menu.objects.filter(menu_type=3, menu_id=dish.pk).first()
+	menu.admin = Administrator.objects.get(pk=admin.pk)
+	menu.updated_at = timezone.now()
+	menu.save()
+
+	messages.success(request, 'Menu Dish Moved To Category %s !!!' % category.name)
+	return HttpJsonResponse(ResponseObject('success', 'Menu Dish Moved To Category %s !!!' % category.name, 200, 
+					reverse('ting_wb_adm_menu_dishes')))
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu', xhr='ajax')
+def move_menu_dish_to_cuisine(request, dish, category):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	dish = get_object_or_404(Dish, pk=dish)
+	category = get_object_or_404(RestaurantCategory, pk=category)
+
+	if admin.restaurant.pk != dish.restaurant.pk or admin.branch.pk != dish.branch.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
+				reverse('ting_wb_adm_menu_dishes')))
+
+	dish.cuisine = RestaurantCategory.objects.get(pk=category.pk)
 	dish.admin = Administrator.objects.get(pk=admin.pk)
 	dish.updated_at = timezone.now()
 	dish.save()

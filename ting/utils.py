@@ -133,6 +133,14 @@ RESTAURANT_SPECIALS = [
 	{'id': 8, 'name': 'Guards', 		'icon': 'shield alternate'}
 ]
 
+
+RESTAURANT_SERVICES = [
+	{'id': 1, 'name': 'Hotel', 	'icon': 'building'},
+	{'id': 2, 'name': 'Spa', 	'icon': 'smile'},
+	{'id': 3, 'name': 'Bar', 	'icon': 'glass martini'}
+]
+
+
 BOOKING_PAYEMENT_MODE = (
 		(1, 'Online (Credit Card)'),
 		(2, 'Cash (On Site)'),

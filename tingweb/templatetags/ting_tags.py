@@ -1,5 +1,5 @@
 from django import template
-from tingweb.models import Administrator, DishFood, Menu, Food, Dish, Drink, FoodCategory, Branch
+from tingweb.models import Administrator, DishFood, Menu, Food, Dish, Drink, FoodCategory, Branch, Restaurant
 import ting.utils as utils
 
 register = template.Library()
@@ -53,6 +53,18 @@ def has_permission(value, arg):
 def has_special(value, arg):
 	branch = Branch.objects.get(pk=value)
 	return branch.has_special(arg)
+
+
+@register.filter(name='has_serv')
+def has_service(value, arg):
+	branch = Branch.objects.get(pk=value)
+	return branch.has_service(arg)
+
+
+@register.filter(name='has_category')
+def has_category(value, arg):
+	resto = Restaurant.objects.get(pk=value)
+	return resto.has_category(arg)
 
 
 @register.filter(name='prefix')

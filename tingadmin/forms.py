@@ -8,7 +8,7 @@ class RestaurantCategoryForm(forms.ModelForm):
 
 	class Meta:
 		model = RestaurantCategory
-		fields = ('name', 'country',)
+		fields = ('name', 'country', 'image',)
 
 
 class TingPackageForm(forms.ModelForm):

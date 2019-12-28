@@ -141,6 +141,7 @@ $(document).ready(function(){
     $("#ting-edit-email-address").openModal();
     $("#ting-edit-password").openModal();
     $("#ting-admin-edit-branch-profile").openModal();
+    $("#ting-admin-edit-restau-categories").openModal();
 
     $("#ting-map-form").submit(function(e){
         e.preventDefault();
@@ -173,6 +174,7 @@ $(document).ready(function(){
     $("#ting-add-table-form").submitFormAjax();
     $("#ting-add-promotion-form").submitFormAjax();
     $("#ting-admin-branch-profile-form").submitFormAjax();
+    $("#ting-admin-edit-categories-form").submitFormAjax();
     $("#ting-user-registration-form").submit(function(e){
         e.preventDefault();
         var action = $(this).attr("action");

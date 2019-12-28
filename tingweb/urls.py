@@ -139,6 +139,7 @@ admins = [
 	url(r'adm/restaurant/update/logo/$', admin.update_restaurant_logo, name='ting_wb_adm_restaurant_update_logo'),
 	url(r'adm/restaurant/update/profile/$', admin.update_restaurant_profile, name='ting_wb_adm_restaurant_update_profile'),	
 	url(r'adm/restaurant/update/config/$', admin.update_restaurant_config, name='ting_wb_adm_restaurant_update_config'),
+	url(r'adm/restaurant/update/categories/$', admin.update_restaurant_categories, name='ting_wb_adm_update_restaurant_categories'),
 	url(r'adm/restaurant/update/branch/profile/$', admin.update_branch_profile, name='ting_wb_adm_restaurant_update_branch_profile'),
 
 	# Categories
@@ -161,6 +162,7 @@ admins = [
 	url(r'adm/menu/food/avail/toggle/(?P<food>\d+)/$', admin.avail_menu_food_toggle, name='ting_wb_adm_menu_food_avail_toggle'),
 	url(r'adm/menu/food/move/type/(?P<food>\d+)/to/(?P<food_type_key>\d+)/$', admin.move_menu_food_to_type, name='ting_wb_adm_menu_food_move_to_type'),
 	url(r'adm/menu/food/move/category/(?P<food>\d+)/to/(?P<category>\d+)/$', admin.move_menu_food_to_category, name='ting_wb_adm_menu_food_move_to_category'),
+	url(r'adm/menu/food/move/cuisine/(?P<food>\d+)/to/(?P<category>\d+)/$', admin.move_menu_food_to_cuisine, name='ting_wb_adm_menu_food_move_to_cuisine'),
 	url(r'adm/menu/food/edit/(?P<food>\d+)/$', admin.edit_menu_food, name='ting_wb_adm_menu_food_edit'),
 	url(r'adm/menu/food/update/(?P<food>\d+)/$', admin.update_menu_food, name='ting_wb_adm_menu_food_update'),
 	url(r'adm/menu/food/delete/(?P<food>\d+)/$', admin.delete_menu_food, name='ting_wb_adm_menu_food_delete'),
@@ -184,6 +186,7 @@ admins = [
 	url(r'adm/menu/dish/avail/toggle/(?P<dish>\d+)/$', admin.avail_menu_dish_toggle, name='ting_wb_adm_menu_dish_avail_toggle'),
 	url(r'adm/menu/dish/move/type/(?P<dish>\d+)/to/(?P<dish_time_key>\d+)/$', admin.move_menu_dish_to_type, name='ting_wb_adm_menu_dish_move_to_type'),
 	url(r'adm/menu/dish/move/category/(?P<dish>\d+)/to/(?P<category>\d+)/$', admin.move_menu_dish_to_category, name='ting_wb_adm_menu_dish_move_to_category'),
+	url(r'adm/menu/dish/move/cuisine/(?P<dish>\d+)/to/(?P<category>\d+)/$', admin.move_menu_dish_to_cuisine, name='ting_wb_adm_menu_dish_move_to_cuisine'),
 	url(r'adm/menu/dish/edit/(?P<dish>\d+)/$', admin.edit_menu_dish, name='ting_wb_adm_menu_dish_edit'),
 	url(r'adm/menu/dish/update/(?P<dish>\d+)/$', admin.update_menu_dish, name='ting_wb_adm_menu_dish_update'),
 	url(r'adm/menu/dish/delete/(?P<dish>\d+)/$', admin.delete_menu_dish, name='ting_wb_adm_menu_dish_delete'),
