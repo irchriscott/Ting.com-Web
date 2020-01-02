@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from django.db import models
 from django.contrib.auth.models import User
 from time import time
+import tingweb
 
 # Create your models here.
 
@@ -67,8 +68,22 @@ class RestaurantCategory(models.Model):
 	def __unicode__(self):
 		return self.name
 
+	@property
+	def restaurants(self):
+		branches = []
+		restaurants = tingweb.models.CategoryRestaurant.objects.filter(category__id=self.pk)
+		for resto in restaurants:
+			for b in resto.restaurant.branches:
+				branches.append(b)
+		return branches
+
+	@property
+	def restaurants_counts(self):
+		return len(self.restaurants)
+
 	def to_json(self):
 		return {
+			'id': self.pk,
 			'name': self.name,
 			'country': self.country,
 			'image': self.image.url,

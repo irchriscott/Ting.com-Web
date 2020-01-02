@@ -512,7 +512,7 @@ class Branch(models.Model):
 	email = models.EmailField(null=True, blank=True)
 	phone = models.CharField(max_length=255, null=True, blank=True)
 	specials = models.CharField(max_length=255, null=True, blank=True)
-	services = models.CharField(max_length=255, null=True, blank=True, default='')
+	services = models.CharField(max_length=255, null=True, blank=True)
 	is_available = models.BooleanField(default=True)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
@@ -666,7 +666,7 @@ class Branch(models.Model):
 
 	@property
 	def services_ids(self):
-		return self.services.split(',') if self.specials != None or self.specials != '' else []
+		return self.services.split(',') if self.services != None else []
 	
 	def has_service(self, s):
 		return True if str(s) in self.services else False
@@ -698,6 +698,7 @@ class Branch(models.Model):
 			'phone': self.phone,
 			'isAvailable': self.is_available,
 			'specials': self.get_specials,
+			'services': self.get_services,
 			'categories': {
 				'count': self.restaurant.categories.count(),
 				'categories': [category.to_json() for category in self.restaurant.categories]
@@ -781,6 +782,7 @@ class Branch(models.Model):
 			'phone': self.phone,
 			'isAvailable': self.is_available,
 			'specials': self.get_specials,
+			'services': self.get_services,
 			'categories': {
 				'count': self.restaurant.categories.count(),
 				'categories': [category.to_json() for category in self.restaurant.categories]
@@ -864,6 +866,7 @@ class Branch(models.Model):
 			'phone': self.phone,
 			'isAvailable': self.is_available,
 			'specials': self.get_specials,
+			'services': self.get_services,
 			'categories': {
 				'count': self.restaurant.categories.count(),
 				'categories': [category.to_json() for category in self.restaurant.categories]
@@ -942,6 +945,7 @@ class Branch(models.Model):
 			'phone': self.phone,
 			'isAvailable': self.is_available,
 			'specials': self.get_specials,
+			'services': self.get_services,
 			'categories': {
 				'count': self.restaurant.categories.count(),
 				'categories': [category.to_json() for category in self.restaurant.categories]

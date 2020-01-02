@@ -4,6 +4,39 @@
 <title>Ting.com - Discovery</title>
 {% endblock %}
 {% block body %}
-
-
+<section class="generic-banner relative ting-banner">		
+	<div class="container">
+		<div class="d-flex align-items-center">
+			<div class="generic-banner-content ting-banner-content">
+				<h1 class="text-white" style="text-transform:uppercase;">Discovery</h1>
+                <p class="text-white">Discover what's new Today : Restaurants, Menus, Promotions and Others</p>
+			</div>							
+        </div>
+    </div>
+</section>
+<section class="container">
+	<div class="ting-cuisines-container">
+		<h2>Cuisines</h2>
+		<div class="ting-overflow-grid">
+			<ul class="ting-overflow-row" id="ting-cuisines-carousel" data-items-count="{{cuisines.count}}">
+				{% for cuisine in cuisines %}
+					<li class="ting-over-column">
+						<div class="ting-cuisine-item">
+							<img src="{{cuisine.image.url}}">
+							<div class="ting-cuisine-about">
+								<h5>{{cuisine.name}}</h5>
+								<p>{{cuisine.restaurants_counts}} restaurants</p>
+								<div class="ting-cuisine-follow">
+									<i class="lnr lnr-heart"></i>
+								</div>
+							</div>
+						</div>
+					</li>
+				{% endfor %}
+			</ul>
+			<button class="ting-carousel-prev" id="ting-cuisine-prev" style="display: none;"><i class="icon chevron left"></i></button>
+			<button class="ting-carousel-next" id="ting-cuisine-next"><i class="icon chevron right"></i></button>
+		</div>
+	</div>
+</section>
 {% endblock %}

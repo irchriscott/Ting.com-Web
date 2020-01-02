@@ -1177,9 +1177,7 @@ textarea{
     display: block;
 }
 
-.ting-menu-description h2 {
-
-}
+.ting-menu-description h2 {}
 
 .ting-menu-desc-ingredients {
     margin: 1.5rem 0;
@@ -1222,3 +1220,139 @@ textarea{
     padding-top: 8px;
 }
 
+.ting-cuisines-container {
+    display: block;
+    position: relative;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.ting-cuisines-container h2 {
+    display: block;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.ting-overflow-grid {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    width: 100%;
+}
+
+.ting-overflow-row {
+    overflow-x: hidden;
+    width: auto;
+    margin: 0;
+    padding: 0;
+    white-space: nowrap;
+}
+
+.ting-over-column {
+    padding-right: 15px;
+    width: calc((100% + 4px) / 4);
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    cursor: pointer;
+    margin: 0 !important;
+}
+
+.ting-over-column .ting-cuisine-item {
+    width: 100%;
+    border: 1px solid #DDDDDD;
+    border-radius: 2px;
+    overflow: hidden;
+    white-space: nowrap;
+    display: block;
+    position: relative;
+}
+
+.ting-over-column .ting-cuisine-item img {
+    width: 100%;
+    border-radius: 2px;
+}
+
+.ting-cuisine-item .ting-cuisine-about {
+    position: absolute;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.9));
+    bottom: -54px;
+    height: 54px;
+    overflow: hidden;
+}
+
+.ting-cuisine-item .ting-cuisine-about h5 {
+    color: #FFF;
+}
+
+.ting-cuisine-item .ting-cuisine-about p {
+    color: #FFF;
+    margin-top: -5px;
+    font-size: 12px;
+}
+
+.ting-over-column .ting-cuisine-item:hover .ting-cuisine-about {
+    display: block;
+}
+
+.ting-cuisine-item .ting-cuisine-about .ting-cuisine-follow {
+    position: absolute;
+    right: 1rem;
+    top: 16px;
+}
+
+.ting-cuisine-item .ting-cuisine-about .ting-cuisine-follow i {
+    font-size: 24px;
+    color: #FFFFFF;
+}
+
+.ting-carousel-prev,
+.ting-carousel-next {
+    position: absolute;
+    background: #DDDDDD;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    box-shadow: 0 0 4px 2px #999999;
+    bottom: 70px;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    padding: 0 !important;
+    display: block;
+    text-align: center;
+    opacity: 0.8;
+    -webkit-transition: ease-in all .3s;
+    -moz-transition: ease-in all .3s;
+    -ms-transition: ease-in all .3s;
+    -o-transition: ease-in all .3s;
+    transition: ease-in all .3s;
+}
+
+.ting-carousel-prev {
+    left: 10px;
+}
+
+.ting-carousel-next {
+    right: 10px;
+}
+
+.ting-carousel-prev i,
+.ting-carousel-next i {
+    position: absolute;
+    padding: 0 !important;
+    top: 10px;
+    left: 10px;
+}
+
+.ting-carousel-prev i {
+    left: 8px !important;
+}
+
+.ting-carousel-prev:hover,
+.ting-carousel-next:hover {
+    background: #FFFFFF;
+    opacity: 1;
+}

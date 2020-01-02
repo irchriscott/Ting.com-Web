@@ -83,7 +83,7 @@
                                                             <i class="dropdown icon" style="margin-top: 5px;"></i>
                                                             <a class="text" style="align-self: flex-start; width: 100%"><i class="arrow right icon"></i>Move To Branch</a>
                                                             <div class="menu">
-                                                                <div class="header">Types</div>
+                                                                <div class="header">Branches</div>
                                                                 {% for branch in branches %}
                                                                     {% if branch.pk == administrator.branch.pk %}
                                                                     <a class="item ting-open-ajax-modal active selected" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_move_admin_to_branch' administrator.token branch.pk %}" ting-modal-target="ting-move-to-branch-{{administrator.id}}" style="align-self: flex-start; width: 100%">{{branch.name}}</a>

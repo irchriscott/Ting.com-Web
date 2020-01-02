@@ -23,6 +23,7 @@ from tingweb.forms import (
                                 GoogleSignUpForm, UserLocationForm, EmailSignUpForm, UserImageForm, MenuReviewForm,
                                 RestaurantReviewForm, ReservationForm
                             )
+from tingadmin.models import RestaurantCategory
 import ting.utils as utils
 from datetime import datetime, timedelta
 import json
@@ -751,10 +752,12 @@ def cancel_reservation(request, reservation):
 
 def discovery(request):
     template = 'web/user/global_discovery.html'
+    cuisines = RestaurantCategory.objects.all()
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
             'address_types': utils.USER_ADDRESS_TYPE,
+            'cuisines': cuisines
         })
 
 def restaurants(request):
@@ -767,6 +770,9 @@ def restaurants(request):
             'branches': json.dumps([branch.to_json_r() for branch in Branch.objects.all()], default=str),
             'countries': json.dumps(list(Branch.objects.values('country').annotate(branches=Count('country'))), default=str),
             'towns': json.dumps(list(Branch.objects.values('town', 'country').annotate(branches=Count('town'))), default=str),
+            'cuisines': json.dumps([category.to_json() for category in RestaurantCategory.objects.all()], default=str),
+            'specials': json.dumps(utils.RESTAURANT_SPECIALS, default=str),
+            'services': json.dumps(utils.RESTAURANT_SERVICES, default=str)
         })
 
 def moments(request):

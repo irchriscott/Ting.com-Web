@@ -256,6 +256,12 @@ $(document).ready(function(){
         if($(this).scrollTop() >= 1004){$("#ting-menus-sticky").addClass("ting-fix-left").css("width", $("#ting-menus-sticky").width() + "px !important;");} 
         else {$("#ting-menus-sticky").removeClass("ting-fix-left").removeAttr("style");}
     });
+
+    $(".ting-cuisine-item").hover(function(){
+        $(this).find(".ting-cuisine-about").animate({"bottom": "0px"}, 200);
+    }, function(){$(this).find(".ting-cuisine-about").animate({"bottom": "-54px"}, 200);});
+
+    $("#ting-cuisines-carousel").navigateCuisines();
 });
 
 function loadtingdotcom(){
@@ -399,15 +405,15 @@ function tingdotcom(lat, long, addr, cntr, twn){
                 var fb__a__a = $(filtercbx("Not Available", false, "avail", branches.filter(function(b){return b.isAvailable == false}).length));
                 var fb__a__b = $(filtercbx("Opened", "opened", "avail", branches.filter(function(b){
                     if(b.isAvailable == true){
-                        var s = statusWorkTime(b.restaurant.opening, b.restaurant.closing)
-                        return s.st == "opened" 
+                        var s = statusWorkTime(b.restaurant.opening, b.restaurant.closing);
+                        return s.st == "opened";
                     }
                     return false
                 }).length));
                 var fb__a__c = $(filtercbx("Closed", "closed", "avail",  branches.filter(function(b){
                     if(b.isAvailable == true){
-                        var s = statusWorkTime(b.restaurant.opening, b.restaurant.closing)
-                        return s.st == "closed" 
+                        var s = statusWorkTime(b.restaurant.opening, b.restaurant.closing);
+                        return s.st == "closed";
                     }
                     return false
                 }).length));
@@ -420,22 +426,46 @@ function tingdotcom(lat, long, addr, cntr, twn){
                 var fb__d__10 = $(filtercbx("Less than 10 Km", 10, "dist", branches.filter(function(b){return b.dist <= 10}).length));
                 fbc.append([fb__distance, fb__d__1, fb__d__3, fb__d__5, fb__d__10, fb__hr]);
 
+                var fb__cuisine =  `<h5 ${fb__h5__st}>Cuisines</h5>`;
+                fbc.append(fb__cuisine);
+                var r_cuisine = window.__TING__Cuisines;
+                r_cuisine.forEach(function(c) {
+                    fbc.append($(filtercbx(c.name, c.id, "cuis", branches.filter(function(b){ return b.categories.categories.filter(function(ct){ return ct.category.id == c.id }).length > 0 }).length)))
+                });
+                fbc.append(fb__hr);
+                
+                var fb__service =  `<h5 ${fb__h5__st}>Services</h5>`;
+                fbc.append(fb__service);
+                var r_sers = window.__TING__Services;
+                r_sers.forEach(function(s) {
+                    fbc.append($(filtercbx(s.name, s.id, "serv", branches.filter(function(b){return b.services.filter(function(sv){ return sv.id == s.id }).length > 0 }).length)))
+                });
+                fbc.append(fb__hr);
+
+                var fb__specials =  `<h5 ${fb__h5__st}>Specials</h5>`;
+                fbc.append(fb__specials);
+                var r_specs = window.__TING__Specials;
+                r_specs.forEach(function(s) {
+                    fbc.append($(filtercbx(s.name, s.id, "spec", branches.filter(function(b){return b.specials.filter(function(sv){ return sv.id == s.id }).length > 0 }).length)))
+                });
+                fbc.append(fb__hr);
+
                 var fb__chair_type = `<h5 ${fb__h5__st}>Chair Type</h5>`;
                 var fb__ct__iron = $(filtercbx("Iron", "iron", "chairt", branches.filter(function(b){return b.tables.iron > 0}).length));
                 var fb__ct__wooden = $(filtercbx("Wooden", "wooden", "chairt", branches.filter(function(b){return b.tables.wooden > 0}).length));
                 var fb__ct__plastic = $(filtercbx("Plastic", "plastic", "chairt", branches.filter(function(b){return b.tables.plastic > 0}).length));
                 var fb__ct__couch = $(filtercbx("Couch", "couch", "chairt", branches.filter(function(b){return b.tables.couch > 0}).length));
                 var fb__ct__mixture = $(filtercbx("Mixture", "mix", "chairt", branches.filter(function(b){return b.tables.mixture > 0}).length));
-                fbc.append([fb__chair_type, fb__ct__iron, fb__ct__wooden, fb__ct__plastic, fb__ct__couch, fb__ct__mixture, fb__hr]);
-
+                //fbc.append([fb__chair_type, fb__ct__iron, fb__ct__wooden, fb__ct__plastic, fb__ct__couch, fb__ct__mixture, fb__hr]);
+                
                 var fb__table_location = `<h5 ${fb__h5__st}>Table Location</h5>`;
                 var fb__t__inside = $(filtercbx("Inside", "inside", "tabloc", branches.filter(function(b){return b.tables.inside > 0}).length));
                 var fb__t__outside = $(filtercbx("Outside", "outside", "tabloc", branches.filter(function(b){return b.tables.outside > 0}).length));
                 var fb__t__balcony = $(filtercbx("Balcony", "balcony", "tabloc", branches.filter(function(b){return b.tables.balcony > 0}).length));
                 var fb__t__rooftop = $(filtercbx("Rooftop", "rooftop", "tabloc", branches.filter(function(b){return b.tables.rooftop > 0}).length));
-                fbc.append([fb__table_location, fb__t__inside, fb__t__outside, fb__t__balcony, fb__t__rooftop, fb__hr]);
+                //fbc.append([fb__table_location, fb__t__inside, fb__t__outside, fb__t__balcony, fb__t__rooftop, fb__hr]);
 
-                var fb__star_rating = `<h5 ${fb__h5__st}>Star Average</h5>`;
+                var fb__star_rating = `<h5 ${fb__h5__st}>Ratings</h5>`;
                 var fb__s__1 = $(filtercbx("1 Star", "-1,1.5", "star", branches.filter(function(b){return b.reviews.average <= 1.5}).length));
                 var fb__s__2 = $(filtercbx("2 Stars", "1.5,2", "star", branches.filter(function(b){return b.reviews.average > 1.5 && b.reviews.average <= 2.5}).length));
                 var fb__s__3 = $(filtercbx("3 Stars", "2.5,3.5", "star", branches.filter(function(b){return b.reviews.average > 2.5 && b.reviews.average <= 3.5}).length));
@@ -449,7 +479,7 @@ function tingdotcom(lat, long, addr, cntr, twn){
                 var fb__r__1000 = $(filtercbx("501 - 1000", "500,1000", "reviews", branches.filter(function(b){return b.reviews.count > 500 && b.reviews.count <= 1000}).length));
                 var fb__r__5000 = $(filtercbx("1001 - 5000", "100,5000", "reviews", branches.filter(function(b){return b.reviews.count > 1000 && b.reviews.count <= 5000}).length));
                 var fb__r__more = $(filtercbx("5001 -", "5000,100000000000", "reviews", branches.filter(function(b){return b.reviews.count > 5000}).length));
-                fbc.append([fb__reviews, fb__r__100, fb__r__500, fb__r__1000, fb__r__5000, fb__r__more]);
+                //fbc.append([fb__reviews, fb__r__100, fb__r__500, fb__r__1000, fb__r__5000, fb__r__more]);
 
                 fbc.find(".ting-checkbox-container input").click(function(){
                     var v = {val: $(this).val(), gval: $(this).attr("data-g-value")}
@@ -527,12 +557,17 @@ function tingdotcom(lat, long, addr, cntr, twn){
                 }
 
                 function filterbranches(brs, fb){
+
                     if(fb.length > 0){
+
                         var brs__avail = []; var ccs__avail = [];
                         var brs__dist = []; var ccs__dist = [];
                         var brs__chairt = []; var ccs__chairt = [];
                         var brs__star = []; var ccs__star = [];
                         var brs__reviews = []; var ccs__reviews = [];
+                        var brs__cuisines = []; var css__cuisines = [];
+                        var brs__services = []; var css__services = [];
+                        var brs__specials = []; var css__specials = [];
 
                         for(var i = 0; i < fb.length; i++){
                             var f = fb[i];
@@ -555,6 +590,15 @@ function tingdotcom(lat, long, addr, cntr, twn){
                             } else if(f.gval == "reviews"){
                                 ccs__reviews.push(f);
                                 var bf = brs.filter(function(b){var ff = f.val.split(",");return b.reviews.count > parseInt(ff[0]) && b.reviews.count <= parseInt(ff[1])}).forEach(function(b){if(brs__reviews.includes(b) == false){brs__reviews.push(b)}})
+                            } else if(f.gval == "cuis") {
+                                css__cuisines.push(f);
+                                var bf = brs.filter(function(b){ return b.categories.categories.filter(function(ct) { return ct.category.id == f.val }).length > 0 }).forEach(function(b){if(brs__cuisines.includes(b) == false){brs__cuisines.push(b)}})
+                            } else if(f.gval == "serv") {
+                                css__services.push(f);
+                                var bf = brs.filter(function(b){ return b.services.filter(function(s) { return s.id == f.val }).length > 0 }).forEach(function(b){if(brs__services.includes(b) == false){brs__services.push(b)}})
+                            } else if(f.gval == "spec") {
+                                css__specials.push(f);
+                                var bf = brs.filter(function(b){ return b.specials.filter(function(s) { return s.id == f.val }).length > 0 }).forEach(function(b){if(brs__specials.includes(b) == false){brs__specials.push(b)}})
                             }
                         }
                         var brs__conc = {
@@ -562,7 +606,10 @@ function tingdotcom(lat, long, addr, cntr, twn){
                             "dist":{"brs": brs__dist, "ccs": ccs__dist},
                             "chairt":{"brs": brs__chairt, "ccs": ccs__chairt},
                             "star":{"brs": brs__star, "ccs": ccs__star},
-                            "reviews":{"brs": brs__reviews, "ccs": ccs__reviews}
+                            "reviews":{"brs": brs__reviews, "ccs": ccs__reviews},
+                            "cuis":{"brs": brs__cuisines, "ccs": css__cuisines},
+                            "serv":{"brs": brs__services, "ccs": css__services},
+                            "spec":{"brs": brs__specials, "ccs": css__specials}
                         }
                         var brs__all = [];
                         Object.keys(brs__conc).forEach(function(l){
@@ -586,6 +633,7 @@ function tingdotcom(lat, long, addr, cntr, twn){
                         zoom: 16,
                         center: usloc
                     });
+
                     map.setCenter(usloc);
 
                     for(var i = 0; i < br.length; i++){
@@ -2435,7 +2483,7 @@ function compare( a, b ) {
 
 function statusWorkTime(o, c){
     var today = new Date()
-    var td = today.getFullYear() + "-" + today.getMonth() + "-" + today.getDate()
+    var td = today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate()
     var now = Date.parse(td + " " + today.getHours() + ":" + today.getMinutes())
 
     var ot = Date.parse(td + " " + o)
@@ -3013,6 +3061,53 @@ jQuery.fn.interestPromotion = function(){
     });
 }
 
+jQuery.fn.navigateCuisines = function() {
+
+    var container = $(this);
+    var items = parseInt($(this).attr("data-items-count"));
+    var prev = $(this).parent().find("#ting-cuisine-prev");
+    var next = $(this).parent().find("#ting-cuisine-next");
+
+    var maxCount = items - 4;
+
+    var width = $(this).width();
+    var innerWidth = 0
+
+    container.find("li").each(function(){
+        innerWidth += $(this).width() + 4;
+    });
+
+    var slideWidth = innerWidth - width;
+    var slideMesure = (slideWidth / maxCount) + 15 + 6 + (15 / maxCount) + (2 / maxCount);
+
+    var counter = 0;
+    var duration = 300;
+
+    next.click(function(e){
+        e.preventDefault();
+        if (maxCount > counter) {
+            container.animate({
+                scrollLeft: '+=' + slideMesure + 'px'
+            }, duration);
+            counter++;
+        }
+        if(counter > 0) { prev.show(); }
+        if(maxCount == counter) { next.hide() }
+    });
+
+    prev.click(function(e){
+        e.preventDefault();
+        if (counter > 0) {
+            container.animate({
+                scrollLeft: '-=' + slideMesure + 'px'
+            }, duration);
+            counter--;
+        }
+        if(counter <= 0) { prev.hide(); }
+        if(maxCount > counter) { next.show() }
+    });
+}
+
 var animateButton = function(e) {
     e.preventDefault;
     e.target.classList.remove("ting-btn-animate");
@@ -3483,3 +3578,9 @@ HTMLMarker.prototype.draw = function(){
 
 //0115
 //https://www.youtube.com/watch?v=EwQ-ETXSpGA
+//https://uicookies.com/css-slideshow/
+//https://tympanus.net/Development/DiagonalSlideshow/
+//https://tympanus.net/Development/MotionRevealSlideshow/
+//https://tympanus.net/Development/CrossroadsSlideshow/
+//https://codepen.io/JavaScriptJunkie/full/WgRBxw -> for use
+//162.241.42.255
