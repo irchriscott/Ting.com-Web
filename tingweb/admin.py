@@ -1122,41 +1122,47 @@ def add_new_menu_food(request):
 		admin = Administrator.objects.get(pk=request.session['admin'])
 		is_countable = True if request.POST.get('is_countable') == 'on' else False
 		show_ingredients = True if request.POST.get('show_ingredients') == 'on' else False
+		for_all_branches = True if request.POST.get('for_all_branches') == 'on' else False
 
-		form = AddMenuFood(request.POST, instance=Food(
-				restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
-				branch=Branch.objects.get(pk=admin.branch.pk),
-				admin=Administrator.objects.get(pk=admin.pk),
-				slug='{0}-{1}'.format(request.POST.get('name').replace(' ', '-').lower(), get_random_string(32)),
-				category=FoodCategory.objects.get(pk=request.POST.get('category')),
-				cuisine=RestaurantCategory.objects.get(pk=request.POST.get('cuisine')),
-				is_countable=is_countable,
-				show_ingredients=show_ingredients,
-				quantity=int(request.POST.get('quantity')) if is_countable == True else 1
-			))
+		branches = Branches.objects.filter(restaurant__pk=admin.restaurant.pk) if for_all_branches == True else Branches.objects.filter(pk=admin.branch.pk)
 
-		images_form = FoodImageForm(request.POST, request.FILES)
+		for branch in branches:
 
-		if form.is_valid() and images_form.is_valid():
-
-			food = form.save()
-			images = request.FILES.getlist('image')
-
-			for image in images:
-				img = FoodImage(
-						food=Food.objects.get(pk=food.pk),
-						image=image
-					)
-				img.save()
-
-			menu = Menu(
+			form = AddMenuFood(request.POST, instance=Food(
 					restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
-					branch=Branch.objects.get(pk=admin.branch.pk),
+					branch=Branch.objects.get(pk=branch.pk),
 					admin=Administrator.objects.get(pk=admin.pk),
-					menu_type=utils.MENU_TYPE[0][0],
-					menu_id=food.pk
-				)
-			menu.save()
+					slug='{0}-{1}'.format(request.POST.get('name').replace(' ', '-').lower(), get_random_string(32)),
+					category=FoodCategory.objects.get(pk=request.POST.get('category')),
+					cuisine=RestaurantCategory.objects.get(pk=request.POST.get('cuisine')),
+					is_countable=is_countable,
+					show_ingredients=show_ingredients,
+					quantity=int(request.POST.get('quantity')) if is_countable == True else 1
+				))
+
+			images_form = FoodImageForm(request.POST, request.FILES)
+
+			if form.is_valid() and images_form.is_valid():
+
+				food = form.save()
+				images = request.FILES.getlist('image')
+
+				for image in images:
+					img = FoodImage(
+							food=Food.objects.get(pk=food.pk),
+							image=image
+						)
+					img.save()
+
+				menu = Menu(
+						restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
+						branch=Branch.objects.get(pk=branch.pk),
+						admin=Administrator.objects.get(pk=admin.pk),
+						menu_type=utils.MENU_TYPE[0][0],
+						menu_id=food.pk,
+						for_all_branches=for_all_branches
+					)
+				menu.save()
 
 			messages.success(request, 'Menu Food Added Successfully !!!')
 			return HttpJsonResponse(ResponseObject('success', 'Menu Food Added Successfully !!!', 200, 
@@ -1300,6 +1306,7 @@ def edit_menu_food(request, food):
 	template = 'web/admin/ajax/load_edit_menu_food.html'
 	admin = Administrator.objects.get(pk=request.session['admin'])
 	food = get_object_or_404(Food, pk=food)
+	
 	return render(request, template, {
 			'food':food, 
 			'currencies':utils.CURRENCIES,
@@ -1326,36 +1333,41 @@ def update_menu_food(request, food):
 			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 					reverse('ting_wb_adm_menu_food')))
 
-		if form.is_valid():
+		for_all_branches = True if request.POST.get('for_all_branches') == 'on' else False
+		foods = Food.objects.filter(name=food.name, restaurant__pk=food.restaurant.pk) if for_all_branches == True else Food.objects.filter(pk=food.pk)
 
-			food.name = form.cleaned_data['name']
-			food.description = form.cleaned_data['description']
-			food.last_price = form.cleaned_data['last_price']
-			food.price = form.cleaned_data['price']
-			food.currency = form.cleaned_data['currency']
-			food.ingredients = form.cleaned_data['ingredients']
-			food.is_countable = is_countable
-			food.show_ingredients = show_ingredients
-			food.quantity = int(request.POST.get('quantity')) if is_countable == True else 1
-			food.admin = Administrator.objects.get(pk=admin.pk)
-			food.updated_at = timezone.now()
+		for foo in foods:
 
-			food.save()
+			if form.is_valid():
 
-			images = request.FILES.getlist('image')
+				foo.name = form.cleaned_data['name']
+				foo.description = form.cleaned_data['description']
+				foo.last_price = form.cleaned_data['last_price']
+				foo.price = form.cleaned_data['price']
+				foo.currency = form.cleaned_data['currency']
+				foo.ingredients = form.cleaned_data['ingredients']
+				foo.is_countable = is_countable
+				foo.show_ingredients = show_ingredients
+				foo.quantity = int(request.POST.get('quantity')) if is_countable == True else 1
+				foo.admin = Administrator.objects.get(pk=admin.pk)
+				foo.updated_at = timezone.now()
 
-			if len(images) > 0:
-				for image in images:
-					img = FoodImage(
-							food=Food.objects.get(pk=food.pk),
-							image=image
-						)
-					img.save()
+				foo.save()
 
-			menu = Menu.objects.filter(menu_type=1, menu_id=food.pk).first()
-			menu.admin = Administrator.objects.get(pk=admin.pk)
-			menu.updated_at = timezone.now()
-			menu.save()
+				images = request.FILES.getlist('image')
+
+				if len(images) > 0:
+					for image in images:
+						img = FoodImage(
+								food=Food.objects.get(pk=foo.pk),
+								image=image
+							)
+						img.save()
+
+				menu = Menu.objects.filter(menu_type=1, menu_id=foo.pk).first()
+				menu.admin = Administrator.objects.get(pk=admin.pk)
+				menu.updated_at = timezone.now()
+				menu.save()
 
 			messages.success(request, 'Menu Food Updated Successfully !!!')
 			return HttpJsonResponse(ResponseObject('success', 'Menu Food Updated Successfully !!!', 200, 
@@ -1445,39 +1457,45 @@ def add_new_menu_drink(request):
 		admin = Administrator.objects.get(pk=request.session['admin'])
 		is_countable = True if request.POST.get('is_countable') == 'on' else False
 		show_ingredients = True if request.POST.get('show_ingredients') == 'on' else False
+		for_all_branches = True if request.POST.get('for_all_branches') == 'on' else False
 
-		form = AddMenuDrink(request.POST, instance=Drink(
-				restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
-				branch=Branch.objects.get(pk=admin.branch.pk),
-				admin=Administrator.objects.get(pk=admin.pk),
-				slug='{0}-{1}'.format(request.POST.get('name').replace(' ', '-').lower(), get_random_string(32)),
-				is_countable=is_countable,
-				show_ingredients=show_ingredients,
-				quantity=int(request.POST.get('quantity')) if is_countable == True else 1
-			))
+		branches = Branches.objects.filter(restaurant__pk=admin.restaurant.pk) if for_all_branches == True else Branches.objects.filter(pk=admin.branch.pk)
 
-		images_form = DrinkImageForm(request.POST, request.FILES)
+		for branch in branches:
 
-		if form.is_valid() and images_form.is_valid():
-
-			drink = form.save()
-			images = request.FILES.getlist('image')
-
-			for image in images:
-				img = DrinkImage(
-						drink=Drink.objects.get(pk=drink.pk),
-						image=image
-					)
-				img.save()
-
-			menu = Menu(
+			form = AddMenuDrink(request.POST, instance=Drink(
 					restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
-					branch=Branch.objects.get(pk=admin.branch.pk),
+					branch=Branch.objects.get(pk=branch.pk),
 					admin=Administrator.objects.get(pk=admin.pk),
-					menu_type=utils.MENU_TYPE[1][0],
-					menu_id=drink.pk
-				)
-			menu.save()
+					slug='{0}-{1}'.format(request.POST.get('name').replace(' ', '-').lower(), get_random_string(32)),
+					is_countable=is_countable,
+					show_ingredients=show_ingredients,
+					quantity=int(request.POST.get('quantity')) if is_countable == True else 1
+				))
+
+			images_form = DrinkImageForm(request.POST, request.FILES)
+
+			if form.is_valid() and images_form.is_valid():
+
+				drink = form.save()
+				images = request.FILES.getlist('image')
+
+				for image in images:
+					img = DrinkImage(
+							drink=Drink.objects.get(pk=drink.pk),
+							image=image
+						)
+					img.save()
+
+				menu = Menu(
+						restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
+						branch=Branch.objects.get(pk=branch.pk),
+						admin=Administrator.objects.get(pk=admin.pk),
+						menu_type=utils.MENU_TYPE[1][0],
+						menu_id=drink.pk,
+						for_all_branches=for_all_branches
+					)
+				menu.save()
 
 			messages.success(request, 'Menu Drink Added Successfully !!!')
 			return HttpJsonResponse(ResponseObject('success', 'Menu Drink Added Successfully !!!', 200, 
@@ -1605,36 +1623,41 @@ def update_menu_drink(request, drink):
 			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 					reverse('ting_wb_adm_menu_drinks')))
 
-		if form.is_valid():
+		for_all_branches = True if request.POST.get('for_all_branches') == 'on' else False
+		drinks = Drink.objects.filter(name=drink.name, restaurant__pk=drink.restaurant.pk) if for_all_branches == True else Drink.objects.filter(pk=drink.pk)
 
-			drink.name = form.cleaned_data['name']
-			drink.description = form.cleaned_data['description']
-			drink.last_price = form.cleaned_data['last_price']
-			drink.price = form.cleaned_data['price']
-			drink.currency = form.cleaned_data['currency']
-			drink.ingredients = form.cleaned_data['ingredients']
-			drink.is_countable = is_countable
-			drink.show_ingredients = show_ingredients
-			drink.quantity = int(request.POST.get('quantity')) if is_countable == True else 1
-			drink.admin = Administrator.objects.get(pk=admin.pk)
-			drink.updated_at = timezone.now()
+		for drin in drinks:
 
-			drink.save()
+			if form.is_valid():
 
-			images = request.FILES.getlist('image')
+				drin.name = form.cleaned_data['name']
+				drin.description = form.cleaned_data['description']
+				drin.last_price = form.cleaned_data['last_price']
+				drin.price = form.cleaned_data['price']
+				drin.currency = form.cleaned_data['currency']
+				drin.ingredients = form.cleaned_data['ingredients']
+				drin.is_countable = is_countable
+				drin.show_ingredients = show_ingredients
+				drin.quantity = int(request.POST.get('quantity')) if is_countable == True else 1
+				drin.admin = Administrator.objects.get(pk=admin.pk)
+				drin.updated_at = timezone.now()
 
-			if len(images) > 0:
-				for image in images:
-					img = DrinkImage(
-							drink=Drink.objects.get(pk=drink.pk),
-							image=image
-						)
-					img.save()
+				drin.save()
 
-			menu = Menu.objects.filter(menu_type=2, menu_id=drink.pk).first()
-			menu.admin = Administrator.objects.get(pk=admin.pk)
-			menu.updated_at = timezone.now()
-			menu.save()
+				images = request.FILES.getlist('image')
+
+				if len(images) > 0:
+					for image in images:
+						img = DrinkImage(
+								drink=Drink.objects.get(pk=drin.pk),
+								image=image
+							)
+						img.save()
+
+				menu = Menu.objects.filter(menu_type=2, menu_id=drin.pk).first()
+				menu.admin = Administrator.objects.get(pk=admin.pk)
+				menu.updated_at = timezone.now()
+				menu.save()
 
 			messages.success(request, 'Menu Drink Updated Successfully !!!')
 			return HttpJsonResponse(ResponseObject('success', 'Menu Drink Updated Successfully !!!', 200, 
@@ -1673,6 +1696,7 @@ def load_menu_drink(request, drink):
 	template = 'web/admin/ajax/load_menu_drink.html'
 	admin = Administrator.objects.get(pk=request.session['admin'])
 	drink = get_object_or_404(Drink, pk=drink)
+	
 	return render(request, template, {
 			'drink': drink,
 			'admin': admin,
@@ -1713,41 +1737,46 @@ def add_new_menu_dish(request):
 		admin = Administrator.objects.get(pk=request.session['admin'])
 		is_countable = True if request.POST.get('is_countable') == 'on' else False
 		show_ingredients = True if request.POST.get('show_ingredients') == 'on' else False
+		for_all_branches = True if request.POST.get('for_all_branches') == 'on' else False
 
-		form = AddMenuDish(request.POST, instance=Dish(
-				restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
-				branch=Branch.objects.get(pk=admin.branch.pk),
-				admin=Administrator.objects.get(pk=admin.pk),
-				slug='{0}-{1}'.format(request.POST.get('name').replace(' ', '-').lower(), get_random_string(32)),
-				category=FoodCategory.objects.get(pk=request.POST.get('category')),
-				cuisine=RestaurantCategory.objects.get(pk=request.POST.get('cuisine')),
-				is_countable=is_countable,
-				show_ingredients=show_ingredients,
-				quantity=int(request.POST.get('quantity')) if is_countable == True else 1
-			))
+		branches = Branches.objects.filter(restaurant__pk=admin.restaurant.pk) if for_all_branches == True else Branches.objects.filter(pk=admin.branch.pk)
 
-		images_form = DishImageForm(request.POST, request.FILES)
+		for branch in branches:
 
-		if form.is_valid() and images_form.is_valid():
-
-			dish = form.save()
-			images = request.FILES.getlist('image')
-
-			for image in images:
-				img = DishImage(
-						dish=Dish.objects.get(pk=dish.pk),
-						image=image
-					)
-				img.save()
-
-			menu = Menu(
+			form = AddMenuDish(request.POST, instance=Dish(
 					restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
-					branch=Branch.objects.get(pk=admin.branch.pk),
+					branch=Branch.objects.get(pk=branch.pk),
 					admin=Administrator.objects.get(pk=admin.pk),
-					menu_type=utils.MENU_TYPE[2][0],
-					menu_id=dish.pk
-				)
-			menu.save()
+					slug='{0}-{1}'.format(request.POST.get('name').replace(' ', '-').lower(), get_random_string(32)),
+					category=FoodCategory.objects.get(pk=request.POST.get('category')),
+					cuisine=RestaurantCategory.objects.get(pk=request.POST.get('cuisine')),
+					is_countable=is_countable,
+					show_ingredients=show_ingredients,
+					quantity=int(request.POST.get('quantity')) if is_countable == True else 1
+				))
+
+			images_form = DishImageForm(request.POST, request.FILES)
+
+			if form.is_valid() and images_form.is_valid():
+
+				dish = form.save()
+				images = request.FILES.getlist('image')
+
+				for image in images:
+					img = DishImage(
+							dish=Dish.objects.get(pk=dish.pk),
+							image=image
+						)
+					img.save()
+
+				menu = Menu(
+						restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
+						branch=Branch.objects.get(pk=branch.pk),
+						admin=Administrator.objects.get(pk=admin.pk),
+						menu_type=utils.MENU_TYPE[2][0],
+						menu_id=dish.pk
+					)
+				menu.save()
 
 			messages.success(request, 'Menu Dish Added Successfully !!!')
 			return HttpJsonResponse(ResponseObject('success', 'Menu Dish Added Successfully !!!', 200, 
@@ -1891,6 +1920,7 @@ def edit_menu_dish(request, dish):
 	template = 'web/admin/ajax/load_edit_menu_dish.html'
 	admin = Administrator.objects.get(pk=request.session['admin'])
 	dish = get_object_or_404(Dish, pk=dish)
+	
 	return render(request, template, {
 			'dish':dish, 
 			'currencies':utils.CURRENCIES,
@@ -1917,36 +1947,41 @@ def update_menu_dish(request, dish):
 			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 					reverse('ting_wb_adm_menu_dishes')))
 
-		if form.is_valid():
+		for_all_branches = True if request.POST.get('for_all_branches') == 'on' else False
+		dishes = Dish.objects.filter(name=dish.name, restaurant__pk=dish.restaurant.pk) if for_all_branches == True else Dish.objects.filter(pk=dish.pk)
 
-			dish.name = form.cleaned_data['name']
-			dish.description = form.cleaned_data['description']
-			dish.last_price = form.cleaned_data['last_price']
-			dish.price = form.cleaned_data['price']
-			dish.currency = form.cleaned_data['currency']
-			dish.ingredients = form.cleaned_data['ingredients']
-			dish.is_countable = is_countable
-			dish.show_ingredients = show_ingredients
-			dish.quantity = int(request.POST.get('quantity')) if is_countable == True else 1
-			dish.admin = Administrator.objects.get(pk=admin.pk)
-			dish.updated_at = timezone.now()
+		for dis in dishes:
 
-			dish.save()
+			if form.is_valid():
 
-			images = request.FILES.getlist('image')
+				dis.name = form.cleaned_data['name']
+				dis.description = form.cleaned_data['description']
+				dis.last_price = form.cleaned_data['last_price']
+				dis.price = form.cleaned_data['price']
+				dis.currency = form.cleaned_data['currency']
+				dis.ingredients = form.cleaned_data['ingredients']
+				dis.is_countable = is_countable
+				dis.show_ingredients = show_ingredients
+				dis.quantity = int(request.POST.get('quantity')) if is_countable == True else 1
+				dis.admin = Administrator.objects.get(pk=admin.pk)
+				dis.updated_at = timezone.now()
 
-			if len(images) > 0:
-				for image in images:
-					img = DishImage(
-							dish=Dish.objects.get(pk=dish.pk),
-							image=image
-						)
-					img.save()
+				dis.save()
 
-			menu = Menu.objects.filter(menu_type=3, menu_id=dish.pk).first()
-			menu.admin = Administrator.objects.get(pk=admin.pk)
-			menu.updated_at = timezone.now()
-			menu.save()
+				images = request.FILES.getlist('image')
+
+				if len(images) > 0:
+					for image in images:
+						img = DishImage(
+								dish=Dish.objects.get(pk=dis.pk),
+								image=image
+							)
+						img.save()
+
+				menu = Menu.objects.filter(menu_type=3, menu_id=dis.pk).first()
+				menu.admin = Administrator.objects.get(pk=admin.pk)
+				menu.updated_at = timezone.now()
+				menu.save()
 
 			messages.success(request, 'Menu Dish Updated Successfully !!!')
 			return HttpJsonResponse(ResponseObject('success', 'Menu Dish Updated Successfully !!!', 200, 
@@ -2001,6 +2036,7 @@ def load_menu_dish(request, dish):
 	template = 'web/admin/ajax/load_menu_dish.html'
 	admin = Administrator.objects.get(pk=request.session['admin'])
 	dish = get_object_or_404(Dish, pk=dish)
+	
 	return render(request, template, {
 			'dish': dish,
 			'admin': admin,
@@ -2072,6 +2108,7 @@ def load_menu_food_for_menu_dish(request, dish):
 	dish = get_object_or_404(Dish, pk=dish)
 	admin = Administrator.objects.get(pk=request.session['admin'])
 	foods = Food.objects.filter(restaurant__pk=admin.restaurant.pk, branch__pk=admin.branch.pk)
+	
 	return render(request, template, {
 			'dish':dish,
 			'foods': foods,
@@ -2133,6 +2170,7 @@ def tables(request):
 	template = 'web/admin/tables.html'
 	admin = Administrator.objects.get(pk=request.session['admin'])
 	tables = RestaurantTable.objects.filter(restaurant__pk=admin.restaurant.pk, branch__pk=admin.branch.pk)
+	
 	return render(request, template, {
 			'admin': admin,
 			'restaurant': admin.restaurant,
@@ -2177,6 +2215,7 @@ def load_edit_table(request, table):
 	template = 'web/admin/ajax/load_edit_table.html'
 	admin = Administrator.objects.get(pk=request.session['admin'])
 	table = get_object_or_404(RestaurantTable, pk=table)
+	
 	return render(request, template, {
 			'admin': admin,
 			'restaurant': admin.restaurant,
@@ -2262,6 +2301,7 @@ def promotions(request):
 	promotions = Promotion.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk)
 	menus = Menu.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk)
 	categories = FoodCategory.objects.filter(restaurant__pk=admin.restaurant.pk)
+	
 	return render(request, template, {
 			'admin': admin,
 			'restaurant': admin.restaurant,
@@ -2280,16 +2320,11 @@ def promotions(request):
 def add_new_promotion(request):
 	if request.method == 'POST':
 		admin = Administrator.objects.get(pk=request.session['admin'])
-		form = PromotionForm(request.POST, request.FILES, instance=Promotion(
-				restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
-				admin=Administrator.objects.get(pk=admin.pk),
-				branch=Branch.objects.get(pk=admin.branch.pk),
-				uuid=get_random_string(32),
-				is_on=True
-			))
+		for_all_branches = True if request.POST.get('for_all_branches') == 'on' else False
 
+		branches = Branches.objects.filter(restaurant__pk=admin.restaurant.pk) if for_all_branches == True else Branches.objects.filter(pk=admin.branch.pk)
 		is_special = True if request.POST.get('is_special') == 'on' else False
-
+		
 		if is_special == True:
 			try:
 				sd = datetime.strptime(request.POST.get('start_date'), '%Y-%m-%d')
@@ -2297,72 +2332,83 @@ def add_new_promotion(request):
 			except ValueError as e:
 				return HttpJsonResponse(ResponseObject('error', 'Insert Valid Dates !!!', 406))
 
-		if form.is_valid():
+		periods = request.POST.get('promotion_period')
+		start_date = datetime.strptime(request.POST.get('start_date'), '%Y-%m-%d') if request.POST.get('start_date') != None else ''
+		end_date = datetime.strptime(request.POST.get('end_date'), '%Y-%m-%d') if request.POST.get('end_date') != None else ''
 
-			periods = request.POST.get('promotion_period')
-			start_date = datetime.strptime(request.POST.get('start_date'), '%Y-%m-%d') if request.POST.get('start_date') != None else ''
-			end_date = datetime.strptime(request.POST.get('end_date'), '%Y-%m-%d') if request.POST.get('end_date') != None else ''
+		if is_special == True:
 
-			if is_special == True:
+			if request.POST.get('start_date') == '' or request.POST.get('start_date') == None or request.POST.get('end_date') == '' or request.POST.get('end_date') == None:
+				return HttpJsonResponse(ResponseObject('error', 'Is Promotion Special Is Checked. Please, Enter Start Date And End Date !!!', 406))
 
-				if request.POST.get('start_date') == '' or request.POST.get('start_date') == None or request.POST.get('end_date') == '' or request.POST.get('end_date') == None:
-					return HttpJsonResponse(ResponseObject('error', 'Is Promotion Special Is Checked. Please, Enter Start Date And End Date !!!', 406))
+			if start_date > end_date:
+				return HttpJsonResponse(ResponseObject('error', 'Is Promotion Special Is Checked. Please, Enter Start Date Cannot Be Greater Than End Date !!!', 406))
+		else:
+			if periods == None or periods == '':
+				return HttpJsonResponse(ResponseObject('error', 'Select Promotion Period !!!', 406))
 
-				if start_date > end_date:
-					return HttpJsonResponse(ResponseObject('error', 'Is Promotion Special Is Checked. Please, Enter Start Date Cannot Be Greater Than End Date !!!', 406))
-			else:
-				if periods == None or periods == '':
-					return HttpJsonResponse(ResponseObject('error', 'Select Promotion Period !!!', 406))
+		menu_type = request.POST.get('promotion_menu_type')
+		selected_menu = request.POST.get('menu')
+		selected_category = request.POST.get('category')
 
-			menu_type = request.POST.get('promotion_menu_type')
-			selected_menu = request.POST.get('menu')
-			selected_category = request.POST.get('category')
+		if menu_type == '04' and (selected_menu == None or selected_menu == ''):
+			return HttpJsonResponse(ResponseObject('error', 'You Have Selected Promotion Type To Be Specific Menu. Please, Enter That Specific Menu !!!', 406))
 
-			if menu_type == '04' and (selected_menu == None or selected_menu == ''):
-				return HttpJsonResponse(ResponseObject('error', 'You Have Selected Promotion Type To Be Specific Menu. Please, Enter That Specific Menu !!!', 406))
+		if menu_type == '05' and (selected_category == None or selected_category == ''):
+			return HttpJsonResponse(ResponseObject('error', 'You Have Selected Promotion Type To Be Specific Category. Please, Enter That Specific Category !!!', 406))
 
-			if menu_type == '05' and (selected_category == None or selected_category == ''):
-				return HttpJsonResponse(ResponseObject('error', 'You Have Selected Promotion Type To Be Specific Category. Please, Enter That Specific Category !!!', 406))
+		has_reduction = True if request.POST.get('has_reduction') == 'on' else False
+		amount = request.POST.get('amount')
+		reduction_type = request.POST.get('reduction_type')
 
-			has_reduction = True if request.POST.get('has_reduction') == 'on' else False
-			amount = request.POST.get('amount')
-			reduction_type = request.POST.get('reduction_type')
+		if has_reduction == True and (amount == None or amount <= 0):
+			return HttpJsonResponse(ResponseObject('error', 'Please, Enter The Reduction Amount Greater Than 0 !!!', 406))
 
-			if has_reduction == True and (amount == None or amount <= 0):
-				return HttpJsonResponse(ResponseObject('error', 'Please, Enter The Reduction Amount Greater Than 0 !!!', 406))
+		has_supplement = True if request.POST.get('has_supplement') == 'on' else False
+		supplement_min_quantity = request.POST.get('supplement_min_quantity')
+		is_supplement_same = True if request.POST.get('is_supplement_same') == 'on' else False
+		supplement = request.POST.get('supplement')
+		supplement_quantity = request.POST.get('supplement_quantity')
 
-			has_supplement = True if request.POST.get('has_supplement') == 'on' else False
-			supplement_min_quantity = request.POST.get('supplement_min_quantity')
-			is_supplement_same = True if request.POST.get('is_supplement_same') == 'on' else False
-			supplement = request.POST.get('supplement')
-			supplement_quantity = request.POST.get('supplement_quantity')
+		if has_supplement == True and (supplement_min_quantity == None or supplement_min_quantity <= 0):
+			return HttpJsonResponse(ResponseObject('error', 'Promotion Has Supplement Is Checked. Please Enter The Minimum Quantity For Supplement !!!', 406))
+				
+		if is_supplement_same == False and (supplement == None or supplement == ''):
+			return HttpJsonResponse(ResponseObject('error', 'Is Supplement The Promoted Menu Is Not Checked. Please Select The Supplement Menu !!!', 406))
 
-			if has_supplement == True and (supplement_min_quantity == None or supplement_min_quantity <= 0):
-				return HttpJsonResponse(ResponseObject('error', 'Promotion Has Supplement Is Checked. Please Enter The Minimum Quantity For Supplement !!!', 406))
-			
-			if is_supplement_same == False and (supplement == None or supplement == ''):
-				return HttpJsonResponse(ResponseObject('error', 'Is Supplement The Promoted Menu Is Not Checked. Please Select The Supplement Menu !!!', 406))
+		if has_supplement == True and (supplement_quantity == None or supplement_quantity == ''):
+			return HttpJsonResponse(ResponseObject('error', 'Promotion Has Supplement Is Checked. Please Enter The Quantity Of The Supplement !!!', 406))
 
-			if has_supplement == True and (supplement_quantity == None or supplement_quantity == ''):
-				return HttpJsonResponse(ResponseObject('error', 'Promotion Has Supplement Is Checked. Please Enter The Quantity Of The Supplement !!!', 406))
-			
-			promotion = form.save(commit=False)
+		for branch in branches:
 
-			promotion.menu = Menu.objects.get(pk=selected_menu) if menu_type == '04' else None
-			promotion.category = FoodCategory.objects.get(pk=selected_category) if menu_type == '05' else None
-			promotion.has_reduction = has_reduction
-			promotion.amount = amount if has_reduction == True else 0
-			promotion.reduction_type = reduction_type if has_reduction == True else None
-			promotion.has_supplement = has_supplement
-			promotion.supplement_min_quantity = supplement_min_quantity if has_supplement == True else 0
-			promotion.is_supplement_same = is_supplement_same
-			promotion.supplement = Menu.objects.get(pk=supplement) if is_supplement_same == False and has_supplement == True else None
-			promotion.supplement_quantity = supplement_quantity if has_supplement == True else 0
-			promotion.start_date = start_date if is_special == True else None
-			promotion.end_date = end_date if is_special == True else None
-			promotion.is_special = is_special
-			promotion.promotion_period = periods if is_special == False else None
-			promotion.save()
+			form = PromotionForm(request.POST, request.FILES, instance=Promotion(
+					restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
+					admin=Administrator.objects.get(pk=admin.pk),
+					branch=Branch.objects.get(pk=branch.pk),
+					uuid=get_random_string(32),
+					is_on=True
+				))
+
+			if form.is_valid():
+				
+				promotion = form.save(commit=False)
+
+				promotion.menu = Menu.objects.get(pk=selected_menu) if menu_type == '04' else None
+				promotion.category = FoodCategory.objects.get(pk=selected_category) if menu_type == '05' else None
+				promotion.has_reduction = has_reduction
+				promotion.amount = amount if has_reduction == True else 0
+				promotion.reduction_type = reduction_type if has_reduction == True else None
+				promotion.has_supplement = has_supplement
+				promotion.supplement_min_quantity = supplement_min_quantity if has_supplement == True else 0
+				promotion.is_supplement_same = is_supplement_same
+				promotion.supplement = Menu.objects.get(pk=supplement) if is_supplement_same == False and has_supplement == True else None
+				promotion.supplement_quantity = supplement_quantity if has_supplement == True else 0
+				promotion.start_date = start_date if is_special == True else None
+				promotion.end_date = end_date if is_special == True else None
+				promotion.is_special = is_special
+				promotion.promotion_period = periods if is_special == False else None
+				promotion.for_all_branches = for_all_branches
+				promotion.save()
 
 			messages.success(request, 'Promotion Created Successfully !!!')
 			return HttpJsonResponse(ResponseObject('success', 'Promotion Created Successfully !!!', 200, 
@@ -2383,6 +2429,7 @@ def load_edit_promotion(request, promotion):
 	admin = Administrator.objects.get(pk=request.session['admin'])
 	menus = Menu.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk)
 	categories = FoodCategory.objects.filter(restaurant__pk=admin.restaurant.pk)
+	
 	return render(request, template, {
 			'promotion': promotion,
 			'admin': admin,
@@ -2409,6 +2456,8 @@ def update_promotion(request, promotion):
 			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 					reverse('ting_wb_adm_promotions')))
 
+		for_all_branches = True if request.POST.get('for_all_branches') == 'on' else False
+		promotions = Promotion.objects.filter(occasion_event=promotion.occasion_event, restaurant__pk=promotion.restaurant.pk) if for_all_branches == True else Promotion.objects.filter(pk=promotion.pk)
 		is_special = True if request.POST.get('is_special') == 'on' else False
 
 		if is_special == True:
@@ -2457,25 +2506,27 @@ def update_promotion(request, promotion):
 			if has_supplement == True and (supplement_quantity == None or supplement_quantity == ''):
 				return HttpJsonResponse(ResponseObject('error', 'Promotion Has Supplement Is Checked. Please Enter The Quantity Of The Supplement !!!', 406))
 
-			if request.FILES.get('poster_image') != None and request.FILES.get('poster_image') != '':
-				promotion.poster_image = request.FILES.get('poster_image')
-			
-			promotion.occasion_event = form.cleaned_data['occasion_event']
-			promotion.description = form.cleaned_data['description']
-			promotion.has_reduction = has_reduction
-			promotion.amount = amount if has_reduction == True else 0
-			promotion.reduction_type = reduction_type if has_reduction == True else None
-			promotion.has_supplement = has_supplement
-			promotion.supplement_min_quantity = supplement_min_quantity if has_supplement == True else 0
-			promotion.is_supplement_same = is_supplement_same
-			promotion.supplement = Menu.objects.get(pk=supplement) if is_supplement_same == False and has_supplement == True else None
-			promotion.supplement_quantity = supplement_quantity if has_supplement == True else 0
-			promotion.start_date = start_date if is_special == True else None
-			promotion.end_date = end_date if is_special == True else None
-			promotion.is_special = is_special
-			promotion.promotion_period = periods if is_special == False else None
-			promotion.updated_at = timezone.now()
-			promotion.save()
+			for promo in promotions:
+
+				if request.FILES.get('poster_image') != None and request.FILES.get('poster_image') != '':
+					promo.poster_image = request.FILES.get('poster_image')
+				
+				promo.occasion_event = form.cleaned_data['occasion_event']
+				promo.description = form.cleaned_data['description']
+				promo.has_reduction = has_reduction
+				promo.amount = amount if has_reduction == True else 0
+				promo.reduction_type = reduction_type if has_reduction == True else None
+				promo.has_supplement = has_supplement
+				promo.supplement_min_quantity = supplement_min_quantity if has_supplement == True else 0
+				promo.is_supplement_same = is_supplement_same
+				promo.supplement = Menu.objects.get(pk=supplement) if is_supplement_same == False and has_supplement == True else None
+				promo.supplement_quantity = supplement_quantity if has_supplement == True else 0
+				promo.start_date = start_date if is_special == True else None
+				promo.end_date = end_date if is_special == True else None
+				promo.is_special = is_special
+				promo.promotion_period = periods if is_special == False else None
+				promo.updated_at = timezone.now()
+				promo.save()
 
 			messages.success(request, 'Promotion Updated Successfully !!!')
 			return HttpJsonResponse(ResponseObject('success', 'Promotion Updated Successfully !!!', 200, 

@@ -753,10 +753,18 @@ def cancel_reservation(request, reservation):
 def discovery(request):
     template = 'web/user/global_discovery.html'
     cuisines = RestaurantCategory.objects.all()
+    is_logged_in = True if 'user' in request.session else False
+
+    if is_logged_in == True:
+        user = User.objects.get(pk=request.session['user'])
+        branches = Branch.objects.filter(country=user.country, town=user.town).order_by('-created_at')[:10]
+        rand_branches = branches.random(2)
+
     return render(request, template, {
-            'is_logged_in': True if 'user' in request.session else False,
+            'is_logged_in': is_logged_in,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
             'address_types': utils.USER_ADDRESS_TYPE,
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
             'cuisines': cuisines
         })
 

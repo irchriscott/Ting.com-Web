@@ -7,6 +7,22 @@ let markers = [];
 
 $(document).ready(function(){
 
+    var swiper = new Swiper('.blog-slider', {
+        spaceBetween: 30,
+        effect: 'fade',
+        loop: true,
+        autoplay: {
+            delay: 10000,
+        },
+        mousewheel: {
+            invert: false,
+        },
+        pagination: {
+            el: '.blog-slider__pagination',
+            clickable: true,
+        }
+    });
+
     loadtingdotcom();
 
     $("#ting-open-add-restaurant-location").click(function (e) {

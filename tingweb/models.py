@@ -5,6 +5,7 @@ from django.conf import settings
 from django.urls import reverse
 from django.db.models import Q
 from django.utils import timezone
+from django_random_queryset import RandomManager
 from tingadmin.models import RestaurantCategory, TingLicenceKey, Permission
 from datetime import date, datetime
 from time import time
@@ -91,6 +92,8 @@ class Restaurant(models.Model):
 	is_disabled = models.BooleanField(default=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
+
+	objects = RandomManager()
 
 	def __str__(self):
 		return self.name
@@ -516,6 +519,8 @@ class Branch(models.Model):
 	is_available = models.BooleanField(default=True)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
+
+	objects = RandomManager()
 
 	def __str__(self):
 		return self.name
@@ -1764,6 +1769,8 @@ class Food(models.Model):
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
 
+	objects = RandomManager()
+
 	def __str__(self):
 		return self.name
 
@@ -2075,6 +2082,8 @@ class Drink(models.Model):
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
 
+	objects = RandomManager()
+
 	def __str__(self):
 		return self.name
 
@@ -2380,6 +2389,8 @@ class Dish(models.Model):
 	drink = models.ForeignKey(Drink, null=True, blank=True)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
+
+	objects = RandomManager()
 
 	def __str__(self):
 		return self.name
@@ -2758,8 +2769,11 @@ class Menu(models.Model):
 	admin = models.ForeignKey(Administrator)
 	menu_type = models.IntegerField(null=False, blank=False)
 	menu_id = models.IntegerField(null=False, blank=False)
+	for_all_branches = models.BooleanField(default=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
+
+	objects = RandomManager()
 
 	def __str__(self):
 		return self.menu_type
@@ -2785,6 +2799,7 @@ class Menu(models.Model):
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
+				'forAllBranches': self.for_all_branches,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
@@ -2806,6 +2821,7 @@ class Menu(models.Model):
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
+				'forAllBranches': self.for_all_branches,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
@@ -2827,6 +2843,7 @@ class Menu(models.Model):
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
+				'forAllBranches': self.for_all_branches,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': dish.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
@@ -2850,6 +2867,7 @@ class Menu(models.Model):
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
+				'forAllBranches': self.for_all_branches,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
@@ -2871,6 +2889,7 @@ class Menu(models.Model):
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
+				'forAllBranches': self.for_all_branches,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
@@ -2892,6 +2911,7 @@ class Menu(models.Model):
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
+				'forAllBranches': self.for_all_branches,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': dish.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
@@ -2915,6 +2935,7 @@ class Menu(models.Model):
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
+				'forAllBranches': self.for_all_branches,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
@@ -2936,6 +2957,7 @@ class Menu(models.Model):
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
+				'forAllBranches': self.for_all_branches,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
@@ -2957,6 +2979,7 @@ class Menu(models.Model):
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
+				'forAllBranches': self.for_all_branches,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': dish.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
@@ -2980,6 +3003,7 @@ class Menu(models.Model):
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
+				'forAllBranches': self.for_all_branches,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
@@ -3001,6 +3025,7 @@ class Menu(models.Model):
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
+				'forAllBranches': self.for_all_branches,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
@@ -3022,6 +3047,7 @@ class Menu(models.Model):
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
+				'forAllBranches': self.for_all_branches,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': dish.slug}),
 					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
@@ -3117,8 +3143,11 @@ class Promotion(models.Model):
 	end_date = models.DateField(null=True, blank=True)
 	poster_image = models.ImageField(upload_to=promotion_image_path, null=False, blank=False)
 	description = models.TextField(null=False, blank=False)
+	for_all_branches = models.BooleanField(default=False)
 	created_at = models.DateField(auto_now_add=True)
 	updated_at = models.DateField(auto_now_add=True)
+
+	objects = RandomManager()
 
 	def __str__(self):
 		return self.occasion_event
@@ -3248,6 +3277,7 @@ class Promotion(models.Model):
 				'apiGet': reverse('api_promotion_get', kwargs={'promo': self.pk}),
 				'apiInterest': reverse('api_promotion_interest', kwargs={'promo': self.pk})
 			},
+			'forAllBranches': self.for_all_branches,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
@@ -3293,6 +3323,7 @@ class Promotion(models.Model):
 				'apiGet': reverse('api_promotion_get', kwargs={'promo': self.pk}),
 				'apiInterest': reverse('api_promotion_interest', kwargs={'promo': self.pk})
 			},
+			'forAllBranches': self.for_all_branches,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
@@ -3335,6 +3366,7 @@ class Promotion(models.Model):
 				'apiGet': reverse('api_promotion_get', kwargs={'promo': self.pk}),
 				'apiInterest': reverse('api_promotion_interest', kwargs={'promo': self.pk})
 			},
+			'forAllBranches': self.for_all_branches,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}

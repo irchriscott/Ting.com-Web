@@ -164,6 +164,16 @@
                     <span>Add Promotion Poster</span>
                     <input type="file" name="poster_image" id="ting-single-image-input-else" accept=".jpg, .png, .jpeg">
                 </div>
+                {% if admin.admin_type|to_int == 1 and promotion.for_all_branches == True %}
+                    <div class="field">
+                        <div class="ui checkbox">
+                            <input type="checkbox" name="for_all_branches">
+                            <label style="line-height: 1.3 !important;">Update For All Branches</label>
+                        </div>
+                    </div>
+                {% else %}
+                    <input type="checkbox" name="for_all_branches" style="display: none;">
+                {% endif %}
                 <div class="ting-item-images-preview"><img style="display: none;" id="ting-single-image-preview-else"></div>
                 <div class="ui indicating progress small ting-progress-form" style="display: none;" data-value="0" data-total="100">
                     <div class="bar"></div>
