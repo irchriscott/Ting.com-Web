@@ -301,6 +301,7 @@ class Restaurant(models.Model):
 		file = open('tinguploads/restaurants/pins/' + self.map_ping_svg_name, 'r')
 		return file.read()
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
@@ -311,7 +312,7 @@ class Restaurant(models.Model):
 			'purpose': self.purpose_str,
 			'categories': {
 				'count': self.categories.count(),
-				'categories': [category.to_json() for category in self.categories]
+				'categories': [category.to_json for category in self.categories]
 			},
 			'logo': self.logo.url,
 			'pin': self.map_pin_svg,
@@ -341,24 +342,25 @@ class Restaurant(models.Model):
 			},
 			'images': {
 				'count': self.images.count(),
-				'images': [image.to_json() for image in self.images]
+				'images': [image.to_json for image in self.images]
 			},
 			'tables': {
 				'count': self.tables_count,
-				'tables': [table.to_json() for table in self.tables]
+				'tables': [table.to_json for table in self.tables]
 			},
 			'likes':{
 				'count': self.likes_count,
 			},
 			'foodCategories':{
 				'count': self.food_categories_count,
-				'categories': [category.to_json() for category in self.food_categories]
+				'categories': [category.to_json for category in self.food_categories]
 			},
-			'config': self.config.to_json(),
+			'config': self.config.to_json,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
 	def to_json_u(self):
 		return {
 			'id': self.pk,
@@ -369,7 +371,7 @@ class Restaurant(models.Model):
 			'purpose': self.purpose_str,
 			'categories': {
 				'count': self.categories.count(),
-				'categories': [category.to_json() for category in self.categories]
+				'categories': [category.to_json for category in self.categories]
 			},
 			'logo': self.logo.url,
 			'pin': self.map_pin_svg,
@@ -399,21 +401,22 @@ class Restaurant(models.Model):
 			},
 			'images': {
 				'count': self.images.count(),
-				'images': [image.to_json() for image in self.images]
+				'images': [image.to_json for image in self.images]
 			},
 			'tables': {
 				'count': self.tables_count,
-				'tables': [table.to_json() for table in self.tables]
+				'tables': [table.to_json for table in self.tables]
 			},
 			'foodCategories':{
 				'count': self.food_categories_count,
-				'categories': [category.to_json() for category in self.food_categories]
+				'categories': [category.to_json for category in self.food_categories]
 			},
-			'config': self.config.to_json(),
+			'config': self.config.to_json,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
 	def to_json_b(self):
 		return {
 			'id': self.pk,
@@ -424,7 +427,7 @@ class Restaurant(models.Model):
 			'purpose': self.purpose_str,
 			'categories': {
 				'count': self.categories.count(),
-				'categories': [category.to_json() for category in self.categories]
+				'categories': [category.to_json for category in self.categories]
 			},
 			'logo': self.logo.url,
 			'pin': self.map_pin_svg,
@@ -451,17 +454,18 @@ class Restaurant(models.Model):
 			},
 			'images': {
 				'count': self.images.count(),
-				'images': [image.to_json() for image in self.images]
+				'images': [image.to_json for image in self.images]
 			},
 			'foodCategories':{
 				'count': self.food_categories_count,
-				'categories': [category.to_json() for category in self.food_categories]
+				'categories': [category.to_json for category in self.food_categories]
 			},
-			'config': self.config.to_json(),
+			'config': self.config.to_json,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
 	def to_json_s(self):
 		return {
 			'id': self.pk,
@@ -472,7 +476,7 @@ class Restaurant(models.Model):
 			'purpose': self.purpose_str,
 			'categories': {
 				'count': self.categories.count(),
-				'categories': [category.to_json() for category in self.categories]
+				'categories': [category.to_json for category in self.categories]
 			},
 			'logo': self.logo.url,
 			'pin': self.map_pin_svg,
@@ -486,7 +490,7 @@ class Restaurant(models.Model):
 			},
 			'images': {
 				'count': self.images.count(),
-				'images': [image.to_json() for image in self.images]
+				'images': [image.to_json for image in self.images]
 			},
 			'tables': {
 				'count': self.tables_count
@@ -497,7 +501,7 @@ class Restaurant(models.Model):
 			'foodCategories':{
 				'count': self.food_categories_count
 			},
-			'config': self.config.to_json(),
+			'config': self.config.to_json,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
@@ -508,6 +512,8 @@ class Branch(models.Model):
 	name = models.CharField(max_length=200, null=False, blank=False)
 	country = models.CharField(max_length=200, null=False, blank=False)
 	town = models.CharField(max_length=255, null=False, blank=False)
+	region = models.CharField(max_length=255, null=True, blank=True)
+	road = models.CharField(max_length=255, null=True, blank=True)
 	address = models.TextField(null=False, blank=False)
 	latitude = models.CharField(max_length=200, null=False, blank=False)
 	longitude = models.CharField(max_length=200, null=False, blank=False)
@@ -688,13 +694,16 @@ class Branch(models.Model):
 	def promotions_count(self):
 		return self.promotions.count()
 	
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'restaurant': self.restaurant.to_json_b(),
+			'restaurant': self.restaurant.to_json_b,
 			'name': self.name,
 			'country': self.country,
 			'town': self.town,
+			'region': self.region,
+			'road': self.road,
 			'address': self.address,
 			'latitude': self.latitude,
 			'longitude': self.longitude,
@@ -706,7 +715,7 @@ class Branch(models.Model):
 			'services': self.get_services,
 			'categories': {
 				'count': self.restaurant.categories.count(),
-				'categories': [category.to_json() for category in self.restaurant.categories]
+				'categories': [category.to_json for category in self.restaurant.categories]
 			},
 			'tables':{
 				'count': self.tables_count,
@@ -736,21 +745,21 @@ class Branch(models.Model):
 					'drinks': self.drinks_count,
 					'dishes': self.dishes_count
 				},
-				'menus': [menu.to_json() for menu in self.menus]
+				'menus': [menu.to_json for menu in self.menus]
 			},
 			'promotions':{
 				'count': self.promotions_count,
-				'promotions': [promo.to_json() for promo in self.promotions]
+				'promotions': [promo.to_json for promo in self.promotions]
 			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
 				'percents': self.review_percent,
-				'reviews': [review.to_json_b() for review in self.reviews]
+				'reviews': [review.to_json_b for review in self.reviews]
 			},
 			'likes':{
 				'count': self.likes_count,
-				'likes': [like.to_json() for like in self.likes]
+				'likes': [like.to_json for like in self.likes]
 			},
 			'urls':{
 				'relative': reverse('ting_usr_get_restaurant_promotions', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk, 'slug': self.restaurant.slug}),
@@ -772,13 +781,16 @@ class Branch(models.Model):
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
 	def to_json_r(self):
 		return {
 			'id': self.pk,
 			'name': self.name,
 			'country': self.country,
-			'restaurant': self.restaurant.to_json_b(),
+			'restaurant': self.restaurant.to_json_b,
 			'town': self.town,
+			'region': self.region,
+			'road': self.road,
 			'address': self.address,
 			'latitude': self.latitude,
 			'longitude': self.longitude,
@@ -790,7 +802,7 @@ class Branch(models.Model):
 			'services': self.get_services,
 			'categories': {
 				'count': self.restaurant.categories.count(),
-				'categories': [category.to_json() for category in self.restaurant.categories]
+				'categories': [category.to_json for category in self.restaurant.categories]
 			},
 			'tables':{
 				'count': self.tables_count,
@@ -803,7 +815,7 @@ class Branch(models.Model):
 				'outside': self.tables.filter(location=2).count(),
 				'balcony': self.tables.filter(location=3).count(),
 				'rooftop': self.tables.filter(location=4).count(),
-				'tables': [table.to_json() for table in self.tables]
+				'tables': [table.to_json for table in self.tables]
 			},
 			'menus':{
 				'count': self.menus_count,
@@ -820,17 +832,17 @@ class Branch(models.Model):
 					'drinks': self.drinks_count,
 					'dishes': self.dishes_count
 				},
-				'menus': [menu.to_json() for menu in self.menus]
+				'menus': [menu.to_json for menu in self.menus]
 			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
 				'percents': self.review_percent,
-				'reviews': [review.to_json_b() for review in self.reviews]
+				'reviews': [review.to_json_b for review in self.reviews]
 			},
 			'likes':{
 				'count': self.likes_count,
-				'likes': [like.to_json() for like in self.likes]
+				'likes': [like.to_json for like in self.likes]
 			},
 			'urls':{
 				'relative': reverse('ting_usr_get_restaurant_promotions', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk, 'slug': self.restaurant.slug}),
@@ -850,19 +862,22 @@ class Branch(models.Model):
 			},
 			'promotions':{
 				'count': self.promotions_count,
-				'promotions': [promo.to_json() for promo in self.promotions]
+				'promotions': [promo.to_json for promo in self.promotions]
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
 	def to_json_u(self):
 		return {
 			'id': self.pk,
-			'restaurant': self.restaurant.to_json_u(),
+			'restaurant': self.restaurant.to_json_u,
 			'name': self.name,
 			'country': self.country,
 			'town': self.town,
+			'region': self.region,
+			'road': self.road,
 			'address': self.address,
 			'latitude': self.latitude,
 			'longitude': self.longitude,
@@ -874,7 +889,7 @@ class Branch(models.Model):
 			'services': self.get_services,
 			'categories': {
 				'count': self.restaurant.categories.count(),
-				'categories': [category.to_json() for category in self.restaurant.categories]
+				'categories': [category.to_json for category in self.restaurant.categories]
 			},
 			'tables':{
 				'count': self.tables_count,
@@ -887,7 +902,7 @@ class Branch(models.Model):
 				'outside': self.tables.filter(location=2).count(),
 				'balcony': self.tables.filter(location=3).count(),
 				'rooftop': self.tables.filter(location=4).count(),
-				'tables': [table.to_json() for table in self.tables]
+				'tables': [table.to_json for table in self.tables]
 			},
 			'menus':{
 				'count': self.menus_count,
@@ -936,12 +951,15 @@ class Branch(models.Model):
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
 	def to_json_s(self):
 		return {
 			'id': self.pk,
 			'name': self.name,
 			'country': self.country,
 			'town': self.town,
+			'region': self.region,
+			'road': self.road,
 			'address': self.address,
 			'latitude': self.latitude,
 			'longitude': self.longitude,
@@ -953,7 +971,7 @@ class Branch(models.Model):
 			'services': self.get_services,
 			'categories': {
 				'count': self.restaurant.categories.count(),
-				'categories': [category.to_json() for category in self.restaurant.categories]
+				'categories': [category.to_json for category in self.restaurant.categories]
 			},
 			'tables':{
 				'count': self.tables_count,
@@ -1027,6 +1045,7 @@ class RestaurantImage(models.Model):
 	def __unicode__(self):
 		return self.restaurant.name
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
@@ -1047,10 +1066,11 @@ class CategoryRestaurant(models.Model):
 	def __unicode__(self):
 		return self.restaurant
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'category': self.category.to_json(),
+			'category': self.category.to_json,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
@@ -1096,6 +1116,7 @@ class RestaurantTable(models.Model):
 	def bookings_count(self):
 		return self.bookings.count()
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
@@ -1162,10 +1183,11 @@ class Administrator(models.Model):
 	def has_permission(self, permission):
 		return True if permission in self.permissions else False
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'branch': self.branch.to_json(),
+			'branch': self.branch.to_json,
 			'name': self.name,
 			'username': self.username,
 			'type': self.admin_type_str,
@@ -1240,6 +1262,7 @@ class RestaurantConfig(models.Model):
 	def payement_mode(self):
 		return utils.get_from_tuple(utils.BOOKING_PAYEMENT_MODE, self.booking_payement_mode)
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
@@ -1375,7 +1398,7 @@ class User(models.Model):
 		file = open('tinguploads/users/pins/' + self.map_ping_svg_name, 'r')
 		return file.read()
 	
-
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
@@ -1393,15 +1416,15 @@ class User(models.Model):
 			'town': self.town,
 			'restaurants': {
 				'count': self.restaurants_count,
-				'restaurants': [restaurant.to_json_u() for restaurant in self.restaurants]
+				'restaurants': [restaurant.to_json_u for restaurant in self.restaurants]
 			},
 			'reviews': {
 				'count': self.restaurant_reviews_count,
-				'reviews': [review.to_json_u() for review in self.restaurant_reviews]
+				'reviews': [review.to_json_u for review in self.restaurant_reviews]
 			},
 			'addresses': {
 				'count': self.addresses_count,
-				'addresses': [address.to_json() for address in self.addresses]
+				'addresses': [address.to_json for address in self.addresses]
 			},
 			'urls':{
 				'loadRestaurants': reverse('ting_usr_load_restaurants', kwargs={'user': self.pk}),
@@ -1417,7 +1440,7 @@ class User(models.Model):
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
-
+	@property
 	def to_json_u(self):
 
 		return {
@@ -1435,11 +1458,11 @@ class User(models.Model):
 			'town': self.town,
 			'restaurants': {
 				'count': self.restaurants_count,
-				'restaurants': [restaurant.to_json_u() for restaurant in self.restaurants]
+				'restaurants': [restaurant.to_json_u for restaurant in self.restaurants]
 			},
 			'reviews': {
 				'count': self.restaurant_reviews_count,
-				'reviews': [review.to_json_u() for review in self.restaurant_reviews]
+				'reviews': [review.to_json_u for review in self.restaurant_reviews]
 			},
 			'addresses': {
 				'count': self.addresses_count
@@ -1458,6 +1481,7 @@ class User(models.Model):
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
 	def to_json_b(self):
 		return {
 			'id': self.pk,
@@ -1485,6 +1509,7 @@ class User(models.Model):
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
 	def to_json_s(self):
 		return {
 			'id': self.pk,
@@ -1539,6 +1564,7 @@ class UserAddress(models.Model):
 		else:
 			return 'lnr-map-marker'
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
@@ -1563,11 +1589,12 @@ class UserCategory(models.Model):
 	def __unicode__(self):
 		return self.user.name
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'user': self.user.to_json_b(),
-			'category': self.category.to_json(),
+			'user': self.user.to_json_b,
+			'category': self.category.to_json,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
@@ -1601,20 +1628,22 @@ class UserRestaurant(models.Model):
 	def __unicode__(self):
 		return self.user.name
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'user': self.user.to_json_s(),
-			'branch': self.branch.to_json_s(),
+			'user': self.user.to_json_s,
+			'branch': self.branch.to_json_s,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
 	def to_json_u(self):
 		return {
 			'id': self.pk,
-			'user': self.user.to_json_s(),
-			'branch': self.branch.to_json_u(),
+			'user': self.user.to_json_s,
+			'branch': self.branch.to_json_u,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
@@ -1635,33 +1664,36 @@ class RestaurantReview(models.Model):
 	def __unicode__(self):
 		return self.user.name
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'user': self.user.to_json_s(),
-			'restaurant': self.restaurant.to_json_s(),
-			'branch': self.branch.to_json_s(),
+			'user': self.user.to_json_s,
+			'restaurant': self.restaurant.to_json_s,
+			'branch': self.branch.to_json_s,
 			'review': self.review,
 			'comment': self.comment,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
 	def to_json_u(self):
 		return {
 			'id': self.pk,
-			'restaurant': self.restaurant.to_json_s(),
-			'branch': self.branch.to_json_s(),
+			'restaurant': self.restaurant.to_json_s,
+			'branch': self.branch.to_json_s,
 			'review': self.review,
 			'comment': self.comment,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
 	def to_json_b(self):
 		return {
 			'id': self.pk,
-			'user': self.user.to_json_s(),
+			'user': self.user.to_json_s,
 			'review': self.review,
 			'comment': self.comment,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
@@ -1737,6 +1769,7 @@ class FoodCategory(models.Model):
 	def sauces_count(self):
 		return self.sauces.count()
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
@@ -1844,14 +1877,15 @@ class Food(models.Model):
 	def promotions_count(self):
 		return self.promotions.count()
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'restaurant': self.restaurant.to_json_u(),
-			'branch': self.branch.to_json_u(),
+			'restaurant': self.restaurant.to_json_u,
+			'branch': self.branch.to_json_u,
 			'name': self.name,
-			'category': self.category.to_json(),
-			'cuisine': self.cuisine.to_json(),
+			'category': self.category.to_json,
+			'cuisine': self.cuisine.to_json,
 			'foodType': utils.get_from_tuple(utils.FOOD_TYPE, self.food_type),
 			'foodTypeId' : self.food_type,
 			'description': self.description,
@@ -1866,33 +1900,34 @@ class Food(models.Model):
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
 				'count': self.promotions_count,
-				'promotions': [promo.to_json() for promo in self.promotions]
+				'promotions': [promo.to_json for promo in self.promotions]
 			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
 				'percents': self.review_percent,
-				'reviews': [review.to_json() for review in self.reviews]
+				'reviews': [review.to_json for review in self.reviews]
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json() for like in self.likes]
+				'likes': [like.to_json for like in self.likes]
 			},
 			'images':{
 				'count': self.images.count(),
-				'images': [image.to_json() for image in self.images]
+				'images': [image.to_json for image in self.images]
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
 	def to_json_f(self):
 		return {
 			'id': self.pk,
-			'restaurant': self.restaurant.to_json(),
-			'branch': self.branch.to_json(),
+			'restaurant': self.restaurant.to_json,
+			'branch': self.branch.to_json,
 			'name': self.name,
-			'category': self.category.to_json(),
+			'category': self.category.to_json,
 			'foodType': utils.get_from_tuple(utils.FOOD_TYPE, self.food_type),
 			'foodTypeId' : self.food_type,
 			'description': self.description,
@@ -1907,31 +1942,32 @@ class Food(models.Model):
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
 				'count': self.promotions_count,
-				'promotions': [promo.to_json() for promo in self.promotions]
+				'promotions': [promo.to_json for promo in self.promotions]
 			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
 				'percents': self.review_percent,
-				'reviews': [review.to_json() for review in self.reviews]
+				'reviews': [review.to_json for review in self.reviews]
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json() for like in self.likes]
+				'likes': [like.to_json for like in self.likes]
 			},
 			'images':{
 				'count': self.images.count(),
-				'images': [image.to_json() for image in self.images]
+				'images': [image.to_json for image in self.images]
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
 	def to_json_r(self):
 		return {
 			'id': self.pk,
 			'name': self.name,
-			'category': self.category.to_json(),
+			'category': self.category.to_json,
 			'foodType': utils.get_from_tuple(utils.FOOD_TYPE, self.food_type),
 			'foodTypeId' : self.food_type,
 			'description': self.description,
@@ -1946,32 +1982,33 @@ class Food(models.Model):
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
 				'count': self.promotions_count,
-				'promotions': [promo.to_json() for promo in self.promotions]
+				'promotions': [promo.to_json for promo in self.promotions]
 			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
 				'percents': self.review_percent,
-				'reviews': [review.to_json() for review in self.reviews]
+				'reviews': [review.to_json for review in self.reviews]
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json() for like in self.likes]
+				'likes': [like.to_json for like in self.likes]
 			},
 			'images':{
 				'count': self.images.count(),
-				'images': [image.to_json() for image in self.images]
+				'images': [image.to_json for image in self.images]
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
 	def to_json_p(self):
 		return {
 			'id': self.pk,
 			'name': self.name,
-			'category': self.category.to_json(),
-			'cuisine': self.cuisine.to_json(),
+			'category': self.category.to_json,
+			'cuisine': self.cuisine.to_json,
 			'foodType': utils.get_from_tuple(utils.FOOD_TYPE, self.food_type),
 			'foodTypeId' : self.food_type,
 			'description': self.description,
@@ -1988,26 +2025,27 @@ class Food(models.Model):
 				'count': self.reviews_count,
 				'average': self.review_average,
 				'percents': self.review_percent,
-				'reviews': [review.to_json() for review in self.reviews]
+				'reviews': [review.to_json for review in self.reviews]
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json() for like in self.likes]
+				'likes': [like.to_json for like in self.likes]
 			},
 			'images':{
 				'count': self.images.count(),
-				'images': [image.to_json() for image in self.images]
+				'images': [image.to_json for image in self.images]
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
 	def to_json_s(self):
 		return {
 			'id': self.pk,
 			'name': self.name,
-			'category': self.category.to_json(),
-			'cuisine': self.cuisine.to_json(),
+			'category': self.category.to_json,
+			'cuisine': self.cuisine.to_json,
 			'foodType': utils.get_from_tuple(utils.FOOD_TYPE, self.food_type),
 			'foodTypeId' : self.food_type,
 			'description': self.description,
@@ -2022,21 +2060,21 @@ class Food(models.Model):
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
 				'count': self.promotions_count,
-				'promotions': [promo.to_json_s() for promo in self.promotions]
+				'promotions': [promo.to_json_s for promo in self.promotions]
 			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
 				'percents': self.review_percent,
-				'reviews': [review.to_json_s() for review in self.reviews]
+				'reviews': [review.to_json_s for review in self.reviews]
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json() for like in self.likes]
+				'likes': [like.to_json for like in self.likes]
 			},
 			'images':{
 				'count': self.images.count(),
-				'images': [image.to_json() for image in self.images]
+				'images': [image.to_json for image in self.images]
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
@@ -2055,6 +2093,7 @@ class FoodImage(models.Model):
 	def __unicode__(self):
 		return self.food
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
@@ -2156,11 +2195,12 @@ class Drink(models.Model):
 	def promotions_count(self):
 		return self.promotions.count()
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'restaurant': self.restaurant.to_json_u(),
-			'branch': self.branch.to_json_u(),
+			'restaurant': self.restaurant.to_json_u,
+			'branch': self.branch.to_json_u,
 			'name': self.name,
 			'drinkTypeId': self.drink_type,
 			'drinkType': self.type_str,
@@ -2176,31 +2216,32 @@ class Drink(models.Model):
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
 				'count': self.promotions_count,
-				'promotions': [promo.to_json() for promo in self.promotions]
+				'promotions': [promo.to_json for promo in self.promotions]
 			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
 				'percents': self.review_percent,
-				'reviews': [review.to_json() for review in self.reviews]
+				'reviews': [review.to_json for review in self.reviews]
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json() for like in self.likes]
+				'likes': [like.to_json for like in self.likes]
 			},
 			'images':{
 				'count': self.images.count(),
-				'images': [image.to_json() for image in self.images]
+				'images': [image.to_json for image in self.images]
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
 	def to_json_f(self):
 		return {
 			'id': self.pk,
-			'restaurant': self.restaurant.to_json(),
-			'branch': self.branch.to_json(),
+			'restaurant': self.restaurant.to_json,
+			'branch': self.branch.to_json,
 			'name': self.name,
 			'drinkTypeId': self.drink_type,
 			'drinkType': self.type_str,
@@ -2216,26 +2257,27 @@ class Drink(models.Model):
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
 				'count': self.promotions_count,
-				'promotions': [promo.to_json() for promo in self.promotions]
+				'promotions': [promo.to_json for promo in self.promotions]
 			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
 				'percents': self.review_percent,
-				'reviews': [review.to_json() for review in self.reviews]
+				'reviews': [review.to_json for review in self.reviews]
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json() for like in self.likes]
+				'likes': [like.to_json for like in self.likes]
 			},
 			'images':{
 				'count': self.images.count(),
-				'images': [image.to_json() for image in self.images]
+				'images': [image.to_json for image in self.images]
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
 	def to_json_r(self):
 		return {
 			'id': self.pk,
@@ -2254,26 +2296,27 @@ class Drink(models.Model):
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
 				'count': self.promotions_count,
-				'promotions': [promo.to_json() for promo in self.promotions]
+				'promotions': [promo.to_json for promo in self.promotions]
 			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
 				'percents': self.review_percent,
-				'reviews': [review.to_json() for review in self.reviews]
+				'reviews': [review.to_json for review in self.reviews]
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json() for like in self.likes]
+				'likes': [like.to_json for like in self.likes]
 			},
 			'images':{
 				'count': self.images.count(),
-				'images': [image.to_json() for image in self.images]
+				'images': [image.to_json for image in self.images]
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
 	def to_json_p(self):
 		return {
 			'id': self.pk,
@@ -2294,20 +2337,21 @@ class Drink(models.Model):
 				'count': self.reviews_count,
 				'average': self.review_average,
 				'percents': self.review_percent,
-				'reviews': [review.to_json() for review in self.reviews]
+				'reviews': [review.to_json for review in self.reviews]
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json() for like in self.likes]
+				'likes': [like.to_json for like in self.likes]
 			},
 			'images':{
 				'count': self.images.count(),
-				'images': [image.to_json() for image in self.images]
+				'images': [image.to_json for image in self.images]
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
 	def to_json_s(self):
 		return {
 			'id': self.pk,
@@ -2326,21 +2370,21 @@ class Drink(models.Model):
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
 				'count': self.promotions_count,
-				'promotions': [promo.to_json_s() for promo in self.promotions]
+				'promotions': [promo.to_json_s for promo in self.promotions]
 			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
 				'percents': self.review_percent,
-				'reviews': [review.to_json_s() for review in self.reviews]
+				'reviews': [review.to_json_s for review in self.reviews]
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json() for like in self.likes]
+				'likes': [like.to_json for like in self.likes]
 			},
 			'images':{
 				'count': self.images.count(),
-				'images': [image.to_json() for image in self.images]
+				'images': [image.to_json for image in self.images]
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
@@ -2359,6 +2403,7 @@ class DrinkImage(models.Model):
 	def __unicode__(self):
 		return self.drink
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
@@ -2477,14 +2522,15 @@ class Dish(models.Model):
 	def promotions_count(self):
 		return self.promotions.count()
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'restaurant': self.restaurant.to_json_u(),
-			'branch': self.branch.to_json_u(),
+			'restaurant': self.restaurant.to_json_u,
+			'branch': self.branch.to_json_u,
 			'name': self.name,
-			'category': self.category.to_json(),
-			'cuisine': self.cuisine.to_json(),
+			'category': self.category.to_json,
+			'cuisine': self.cuisine.to_json,
 			'dishTimeId': self.dish_time,
 			'dishTime': self.dish_time_str,
 			'description': self.description,
@@ -2497,42 +2543,43 @@ class Dish(models.Model):
 			'isAvailable': self.is_available,
 			'quantity': self.quantity,
 			'hasDrink': self.has_drink,
-			'drink': self.drink.to_json_r() if self.has_drink == True else {},
+			'drink': self.drink.to_json_r if self.has_drink == True else {},
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
 				'count': self.promotions_count,
-				'promotions': [promo.to_json() for promo in self.promotions]
+				'promotions': [promo.to_json for promo in self.promotions]
 			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
 				'percents': self.review_percent,
-				'reviews': [review.to_json() for review in self.reviews]
+				'reviews': [review.to_json for review in self.reviews]
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json() for like in self.likes]
+				'likes': [like.to_json for like in self.likes]
 			},
 			'foods': {
 				'count': self.foods_count,
-				'foods': [food.to_json() for food in self.foods]
+				'foods': [food.to_json for food in self.foods]
 			},
 			'images':{
 				'count': self.images.count(),
-				'images': [image.to_json() for image in self.images]
+				'images': [image.to_json for image in self.images]
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
 	def to_json_f(self):
 		return {
 			'id': self.pk,
-			'restaurant': self.restaurant.to_json(),
-			'branch': self.branch.to_json(),
+			'restaurant': self.restaurant.to_json,
+			'branch': self.branch.to_json,
 			'name': self.name,
-			'category': self.category.to_json(),
-			'cuisine': self.cuisine.to_json(),
+			'category': self.category.to_json,
+			'cuisine': self.cuisine.to_json,
 			'dishTimeId': self.dish_time,
 			'dishTime': self.dish_time_str,
 			'description': self.description,
@@ -2545,40 +2592,41 @@ class Dish(models.Model):
 			'isAvailable': self.is_available,
 			'quantity': self.quantity,
 			'hasDrink': self.has_drink,
-			'drink': self.drink.to_json_r() if self.has_drink == True else {},
+			'drink': self.drink.to_json_r if self.has_drink == True else {},
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
 				'count': self.promotions_count,
-				'promotions': [promo.to_json() for promo in self.promotions]
+				'promotions': [promo.to_json for promo in self.promotions]
 			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
 				'percents': self.review_percent,
-				'reviews': [review.to_json() for review in self.reviews]
+				'reviews': [review.to_json for review in self.reviews]
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json() for like in self.likes]
+				'likes': [like.to_json for like in self.likes]
 			},
 			'foods': {
 				'count': self.foods_count,
-				'foods': [food.to_json() for food in self.foods]
+				'foods': [food.to_json for food in self.foods]
 			},
 			'images':{
 				'count': self.images.count(),
-				'images': [image.to_json() for image in self.images]
+				'images': [image.to_json for image in self.images]
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
 	def to_json_r(self):
 		return {
 			'id': self.pk,
 			'name': self.name,
-			'category': self.category.to_json(),
-			'cuisine': self.cuisine.to_json(),
+			'category': self.category.to_json,
+			'cuisine': self.cuisine.to_json,
 			'dishTimeId': self.dish_time,
 			'dishTime': self.dish_time_str,
 			'description': self.description,
@@ -2591,40 +2639,41 @@ class Dish(models.Model):
 			'isAvailable': self.is_available,
 			'quantity': self.quantity,
 			'hasDrink': self.has_drink,
-			'drink': self.drink.to_json_r() if self.has_drink == True else {},
+			'drink': self.drink.to_json_r if self.has_drink == True else {},
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
 				'count': self.promotions_count,
-				'promotions': [promo.to_json() for promo in self.promotions]
+				'promotions': [promo.to_json for promo in self.promotions]
 			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
 				'percents': self.review_percent,
-				'reviews': [review.to_json() for review in self.reviews]
+				'reviews': [review.to_json for review in self.reviews]
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json() for like in self.likes]
+				'likes': [like.to_json for like in self.likes]
 			},
 			'foods': {
 				'count': self.foods_count,
-				'foods': [food.to_json() for food in self.foods]
+				'foods': [food.to_json for food in self.foods]
 			},
 			'images':{
 				'count': self.images.count(),
-				'images': [image.to_json() for image in self.images]
+				'images': [image.to_json for image in self.images]
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
 	def to_json_p(self):
 		return {
 			'id': self.pk,
 			'name': self.name,
-			'category': self.category.to_json(),
-			'cuisine': self.cuisine.to_json(),
+			'category': self.category.to_json,
+			'cuisine': self.cuisine.to_json,
 			'dishTimeId': self.dish_time,
 			'dishTime': self.dish_time_str,
 			'description': self.description,
@@ -2637,36 +2686,37 @@ class Dish(models.Model):
 			'isAvailable': self.is_available,
 			'quantity': self.quantity,
 			'hasDrink': self.has_drink,
-			'drink': self.drink.to_json_r() if self.has_drink == True else {},
+			'drink': self.drink.to_json_r if self.has_drink == True else {},
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
 				'percents': self.review_percent,
-				'reviews': [review.to_json() for review in self.reviews]
+				'reviews': [review.to_json for review in self.reviews]
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json() for like in self.likes]
+				'likes': [like.to_json for like in self.likes]
 			},
 			'foods': {
 				'count': self.foods_count,
-				'foods': [food.to_json() for food in self.foods]
+				'foods': [food.to_json for food in self.foods]
 			},
 			'images':{
 				'count': self.images.count(),
-				'images': [image.to_json() for image in self.images]
+				'images': [image.to_json for image in self.images]
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
 	def to_json_s(self):
 		return {
 			'id': self.pk,
 			'name': self.name,
-			'category': self.category.to_json(),
-			'cuisine': self.cuisine.to_json(),
+			'category': self.category.to_json,
+			'cuisine': self.cuisine.to_json,
 			'dishTimeId': self.dish_time,
 			'dishTime': self.dish_time_str,
 			'description': self.description,
@@ -2679,29 +2729,29 @@ class Dish(models.Model):
 			'isAvailable': self.is_available,
 			'quantity': self.quantity,
 			'hasDrink': self.has_drink,
-			'drink': self.drink.to_json_s() if self.has_drink == True else {},
+			'drink': self.drink.to_json_s if self.has_drink == True else {},
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
 				'count': self.promotions_count,
-				'promotions': [promo.to_json_s() for promo in self.promotions]
+				'promotions': [promo.to_json_s for promo in self.promotions]
 			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
 				'percents': self.review_percent,
-				'reviews': [review.to_json_s() for review in self.reviews]
+				'reviews': [review.to_json_s for review in self.reviews]
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json() for like in self.likes]
+				'likes': [like.to_json for like in self.likes]
 			},
 			'foods': {
 				'count': self.foods_count,
-				'foods': [food.to_json_s() for food in self.foods]
+				'foods': [food.to_json_s for food in self.foods]
 			},
 			'images':{
 				'count': self.images.count(),
-				'images': [image.to_json() for image in self.images]
+				'images': [image.to_json for image in self.images]
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
@@ -2720,6 +2770,7 @@ class DishImage(models.Model):
 	def __unicode__(self):
 		return self.dish
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
@@ -2742,20 +2793,22 @@ class DishFood(models.Model):
 	def __unicode__(self):
 		return self.food.name
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'food': self.food.to_json_r(),
+			'food': self.food.to_json_r,
 			'isCountable': self.is_countable,
 			'quantity': self.quantity,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
 	def to_json_s(self):
 		return {
 			'id': self.pk,
-			'food': self.food.to_json_s(),
+			'food': self.food.to_json_s,
 			'isCountable': self.is_countable,
 			'quantity': self.quantity,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
@@ -2790,6 +2843,7 @@ class Menu(models.Model):
 		elif self.menu_type == 3:
 			return Dish.objects.get(pk=self.menu_id)
 
+	@property
 	def to_json(self):
 		if self.menu_type == 1:
 			food = Food.objects.get(pk=self.menu_id)
@@ -2811,7 +2865,7 @@ class Menu(models.Model):
 					'apiAddReview': reverse('api_restaurant_menu_add_review', kwargs={'menu': self.pk}),
 				},
 				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
-				'menu': food.to_json_r()
+				'menu': food.to_json_r
 			}
 		elif self.menu_type == 2:
 			drink = Drink.objects.get(pk=self.menu_id)
@@ -2833,7 +2887,7 @@ class Menu(models.Model):
 					'apiAddReview': reverse('api_restaurant_menu_add_review', kwargs={'menu': self.pk}),
 				},
 				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
-				'menu': drink.to_json_r()
+				'menu': drink.to_json_r
 			}
 		elif self.menu_type == 3:
 			dish = Dish.objects.get(pk=self.menu_id)
@@ -2855,9 +2909,10 @@ class Menu(models.Model):
 					'apiAddReview': reverse('api_restaurant_menu_add_review', kwargs={'menu': self.pk}),
 				},
 				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': dish.slug}),
-				'menu': dish.to_json_r()
+				'menu': dish.to_json_r
 			}
 
+	@property
 	def to_json_p(self):
 		if self.menu_type == 1:
 			food = Food.objects.get(pk=self.menu_id)
@@ -2879,7 +2934,7 @@ class Menu(models.Model):
 					'apiAddReview': reverse('api_restaurant_menu_add_review', kwargs={'menu': self.pk}),
 				},
 				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
-				'menu': food.to_json_p()
+				'menu': food.to_json_p
 			}
 		elif self.menu_type == 2:
 			drink = Drink.objects.get(pk=self.menu_id)
@@ -2901,7 +2956,7 @@ class Menu(models.Model):
 					'apiAddReview': reverse('api_restaurant_menu_add_review', kwargs={'menu': self.pk}),
 				},
 				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
-				'menu': drink.to_json_p()
+				'menu': drink.to_json_p
 			}
 		elif self.menu_type == 3:
 			dish = Dish.objects.get(pk=self.menu_id)
@@ -2923,9 +2978,10 @@ class Menu(models.Model):
 					'apiAddReview': reverse('api_restaurant_menu_add_review', kwargs={'menu': self.pk}),
 				},
 				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': dish.slug}),
-				'menu': dish.to_json_p()
+				'menu': dish.to_json_p
 			}
 	
+	@property
 	def to_json_f(self):
 		if self.menu_type == 1:
 			food = Food.objects.get(pk=self.menu_id)
@@ -2947,7 +3003,7 @@ class Menu(models.Model):
 					'apiAddReview': reverse('api_restaurant_menu_add_review', kwargs={'menu': self.pk}),
 				},
 				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
-				'menu': food.to_json_f()
+				'menu': food.to_json_f
 			}
 		elif self.menu_type == 2:
 			drink = Drink.objects.get(pk=self.menu_id)
@@ -2969,7 +3025,7 @@ class Menu(models.Model):
 					'apiAddReview': reverse('api_restaurant_menu_add_review', kwargs={'menu': self.pk}),
 				},
 				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
-				'menu': drink.to_json_f()
+				'menu': drink.to_json_f
 			}
 		elif self.menu_type == 3:
 			dish = Dish.objects.get(pk=self.menu_id)
@@ -2991,9 +3047,10 @@ class Menu(models.Model):
 					'apiAddReview': reverse('api_restaurant_menu_add_review', kwargs={'menu': self.pk}),
 				},
 				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': dish.slug}),
-				'menu': dish.to_json_f()
+				'menu': dish.to_json_f
 			}
 
+	@property
 	def to_json_s(self):
 		if self.menu_type == 1:
 			food = Food.objects.get(pk=self.menu_id)
@@ -3015,7 +3072,7 @@ class Menu(models.Model):
 					'apiAddReview': reverse('api_restaurant_menu_add_review', kwargs={'menu': self.pk}),
 				},
 				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
-				'menu': food.to_json_s()
+				'menu': food.to_json_s
 			}
 		elif self.menu_type == 2:
 			drink = Drink.objects.get(pk=self.menu_id)
@@ -3037,7 +3094,7 @@ class Menu(models.Model):
 					'apiAddReview': reverse('api_restaurant_menu_add_review', kwargs={'menu': self.pk}),
 				},
 				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
-				'menu': drink.to_json_s()
+				'menu': drink.to_json_s
 			}
 		elif self.menu_type == 3:
 			dish = Dish.objects.get(pk=self.menu_id)
@@ -3059,7 +3116,7 @@ class Menu(models.Model):
 					'apiAddReview': reverse('api_restaurant_menu_add_review', kwargs={'menu': self.pk}),
 				},
 				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': dish.slug}),
-				'menu': dish.to_json_s()
+				'menu': dish.to_json_s
 			}
 
 
@@ -3077,20 +3134,22 @@ class MenuReview(models.Model):
 	def __unicode__(self):
 		return self.user.name
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'user': self.user.to_json_b(),
+			'user': self.user.to_json_b,
 			'review': self.review,
 			'comment': self.comment,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
 	def to_json_s(self):
 		return {
 			'id': self.pk,
-			'user': self.user.to_json_s(),
+			'user': self.user.to_json_s,
 			'review': self.review,
 			'comment': self.comment,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
@@ -3110,10 +3169,11 @@ class MenuLike(models.Model):
 	def __unicode__(self):
 		return self.user.name
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'user': self.user.to_json_b(),
+			'user': self.user.to_json_b,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
@@ -3238,7 +3298,8 @@ class Promotion(models.Model):
                     </div>""" % (get_menu_image(self.supplement.pk), self.supplement_quantity, get_menu_name(self.supplement.pk))
 		else:
 			return 'None'
-	
+
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
@@ -3247,8 +3308,8 @@ class Promotion(models.Model):
 			'uuidUrl': self.uuid_url,
 			'promotionItem': {
 				'type':{'id': self.promotion_menu_type, 'name': utils.get_from_tuple(utils.PROMOTION_MENU, self.promotion_menu_type)},
-				'category': self.category.to_json() if self.promotion_menu_type == '05' else {},
-				'menu': self.menu.to_json_p() if self.promotion_menu_type == '04' else {}
+				'category': self.category.to_json if self.promotion_menu_type == '05' else {},
+				'menu': self.menu.to_json_p if self.promotion_menu_type == '04' else {}
 			},
 			'reduction':{
 				'hasReduction': self.has_reduction,
@@ -3259,7 +3320,7 @@ class Promotion(models.Model):
 				'hasSupplement': self.has_supplement,
 				'minQuantity': self.supplement_min_quantity,
 				'isSame': self.is_supplement_same,
-				'supplement': self.supplement.to_json_p() if self.is_supplement_same == False else {},
+				'supplement': self.supplement.to_json_p if self.is_supplement_same == False else {},
 				'quantity': self.supplement_quantity
 			},
 			'period': self.promo_period,
@@ -3269,7 +3330,7 @@ class Promotion(models.Model):
 			'isOnToday': self.is_on_today,
 			'interests':{
 				'count': self.interests_count,
-				'interests': [interest.to_json() for interest in self.interests]
+				'interests': [interest.to_json for interest in self.interests]
 			},
 			'urls':{
 				'relative': reverse('ting_usr_promotion_get', kwargs={'promotion': self.pk, 'slug': self.uuid_url}),
@@ -3282,19 +3343,19 @@ class Promotion(models.Model):
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
-
+	@property
 	def to_json_f(self):
 		return {
 			'id': self.pk,
-			'restaurant': self.restaurant.to_json(),
-			'branch': self.branch.to_json(),
+			'restaurant': self.restaurant.to_json,
+			'branch': self.branch.to_json,
 			'occasionEvent': self.occasion_event,
 			'uuid': self.uuid,
 			'uuidUrl': self.uuid_url,
 			'promotionItem': {
 				'type':{'id': self.promotion_menu_type, 'name': utils.get_from_tuple(utils.PROMOTION_MENU, self.promotion_menu_type)},
-				'category': self.category.to_json() if self.promotion_menu_type == '05' else {},
-				'menu': self.menu.to_json_p() if self.promotion_menu_type == '04' else {}
+				'category': self.category.to_json if self.promotion_menu_type == '05' else {},
+				'menu': self.menu.to_json_p if self.promotion_menu_type == '04' else {}
 			},
 			'reduction':{
 				'hasReduction': self.has_reduction,
@@ -3305,7 +3366,7 @@ class Promotion(models.Model):
 				'hasSupplement': self.has_supplement,
 				'minQuantity': self.supplement_min_quantity,
 				'isSame': self.is_supplement_same,
-				'supplement': self.supplement.to_json_p() if self.is_supplement_same == False else {},
+				'supplement': self.supplement.to_json_p if self.is_supplement_same == False else {},
 				'quantity': self.supplement_quantity
 			},
 			'period': self.promo_period,
@@ -3315,7 +3376,7 @@ class Promotion(models.Model):
 			'isOnToday': self.is_on_today,
 			'interests':{
 				'count': self.interests_count,
-				'interests': [interest.to_json() for interest in self.interests]
+				'interests': [interest.to_json for interest in self.interests]
 			},
 			'urls':{
 				'relative': reverse('ting_usr_promotion_get', kwargs={'promotion': self.pk, 'slug': self.uuid_url}),
@@ -3328,6 +3389,7 @@ class Promotion(models.Model):
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
 	def to_json_s(self):
 		return {
 			'id': self.pk,
@@ -3336,8 +3398,8 @@ class Promotion(models.Model):
 			'uuidUrl': self.uuid_url,
 			'promotionItem': {
 				'type':{'id': self.promotion_menu_type, 'name': utils.get_from_tuple(utils.PROMOTION_MENU, self.promotion_menu_type)},
-				'category': self.category.to_json() if self.promotion_menu_type == '05' else {},
-				'menu': self.menu.to_json_p() if self.promotion_menu_type == '04' else {}
+				'category': self.category.to_json if self.promotion_menu_type == '05' else {},
+				'menu': self.menu.to_json_p if self.promotion_menu_type == '04' else {}
 			},
 			'reduction':{
 				'hasReduction': self.has_reduction,
@@ -3348,7 +3410,7 @@ class Promotion(models.Model):
 				'hasSupplement': self.has_supplement,
 				'minQuantity': self.supplement_min_quantity,
 				'isSame': self.is_supplement_same,
-				'supplement': self.supplement.to_json_p() if self.is_supplement_same == False else {},
+				'supplement': self.supplement.to_json_p if self.is_supplement_same == False else {},
 				'quantity': self.supplement_quantity
 			},
 			'period': self.promo_period,
@@ -3358,7 +3420,7 @@ class Promotion(models.Model):
 			'isOnToday': self.is_on_today,
 			'interests':{
 				'count': self.interests_count,
-				'interests': [interest.to_json() for interest in self.interests]
+				'interests': [interest.to_json for interest in self.interests]
 			},
 			'urls':{
 				'relative': reverse('ting_usr_promotion_get', kwargs={'promotion': self.pk, 'slug': self.uuid_url}),
@@ -3385,10 +3447,11 @@ class PromotionInterest(models.Model):
 	def __unicode__(self):
 		return self.promotion.occasion_event
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'user': self.user.to_json_s(),
+			'user': self.user.to_json_s,
 			'isInterested': self.is_interested,
 			'createdAt': self.created_at
 		}
@@ -3430,12 +3493,13 @@ class Booking(models.Model):
 	def date_time(self):
 		return datetime.combine(self.date, self.time)
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'restaurant': self.restaurant.to_json_u(),
-			'branch': self.branch.to_json_u(),
-			'table': self.table.to_json() if self.table != None else {},
+			'restaurant': self.restaurant.to_json_u,
+			'branch': self.branch.to_json_u,
+			'table': self.table.to_json if self.table != None else {},
 			'token': self.token,
 			'people': self.people,
 			'date': self.date,
@@ -3475,16 +3539,17 @@ class Placement(models.Model):
 	def bill(self):
 		return Bill.objects.get(placement=self.pk)
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'restaurant': self.restaurant.to_json(),
-			'branch': self.branch.to_json(),
-			'user': self.user.to_json_b(),
-			'table': self.table.to_json(),
-			'booking': self.booking.to_json(),
-			'waiter': self.waiter.to_json(),
-			'bill': self.bill.to_json(),
+			'restaurant': self.restaurant.to_json,
+			'branch': self.branch.to_json,
+			'user': self.user.to_json_b,
+			'table': self.table.to_json,
+			'booking': self.booking.to_json,
+			'waiter': self.waiter.to_json,
+			'bill': self.bill.to_json,
 			'token': self.token,
 			'people': self.people,
 			'isDone': self.is_done,
@@ -3521,10 +3586,11 @@ class Bill(models.Model):
 	def orders_count(self):
 		return self.orders.count()
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'admin': self.admin.to_json(),
+			'admin': self.admin.to_json,
 			'number': self.number,
 			'token': self.token,
 			'amount': self.amount,
@@ -3536,7 +3602,7 @@ class Bill(models.Model):
 			'paidBy': self.paid_by,
 			'orders': {
 				'count': self.orders_count,
-				'orders': [order.to_json() for order in self.orders]
+				'orders': [order.to_json for order in self.orders]
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
@@ -3564,10 +3630,11 @@ class Order(models.Model):
 	def __unicode__(self):
 		return self.bill.number
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'menu': self.menu.to_json(),
+			'menu': self.menu.to_json,
 			'token': self.token,
 			'quantity': self.quantity,
 			'price': self.price,

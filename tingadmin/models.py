@@ -81,6 +81,7 @@ class RestaurantCategory(models.Model):
 	def restaurants_counts(self):
 		return len(self.restaurants)
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
@@ -105,6 +106,7 @@ class Permission(models.Model):
 	def __unicode__(self):
 		return self.permission
 
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,

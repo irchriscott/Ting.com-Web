@@ -18,41 +18,20 @@
 	<div class="ting-try-today">
 		<div class="blog-slider">
 		  	<div class="blog-slider__wrp swiper-wrapper">
-		    	<div class="blog-slider__item swiper-slide">
-		      		<div class="blog-slider__img">
-		        		<img src="https://res.cloudinary.com/muhammederdem/image/upload/v1535759872/kuldar-kalvik-799168-unsplash.jpg" alt="">
-		      		</div>
-		      		<div class="blog-slider__content">
-		        		<span class="blog-slider__code">26 December 2019</span>
-		        		<div class="blog-slider__title">Lorem Ipsum Dolor</div>
-		        		<div class="blog-slider__text">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Recusandae voluptate repellendus magni illo ea animi? </div>
-		        		<a href="#" class="blog-slider__button">READ MORE</a>
-		      		</div>
-		    	</div>
-		    	<div class="blog-slider__item swiper-slide">
-		      		<div class="blog-slider__img">
-		        		<img src="https://res.cloudinary.com/muhammederdem/image/upload/v1535759871/jason-leung-798979-unsplash.jpg" alt="">
-		      		</div>
-		      		<div class="blog-slider__content">
-		        		<span class="blog-slider__code">26 December 2019</span>
-		        		<div class="blog-slider__title">Lorem Ipsum Dolor2</div>
-		        		<div class="blog-slider__text">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Recusandae voluptate repellendus magni illo ea animi?</div>
-		       	 		<a href="#" class="blog-slider__button">READ MORE</a>
-		      		</div>
-		    	</div>
-		    
-		    	<div class="blog-slider__item swiper-slide">
-		      		<div class="blog-slider__img">
-		        		<img src="https://res.cloudinary.com/muhammederdem/image/upload/v1535759871/alessandro-capuzzi-799180-unsplash.jpg" alt="">
-		      		</div>
-		      		<div class="blog-slider__content">
-		        		<span class="blog-slider__code">26 December 2019</span>
-		        		<div class="blog-slider__title">Lorem Ipsum Dolor</div>
-		        		<div class="blog-slider__text">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Recusandae voluptate repellendus magni illo ea animi?</div>
-		        		<a href="#" class="blog-slider__button">READ MORE</a>
-		      		</div>
-		    	</div>
-		    
+		  		{% for branch in recommanded_branches %}
+			    	<div class="blog-slider__item swiper-slide">
+			      		<div class="blog-slider__img">
+			        		<img src="{{branch.restaurant.logo.url}}" alt="">
+			      		</div>
+			      		<div class="blog-slider__content">
+			        		<span class="blog-slider__code">#RecommandedRestaurant</span>
+			        		<div class="blog-slider__title">{{branch.restaurant.name}}, {{branch.name}}</div>
+			        		<div class="blog-slider__rate"><div class="ui huge disabled-rating star rating" data-rating="{{branch.review_average}}" data-max-rating="5" style="margin-bottom:10px;"></div></div>
+			        		<div class="blog-slider__text"><i icon="" class="icon map marker alternate"></i> {{branch.address}}</div>
+			        		<a href="{% url 'ting_usr_get_restaurant_promotions' branch.restaurant.pk branch.pk branch.restaurant.slug %}" class="blog-slider__button">VIEW DETAILS</a>
+			      		</div>
+			    	</div>
+		    	{% endfor %}
 		  	</div>
 		  	<div class="blog-slider__pagination"></div>
 		</div>
@@ -80,6 +59,34 @@
 			<button class="ting-carousel-next" id="ting-cuisine-next"><i class="icon chevron right"></i></button>
 		</div>
 	</div>
+	{% if recommanded_promotions|length > 0 %}
+	<div class="ting-today-promotions">
+		<h2>Today's Promotions</h2>
+		<div class="ting-promotions-container">
+			<div class="ting-promotions-wrapper swiper-wrapper">
+				{% for promotion in recommanded_promotions %}
+					<div class="ting-promotion-item swiper-slide">
+						<div class="ting-promotion-poster">
+							<img src="{{promotion.poster_image.url}}">
+						</div>
+						<div class="ting-promotion-about">
+							<h1>{{promotion.occasion_event}}</h1>
+							<div style="width: 50%;"><hr style="background: rgba(255, 255, 255, 0.5); text-align: left; box-sizing: none;"></div>
+							{% if promotion.promotion_menu_type == '05' %}
+								<p>Promotion On <span class="ting-p-b">{{promotion.category.name}}</span></p>
+							{% elif promotion.promotion_menu_type == '04' %}
+								<p>Promotion On <span class="ting-p-b">{{promotion.menu.to_json.menu.name}}</span></p>
+							{% else %}
+								<p>Promotion On <span class="ting-p-b">{{promotion.promo_type}}</span></p>
+							{% endif %}
+						</div>
+					</div>
+				{% endfor %}
+			</div>
+			<div class="ting-promotions-pagination"></div>
+		</div>
+	</div>
+	{% endif %}
 </section>
 <script type="text/javascript">
 	window.__TING__Session = {{session_json|safe}}

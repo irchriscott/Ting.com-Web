@@ -73,9 +73,11 @@
     <input type="hidden" id="ting-ip">
     <input type="hidden" id="ting-tz">
     <input type="hidden" id="ting-currency">
+    <input type="hidden" id="ting-region">
+    <input type="hidden" id="ting-road">
 	<script type="text/javascript">
     $(document).ready(function(){
-        setTimeout(function(){getUserCurrentLocation("ting-lat", "ting-long", "ting-addr", "ting-town", "ting-country", "ting-user-address", "ting-place");}, 500);});</script>
+        setTimeout(function(){getUserCurrentLocation("ting-lat", "ting-long", "ting-addr", "ting-town", "ting-country", "ting-user-address", "ting-place", "ting-region", "ting-road");}, 500);});</script>
 </div>
 {% if is_logged_in != True %}
 <div class="ui tiny modal" data-modal="ting-user-login">

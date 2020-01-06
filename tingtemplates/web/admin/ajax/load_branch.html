@@ -19,11 +19,13 @@
             <input type="hidden" id="ting-branch-town" name="town" value="{{branch.town}}">
             <input type="hidden" id="ting-branch-place-id" name="place_id" value="{{branch.place_id}}">
             <input type="hidden" id="ting-search-location-input-branch" name="address" value="{{branch.address}}">
+            <input type="hidden" id="ting-branch-region" name="region" value="{{branch.region}}">
+            <input type="hidden" id="ting-branch-road" name="road" value="{{branch.road}}">
         </div>
     </div>
 </div>
 <script type="text/javascript">
     setTimeout(function () {
-        initializeRestaurantMap("ting-branch-latitude", "ting-branch-longitude", "ting-search-location-input-branch", "ting-search-location-input-else-branch", "ting-branch-place-id", "ting-branch-map-container", false, "{{restaurant.logo.url}}");
+        initializeRestaurantMap("ting-branch-latitude", "ting-branch-longitude", "ting-search-location-input-branch", "ting-search-location-input-else-branch", "ting-branch-place-id", "ting-branch-region", "ting-branch-road", "ting-branch-map-container", false, "{{restaurant.logo.url}}");
     }, 1000);
 </script>

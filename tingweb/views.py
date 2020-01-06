@@ -85,7 +85,7 @@ def sign_up_with_google(request):
             check_user = User.objects.get(email=email)
             if 'user' in request.session:
                 if request.session['user'] == check_user.pk:
-                    return HttpJsonResponse(ResponseObject('success', 'User Logged In Successfully !!!', 200, link, user=check_user.to_json()))
+                    return HttpJsonResponse(ResponseObject('success', 'User Logged In Successfully !!!', 200, link, user=check_user.to_json))
             else:
                 if check_user.token.split('-')[0] == token_id:
                     try:
@@ -98,7 +98,7 @@ def sign_up_with_google(request):
                     
                     request.session['user'] = check_user.pk
                     messages.success(request, 'User Logged In Successfully !!!')
-                    return HttpJsonResponse(ResponseObject('success', 'User Logged In Successfully !!!', 200, link, user=check_user.to_json()))
+                    return HttpJsonResponse(ResponseObject('success', 'User Logged In Successfully !!!', 200, link, user=check_user.to_json))
                 else:
                     check_user.token = token
                     check_user.updated_at = timezone.now()
@@ -106,7 +106,7 @@ def sign_up_with_google(request):
                     request.session['user'] = check_user.pk
                     
                     messages.success(request, 'User Logged In Successfully !!!')
-                    return HttpJsonResponse(ResponseObject('success', 'User Logged In Successfully !!!', 200, link, user=check_user.to_json(), msgs=[]))
+                    return HttpJsonResponse(ResponseObject('success', 'User Logged In Successfully !!!', 200, link, user=check_user.to_json, msgs=[]))
 
         except User.DoesNotExist:
             address_form = UserLocationForm(request.POST)
@@ -119,7 +119,7 @@ def sign_up_with_google(request):
                 request.session['user'] = user.pk
                 get_user_map_pin_svg(request, user.pk, False)
                 messages.success(request, 'User Signed In Successfully !!!')
-                return HttpJsonResponse(ResponseObject('success', 'User Signed In Successfully !!!', 200, link, user=user.to_json(), msgs=[]))
+                return HttpJsonResponse(ResponseObject('success', 'User Signed In Successfully !!!', 200, link, user=user.to_json, msgs=[]))
             else:
                 return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, 
                         msgs=user_form.errors.items() + address_form.errors.items()))
@@ -159,7 +159,7 @@ def sign_up_with_email(request):
             request.session['user'] = user.pk
             get_user_map_pin_svg(request, user.pk, False)
             messages.success(request, 'User Registered Successfully !!!')
-            return HttpJsonResponse(ResponseObject('success', 'User Registered Successfully !!!', 200, link, user=user.to_json(), msgs=[]))
+            return HttpJsonResponse(ResponseObject('success', 'User Registered Successfully !!!', 200, link, user=user.to_json, msgs=[]))
         else:
             return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, 
                     msgs=user_form.errors.items() + address_form.errors.items()))
@@ -178,7 +178,7 @@ def login(request):
         if auth.authenticate != None:
             request.session['user'] = auth.authenticate.pk
             messages.success(request, 'User Logged In Successfully !!!')
-            return HttpJsonResponse(ResponseObject('success', 'User Logged In Successfully !!!', 200, link, user=auth.authenticate.to_json(), msgs=[]))
+            return HttpJsonResponse(ResponseObject('success', 'User Logged In Successfully !!!', 200, link, user=auth.authenticate.to_json, msgs=[]))
         else:
             return HttpJsonResponse(ResponseObject('error', 'Invalid Email or Password !!!', 404))
     else:
@@ -297,8 +297,8 @@ def user_profile(request, user, username):
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
-            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
-            'user_json': json.dumps(user.to_json(), default=str),
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
+            'user_json': json.dumps(user.to_json, default=str),
             'user': user,
             'address_types': utils.USER_ADDRESS_TYPE,
         })
@@ -315,7 +315,7 @@ def update_user_profile_image(request):
             user.updated_at = timezone.now()
             user.save()
             get_user_map_pin_svg(request, user.pk, False)
-            return HttpJsonResponse(ResponseObject('success', 'User Image Updated Successfully !!!', 200, user=user.to_json()))
+            return HttpJsonResponse(ResponseObject('success', 'User Image Updated Successfully !!!', 200, user=user.to_json))
         else:
             return HttpJsonResponse(ResponseObject('error', 'Insert A Valid Image !!!', 400, msgs=form.errors.items()))
     else:
@@ -365,7 +365,7 @@ def update_user_password(request):
                 user.updated_at = timezone.now()
                 user.save()
 
-                return HttpJsonResponse(ResponseObject('success', 'User Password Updated Successfully !!!', 200, user=user.to_json()))
+                return HttpJsonResponse(ResponseObject('success', 'User Password Updated Successfully !!!', 200, user=user.to_json))
             else:
                 return HttpJsonResponse(ResponseObject('error', 'Passwords Didnt Match !!!', 400))
         else:
@@ -404,7 +404,7 @@ def update_user_email(request):
                         })
                     mail.send()
 
-                    return HttpJsonResponse(ResponseObject('success', 'User Email Updated Successfully !!!', 200, user=user.to_json()))
+                    return HttpJsonResponse(ResponseObject('success', 'User Email Updated Successfully !!!', 200, user=user.to_json))
                 else:
                     return HttpJsonResponse(ResponseObject('error', 'Passwords Didnt Match !!!', 400))
             else:
@@ -481,7 +481,7 @@ def add_user_address(request):
             address.save()
             
             messages.success(request, 'Address Added Successfully !!!')
-            return HttpJsonResponse(ResponseObject('success', 'Address Added Successfully !!!', 200, link, user=user.to_json()))
+            return HttpJsonResponse(ResponseObject('success', 'Address Added Successfully !!!', 200, link, user=user.to_json))
         else:
             return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, 
                     msgs=address_form.errors.items()))
@@ -527,7 +527,7 @@ def update_user_address(request, address):
             address.save()
 
             messages.success(request, 'Address Updated Successfully !!!')
-            return HttpJsonResponse(ResponseObject('success', 'Address Updated Successfully !!!', 200, link, user=user.to_json()))
+            return HttpJsonResponse(ResponseObject('success', 'Address Updated Successfully !!!', 200, link, user=user.to_json))
         else:
             return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, 
                     msgs=address_form.errors.items()))
@@ -549,7 +549,7 @@ def delete_user_address(request, address):
         address.delete()
         messages.success(request, 'Address Deleted Successfully !!!')
         return HttpJsonResponse(ResponseObject('success', 'Address Deleted Successfully !!!', 200, 
-                reverse('ting_usr_profile', kwargs={'user':user.pk, 'username':user.username}), user=user.to_json()))
+                reverse('ting_usr_profile', kwargs={'user':user.pk, 'username':user.username}), user=user.to_json))
     else:
         messages.error(request, 'You Need At Least 1 Address !!!')
         return HttpJsonResponse(ResponseObject('error', 'You Need At Least 1 Address !!!', 403, 
@@ -562,8 +562,8 @@ def user_moments(request, user, username):
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
-            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
-            'user_json': json.dumps(user.to_json(), default=str),
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
+            'user_json': json.dumps(user.to_json, default=str),
             'user': user,
             'address_types': utils.USER_ADDRESS_TYPE,
         })
@@ -575,8 +575,8 @@ def user_restaurants(request, user, username):
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
-            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
-            'user_json': json.dumps(user.to_json(), default=str),
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
+            'user_json': json.dumps(user.to_json, default=str),
             'user': user,
             'address_types': utils.USER_ADDRESS_TYPE,
         })
@@ -594,8 +594,8 @@ def user_orders(request, user, username):
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
-            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
-            'user_json': json.dumps(user.to_json(), default=str),
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
+            'user_json': json.dumps(user.to_json, default=str),
             'user': user,
             'address_types': utils.USER_ADDRESS_TYPE,
         })
@@ -613,8 +613,8 @@ def user_bookings(request, user, username):
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
-            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
-            'user_json': json.dumps(user.to_json(), default=str),
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
+            'user_json': json.dumps(user.to_json, default=str),
             'user': user,
             'address_types': utils.USER_ADDRESS_TYPE,
         })
@@ -757,16 +757,55 @@ def discovery(request):
 
     if is_logged_in == True:
         user = User.objects.get(pk=request.session['user'])
-        branches = Branch.objects.filter(country=user.country, town=user.town).order_by('-created_at')[:10]
-        rand_branches = branches.random(2)
+        branches = Branch.objects.filter(country=user.country, town=user.town).order_by('-created_at')[:20]
+        rand_branches = branches.random(5)
+
+        today_promos = Promotion.objects.filter(branch__country=user.country, branch__town=user.town, is_on=True)[:5]
+        #today_promos = [promo for promo in promotions if promo.is_on_today == True][:10]
+
+        #for i in range(2, len(today_promos)):
+        #    today_promos.remove(random.choice(today_promos))
+    else:
+        branches = Branch.objects.all().order_by('-created_at')[:20]
+        rand_branches = branches.random(5)
+
+        today_promos = Promotion.objects.filter(is_on=True)[:5]
+        #today_promos = [promo for promo in promotions if promo.is_on_today == True][:10]
+
+        #for i in range(2, len(today_promos)):
+        #    today_promos.remove(random.choice(today_promos))
 
     return render(request, template, {
             'is_logged_in': is_logged_in,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
             'address_types': utils.USER_ADDRESS_TYPE,
-            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
-            'cuisines': cuisines
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
+            'cuisines': cuisines,
+            'recommanded_branches': rand_branches,
+            'recommanded_promotions': today_promos
         })
+
+
+def discover_today_promotions(request):
+    template = 'web/user/discovery/today_promotions.html'
+    is_logged_in = True if 'user' in request.session else False
+
+    if is_logged_in == True:
+
+        promotions = Promotion.objects.filter(branch__country=user.country, branch__town=user.town, is_on=True)
+        today_promos = [promo for promo in promotions if promo.is_on_today == True]
+    else:
+
+        promotions = Promotion.objects.filter(is_on=True)
+        today_promos = [promo for promo in promotions if promo.is_on_today == True]
+
+    return render(request, template, {
+            'is_logged_in': True if 'user' in request.session else False,
+            'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
+            'promotions': today_promos
+        })
+
 
 def restaurants(request):
     template = 'web/user/global_restaurants.html'
@@ -774,11 +813,11 @@ def restaurants(request):
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
             'address_types': utils.USER_ADDRESS_TYPE,
-            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
-            'branches': json.dumps([branch.to_json_r() for branch in Branch.objects.all()], default=str),
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
+            'branches': json.dumps([branch.to_json_r for branch in Branch.objects.all()], default=str),
             'countries': json.dumps(list(Branch.objects.values('country').annotate(branches=Count('country'))), default=str),
             'towns': json.dumps(list(Branch.objects.values('town', 'country').annotate(branches=Count('town'))), default=str),
-            'cuisines': json.dumps([category.to_json() for category in RestaurantCategory.objects.all()], default=str),
+            'cuisines': json.dumps([category.to_json for category in RestaurantCategory.objects.all()], default=str),
             'specials': json.dumps(utils.RESTAURANT_SPECIALS, default=str),
             'services': json.dumps(utils.RESTAURANT_SERVICES, default=str)
         })
@@ -807,7 +846,7 @@ def filter_restaurants_search(request):
                     restaurant__name__icontains=resto, 
                     name__icontains=branch)
 
-    return HttpJsonResponse([branch.to_json_r() for branch in branches])
+    return HttpJsonResponse([branch.to_json_r for branch in branches])
 
 
 def get_restaurant_promotions(request, restaurant, branch, slug):
@@ -817,8 +856,8 @@ def get_restaurant_promotions(request, restaurant, branch, slug):
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
-            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
-            'restaurant_json': json.dumps(restaurant.to_json_r(), default=str),
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
+            'restaurant_json': json.dumps(restaurant.to_json_r, default=str),
             'restaurant': restaurant,
             'address_types': utils.USER_ADDRESS_TYPE,
             'table_locations': utils.TABLE_LOCATION
@@ -832,8 +871,8 @@ def get_restaurant_foods(request, restaurant, branch, slug):
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
-            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
-            'restaurant_json': json.dumps(restaurant.to_json_r(), default=str),
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
+            'restaurant_json': json.dumps(restaurant.to_json_r, default=str),
             'restaurant': restaurant,
             'types': utils.FOOD_TYPE,
             'address_types': utils.USER_ADDRESS_TYPE,
@@ -848,8 +887,8 @@ def get_restaurant_drinks(request, restaurant, branch, slug):
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
-            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
-            'restaurant_json': json.dumps(restaurant.to_json_r(), default=str),
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
+            'restaurant_json': json.dumps(restaurant.to_json_r, default=str),
             'restaurant': restaurant,
             'types': utils.DRINK_TYPE,
             'address_types': utils.USER_ADDRESS_TYPE,
@@ -864,8 +903,8 @@ def get_restaurant_dishes(request, restaurant, branch, slug):
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
-            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
-            'restaurant_json': json.dumps(restaurant.to_json_r(), default=str),
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
+            'restaurant_json': json.dumps(restaurant.to_json_r, default=str),
             'restaurant': restaurant,
             'types': utils.DISH_TIME,
             'address_types': utils.USER_ADDRESS_TYPE,
@@ -880,8 +919,8 @@ def get_restaurant_reviews(request, restaurant, branch, slug):
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
-            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
-            'restaurant_json': json.dumps(restaurant.to_json_r(), default=str),
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
+            'restaurant_json': json.dumps(restaurant.to_json_r, default=str),
             'restaurant': restaurant,
             'address_types': utils.USER_ADDRESS_TYPE,
             'table_locations': utils.TABLE_LOCATION
@@ -895,8 +934,8 @@ def get_restaurant_likes(request, restaurant, branch, slug):
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
-            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
-            'restaurant_json': json.dumps(restaurant.to_json_r(), default=str),
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
+            'restaurant_json': json.dumps(restaurant.to_json_r, default=str),
             'restaurant': restaurant,
             'address_types': utils.USER_ADDRESS_TYPE,
             'table_locations': utils.TABLE_LOCATION
@@ -910,8 +949,8 @@ def get_restaurant_about(request, restaurant, branch, slug):
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
-            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
-            'restaurant_json': json.dumps(restaurant.to_json_r(), default=str),
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
+            'restaurant_json': json.dumps(restaurant.to_json_r, default=str),
             'restaurant': restaurant,
             'address_types': utils.USER_ADDRESS_TYPE,
             'table_locations': utils.TABLE_LOCATION
@@ -1015,9 +1054,9 @@ def load_branch_directions(request, restaurant, branch):
     location = {'latitude': request.GET.get('lat'), 'longitude': request.GET.get('long'), 'address': request.GET.get('addr'), 'country': request.GET.get('count'), 'town': request.GET.get('town')}
     return render(request, template, {
             'restaurant': restaurant, 
-            'branch': json.dumps(branch.to_json_r(), default=str),
+            'branch': json.dumps(branch.to_json_r, default=str),
             'location': json.dumps(location, default=str),
-            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
         })
 
 
@@ -1127,11 +1166,11 @@ def interest_promotion(request, promo):
 def get_menu(request, menu, slug):
     template = 'web/user/menu/get_menu.html'
     menu = Menu.objects.get(pk=menu)
-    menu_dic = menu.to_json_f()
+    menu_dic = menu.to_json_f
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
-            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
             'menu_json': json.dumps(menu_dic, default=str),
             'menu': menu_dic,
             'address_types': utils.USER_ADDRESS_TYPE,
@@ -1144,9 +1183,9 @@ def get_promotion(request, promotion, slug):
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
-            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json(), default=str)  if 'user' in request.session else {},
-            'promotion_json': json.dumps(promotion.to_json_f(), default=str),
-            'promotion': promotion.to_json_f(),
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
+            'promotion_json': json.dumps(promotion.to_json_f, default=str),
+            'promotion': promotion.to_json_f,
             'address_types': utils.USER_ADDRESS_TYPE,
         })
 

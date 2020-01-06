@@ -7,18 +7,30 @@ let markers = [];
 
 $(document).ready(function(){
 
-    var swiper = new Swiper('.blog-slider', {
+    new Swiper('.blog-slider', {
         spaceBetween: 30,
         effect: 'fade',
         loop: true,
         autoplay: {
             delay: 10000,
         },
-        mousewheel: {
-            invert: false,
-        },
+        mousewheel: false,
         pagination: {
             el: '.blog-slider__pagination',
+            clickable: true,
+        }
+    });
+
+    new Swiper('.ting-promotions-container', {
+        spaceBetween: 30,
+        effect: 'fade',
+        loop: true,
+        autoplay: {
+            delay: 10000,
+        },
+        mousewheel: false,
+        pagination: {
+            el: '.ting-promotions-pagination',
             clickable: true,
         }
     });
@@ -29,10 +41,10 @@ $(document).ready(function(){
         
         e.preventDefault();
         
-        getUserCurrentLocation("ting-restaurant-latitude", "ting-restaurant-longitude", "ting-search-location-input", "ting-restaurant-town", "ting-restaurant-country", "ting-search-location-input-else", "ting-restaurant-place-id");
+        getUserCurrentLocation("ting-restaurant-latitude", "ting-restaurant-longitude", "ting-search-location-input", "ting-restaurant-town", "ting-restaurant-country", "ting-search-location-input-else", "ting-restaurant-place-id", "ting-restaurant-region", "ting-restaurant-road");
         
         setTimeout(function () {
-            initializeRestaurantMap("ting-restaurant-latitude", "ting-restaurant-longitude", "ting-search-location-input", "ting-search-location-input-else", "ting-restaurant-place-id", "ting-restaurant-map-container", true, "");
+            initializeRestaurantMap("ting-restaurant-latitude", "ting-restaurant-longitude", "ting-search-location-input", "ting-search-location-input-else", "ting-restaurant-place-id", "ting-restaurant-region", "ting-restaurant-road", "ting-restaurant-map-container", true, "");
         }, 1000);
 
         $("#ting-add-new-branch").modal('show');
@@ -54,7 +66,7 @@ $(document).ready(function(){
         e.preventDefault();
         
         setTimeout(function () {
-            initializeRestaurantMap("ting-lat", "ting-long", "ting-addr", "ting-user-address", "ting-place", "ting-user-map-container", true, "");
+            initializeRestaurantMap("ting-lat", "ting-long", "ting-addr", "ting-user-address", "ting-place", "ting-region", "ting-road", "ting-user-map-container", true, "");
         }, 1000);
 
         $("#ting-add-restaurant-location").modal({
@@ -163,8 +175,8 @@ $(document).ready(function(){
         e.preventDefault();
     });
 
-    $("#ting-search-location-input-else").searchLocationByAddress("ting-restaurant-latitude", "ting-restaurant-longitude", "ting-search-location-input", "ting-search-location-input-else", "ting-restaurant-place-id", "ting-restaurant-map-container", true, "")
-    $("#ting-user-address").searchLocationByAddress("ting-lat", "ting-long", "ting-addr", "ting-user-address", "ting-place", "ting-user-map-container", true, "")
+    $("#ting-search-location-input-else").searchLocationByAddress("ting-restaurant-latitude", "ting-restaurant-longitude", "ting-search-location-input", "ting-search-location-input-else", "ting-restaurant-place-id", "ting-restaurant-region", "ting-restaurant-road", "ting-restaurant-map-container", true, "")
+    $("#ting-user-address").searchLocationByAddress("ting-lat", "ting-long", "ting-addr", "ting-user-address", "ting-region", "ting-road", "ting-place", "ting-user-map-container", true, "")
 
     $("select.dropdown, .dropdown").dropdown("hide");
     $("div.rating, .rating, .ui.rating").rating("disable");
@@ -284,8 +296,8 @@ function loadtingdotcom(){
 
     if (!navigator.geolocation) {
         $.getJSON('https://ipapi.co/json/', function(data) {
-            tingdotcom(data.latitude, data.longitude, data.address, data.country_name, data.city)
-        }).error(function(_, t, e){tingdotcom(0, 0, "", "", "");});
+            tingdotcom(data.latitude, data.longitude, data.address, data.country_name, data.city, data.region, "")
+        }).error(function(_, t, e){tingdotcom(0, 0, "", "", "", "", "");});
         return showErrorMessage('error_geolocation', 'Geolocation not supported by your browser');
     }
     navigator.geolocation.getCurrentPosition(function (position) {
@@ -297,20 +309,28 @@ function loadtingdotcom(){
 
                 if (status == google.maps.GeocoderStatus.OK) {
                     var length = results[0].address_components.length
-                    tingdotcom(position.coords.latitude, position.coords.longitude, results[0].formatted_address, results[0].address_components[length - 1], results[0].address_components[length - 3])
+                    var country = getaddresstype(results[0].address_components, "country")
+                    var town_1 = getaddresstype(results[0].address_components, "administrative_area_level_2")
+                    var town_2 = getaddresstype(results[0].address_components, "locality")
+                    var region_1 = getaddresstype(results[0].address_components, "sublocality_level_1")
+                    var region_2 = getaddresstype(results[0].address_components, "sublocality_level_2")
+                    var road = getaddresstype(results[0].address_components, "route")
+                    var region = region_2 !== undefined && region_2 !== null && region_2 != "Unknown" ? region_2 : region_1
+                    var town = town_1 !== undefined && town_1 !== null && town_1 != "Unknown" ? town_1 : town_2
+                    tingdotcom(position.coords.latitude, position.coords.longitude, results[0].formatted_address, country, town, region, road)
                 }
             });
         } catch(e){
             $.getJSON('https://ipapi.co/json/', function(data) {
-                tingdotcom(data.latitude, data.longitude, data.address, data.country_name, data.city)
-            }).error(function(_, t, e){tingdotcom(0, 0, "", "", "");});
+                tingdotcom(data.latitude, data.longitude, data.address, data.country_name, data.city, data.region, "")
+            }).error(function(_, t, e){tingdotcom(0, 0, "", "", "", "", "");});
         }
         
     }, function (e) { 
 
         $.getJSON('https://ipapi.co/json/', function(data) {
-            tingdotcom(data.latitude, data.longitude, data.address, data.country_name, data.city)
-        }).error(function(_, t, e){tingdotcom(0, 0, "", "", "");});
+            tingdotcom(data.latitude, data.longitude, data.address, data.country_name, data.city, data.region, "")
+        }).error(function(_, t, e){tingdotcom(0, 0, "", "", "", "", "");});
 
     }, {
         enableHighAccuracy: true,
@@ -319,7 +339,16 @@ function loadtingdotcom(){
     });
 }
 
-function tingdotcom(lat, long, addr, cntr, twn){
+function getaddresstype(d, t) {
+    if(d.length > 0) {
+        for (var i = 0; i < d.length; i++) {
+            if(d[i].types.includes(t)) { return d[i].long_name} 
+        }
+        return "Unknown"
+    } else { return "Unknown" }
+}
+
+function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
 
     if(typeof cntr == 'object'){cntr = cntr.long_name}
     if(typeof twn == 'object'){twn = twn.long_name}
@@ -2939,7 +2968,7 @@ jQuery.fn.openModal = function(){
     });
 }
 
-jQuery.fn.searchLocationByAddress = function(lat, long, addr, addr_else, place, cont, clickable, img){
+jQuery.fn.searchLocationByAddress = function(lat, long, addr, addr_else, place, reg, rd, cont, clickable, img){
 
     $(this).keyup(function (e) {
         
@@ -2960,15 +2989,26 @@ jQuery.fn.searchLocationByAddress = function(lat, long, addr, addr_else, place, 
                     var from_lat = results[0].geometry.location.lat();
                     var from_long = results[0].geometry.location.lng();
 
+                    var country = getaddresstype(results[0].address_components, "country")
+                    var town_1 = getaddresstype(results[0].address_components, "administrative_area_level_2")
+                    var town_2 = getaddresstype(results[0].address_components, "locality")
+                    var region_1 = getaddresstype(results[0].address_components, "sublocality_level_1")
+                    var region_2 = getaddresstype(results[0].address_components, "sublocality_level_2")
+                    var road = getaddresstype(results[0].address_components, "route")
+                    var region = region_2 !== undefined && region_2 !== null && region_2 != "Unknown" ? region_2 : region_1
+                    var town = town_1 !== undefined && town_1 !== null && town_1 != "Unknown" ? town_1 : town_2
+
                     $("#" + lat).val(from_lat);
                     $("#" + long).val(from_long);
                     $("#" + addr).val(results[0].formatted_address);
                     $("#" + place).val(results[0].place_id);
+                    $("#" + reg).val(region)
+                    $("#" + rd).val(road)
                 }
             });
             
             setTimeout(function () {
-                initializeRestaurantMap(lat, long, addr, addr_else, place, cont, clickable, img);
+                initializeRestaurantMap(lat, long, addr, addr_else, place, reg, rd, cont, clickable, img);
             }, 1000);
         }
     });
@@ -3221,7 +3261,7 @@ function showInfoMessage(id, message) {
     });
 }
 
-function getUserCurrentLocation(lt, lg, ad, tc, cc, ads, id) {
+function getUserCurrentLocation(lt, lg, ad, tc, cc, ads, id, rg, rd) {
 
     if (!navigator.geolocation) {
         $.getJSON('https://ipapi.co/json/', function(data) {
@@ -3231,6 +3271,8 @@ function getUserCurrentLocation(lt, lg, ad, tc, cc, ads, id) {
             document.getElementById(tc).value = data.city;
             document.getElementById(cc).value = data.country_name;
             document.getElementById(id).value = data.ip
+            document.getElementById(rg).value = data.region
+            document.getElementById(rd).value = "Unknown"
             
             let inputElse = document.getElementById(ads);
             if(inputElse != null){ inputElse.value = data.city + ", " + data.region + ", " + data.country_name;}
@@ -3250,16 +3292,23 @@ function getUserCurrentLocation(lt, lg, ad, tc, cc, ads, id) {
                 var longitude = position.coords.longitude;
                 var address = results[0].formatted_address;
 
-                var length = results[0].address_components.length
-                var country = results[0].address_components[length - 1]
-                var town = results[0].address_components[length - 3]
+                var country = getaddresstype(results[0].address_components, "country")
+                var town_1 = getaddresstype(results[0].address_components, "administrative_area_level_2")
+                var town_2 = getaddresstype(results[0].address_components, "locality")
+                var region_1 = getaddresstype(results[0].address_components, "sublocality_level_1")
+                var region_2 = getaddresstype(results[0].address_components, "sublocality_level_2")
+                var road = getaddresstype(results[0].address_components, "route")
+                var region = region_2 !== undefined && region_2 !== null && region_2 != "Unknown" ? region_2 : region_1
+                var town = town_1 !== undefined && town_1 !== null && town_1 != "Unknown" ? town_1 : town_2
 
                 document.getElementById(lt).value = latitude;
                 document.getElementById(lg).value = longitude;
                 document.getElementById(ad).value = address;
-                document.getElementById(tc).value = town.long_name;
-                document.getElementById(cc).value = country.long_name;
+                document.getElementById(tc).value = town;
+                document.getElementById(cc).value = country;
                 document.getElementById(id).value = results[0].place_id
+                document.getElementById(rg).value = region
+                document.getElementById(rd).value = road
 
                 let inputElse = document.getElementById(ads);
                 if(inputElse != null){ inputElse.value = address;}
@@ -3274,6 +3323,8 @@ function getUserCurrentLocation(lt, lg, ad, tc, cc, ads, id) {
             document.getElementById(tc).value = data.city;
             document.getElementById(cc).value = data.country_name;
             document.getElementById(id).value = data.ip
+            document.getElementById(rg).value = data.region
+            document.getElementById(rd).value = "Unknown"
 
             let inputElse = document.getElementById(ads);
             if(inputElse != null){ inputElse.value = data.city + ", " + data.region + ", " + data.country_name;}
@@ -3286,7 +3337,7 @@ function getUserCurrentLocation(lt, lg, ad, tc, cc, ads, id) {
     });
 }
 
-function initializeRestaurantMap(lat, long, addr, addr_else, place, cont, clickable, img) {
+function initializeRestaurantMap(lat, long, addr, addr_else, place, reg, rd, cont, clickable, img) {
 
     var latitude = parseFloat($("#" + lat).val());
     var longitude = parseFloat($("#" + long).val());
@@ -3324,7 +3375,8 @@ function initializeRestaurantMap(lat, long, addr, addr_else, place, cont, clicka
                 });
             });
 
-        } else{
+        } else {
+
             var marker = new google.maps.Marker({
                 position: myLatLng,
                 map: map,
@@ -3346,7 +3398,23 @@ function initializeRestaurantMap(lat, long, addr, addr_else, place, cont, clicka
 
     } else {
         var htmlMarker = new HTMLMarker(latitude, longitude, img);
-        htmlMarker.setMap(map);
+        var marker = new google.maps.Marker({
+            position: myLatLng,
+            map: map,
+            title: address,
+            animation: google.maps.Animation.DROP,
+        });
+
+        marker.addListener('click', toggleBounce);
+
+        function toggleBounce() {
+            if (marker.getAnimation() !== null) {
+                marker.setAnimation(null);
+            } else {
+                marker.setAnimation(google.maps.Animation.BOUNCE);
+            }
+        }
+        markers.push(marker);
     }
 
     var geocoder = new google.maps.Geocoder();
@@ -3365,6 +3433,15 @@ function initializeRestaurantMap(lat, long, addr, addr_else, place, cont, clicka
                         var n_latitude = results[0].geometry.location.lat();
                         var n_longitude = results[0].geometry.location.lng();
 
+                        var country = getaddresstype(results[0].address_components, "country")
+                        var town_1 = getaddresstype(results[0].address_components, "administrative_area_level_2")
+                        var town_2 = getaddresstype(results[0].address_components, "locality")
+                        var region_1 = getaddresstype(results[0].address_components, "sublocality_level_1")
+                        var region_2 = getaddresstype(results[0].address_components, "sublocality_level_2")
+                        var road = getaddresstype(results[0].address_components, "route")
+                        var region = region_2 !== undefined && region_2 !== null && region_2 != "Unknown" ? region_2 : region_1
+                        var town = town_1 !== undefined && town_1 !== null && town_1 != "Unknown" ? town_1 : town_2
+
                         var position = {
                             lat: n_latitude,
                             lng: n_longitude
@@ -3374,6 +3451,8 @@ function initializeRestaurantMap(lat, long, addr, addr_else, place, cont, clicka
                         $("#" + long).val(n_longitude);
                         $("#" + addr).val(n_address);
                         $("#" + place).val(results[0].place_id);
+                        $("#" + reg).val(region)
+                        $("#" + rd).val(road)
                         
                         let inputElse = $("#" + addr_else);
 

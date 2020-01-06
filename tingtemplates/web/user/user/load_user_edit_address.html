@@ -24,6 +24,8 @@
                 <input type="hidden" id="ting-branch-country" name="country" value="{{user.country}}">
                 <input type="hidden" id="ting-branch-town" name="town" value="{{user.town}}">
                 <input type="hidden" id="ting-branch-place-id" name="place_id" value="{{address.place_id}}">
+                <input type="hidden" id="ting-branch-region" name="region" value="">
+                <input type="hidden" id="ting-branch-road" name="road" value="">
                 <input type="hidden" id="ting-search-location-input-branch" name="address" value="{{address.address}}">
                 <div class="field" style="margin-top: 15px;">
                     <div class="two fields">
@@ -61,9 +63,9 @@
     $("#ting-update-user-address-form").submitFormAjax();
     google.maps.event.addDomListener(window, 'load', InitializePlaces('ting-search-location-input-else-branch'));
     setTimeout(function () {
-        initializeRestaurantMap("ting-branch-latitude", "ting-branch-longitude", "ting-search-location-input-branch", "ting-search-location-input-else-branch", "ting-branch-place-id", "ting-branch-map-container", true, "");
+        initializeRestaurantMap("ting-branch-latitude", "ting-branch-longitude", "ting-search-location-input-branch", "ting-search-location-input-else-branch", "ting-branch-place-id", "ting-branch-region", "ting-branch-road", "ting-branch-map-container", true, "");
     }, 1000);
-    $("#ting-search-location-input-else-branch").searchLocationByAddress("ting-branch-latitude", "ting-branch-longitude", "ting-search-location-input-branch", "ting-search-location-input-else-branch", "ting-branch-place-id", "ting-branch-map-container", true, "")
+    $("#ting-search-location-input-else-branch").searchLocationByAddress("ting-branch-latitude", "ting-branch-longitude", "ting-search-location-input-branch", "ting-search-location-input-else-branch", "ting-branch-place-id", "ting-branch-region", "ting-branch-road", "ting-branch-map-container", true, "")
     $("#ting-address-type-else").change(function(e){
         var value = $(this).val();
         if(value.toLowerCase() == "other"){$("#ting-other-address-type-else").removeAttr("disabled").attr("required", "required");} 

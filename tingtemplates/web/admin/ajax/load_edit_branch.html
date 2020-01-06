@@ -30,6 +30,18 @@
                     <input type="text" name="name" placeholder="Branch Name" value="{{branch.name}}" required autocomplete="off">
                 </div>
                 <div class="field">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Enter Branch Region :</label>
+                            <input type="text" name="region" id="ting-branch-region" placeholder="Enter Region" required autocomplete="off" value="{{branch.region}}">
+                        </div>
+                        <div class="field">
+                            <label>Enter Branch Road :</label>
+                            <input type="text" name="road" id="ting-branch-road" placeholder="Enter Road" required autocomplete="off" value="{{branch.road}}">
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
                     <label>Enter Branch Email :</label>
                     <input type="email" name="email" placeholder="Branch Email" value="{{branch.email}}" required autocomplete="off">
                 </div>
@@ -45,7 +57,7 @@
     $("#ting-update-branch-form").submitFormAjax();
     google.maps.event.addDomListener(window, 'load', InitializePlaces('ting-search-location-input-else-branch'));
     setTimeout(function () {
-        initializeRestaurantMap("ting-branch-latitude", "ting-branch-longitude", "ting-search-location-input-branch", "ting-search-location-input-else-branch", "ting-branch-place-id", "ting-branch-map-container", true, "");
+        initializeRestaurantMap("ting-branch-latitude", "ting-branch-longitude", "ting-search-location-input-branch", "ting-search-location-input-else-branch", "ting-branch-place-id", "ting-branch-region", "ting-branch-road", "ting-branch-map-container", true, "");
     }, 1000);
-    $("#ting-search-location-input-else-branch").searchLocationByAddress("ting-branch-latitude", "ting-branch-longitude", "ting-search-location-input-branch", "ting-search-location-input-else-branch", "ting-branch-place-id", "ting-branch-map-container", true, "")
+    $("#ting-search-location-input-else-branch").searchLocationByAddress("ting-branch-latitude", "ting-branch-longitude", "ting-search-location-input-branch", "ting-search-location-input-else-branch", "ting-branch-place-id", "ting-branch-region", "ting-branch-road", "ting-branch-map-container", true, "")
 </script>

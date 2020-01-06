@@ -155,7 +155,7 @@ def api_update_user_identity(request):
 		user.updated_at = timezone.now()
 		user.save()
 
-		return HttpJsonResponse(ResponseObject('success', 'User Info Updated Successfully !!!', 200, user=user.to_json()))
+		return HttpJsonResponse(ResponseObject('success', 'User Info Updated Successfully !!!', 200, user=user.to_json))
 	else:
 		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
@@ -180,51 +180,51 @@ def api_update_user_address(request, address):
 
 def api_user_get(request, user):
 	usr = User.objects.get(pk=user)
-	return HttpResponse(json.dumps(usr.to_json_u(), default=str), content_type='application/json')
+	return HttpResponse(json.dumps(usr.to_json_u, default=str), content_type='application/json')
 
 
 @authenticate_user(xhr='api')
 def api_user_get_auth(request):
 	user = User.objects.get(pk=request.session['user'])
-	return HttpResponse(json.dumps(user.to_json_u(), default=str), content_type='application/json')
+	return HttpResponse(json.dumps(user.to_json_u, default=str), content_type='application/json')
 
 
 # RESTAURANT
 
 
 def api_restaurants(request):
-	branches = json.dumps([branch.to_json_r() for branch in Branch.objects.all()], default=str)
+	branches = json.dumps([branch.to_json_r for branch in Branch.objects.all()], default=str)
 	return HttpResponse(branches, content_type='application/json')
 
 
 def api_get_restaurant(request, branch):
 	branch = Branch.objects.get(pk=branch)
-	return HttpResponse(json.dumps(branch.to_json(), default=str), content_type='application/json')
+	return HttpResponse(json.dumps(branch.to_json, default=str), content_type='application/json')
 
 
 def api_load_restaurant_promotions(request, branch):
 	promotions = Promotion.objects.filter(branch__pk=branch).order_by('-created_at')
-	return HttpResponse(json.dumps([promotion.to_json_f() for promotion in promotions], default=str), content_type='application/json')
+	return HttpResponse(json.dumps([promotion.to_json_f for promotion in promotions], default=str), content_type='application/json')
 
 
 def api_load_restaurant_foods(request, branch):
 	foods = Menu.objects.filter(branch__pk=branch, menu_type=1).order_by('-created_at')
-	return HttpResponse(json.dumps([food.to_json() for food in foods], default=str), content_type='application/json')
+	return HttpResponse(json.dumps([food.to_json for food in foods], default=str), content_type='application/json')
 
 
 def api_load_restaurant_drinks(request, branch):
 	drinks = Menu.objects.filter(branch__pk=branch, menu_type=2).order_by('-created_at')
-	return HttpResponse(json.dumps([drink.to_json() for drink in drinks], default=str), content_type='application/json')
+	return HttpResponse(json.dumps([drink.to_json for drink in drinks], default=str), content_type='application/json')
 
 
 def api_load_restaurant_dishes(request, branch):
 	dishes = Menu.objects.filter(branch__pk=branch, menu_type=3).order_by('-created_at')
-	return HttpResponse(json.dumps([dish.to_json() for dish in dishes], default=str), content_type='application/json')
+	return HttpResponse(json.dumps([dish.to_json for dish in dishes], default=str), content_type='application/json')
 
 
 def api_load_restaurant_reviews(request, branch):
 	reviews = RestaurantReview.objects.filter(branch__pk=branch).order_by('-created_at')
-	return HttpResponse(json.dumps([review.to_json_b() for review in reviews], default=str), content_type='application/json')
+	return HttpResponse(json.dumps([review.to_json_b for review in reviews], default=str), content_type='application/json')
 
 
 @csrf_exempt
@@ -243,7 +243,7 @@ def api_add_restaurant_review(request, branch):
 
 def api_load_restaurant_likes(request, branch):
 	likes = UserRestaurant.objects.filter(branch__pk=branch).order_by('-created_at')
-	return HttpResponse(json.dumps([like.to_json() for like in likes], default=str), content_type='application/json')
+	return HttpResponse(json.dumps([like.to_json for like in likes], default=str), content_type='application/json')
 
 
 @csrf_exempt
@@ -255,7 +255,7 @@ def api_check_restaurant_review(request):
 		review = RestaurantReview.objects.filter(branch__pk=resto, user__pk=user.pk).first()
 
 		if review != None:
-			return HttpResponse(json.dumps(review.to_json_b(), default=str), content_type='application/json', status=200)
+			return HttpResponse(json.dumps(review.to_json_b, default=str), content_type='application/json', status=200)
 		else:
 			return HttpResponse(json.dumps(ResponseObject('error', 'Review Not Found', 404), default=str), content_type='application/json', status=404)
 	else:
@@ -267,7 +267,7 @@ def api_check_restaurant_review(request):
 
 def api_get_menu(request, menu):
 	menu = Menu.objects.get(pk=menu)
-	return HttpResponse(json.dumps(menu.to_json_f(), default=str), content_type='application/json')
+	return HttpResponse(json.dumps(menu.to_json_f, default=str), content_type='application/json')
 
 
 @csrf_exempt
@@ -278,7 +278,7 @@ def api_like_menu(request, menu):
 
 def api_load_menu_reviews(request, menu):
 	reviews = MenuReview.objects.filter(menu__pk=menu).order_by('-created_at')
-	return HttpResponse(json.dumps([review.to_json() for review in reviews], default=str), content_type='application/json')
+	return HttpResponse(json.dumps([review.to_json for review in reviews], default=str), content_type='application/json')
 
 
 @csrf_exempt
@@ -296,7 +296,7 @@ def api_check_menu_review(request):
 		review = MenuReview.objects.filter(menu__pk=menu, user__pk=user.pk).first()
 
 		if review != None:
-			return HttpResponse(json.dumps(review.to_json_s(), default=str), content_type='application/json', status=200)
+			return HttpResponse(json.dumps(review.to_json_s, default=str), content_type='application/json', status=200)
 		else:
 			return HttpResponse(json.dumps(ResponseObject('error', 'Review Not Found', 404), default=str), content_type='application/json', status=404)
 	else:
@@ -308,7 +308,7 @@ def api_check_menu_review(request):
 
 def api_get_promotion(request, promo):
 	promotion = Promotion.objects.get(pk=promo)
-	return HttpResponse(json.dumps(promotion.to_json_f(), default=str), content_type='application/json')
+	return HttpResponse(json.dumps(promotion.to_json_f, default=str), content_type='application/json')
 
 
 @csrf_exempt

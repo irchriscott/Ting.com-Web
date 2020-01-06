@@ -585,6 +585,8 @@ def update_branch(request, branch):
 			branch.longitude = branch_form.cleaned_data['longitude']
 			branch.latitude = branch_form.cleaned_data['latitude']
 			branch.place_id = branch_form.cleaned_data['place_id']
+			branch.region = branch_form.cleaned_data['region']
+			branch.road = branch_form.cleaned_data['road']
 			branch.email = branch_form.cleaned_data['email']
 			branch.phone = branch_form.cleaned_data['phone']
 			branch.updated_at = timezone.now()

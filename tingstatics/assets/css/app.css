@@ -1223,14 +1223,15 @@ textarea{
 .ting-cuisines-container {
     display: block;
     position: relative;
-    margin-top: 40px;
+    margin-top: 45px;
     margin-bottom: 1.5rem;
+    overflow: hidden;
 }
 
 .ting-cuisines-container h2 {
     display: block;
-    text-transform: uppercase;
-    font-weight: 300;
+    font-weight: bold;
+    color: #333;
 }
 
 .ting-overflow-grid {
@@ -1712,4 +1713,123 @@ textarea{
         height: 11px;
         width: 30px;
     }
+}
+
+.ting-today-promotions {
+    display: block;
+    position: relative;
+    margin-bottom: 40px;
+    margin-top: 45px;
+}
+
+.ting-today-promotions h2 {
+    font-weight: bold;
+    display: block;
+    color: #333;
+}
+
+.ting-promotions-container {
+    display: block;
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    height: 550px;
+    margin-top: 15px;
+}
+
+.ting-promotions-wrapper {
+    display: block;
+    position: relative;
+    width: calc(100% - 2px);
+    overflow: hidden;
+    height: 550px;
+    border: 1px solid #DDDDDD;
+    border-radius: 8px;
+}
+
+.ting-promotions-pagination {
+    position: absolute;
+    z-index: 100;
+    text-align: right;
+    padding-right: 10px;
+    bottom: 0px !important;
+    background: linear-gradient(rgba(0, 0, 0, .0), rgba(0, 0, 0, .3));
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.ting-promotion-item {
+    display: block;
+    position: relative;
+    width: 100%;
+}
+
+.ting-promotion-item .ting-promotion-about {
+    position: absolute;
+    background: linear-gradient(rgba(0, 0, 0, .7), rgba(0, 0, 0, .0));
+    top: 0;
+    padding: 2rem;
+    z-index: 1000;
+    width: 100%;
+}
+
+.ting-promotion-item .ting-promotion-about h1 {
+    color: #FFFFFF;
+    font-size: 30px;
+    font-weight: bold;
+    text-shadow: 1px 2px 1px #333;
+}
+
+.ting-promotion-item .ting-promotion-about p {
+    color: #FFFFFF;
+    font-size: 16px;
+}
+
+.ting-promotion-item .ting-promotion-about .ting-p-b {
+    font-weight: bold;
+}
+
+.ting-promotion-item img {
+    height: 100%;
+    width: 100%;
+}
+
+@media screen and (max-width: 768px) {
+    .ting-promotions-container,
+    .ting-promotions-wrapper {
+        height: 250px;
+    }
+}
+
+.ting-promotions-pagination.swiper-pagination-bullets .swiper-pagination-bullet {
+    margin: 8px 4px !important;
+}
+
+@media screen and (max-width: 768px) {
+    .ting-promotions-pagination.swiper-pagination-bullets .swiper-pagination-bullet {
+        margin: 0 5px;
+    }
+
+    .ting-promotions-container,
+    .ting-promotions-wrapper {
+        height: 250px;
+    }
+}
+
+.ting-promotions-pagination .swiper-pagination-bullet {
+    width: 11px;
+    height: 11px;
+    display: inline-block;
+    border-radius: 10px;
+    background: #FFFFFF;
+    margin: 8px 4px !important;
+    opacity: 0.6;
+    transition: all .3s;
+}
+
+.ting-promotions-pagination .swiper-pagination-bullet-active {
+    opacity: 1;
+    background: #908ced;
+    width: 30px;
+    box-shadow: 0px 0px 20px rgba(144, 140, 237, 0.3);
 }
