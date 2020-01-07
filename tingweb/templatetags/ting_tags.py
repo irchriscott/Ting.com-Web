@@ -1,5 +1,8 @@
 from django import template
-from tingweb.models import Administrator, DishFood, Menu, Food, Dish, Drink, FoodCategory, Branch, Restaurant
+from tingweb.models import (
+								Administrator, DishFood, Menu, Food, Dish, Drink, FoodCategory, 
+								Branch, Restaurant, Promotion
+							)
 import ting.utils as utils
 
 register = template.Library()
@@ -67,6 +70,12 @@ def has_category(value, arg):
 	return resto.has_category(arg)
 
 
+@register.filter(name='has_interest')
+def has_interest(value, arg):
+	promo = Promotion.objects.get(pk=value)
+	return promo.has_user_interest(arg)
+
+
 @register.filter(name='prefix')
 def prefix(value, arg):
 	return '{0} {1}'.format(arg, value)
@@ -81,6 +90,42 @@ def from_tupple(value, arg):
 def dish_food_quantity(value, arg):
 	food = DishFood.objects.filter(food=int(value), dish=int(arg)).last()
 	return food.quantity
+
+
+@register.filter(name='rand_five_all')
+def random_five_menu_all(value):
+	menus = Menu.objects.filter(branch__pk=value)
+	return menus.random(5)
+
+
+@register.filter(name='rand_five_all_count')
+def random_five_menu_all_count(value):
+	menus = Menu.objects.filter(branch__pk=value)
+	return menus.count()
+
+
+@register.filter(name='rand_five_type')
+def random_five_menu_type(value, arg):
+	menus = Menu.objects.filter(branch__pk=value, menu_type=arg)
+	return menus.random(5)
+
+
+@register.filter(name='rand_five_type_count')
+def random_five_menu_type_count(value, arg):
+	menus = Menu.objects.filter(branch__pk=value, menu_type=arg)
+	return menus.count()
+
+
+@register.filter(name='rand_five_category')
+def random_five_menu_category(value, arg):
+	menus = Menu.objects.filter(branch__pk=value)
+	return [menu for menu in menus if menu.menu_type != 2 and menu.to_json['menu']['category']['id'] == arg]
+
+
+@register.filter(name='rand_five_category_count')
+def random_five_menu_category_count(value, arg):
+	menus = Menu.objects.filter(branch__pk=value)
+	return len([menu for menu in menus if menu.menu_type != 2 and menu.to_json['menu']['category']['id'] == arg])
 
 
 @register.filter(name='menu_name')

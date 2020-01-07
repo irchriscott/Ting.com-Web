@@ -70,7 +70,7 @@
 							<img src="{{promotion.poster_image.url}}">
 						</div>
 						<div class="ting-promotion-about">
-							<h1>{{promotion.occasion_event}}</h1>
+							<h1><a href="{{promotion.to_json.urls.relative}}">{{promotion.occasion_event}}</a></h1>
 							<div style="width: 50%;"><hr style="background: rgba(255, 255, 255, 0.5); text-align: left; box-sizing: none;"></div>
 							{% if promotion.promotion_menu_type == '05' %}
 								<p>Promotion On <span class="ting-p-b">{{promotion.category.name}}</span></p>
@@ -79,11 +79,28 @@
 							{% else %}
 								<p>Promotion On <span class="ting-p-b">{{promotion.promo_type}}</span></p>
 							{% endif %}
+							{% if promotion.has_supplement %}
+								<div class="ting-promotion-data">
+									<div class="icon">
+										<i class="icon plus square outline"></i>
+									</div>
+									<div class="data"><p>Buy <b>{{promotion.supplement_min_quantity}}</b>, Get <b>{{promotion.supplement_quantity}}</b> {% if promotion.is_supplement_same %} More {% else %} <a href="{{promotion.supplement.to_json.urls.url}}">{{promotion.supplement.to_json.menu.name}}</a> {% endif %} For Free</p></div>
+								</div>
+							{% endif %}
+							{% if promotion.has_reduction %}
+								<div class="ting-promotion-data">
+									<div class="icon">
+										<i class="icon minus square outline"></i>
+									</div>
+									<div class="data"><p>{{promotion.amount}} {{promotion.reduction_type}} Reduction</p></div>
+								</div>
+							{% endif %}
 						</div>
 					</div>
 				{% endfor %}
 			</div>
 			<div class="ting-promotions-pagination"></div>
+			<a href="{% url 'ting_usr_global_discovery_today_promotions' %}" class="ting-show-more-promotions">Show More</a>
 		</div>
 	</div>
 	{% endif %}

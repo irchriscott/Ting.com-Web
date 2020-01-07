@@ -1773,7 +1773,7 @@ textarea{
     width: 100%;
 }
 
-.ting-promotion-item .ting-promotion-about h1 {
+.ting-promotion-item .ting-promotion-about h1 a {
     color: #FFFFFF;
     font-size: 30px;
     font-weight: bold;
@@ -1782,7 +1782,8 @@ textarea{
 
 .ting-promotion-item .ting-promotion-about p {
     color: #FFFFFF;
-    font-size: 16px;
+    font-size: 14px;
+    text-shadow: 1px 2px 1px #333;
 }
 
 .ting-promotion-item .ting-promotion-about .ting-p-b {
@@ -1832,4 +1833,56 @@ textarea{
     background: #908ced;
     width: 30px;
     box-shadow: 0px 0px 20px rgba(144, 140, 237, 0.3);
+}
+
+.ting-promotion-data {
+    display: block;
+    position: relative;
+    margin-top: 8px;
+}
+
+.ting-promotion-data div {
+    display: inline-block;
+}
+
+.ting-promotion-data .icon {
+    position: absolute;
+    left: 0;
+}
+
+.ting-promotion-data .icon i {
+    color: #FFFFFF;
+    font-size: 26px;
+    text-shadow: 1px 2px 1px #333;
+}
+
+.ting-promotion-data .data {
+    margin-left: 38px;
+}
+
+.ting-promotion-data .data p a {
+    color: #FFF;
+    font-weight: bold;
+    text-shadow: 1px 2px 1px #333;
+}
+
+.ting-promotion-data .data p {
+    font-size: 15px;
+    text-shadow: 1px 2px 1px #333;
+}
+
+.ting-show-more-promotions {
+    position: absolute; 
+    bottom: 0;
+    left: 0; 
+    margin-left: 20px; 
+    color: #FFF; 
+    z-index: 999;
+    margin-bottom: 8px; 
+    font-weight: bold; 
+    text-transform: uppercase;
+}
+
+.ting-show-more-promotions:hover {
+    color: #FFFFFF;
 }

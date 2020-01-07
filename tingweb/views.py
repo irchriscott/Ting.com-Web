@@ -760,20 +760,20 @@ def discovery(request):
         branches = Branch.objects.filter(country=user.country, town=user.town).order_by('-created_at')[:20]
         rand_branches = branches.random(5)
 
-        today_promos = Promotion.objects.filter(branch__country=user.country, branch__town=user.town, is_on=True)[:5]
-        #today_promos = [promo for promo in promotions if promo.is_on_today == True][:10]
+        promotions = Promotion.objects.filter(branch__country=user.country, branch__town=user.town, is_on=True)[:5]
+        today_promos = [promo for promo in promotions if promo.is_on_today == True][:10]
 
-        #for i in range(2, len(today_promos)):
-        #    today_promos.remove(random.choice(today_promos))
+        for i in range(3, len(today_promos)):
+           today_promos.remove(random.choice(today_promos))
     else:
         branches = Branch.objects.all().order_by('-created_at')[:20]
         rand_branches = branches.random(5)
 
-        today_promos = Promotion.objects.filter(is_on=True)[:5]
-        #today_promos = [promo for promo in promotions if promo.is_on_today == True][:10]
+        promotions = Promotion.objects.filter(is_on=True)[:5]
+        today_promos = [promo for promo in promotions if promo.is_on_today == True][:10]
 
-        #for i in range(2, len(today_promos)):
-        #    today_promos.remove(random.choice(today_promos))
+        for i in range(3, len(today_promos)):
+           today_promos.remove(random.choice(today_promos))
 
     return render(request, template, {
             'is_logged_in': is_logged_in,
@@ -786,16 +786,26 @@ def discovery(request):
         })
 
 
+def discover_cuisine(request, cuisine, slug):
+    template = 'web/user/discovery/cuisine.html'
+    cuisine = RestaurantCategory.objects.get(pk=cuisine)
+    return render(request, template, {
+            'is_logged_in': True if 'user' in request.session else False,
+            'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
+            'cuisine': cuisine
+        })
+
+
 def discover_today_promotions(request):
     template = 'web/user/discovery/today_promotions.html'
     is_logged_in = True if 'user' in request.session else False
 
     if is_logged_in == True:
-
+        user = User.objects.get(pk=request.session['user'])
         promotions = Promotion.objects.filter(branch__country=user.country, branch__town=user.town, is_on=True)
         today_promos = [promo for promo in promotions if promo.is_on_today == True]
     else:
-
         promotions = Promotion.objects.filter(is_on=True)
         today_promos = [promo for promo in promotions if promo.is_on_today == True]
 
@@ -803,6 +813,7 @@ def discover_today_promotions(request):
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
             'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
+            'promotions_json': json.dumps([promo.to_json for promo in today_promos], default=str),
             'promotions': today_promos
         })
 

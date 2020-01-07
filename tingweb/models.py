@@ -728,7 +728,7 @@ class Branch(models.Model):
 				'outside': self.tables.filter(location=2).count(),
 				'balcony': self.tables.filter(location=3).count(),
 				'rooftop': self.tables.filter(location=4).count(),
-				'tables': [table.to_json() for table in self.tables]
+				'tables': [table.to_json for table in self.tables]
 			},
 			'menus':{
 				'count': self.menus_count,
@@ -3253,6 +3253,13 @@ class Promotion(models.Model):
 	@property
 	def interests_count(self):
 		return self.interests.count()
+
+	@property
+	def interests_ids(self):
+		return [interest.user.pk for interest in self.interests]
+
+	def has_user_interest(self, u):
+		return True if u in self.interests_ids else False
 
 	@property
 	def promo_period(self):
