@@ -765,7 +765,9 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                             tc.css("cursor", "pointer");
                             var ti = `  
                                     <div class="ui image">
-                                        <img src="${br.restaurant.logo}" style="width:225px;">
+                                        <a class="header" href="${br.urls.relative}" target="_blank">
+                                            <img src="${br.restaurant.logo}" style="width:225px;">
+                                        </a>
                                     </div>
                                     <div class="content">
                                         <a class="header" href="${br.urls.relative}" style="font-size:19px; font-weight:500;">${br.restaurant.name}, ${br.name}</a>
@@ -1449,7 +1451,9 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                         tc.css("cursor", "pointer");
                         var ti = `  
                                 <div class="ui medium image">
-                                    <img src="${p.posterImage}">
+                                    <a href="${p.urls.relative}" target="_blank">
+                                        <img src="${p.posterImage}">
+                                    </a>
                                 </div>
                                 <div class="ui content">
                                     <a class="header" href="${p.urls.relative}" target="_blank" style="font-size:19px; font-weight:500;">${p.occasionEvent}</a>
@@ -1642,7 +1646,9 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                         tc.css("cursor", "pointer");
                         var ti = `  
                                 <div class="ui medium image">
-                                    <img src="${m.images.images[Math.floor(Math.random() * (m.images.count - 1))].image}">
+                                    <a href="${m.url}" target="_blank">
+                                        <img src="${m.images.images[Math.floor(Math.random() * (m.images.count - 1))].image}">
+                                    </a>
                                 </div>
                                 <div class="ui content">
                                     <a class="header" href="${m.url}" target="_blank" style="font-size:19px; font-weight:500;">${m.name}</a>
@@ -1697,7 +1703,7 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                                         ${menus[i].type.id == 3 ? `<div class="ui label"><i class="icon clock"></i> ${m.dishTime}</div>` : ``}
                                         <div class="ui ${m.isAvailable == true ? "green" : "red"} label"><i class="${m.isAvailable == true ? "check" : "times"} icon"></i> ${m.isAvailable == true ? "Available" : "Not Available"}</div>
                                         <div class="ui label" style="cursor:pointer;"><i class="heart outline icon"></i>${numerilize(m.likes.count, null, 0)}</div>
-                                        <div class="ui label ting-rate-btn-${menus[i].id}" style="cursor:pointer;"><i class="star outline icon"></i>${m.reviews.average}</div>
+                                        <div class="ui label ting-rate-btn-${menus[i].id}" style="cursor:pointer;"><i class="star outline icon"></i>${numerilize(m.reviews.count, null, 0)}</div>
                                     </div>
                                     <div class="ting-like-restaurant">
                                         <button class="ting-like-restaurant ting-btn-animate ${likesmenu(m) == true ? 'liked' : ''}" id="ting-like-menu-${menus[i].id}" data-like='{"menu":"${menus[i].id}", "pk":"${m.id}", "type": "${menus[i].type.id}", "typ":"link"}'>${likemenubtn(m)}</button>

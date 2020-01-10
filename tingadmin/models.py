@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 from django.db import models
 from django.contrib.auth.models import User
+from django_random_queryset import RandomManager
 from time import time
 import tingweb
 
@@ -61,6 +62,8 @@ class RestaurantCategory(models.Model):
 	image = models.ImageField(upload_to=restaurants_category_image_path, null=False, blank=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
+
+	objects = RandomManager()
 
 	def __str__(self):
 		return self.name

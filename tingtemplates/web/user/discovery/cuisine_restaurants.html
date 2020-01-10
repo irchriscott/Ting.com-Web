@@ -1,0 +1,223 @@
+{% extends '../../navbar.html' %}
+{% load staticfiles %}
+{% load ting_tags %}
+{% load humanize %}
+{% block title %}
+<title>Ting.com - {{cuisine.name}}</title>
+{% endblock %}
+{% block body %}
+<section class="generic-banner relative ting-banner">		
+	<div class="container">
+		<div class="d-flex align-items-center">
+			<div class="generic-banner-content ting-banner-content">
+				<h1 class="text-white" style="text-transform:uppercase;">{{cuisine.name}}</h1>
+			</div>							
+        </div>
+    </div>
+</section>
+<div class="ting-inline-menu" style="display: block;">
+	<div class="container">
+		<div class="ui grid">
+			<div class="row">
+				<div class="col-lg-12" style="padding: 0;">
+					<div class="ui secondary pointing menu">
+					  	<a href="{% url 'ting_usr_global_discover_r_cuisine' cuisine.pk cuisine.name|to_slug %}" class="item active">
+					   		Restaurants
+					  	</a>
+					  	<a href="{% url 'ting_usr_global_discover_m_cuisine' cuisine.pk cuisine.name|to_slug %}" class="item">
+					    	Menus
+					  	</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<secltion class="ting-restaurants-list-container">
+	<div class="container" style="padding: 0 !important;">
+		<div class="ting-restaurants-list" id="ting-restaurants-list">
+			{% if branches|length > 0 %}
+				<div class="ui grid">
+					<div class="row">
+					{% for branch in branches %}
+						<div class="ui col-md-6 items" style="margin: 0 !important;">
+							<div class="ui item ting-resto-item" style="margin-bottom: 1.5rem !important; margin-top: 0 !important;">
+								<div class="ui small image">
+									<a href="{{branch.to_json.urls.relative}}">
+		                            	<img src="{{branch.restaurant.logo.url}}">
+		                        	</a>
+		                        </div>
+		                        <div class="ui content">
+		                            <a class="header" href="{{branch.to_json.urls.relative}}" style="font-size:19px; font-weight:500;">{{branch.restaurant.name}}, {{branch.name}}</a>
+		                            <div class="meta" style="margin-top:5px;">
+		                                <div class="ui disabled-rating star rating" data-rating="{{branch.review_average}}" data-max-rating="5" style="margin-bottom:10px;"></div>
+		                                <p class="ting-resto-item-address" style="white-space: nowrap; text-overflow: ellipsis; width: calc(100% - 1.5rem); overflow: hidden;"><i icon class="icon map marker alternate"></i> {{branch.address}}</p>
+		                            </div>
+		                            <div class="description">
+			                            <div class="ui small labeled icon button top left pointing dropdown bt-popup ting-tab-btn" data-url="{% url 'ting_usr_get_restaurant_foods' branch.restaurant.pk branch.pk branch.restaurant.slug %}" data-tooltip="Foods" data-position="top left">
+			                                <i class="utensils spoon icon"></i> {{branch.foods_count}}         
+			                            </div>
+		                                <div class="ui small labeled icon button top left pointing dropdown bt-popup ting-tab-btn" data-url="{% url 'ting_usr_get_restaurant_drinks' branch.restaurant.pk branch.pk branch.restaurant.slug %}" data-tooltip="Drinks" data-position="top left">
+		                                    <i class="glass martini icon"></i> {{branch.drinks_count}}           
+		                                </div>
+		                                <div class="ui small labeled icon button top left pointing dropdown bt-popup ting-tab-btn" data-url="{% url 'ting_usr_get_restaurant_dishes' branch.restaurant.pk branch.pk branch.restaurant.slug %}" data-tooltip="Dishes" data-position="top left">
+		                                    <i class="utensils icon"></i> {{branch.dishes_count}}          
+		                                </div>     
+		                            </div>
+		                            <div class="extra">
+		                                <div class="ui label ting-resto-item-map-direction" id="ting-resto-item-map-direction-{{branch.pk}}" data-url="{% url 'ting_usr_load_branch_directions' branch.restaurant.pk branch.pk %}"><i class="icon map marker alternate"></i> <span id="ting-direction-distance-{{branch.pk}}">Loading...</span></div>
+		                                <span id="ting-resto-open-time-{{branch.pk}}"></span>
+		                                <div class="ui label" style="cursor:pointer;"><i class="heart outline icon"></i>{{branch.likes_count|intcomma}}</div>
+		                                <div class="ui label" id="ting-rate-btn-{{branch.pk}}" style="cursor:pointer;"><i class="star outline icon"></i>{{branch.reviews_count|intcomma}}</div>
+		                            	<div class="ui label" id="ting-specials-btn-{{branch.pk}}" style="cursor:pointer;"><i class="plus icon"></i>{{branch.get_specials|length}}</div>
+		                            </div>
+		                            <div class="ting-like-restaurant">
+		                            	{% if is_logged_in %}
+		                                <button class="ting-like-restaurant ting-btn-animate {% if branch.pk|has_liked:session.pk %} liked {% endif %}" id="ting-like-restaurant-{{branch.pk}}" data-like='{"resto":"{{branch.restaurant.pk}}", "branch": "{{branch.pk}}", "tkn":"{{branch.restaurant.token}}", "id":"{{branch.pk}}", "typ":"link"}'>
+		                                	{% if branch.pk|has_liked:session.pk %}
+		                                		<svg height="30px" style="enable-background:new 0 0 30 30;" version="1.1" viewBox="0 0 30 30" width="30px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M11.608,20.776c-22.647-12.354-6.268-27.713,0-17.369  C17.877-6.937,34.257,8.422,11.608,20.776z" style="fill-rule:evenodd;clip-rule:evenodd;fill:#b56fe8;"/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/></svg>
+		                                	{% else %}
+		                                		<i class="lnr lnr-heart"></i>
+		                                	{% endif %}
+		                                </button>
+		                                {% else %}
+		                                	<button class="ting-like-restaurant ting-btn-animate liked" id="ting-like-restaurant-{{branch.pk}}" data-like='{"resto":"{{branch.restaurant.pk}}", "branch": "{{branch.pk}}", "tkn":"{{branch.restaurant.token}}", "id":"{{branch.pk}}", "typ":"link"}'><i class="lnr lnr-heart"></i></button>
+		                                {% endif %}
+		                            </div>
+		                            <div class="ui flowing popup top left transition hidden" id="ting-rate-popup-{{branch.pk}}">
+		                                <div class="header">Rating</div>
+		                                <div class="content" style="width:300px;">
+			                                <div class="ui huge star rating disabled-rating" data-rating="{{branch.review_average}}" data-max-rating="5"></div>
+			                                <div class="ui grid">
+			                                    <div class="row" style="padding:0 !important;">
+			                                        <div class="four wide column ting-rate-average">
+			                                            <h1>{{branch.review_average}}</h1>
+			                                            <p>Out Of 5</p>
+			                                        </div>
+			                                        <div class="twelve wide column" style="padding: 0 !important;">
+			                                            <div class="ui grid">
+			                                                <div class="row" style="padding-bottom:0 !important;">
+			                                                    <div class="eight wide column ting-rate-percent">
+			                                                        <div class="ting-star"><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i></div>
+			                                                        <div class="ting-star"><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i></div>
+			                                                        <div class="ting-star"><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i></div>
+			                                                        <div class="ting-star"><i class="star icon"></i><i class="star icon"></i></div>
+			                                                        <div class="ting-star"><i class="star icon"></i></div>
+			                                                    </div>
+			                                                    <div class="eight wide column ting-rate-wrapper">
+			                                                        <div class="ting-rate-container"><div class="ting-rate-fill" style="width:{{branch.review_percent.4}}%"></div></div>
+			                                                        <div class="ting-rate-container"><div class="ting-rate-fill" style="width:{{branch.review_percent.3}}%"></div></div>
+			                                                        <div class="ting-rate-container"><div class="ting-rate-fill" style="width:{{branch.review_percent.2}}%"></div></div>
+			                                                        <div class="ting-rate-container"><div class="ting-rate-fill" style="width:{{branch.review_percent.1}}%"></div></div>
+			                                                        <div class="ting-rate-container"><div class="ting-rate-fill" style="width:{{branch.review_percent.0}}%"></div></div>
+			                                                        <div class="ting-reviews-count"><p>{{branch.reviews_count}} reviews</p></div>
+			                                                    </div>
+			                                                </div>
+			                                            </div>
+			                                        </div>
+			                                    </div>
+			                                </div>
+		                                </div>
+		                            </div>
+		                            <div class="ui flowing popup top left transition hidden" id="ting-specials-popup-{{branch.pk}}">
+		                                <div class="header">Specials</div>
+		                                <hr/>
+		                                <div class="content" style="min-width:130px;">
+		                                	{% if branch.get_specials|length %}
+		                                		{% for special in branch.get_specials %}
+		                                    		<p><i class="icon {{special.icon}}"></i> {{special.name}}</p>
+		                                		{% endfor %}
+		                                    {% else %}
+		                                    	<div class="ui red message">No Specials Available</div>
+		                                    {% endif %}
+		                                </div>
+		                            </div>
+		                            <script type="text/javascript">
+		                            	function setTimeStatus() {
+		                            		var time = statusWorkTime("{{branch.to_json.restaurant.opening}}", "{{branch.to_json.restaurant.closing}}");
+		                                    {% if branch.is_available %}
+												$("#ting-resto-open-time-{{branch.pk}}").html(`<div class="ui ${time.clr} label"><i class="clock outline icon"></i> ${time.msg} </div>`);
+											{% else %}
+												$("#ting-resto-open-time-{{branch.pk}}").html('<div class="ui red label"><i class="clock outline icon"></i> Not Available </div>');
+											{% endif %}
+		                            	}
+		                            	setTimeStatus();
+		                                setInterval(function(){ setTimeStatus();}, 30000);
+		                                $(".disabled-rating").rating("disable"); $("#bt-popup").dropdown();
+		                                $("#ting-rate-btn-{{branch.pk}}").popup({popup : "#ting-rate-popup-{{branch.pk}}", on : "click"});
+		                                $("#ting-specials-btn-{{branch.pk}}").popup({popup : "#ting-specials-popup-{{branch.pk}}", on : "click"});
+		                                $(".bt-popup").popup();$("#ting-like-restaurant-{{branch.id}}").likeRestaurant();
+
+		                                $("#ting-resto-item-map-direction-{{branch.pk}}").click(function(e){
+			                                e.preventDefault();
+			                                var m = $("#ting-resto-branch-direction").modal("show");
+			                                m.find(".content").html(loader);
+			                                var url = $(this).attr("data-url");
+			                                $.ajax({
+			                                    type:"GET", url: url, data: {"lat": $("#ting-lat").val(), "long": $("#ting-long").val(), "addr": $("#ting-addr").val(), "count": $("#ting-country").val(), "town": $("#ting-town").val()},
+			                                    success: function(r){m.find(".content").html(r)},
+			                                    error: function(_, t, e){m.find(".content").html(`<div class="ui red message">${e}</div>`)}
+			                                });
+			                            });
+
+			                            setTimeout(function(){
+			                            	var end = new google.maps.LatLng(parseFloat("{{branch.latitude}}"), parseFloat("{{branch.longitude}}"));
+		    								var start = new google.maps.LatLng(parseFloat($("#ting-lat").val()), $("#ting-long").val());
+		    								$("#ting-direction-distance-{{branch.pk}}").text(calculateDistance(end, start) + " km");
+			                            }, 2000);
+		                            </script>
+		                        </div>
+							</div>
+						</div>
+					{% endfor %}
+					</div>
+				</div>
+			{% else %}
+				<div class="ui red message">No Restaurant To Show</div>
+			{% endif %}
+		</div>
+	</div>
+	<script type="text/javascript">
+		$(".ting-tab-btn").click(function(){
+			var url =  $(this).attr("data-url");
+			if(url !== undefined && url !== null && url != "") { window.open(url, "_self")}
+		});
+	</script>
+</secltion>
+<section class="ting-other-cuisines-container">
+	<div class="container" style="padding: 0 !important;">
+		<h2>Other Cuisines</h2>
+		<div class="ui grid">
+			<div class="row">
+				{% for cuis in cuisines %}
+					<div class="col-md-3 ting-other-cuisine">
+						<a href="{% url 'ting_usr_global_discover_r_cuisine' cuis.pk cuis.name|to_slug %}">
+							<div class="ting-img">
+								<img src="{{cuis.image.url}}">
+							</div>
+							<h5>{{cuis.name}}</h5>
+							<p>{{cuis.restaurants_counts|intcomma}} restaurants</p>
+						</a>
+					</div>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+</section>
+<div class="ui modal" id="ting-resto-branch-direction" data-modal="ting-resto-branch-directions">
+    <div class="header">
+        Directions
+    </div>
+    <div class="content"></div>
+    <div class="actions">
+        <div class="ui red deny button left">
+            Close
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+	window.__TING__Session = {{session_json|safe}}
+	window.__TING__URL_Like = decodeURI("{% url 'ting_usr_like_restaurant_toggle' '{restaurant}' '{branch}' %}");
+	window.__TING__Link = {type: "global", name: "cuisines_restos"} || {};
+</script>
+{% endblock %}

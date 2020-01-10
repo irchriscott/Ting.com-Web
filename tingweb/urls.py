@@ -52,6 +52,8 @@ users = [
 
 	url(r'usr/g/discovery/$', views.discovery, name='ting_usr_global_discovery'),
 	url(r'usr/g/discovery/promotions/today/$', views.discover_today_promotions, name='ting_usr_global_discovery_today_promotions'),
+	url(r'usr/g/discovery/cuisine/r/(?P<cuisine>\d+)-(?P<slug>[^/]+)/$', views.discover_cuisine_restaurants, name='ting_usr_global_discover_r_cuisine'),
+	url(r'usr/g/discovery/cuisine/m/(?P<cuisine>\d+)-(?P<slug>[^/]+)/$', views.discover_cuisine_menus, name='ting_usr_global_discover_m_cuisine'),
 	url(r'usr/g/restaurants/$', views.restaurants, name='ting_usr_global_restaurants'),
 	url(r'usr/g/restaurants/filter/$', views.filter_restaurants_search, name='ting_usr_global_restaurants_filter'),
 	url(r'usr/g/moments/$', views.moments, name='ting_usr_global_moments'),

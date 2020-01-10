@@ -17,7 +17,8 @@ from tingweb.backend import UserAuthentication
 from tingweb.mailer import SendUserResetPasswordMail, SendUserUpdateEmailMail, SendUserSuccessResetPasswordMail
 from tingweb.models import (
                                 Restaurant, User, UserResetPassword, UserAddress, Branch, UserRestaurant, Menu,
-                                MenuLike, MenuReview, Promotion, PromotionInterest, RestaurantReview, Booking
+                                MenuLike, MenuReview, Promotion, PromotionInterest, RestaurantReview, Booking,
+                                Food, Dish, Drink
                             )
 from tingweb.forms import (
                                 GoogleSignUpForm, UserLocationForm, EmailSignUpForm, UserImageForm, MenuReviewForm,
@@ -786,14 +787,33 @@ def discovery(request):
         })
 
 
-def discover_cuisine(request, cuisine, slug):
-    template = 'web/user/discovery/cuisine.html'
+def discover_cuisine_restaurants(request, cuisine, slug):
+    template = 'web/user/discovery/cuisine_restaurants.html'
     cuisine = RestaurantCategory.objects.get(pk=cuisine)
+    branches = sorted(set(cuisine.restaurants), key=lambda branch: branch.review_average, reverse=True)
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
             'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
-            'cuisine': cuisine
+            'cuisine': cuisine,
+            'branches': branches,
+            'cuisines': RestaurantCategory.objects.exclude(pk=cuisine.pk).random(4)
+        })
+
+
+def discover_cuisine_menus(request, cuisine, slug):
+    template = 'web/user/discovery/cuisine_menus.html'
+    cuisine = RestaurantCategory.objects.get(pk=cuisine)
+    foods = [food.menu for food in Food.objects.filter(cuisine__pk=cuisine.pk)]
+    dishes = [dish.menu for dish in Dish.objects.filter(cuisine__pk=cuisine.pk)]
+    menus = foods + dishes
+    return render(request, template, {
+            'is_logged_in': True if 'user' in request.session else False,
+            'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
+            'cuisine': cuisine,
+            'menus': sorted(set(menus), key=lambda menu: menu.to_json['menu']['reviews']['average'], reverse=True),
+            'cuisines': RestaurantCategory.objects.exclude(pk=cuisine.pk).random(4)
         })
 
 
@@ -814,7 +834,8 @@ def discover_today_promotions(request):
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
             'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
             'promotions_json': json.dumps([promo.to_json for promo in today_promos], default=str),
-            'promotions': today_promos
+            'promotions': today_promos,
+            'menus': Menu.objects.random(len(today_promos) + 2)
         })
 
 

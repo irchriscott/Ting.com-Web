@@ -543,6 +543,13 @@ class Branch(models.Model):
 		return UserRestaurant.objects.filter(restaurant=self.restaurant.pk, branch=self.pk).order_by('-created_at')
 
 	@property
+	def likes_ids(self):
+		return [like.user.pk for like in self.likes]
+
+	def has_liked(self, u):
+		return True if u in self.likes_ids else False
+	
+	@property
 	def likes_count(self):
 		return self.likes.count()
 
@@ -2842,6 +2849,13 @@ class Menu(models.Model):
 			return Drink.objects.get(pk=self.menu_id)
 		elif self.menu_type == 3:
 			return Dish.objects.get(pk=self.menu_id)
+	
+	@property
+	def like_ids(self):
+		return [like.user.pk for like in MenuLike.objects.filter(menu__pk=self.pk)]
+	
+	def has_liked(self, u):
+		return True if u in self.like_ids else False
 
 	@property
 	def to_json(self):

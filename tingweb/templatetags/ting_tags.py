@@ -76,6 +76,18 @@ def has_interest(value, arg):
 	return promo.has_user_interest(arg)
 
 
+@register.filter(name='has_liked')
+def has_liked(value, arg):
+	branch = Branch.objects.get(pk=int(value))
+	return branch.has_liked(arg)
+
+
+@register.filter(name='has_liked_menu')
+def has_liked_menu(value, arg):
+	menu = Menu.objects.get(pk=value)
+	return menu.has_liked(arg)
+
+
 @register.filter(name='prefix')
 def prefix(value, arg):
 	return '{0} {1}'.format(arg, value)
@@ -84,6 +96,11 @@ def prefix(value, arg):
 @register.filter(name='from_t')
 def from_tupple(value, arg):
 	return utils.get_from_tuple(arg, value)
+
+
+@register.filter(name='to_slug')
+def to_slug(value):
+	return value.lower().replace(' ', '-')
 
 
 @register.filter(name='dish_food_q')

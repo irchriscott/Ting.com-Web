@@ -18,259 +18,292 @@
 </section>
 <secltion class="ting-restaurants-list-container">
 	<div class="container">
-		<div class="ting-restaurants-list" id="ting-restaurants-list">
-			{% if promotions|length > 0 %}
-				<div class="ui items">
-				{% for p in promotions %}
-					<div class='item ting-resto-item'>
-						<div class="ui medium image">
-                            <img src="{{p.to_json.posterImage}}">
-                        </div>
-                        <div class="ui content">
-                            <a class="header" href="{{p.to_json.urls.relative}}" target="_blank" style="font-size:19px; font-weight:500;">{{p.to_json.occasionEvent}}</a>
-                            <div class="ting-like-restaurant">
-                            	{% if is_logged_in %}
-                            		<button class="ting-like-restaurant ting-btn-animate {% if p.pk|has_interest:session.pk %} liked {% endif %}" id="ting-interest-promo-{{p.to_json.id}}" data-like='{"resto":"{{p.branch.restaurant.id}}", "tkn":"{{p.branch.restaurant.token}}", "id":"{{p.pk}}", "promo": "{{p.id}}", "typ":"link", "url":"{{p.to_json.urls.interest}}"}'>
-                            			{% if p.pk|has_interest:session.pk %}
-                            			<i class="icon star" style="color:#b56fe8;"></i>
-                            			{% else %}
-                            			<i class="icon star outline"></i>
-                            			{% endif %}
-                            		</button>
-                            	{% else %}
-                            		<button class="ting-like-restaurant ting-btn-animate" id="ting-interest-promo-{{p.to_json.id}}" data-like='{"resto":"{{p.branch.restaurant.id}}", "tkn":"{{p.branch.restaurant.token}}", "id":"{{p.pk}}", "promo": "{{p.id}}", "typ":"link", "url":"{{p.to_json.urls.interest}}"}'><i class="icon star outline"></i></button>
-                            	{% endif %}
-                            </div>
-                            <div class="extra">
-                                <div class="ui label">
-                            	<i class="icon star"></i>
-                                    Promotion On {{p.to_json.promotionItem.type.name}}
-                                </div>
-                                {% if p.to_json.promotionItem.type.id == '05' %} 
-                                    <div class="ui image label">
-                                        <img src="{{p.to_json.promotionItem.category.image}}" />
-                                        Promotion On {{p.to_json.promotionItem.category.name}}
-                                    </div>
-                                {% elif p.to_json.promotionItem.type.id == '04' %}
-                                    <div class="ui image label" onclick="window.open('{{p.to_json.promotionItem.menu.url}}', '_blank')">
-                                        <img src="{{p.to_json.promotionItem.menu.menu.images.images.0.image}}" />
-                                        Promotion On {{p.to_json.promotionItem.menu.menu.name}}
-                                    </div>
-                                {% endif %}    
-                            </div>
-                            <div class="meta" style="padding:0;">
-                                {% if p.to_json.promotionItem.type.id == '00' %}
-                                	<div class="ting-menus-list-item">
-	                                    {% if p.branch.pk|rand_five_all_count > 0 %}
-	                                    	{% for m in  p.branch.pk|rand_five_all %}
-	                                    		<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{{m.to_json.url}}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
-				                                    <img src="{{m.to_json.menu.images.images.0.image}}" />
-				                                </div>
-				                                <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{m.pk}}">
-				                                    <div class="header">{{m.to_json.menu.name}}</div>
-				                                    <div class="ui star rating disabled-rating" data-rating="{{m.to_json.menu.reviews.average}}" data-max-rating="5" style="margin-top:5px;"></div>
-				                                    <div class="description">{{m.to_json.menu.description}}</div>
-				                                    <p class="ui {% if m.to_json.menu.isAvailable %} green {% else %} red {% endif %}" style="color: {% if m.to_json.menu.isAvailable %} green {% else %} red {% endif %}">{% if m.to_json.menu.isAvailable %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
-				                                    <div class="extra">
-				                                        {% if m.to_json.type.id != 2 %}<div class="ui label"><i class="icon boxes"></i> {{m.to_json.menu.category.name}}</div> {% endif %}
-				                                        {% if m.to_json.type.id == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{m.to_json.menu.foodType}}</div>{% endif %}
-				                                        {% if m.to_json.type.id == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{m.to_json.menu.drinkType}}</div>{% endif %}
-				                                        {% if m.to_json.type.id == 3 %}<div class="ui label"><i class="icon clock"></i> {{m.to_json.menu.dishTime}}</div>{% endif %}
-				                                    	<div class="ui label"><i class="icon tag"></i> {{m.to_json.menu.currency}} {{m.to_json.menu.price|intcomma}} {% if m.to_json.menu.isCountable %} ({{m.to_json.menu.quantity}} pieces){% endif %}</div>
-				                                	</div>
-				                                </div>
-				                                <script type="text/javascript">
-				                                	$(".lst-popup-{{p.pk}}-{{m.pk}}").popup({popup : ".ting-menu-popup-{{p.pk}}-{{m.pk}}", on : "hover"});
-				                                    $(".disabled-rating").rating("disable");
-				                                    $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
-				                                </script>
-	                                    	{% endfor %}
-	                                    {% else %}
-	                                    	<div class="ui red message">No Menu To Show</div>
-	                                    {% endif %}
-                                    </div>
-                                {% elif p.to_json.promotionItem.type.id == '01' %}
-                                	<div class="ting-menus-list-item">
-	                                    {% if p.branch.pk|rand_five_type_count:"1" > 0 %}
-	                                    	{% for m in  p.branch.pk|rand_five_type:"1" %}
-	                                    		<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{{m.to_json.url}}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
-				                                    <img src="{{m.to_json.menu.images.images.0.image}}" />
-				                                </div>
-				                                <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{m.pk}}">
-				                                    <div class="header">{{m.to_json.menu.name}}</div>
-				                                    <div class="ui star rating disabled-rating" data-rating="{{m.to_json.menu.reviews.average}}" data-max-rating="5" style="margin-top:5px;"></div>
-				                                    <div class="description">{{m.to_json.menu.description}}</div>
-				                                    <p class="ui {% if m.to_json.menu.isAvailable %} green {% else %} red {% endif %}" style="color: {% if m.to_json.menu.isAvailable %} green {% else %} red {% endif %}">{% if m.to_json.menu.isAvailable %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
-				                                    <div class="extra">
-				                                        {% if m.to_json.type.id != 2 %}<div class="ui label"><i class="icon boxes"></i> {{m.to_json.menu.category.name}}</div> {% endif %}
-				                                        {% if m.to_json.type.id == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{m.to_json.menu.foodType}}</div>{% endif %}
-				                                        {% if m.to_json.type.id == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{m.to_json.menu.drinkType}}</div>{% endif %}
-				                                        {% if m.to_json.type.id == 3 %}<div class="ui label"><i class="icon clock"></i> {{m.to_json.menu.dishTime}}</div>{% endif %}
-				                                    	<div class="ui label"><i class="icon tag"></i> {{m.to_json.menu.currency}} {{m.to_json.menu.price|intcomma}} {% if m.to_json.menu.isCountable %} ({{m.to_json.menu.quantity}} pieces){% endif %}</div>
-				                                	</div>
-				                                </div>
-				                                <script type="text/javascript">
-				                                	$(".lst-popup-{{p.pk}}-{{m.pk}}").popup({popup : ".ting-menu-popup-{{p.pk}}-{{m.pk}}", on : "hover"});
-				                                    $(".disabled-rating").rating("disable");
-				                                    $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
-				                                </script>
-	                                    	{% endfor %}
-	                                    {% else %}
-	                                    	<div class="ui red message">No Menu To Show</div>
-	                                    {% endif %}
-                                    </div>
-                                {% elif p.to_json.promotionItem.type.id == '02' %}
-                                	<div class="ting-menus-list-item">
-	                                	{% if p.branch.pk|rand_five_type_count:"2" > 0 %}
-		                                    {% for m in  p.branch.pk|rand_five_type:"2" %}
-		                                    	<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{{m.to_json.url}}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
-					                                <img src="{{m.to_json.menu.images.images.0.image}}" />
+		<div class="ui grid">
+			<div class="row">
+				<div class="col-lg-9">
+					<div class="ting-restaurants-list" id="ting-restaurants-list">
+						{% if promotions|length > 0 %}
+							<div class="ui items">
+							{% for p in promotions %}
+								<div class='item ting-resto-item'>
+									<div class="ui medium image">
+										<a href="{{p.to_json.urls.relative}}">
+			                            	<img src="{{p.to_json.posterImage}}">
+			                        	</a>
+			                        </div>
+			                        <div class="ui content">
+			                            <a class="header" href="{{p.to_json.urls.relative}}" target="_blank" style="font-size:19px; font-weight:500;">{{p.to_json.occasionEvent}}</a>
+			                            <div class="ting-like-restaurant">
+			                            	{% if is_logged_in %}
+			                            		<button class="ting-like-restaurant ting-btn-animate {% if p.pk|has_interest:session.pk %} liked {% endif %}" id="ting-interest-promo-{{p.to_json.id}}" data-like='{"resto":"{{p.branch.restaurant.id}}", "tkn":"{{p.branch.restaurant.token}}", "id":"{{p.pk}}", "promo": "{{p.id}}", "typ":"link", "url":"{{p.to_json.urls.interest}}"}'>
+			                            			{% if p.pk|has_interest:session.pk %}
+			                            			<i class="icon star" style="color:#b56fe8;"></i>
+			                            			{% else %}
+			                            			<i class="icon star outline"></i>
+			                            			{% endif %}
+			                            		</button>
+			                            	{% else %}
+			                            		<button class="ting-like-restaurant ting-btn-animate" id="ting-interest-promo-{{p.to_json.id}}" data-like='{"resto":"{{p.branch.restaurant.id}}", "tkn":"{{p.branch.restaurant.token}}", "id":"{{p.pk}}", "promo": "{{p.id}}", "typ":"link", "url":"{{p.to_json.urls.interest}}"}'><i class="icon star outline"></i></button>
+			                            	{% endif %}
+			                            </div>
+			                            <div class="extra">
+			                                <div class="ui label">
+			                            	<i class="icon star"></i>
+			                                    Promotion On {{p.to_json.promotionItem.type.name}}
+			                                </div>
+			                                {% if p.to_json.promotionItem.type.id == '05' %} 
+			                                    <div class="ui image label">
+			                                        <img src="{{p.to_json.promotionItem.category.image}}" />
+			                                        Promotion On {{p.to_json.promotionItem.category.name}}
+			                                    </div>
+			                                {% elif p.to_json.promotionItem.type.id == '04' %}
+			                                    <div class="ui image label" onclick="window.open('{{p.to_json.promotionItem.menu.url}}', '_blank')">
+			                                        <img src="{{p.to_json.promotionItem.menu.menu.images.images.0.image}}" />
+			                                        Promotion On {{p.to_json.promotionItem.menu.menu.name}}
+			                                    </div>
+			                                {% endif %}    
+			                            </div>
+			                            <div class="meta" style="padding:0;">
+			                                {% if p.to_json.promotionItem.type.id == '00' %}
+			                                	<div class="ting-menus-list-item">
+				                                    {% if p.branch.pk|rand_five_all_count > 0 %}
+				                                    	{% for m in  p.branch.pk|rand_five_all %}
+				                                    		<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{{m.to_json.url}}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
+							                                    <img src="{{m.to_json.menu.images.images.0.image}}" />
+							                                </div>
+							                                <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{m.pk}}">
+							                                    <div class="header">{{m.to_json.menu.name}}</div>
+							                                    <div class="ui star rating disabled-rating" data-rating="{{m.to_json.menu.reviews.average}}" data-max-rating="5" style="margin-top:5px;"></div>
+							                                    <div class="description">{{m.to_json.menu.description}}</div>
+							                                    <p class="ui {% if m.to_json.menu.isAvailable %} green {% else %} red {% endif %}" style="color: {% if m.to_json.menu.isAvailable %} green {% else %} red {% endif %}">{% if m.to_json.menu.isAvailable %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
+							                                    <div class="extra">
+							                                        {% if m.to_json.type.id != 2 %}<div class="ui label"><i class="icon boxes"></i> {{m.to_json.menu.category.name}}</div> {% endif %}
+							                                        {% if m.to_json.type.id == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{m.to_json.menu.foodType}}</div>{% endif %}
+							                                        {% if m.to_json.type.id == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{m.to_json.menu.drinkType}}</div>{% endif %}
+							                                        {% if m.to_json.type.id == 3 %}<div class="ui label"><i class="icon clock"></i> {{m.to_json.menu.dishTime}}</div>{% endif %}
+							                                    	<div class="ui label"><i class="icon tag"></i> {{m.to_json.menu.currency}} {{m.to_json.menu.price|intcomma}} {% if m.to_json.menu.isCountable %} ({{m.to_json.menu.quantity}} pieces){% endif %}</div>
+							                                	</div>
+							                                </div>
+							                                <script type="text/javascript">
+							                                	$(".lst-popup-{{p.pk}}-{{m.pk}}").popup({popup : ".ting-menu-popup-{{p.pk}}-{{m.pk}}", on : "hover"});
+							                                    $(".disabled-rating").rating("disable");
+							                                    $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
+							                                </script>
+				                                    	{% endfor %}
+				                                    {% else %}
+				                                    	<div class="ui red message">No Menu To Show</div>
+				                                    {% endif %}
+			                                    </div>
+			                                {% elif p.to_json.promotionItem.type.id == '01' %}
+			                                	<div class="ting-menus-list-item">
+				                                    {% if p.branch.pk|rand_five_type_count:"1" > 0 %}
+				                                    	{% for m in  p.branch.pk|rand_five_type:"1" %}
+				                                    		<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{{m.to_json.url}}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
+							                                    <img src="{{m.to_json.menu.images.images.0.image}}" />
+							                                </div>
+							                                <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{m.pk}}">
+							                                    <div class="header">{{m.to_json.menu.name}}</div>
+							                                    <div class="ui star rating disabled-rating" data-rating="{{m.to_json.menu.reviews.average}}" data-max-rating="5" style="margin-top:5px;"></div>
+							                                    <div class="description">{{m.to_json.menu.description}}</div>
+							                                    <p class="ui {% if m.to_json.menu.isAvailable %} green {% else %} red {% endif %}" style="color: {% if m.to_json.menu.isAvailable %} green {% else %} red {% endif %}">{% if m.to_json.menu.isAvailable %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
+							                                    <div class="extra">
+							                                        {% if m.to_json.type.id != 2 %}<div class="ui label"><i class="icon boxes"></i> {{m.to_json.menu.category.name}}</div> {% endif %}
+							                                        {% if m.to_json.type.id == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{m.to_json.menu.foodType}}</div>{% endif %}
+							                                        {% if m.to_json.type.id == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{m.to_json.menu.drinkType}}</div>{% endif %}
+							                                        {% if m.to_json.type.id == 3 %}<div class="ui label"><i class="icon clock"></i> {{m.to_json.menu.dishTime}}</div>{% endif %}
+							                                    	<div class="ui label"><i class="icon tag"></i> {{m.to_json.menu.currency}} {{m.to_json.menu.price|intcomma}} {% if m.to_json.menu.isCountable %} ({{m.to_json.menu.quantity}} pieces){% endif %}</div>
+							                                	</div>
+							                                </div>
+							                                <script type="text/javascript">
+							                                	$(".lst-popup-{{p.pk}}-{{m.pk}}").popup({popup : ".ting-menu-popup-{{p.pk}}-{{m.pk}}", on : "hover"});
+							                                    $(".disabled-rating").rating("disable");
+							                                    $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
+							                                </script>
+				                                    	{% endfor %}
+				                                    {% else %}
+				                                    	<div class="ui red message">No Menu To Show</div>
+				                                    {% endif %}
+			                                    </div>
+			                                {% elif p.to_json.promotionItem.type.id == '02' %}
+			                                	<div class="ting-menus-list-item">
+				                                	{% if p.branch.pk|rand_five_type_count:"2" > 0 %}
+					                                    {% for m in  p.branch.pk|rand_five_type:"2" %}
+					                                    	<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{{m.to_json.url}}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
+								                                <img src="{{m.to_json.menu.images.images.0.image}}" />
+								                            </div>
+								                            <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{m.pk}}">
+								                                <div class="header">{{m.to_json.menu.name}}</div>
+								                                <div class="ui star rating disabled-rating" data-rating="{{m.to_json.menu.reviews.average}}" data-max-rating="5" style="margin-top:5px;"></div>
+								                                <div class="description">{{m.to_json.menu.description}}</div>
+								                                <p class="ui {% if m.to_json.menu.isAvailable %} green {% else %} red {% endif %}" style="color: {% if m.to_json.menu.isAvailable %} green {% else %} red {% endif %}">{% if m.to_json.menu.isAvailable %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
+								                                <div class="extra">
+								                                    {% if m.to_json.type.id != 2 %}<div class="ui label"><i class="icon boxes"></i> {{m.to_json.menu.category.name}}</div> {% endif %}
+								                                    {% if m.to_json.type.id == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{m.to_json.menu.foodType}}</div>{% endif %}
+								                                    {% if m.to_json.type.id == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{m.to_json.menu.drinkType}}</div>{% endif %}
+								                                    {% if m.to_json.type.id == 3 %}<div class="ui label"><i class="icon clock"></i> {{m.to_json.menu.dishTime}}</div>{% endif %}
+								                                	<div class="ui label"><i class="icon tag"></i> {{m.to_json.menu.currency}} {{m.to_json.menu.price|intcomma}} {% if m.to_json.menu.isCountable %} ({{m.to_json.menu.quantity}} pieces){% endif %}</div>
+								                            </div>
+								                            </div>
+								                            <script type="text/javascript">
+								                                $(".lst-popup-{{p.pk}}-{{m.pk}}").popup({popup : ".ting-menu-popup-{{p.pk}}-{{m.pk}}", on : "hover"});
+								                                $(".disabled-rating").rating("disable");
+								                                $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
+								                            </script>
+					                                    {% endfor %}
+					                                {% else %}
+					                                    <div class="ui red message">No Menu To Show</div>
+					                                {% endif %}
+				                            	</div>
+			                                {% elif p.to_json.promotionItem.type.id == '03' %}
+			                                	<div class="ting-menus-list-item">
+				                                 	{% if p.branch.pk|rand_five_type_count:"3" > 0 %}
+					                                    {% for m in  p.branch.pk|rand_five_type:"3" %}
+					                                   		<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{{m.to_json.url}}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
+								                                <img src="{{m.to_json.menu.images.images.0.image}}" />
+								                            </div>
+								                            <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{m.pk}}">
+								                                <div class="header">{{m.to_json.menu.name}}</div>
+								                                <div class="ui star rating disabled-rating" data-rating="{{m.to_json.menu.reviews.average}}" data-max-rating="5" style="margin-top:5px;"></div>
+								                                <div class="description">{{m.to_json.menu.description}}</div>
+								                                <p class="ui {% if m.to_json.menu.isAvailable %} green {% else %} red {% endif %}" style="color: {% if m.to_json.menu.isAvailable %} green {% else %} red {% endif %}">{% if m.to_json.menu.isAvailable %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
+								                                <div class="extra">
+								                                    {% if m.to_json.type.id != 2 %}<div class="ui label"><i class="icon boxes"></i> {{m.to_json.menu.category.name}}</div> {% endif %}
+								                                    {% if m.to_json.type.id == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{m.to_json.menu.foodType}}</div>{% endif %}
+								                                    {% if m.to_json.type.id == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{m.to_json.menu.drinkType}}</div>{% endif %}
+								                                    {% if m.to_json.type.id == 3 %}<div class="ui label"><i class="icon clock"></i> {{m.to_json.menu.dishTime}}</div>{% endif %}
+								                                	<div class="ui label"><i class="icon tag"></i> {{m.to_json.menu.currency}} {{m.to_json.menu.price|intcomma}} {% if m.to_json.menu.isCountable %} ({{m.to_json.menu.quantity}} pieces){% endif %}</div>
+								                                </div>
+								                            </div>
+								                            <script type="text/javascript">
+								                                $(".lst-popup-{{p.pk}}-{{m.pk}}").popup({popup : ".ting-menu-popup-{{p.pk}}-{{m.pk}}", on : "hover"});
+								                                $(".disabled-rating").rating("disable");
+								                                $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
+								                            </script>
+					                                    {% endfor %}
+					                                {% else %}
+					                                   	<div class="ui red message">No Menu To Show</div>
+					                                {% endif %}
 					                            </div>
-					                            <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{m.pk}}">
-					                                <div class="header">{{m.to_json.menu.name}}</div>
-					                                <div class="ui star rating disabled-rating" data-rating="{{m.to_json.menu.reviews.average}}" data-max-rating="5" style="margin-top:5px;"></div>
-					                                <div class="description">{{m.to_json.menu.description}}</div>
-					                                <p class="ui {% if m.to_json.menu.isAvailable %} green {% else %} red {% endif %}" style="color: {% if m.to_json.menu.isAvailable %} green {% else %} red {% endif %}">{% if m.to_json.menu.isAvailable %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
-					                                <div class="extra">
-					                                    {% if m.to_json.type.id != 2 %}<div class="ui label"><i class="icon boxes"></i> {{m.to_json.menu.category.name}}</div> {% endif %}
-					                                    {% if m.to_json.type.id == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{m.to_json.menu.foodType}}</div>{% endif %}
-					                                    {% if m.to_json.type.id == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{m.to_json.menu.drinkType}}</div>{% endif %}
-					                                    {% if m.to_json.type.id == 3 %}<div class="ui label"><i class="icon clock"></i> {{m.to_json.menu.dishTime}}</div>{% endif %}
-					                                	<div class="ui label"><i class="icon tag"></i> {{m.to_json.menu.currency}} {{m.to_json.menu.price|intcomma}} {% if m.to_json.menu.isCountable %} ({{m.to_json.menu.quantity}} pieces){% endif %}</div>
+			                                {% elif p.to_json.promotionItem.type.id == '04' %}
+			                                    <div class="ting-menus-list-item ting-menu-url lst-popup-{{p.pk}}-{{p.to_json.promotionItem.menu.id}}" href="{{p.to_json.promotionItem.menu.url}}" id="ting-menus-list-item-{{p.pk}}-{{p.to_json.promotionItem.menu.id}}">
+			                                        {% if p.to_json.promotionItem.menu.menu.images.count > 0 %}
+			                                            {% for image in p.to_json.promotionItem.menu.menu.images.images %}
+			                                            	<div class="ting-menu-image-list">
+			                                                    <img src="{{image.image}}" />
+			                                                </div>
+			                                            {% endfor %}
+			                                        {% else %}
+			                                        <div class="ui red message">No Images To Show</div>
+			                                        {% endif %}
+			                                    </div>
+			                                    <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{p.to_json.promotionItem.menu.id}}">
+			                                        <div class="header">{{p.to_json.promotionItem.menu.menu.name}}</div>
+			                                        <div class="ui star rating disabled-rating" data-rating="{{p.to_json.promotionItem.menu.menu.reviews.average}}" data-max-rating="5" style="margin-top:5px;"></div>
+			                                        <div class="description">{{p.to_json.promotionItem.menu.menu.description}}</div>
+			                                        <p class="ui {% if p.to_json.promotionItem.menu.menu.isAvailable %} green {% else %} red {% endif %}" style="color: {% if p.to_json.promotionItem.menu.menu.isAvailable %} green {% else %} red {% endif %}">{% if p.to_json.promotionItem.menu.menu.isAvailable %}<i class="icon check"></i> Available {% else %}<i class="icon times"></i> Not Available{% endif %}</p>
+			                                        <div class="extra">
+			                                            {% if p.to_json.promotionItem.menu.type.id != 2 %} <div class="ui label"><i class="icon boxes"></i> {{p.to_json.promotionItem.menu.menu.category.name}}</div> {% endif %}
+			                                            {% if p.to_json.promotionItem.menu.type.id == 1 %} <div class="ui label"><i class="icon utensils spoon"></i> {{p.to_json.promotionItem.menu.menu.foodType}}</div> {% endif %}
+			                                            {% if p.to_json.promotionItem.menu.type.id == 2 %} <div class="ui label"><i class="icon glass martini"></i> {{p.to_json.promotionItem.menu.menu.drinkType}}</div> {% endif %}
+			                                            {% if p.to_json.promotionItem.menu.type.id == 3 %} <div class="ui label"><i class="icon clock"></i> {{p.to_json.promotionItem.menu.menu.dishTime}}</div> {% endif %}
+			                                            <div class="ui label"><i class="icon tag"></i> {{p.to_json.promotionItem.menu.menu.currency}} {{p.to_json.promotionItem.menu.menu.price|intcomma}} {% if p.to_json.promotionItem.menu.menu.isCountable %} ({{p.to_json.promotionItem.menu.menu.quantity}} pieces) {% endif %}</div>
+			                                       	</div>
+			                                    </div>
+			                                    <script type="text/javascript">
+			                                    	$(".lst-popup-{{p.pk}}-{{p.to_json.promotionItem.menu.id}}").popup({popup : ".ting-menu-popup-{{p.pk}}-{{p.to_json.promotionItem.menu.id}}", on : "hover"});
+			                                        $(".disabled-rating").rating("disable");
+			                                        $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
+			                                    </script>
+			                                {% elif p.to_json.promotionItem.type.id == '05' %}
+			                                	<div class="ting-menus-list-item">
+				                                	{% if p.branch.pk|rand_five_category_count:p.to_json.promotionItem.category.id > 0 %}
+					                                    {% for m in  p.branch.pk|rand_five_category:p.to_json.promotionItem.category.id %}
+					                                    	<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{{m.to_json.url}}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
+								                                <img src="{{m.to_json.menu.images.images.0.image}}" />
+								                            </div>
+								                            <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{m.pk}}">
+								                                <div class="header">{{m.to_json.menu.name}}</div>
+								                                <div class="ui star rating disabled-rating" data-rating="{{m.to_json.menu.reviews.average}}" data-max-rating="5" style="margin-top:5px;"></div>
+								                                <div class="description">{{m.to_json.menu.description}}</div>
+								                                <p class="ui {% if m.to_json.menu.isAvailable %} green {% else %} red {% endif %}" style="color: {% if m.to_json.menu.isAvailable %} green {% else %} red {% endif %}">{% if m.to_json.menu.isAvailable %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
+								                                <div class="extra">
+								                                    {% if m.to_json.type.id != 2 %}<div class="ui label"><i class="icon boxes"></i> {{m.to_json.menu.category.name}}</div> {% endif %}
+								                                    {% if m.to_json.type.id == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{m.to_json.menu.foodType}}</div>{% endif %}
+								                                    {% if m.to_json.type.id == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{m.to_json.menu.drinkType}}</div>{% endif %}
+								                                    {% if m.to_json.type.id == 3 %}<div class="ui label"><i class="icon clock"></i> {{m.to_json.menu.dishTime}}</div>{% endif %}
+								                                    <div class="ui label"><i class="icon tag"></i> {{m.to_json.menu.currency}} {{m.to_json.menu.price|intcomma}} {% if m.to_json.menu.isCountable %} ({{m.to_json.menu.quantity}} pieces){% endif %}</div>
+								                                </div>
+								                            </div>
+								                            <script type="text/javascript">
+								                                $(".lst-popup-{{p.pk}}-{{m.pk}}").popup({popup : ".ting-menu-popup-{{p.pk}}-{{m.pk}}", on : "hover"});
+								                                $(".disabled-rating").rating("disable");
+								                                $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
+								                            </script>
+					                                    {% endfor %}
+					                                {% else %}
+					                                   	<div class="ui red message">No Menu To Show</div>
+					                                {% endif %}
 					                            </div>
-					                            </div>
-					                            <script type="text/javascript">
-					                                $(".lst-popup-{{p.pk}}-{{m.pk}}").popup({popup : ".ting-menu-popup-{{p.pk}}-{{m.pk}}", on : "hover"});
-					                                $(".disabled-rating").rating("disable");
-					                                $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
-					                            </script>
-		                                    {% endfor %}
-		                                {% else %}
-		                                    <div class="ui red message">No Menu To Show</div>
-		                                {% endif %}
-	                            	</div>
-                                {% elif p.to_json.promotionItem.type.id == '03' %}
-                                	<div class="ting-menus-list-item">
-	                                 	{% if p.branch.pk|rand_five_type_count:"3" > 0 %}
-		                                    {% for m in  p.branch.pk|rand_five_type:"3" %}
-		                                   		<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{{m.to_json.url}}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
-					                                <img src="{{m.to_json.menu.images.images.0.image}}" />
-					                            </div>
-					                            <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{m.pk}}">
-					                                <div class="header">{{m.to_json.menu.name}}</div>
-					                                <div class="ui star rating disabled-rating" data-rating="{{m.to_json.menu.reviews.average}}" data-max-rating="5" style="margin-top:5px;"></div>
-					                                <div class="description">{{m.to_json.menu.description}}</div>
-					                                <p class="ui {% if m.to_json.menu.isAvailable %} green {% else %} red {% endif %}" style="color: {% if m.to_json.menu.isAvailable %} green {% else %} red {% endif %}">{% if m.to_json.menu.isAvailable %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
-					                                <div class="extra">
-					                                    {% if m.to_json.type.id != 2 %}<div class="ui label"><i class="icon boxes"></i> {{m.to_json.menu.category.name}}</div> {% endif %}
-					                                    {% if m.to_json.type.id == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{m.to_json.menu.foodType}}</div>{% endif %}
-					                                    {% if m.to_json.type.id == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{m.to_json.menu.drinkType}}</div>{% endif %}
-					                                    {% if m.to_json.type.id == 3 %}<div class="ui label"><i class="icon clock"></i> {{m.to_json.menu.dishTime}}</div>{% endif %}
-					                                	<div class="ui label"><i class="icon tag"></i> {{m.to_json.menu.currency}} {{m.to_json.menu.price|intcomma}} {% if m.to_json.menu.isCountable %} ({{m.to_json.menu.quantity}} pieces){% endif %}</div>
-					                                </div>
-					                            </div>
-					                            <script type="text/javascript">
-					                                $(".lst-popup-{{p.pk}}-{{m.pk}}").popup({popup : ".ting-menu-popup-{{p.pk}}-{{m.pk}}", on : "hover"});
-					                                $(".disabled-rating").rating("disable");
-					                                $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
-					                            </script>
-		                                    {% endfor %}
-		                                {% else %}
-		                                   	<div class="ui red message">No Menu To Show</div>
-		                                {% endif %}
-		                            </div>
-                                {% elif p.to_json.promotionItem.type.id == '04' %}
-                                    <div class="ting-menus-list-item ting-menu-url lst-popup-{{p.pk}}-{{p.to_json.promotionItem.menu.id}}" href="{{p.to_json.promotionItem.menu.url}}" id="ting-menus-list-item-{{p.pk}}-{{p.to_json.promotionItem.menu.id}}">
-                                        {% if p.to_json.promotionItem.menu.menu.images.count > 0 %}
-                                            {% for image in p.to_json.promotionItem.menu.menu.images.images %}
-                                            	<div class="ting-menu-image-list">
-                                                    <img src="{{image.image}}" />
-                                                </div>
-                                            {% endfor %}
-                                        {% else %}
-                                        <div class="ui red message">No Images To Show</div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{p.to_json.promotionItem.menu.id}}">
-                                        <div class="header">{{p.to_json.promotionItem.menu.menu.name}}</div>
-                                        <div class="ui star rating disabled-rating" data-rating="{{p.to_json.promotionItem.menu.menu.reviews.average}}" data-max-rating="5" style="margin-top:5px;"></div>
-                                        <div class="description">{{p.to_json.promotionItem.menu.menu.description}}</div>
-                                        <p class="ui {% if p.to_json.promotionItem.menu.menu.isAvailable %} green {% else %} red {% endif %}" style="color: {% if p.to_json.promotionItem.menu.menu.isAvailable %} green {% else %} red {% endif %}">{% if p.to_json.promotionItem.menu.menu.isAvailable %}<i class="icon check"></i> Available {% else %}<i class="icon times"></i> Not Available{% endif %}</p>
-                                        <div class="extra">
-                                            {% if p.to_json.promotionItem.menu.type.id != 2 %} <div class="ui label"><i class="icon boxes"></i> {{p.to_json.promotionItem.menu.menu.category.name}}</div> {% endif %}
-                                            {% if p.to_json.promotionItem.menu.type.id == 1 %} <div class="ui label"><i class="icon utensils spoon"></i> {{p.to_json.promotionItem.menu.menu.foodType}}</div> {% endif %}
-                                            {% if p.to_json.promotionItem.menu.type.id == 2 %} <div class="ui label"><i class="icon glass martini"></i> {{p.to_json.promotionItem.menu.menu.drinkType}}</div> {% endif %}
-                                            {% if p.to_json.promotionItem.menu.type.id == 3 %} <div class="ui label"><i class="icon clock"></i> {{p.to_json.promotionItem.menu.menu.dishTime}}</div> {% endif %}
-                                            <div class="ui label"><i class="icon tag"></i> {{p.to_json.promotionItem.menu.menu.currency}} {{p.to_json.promotionItem.menu.menu.price|intcomma}} {% if p.to_json.promotionItem.menu.menu.isCountable %} ({{p.to_json.promotionItem.menu.menu.quantity}} pieces) {% endif %}</div>
-                                       	</div>
-                                    </div>
-                                    <script type="text/javascript">
-                                    	$(".lst-popup-{{p.pk}}-{{p.to_json.promotionItem.menu.id}}").popup({popup : ".ting-menu-popup-{{p.pk}}-{{p.to_json.promotionItem.menu.id}}", on : "hover"});
-                                        $(".disabled-rating").rating("disable");
-                                        $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
-                                    </script>
-                                {% elif p.to_json.promotionItem.type.id == '05' %}
-                                	<div class="ting-menus-list-item">
-	                                	{% if p.branch.pk|rand_five_category_count:p.to_json.promotionItem.category.id > 0 %}
-		                                    {% for m in  p.branch.pk|rand_five_category:p.to_json.promotionItem.category.id %}
-		                                    	<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{{m.to_json.url}}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
-					                                <img src="{{m.to_json.menu.images.images.0.image}}" />
-					                            </div>
-					                            <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{m.pk}}">
-					                                <div class="header">{{m.to_json.menu.name}}</div>
-					                                <div class="ui star rating disabled-rating" data-rating="{{m.to_json.menu.reviews.average}}" data-max-rating="5" style="margin-top:5px;"></div>
-					                                <div class="description">{{m.to_json.menu.description}}</div>
-					                                <p class="ui {% if m.to_json.menu.isAvailable %} green {% else %} red {% endif %}" style="color: {% if m.to_json.menu.isAvailable %} green {% else %} red {% endif %}">{% if m.to_json.menu.isAvailable %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
-					                                <div class="extra">
-					                                    {% if m.to_json.type.id != 2 %}<div class="ui label"><i class="icon boxes"></i> {{m.to_json.menu.category.name}}</div> {% endif %}
-					                                    {% if m.to_json.type.id == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{m.to_json.menu.foodType}}</div>{% endif %}
-					                                    {% if m.to_json.type.id == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{m.to_json.menu.drinkType}}</div>{% endif %}
-					                                    {% if m.to_json.type.id == 3 %}<div class="ui label"><i class="icon clock"></i> {{m.to_json.menu.dishTime}}</div>{% endif %}
-					                                    <div class="ui label"><i class="icon tag"></i> {{m.to_json.menu.currency}} {{m.to_json.menu.price|intcomma}} {% if m.to_json.menu.isCountable %} ({{m.to_json.menu.quantity}} pieces){% endif %}</div>
-					                                </div>
-					                            </div>
-					                            <script type="text/javascript">
-					                                $(".lst-popup-{{p.pk}}-{{m.pk}}").popup({popup : ".ting-menu-popup-{{p.pk}}-{{m.pk}}", on : "hover"});
-					                                $(".disabled-rating").rating("disable");
-					                                $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
-					                            </script>
-		                                    {% endfor %}
-		                                {% else %}
-		                                   	<div class="ui red message">No Menu To Show</div>
-		                                {% endif %}
-		                            </div>
-	                            {% endif %}
-                            </div>
-                            <div class="description">
-                                <p><i class="icon calendar alternate outline"></i> {{p.to_json.period}}</p>
-                                {% if p.has_reduction %}<p><i class="icon minus square outline"></i> Order this menu and get a {{p.to_json.reduction.amount}} {{p.to_json.reduction.reductionType}} reduction</p> {% endif %}
-                                {% if p.has_supplement %}
-                                    <p>
-                                        <i class="icon plus square outline"></i>
-                                        Order {{p.to_json.supplement.minQuantity}} pieces or packs of this menu and get {{p.to_json.supplement.quantity}}
-                                        {% if p.is_supplement_same %}
-                                            more for free
-                                        {% else %} 
-                                            free <a href="{{p.to_json.supplement.supplement.url}}" target="_blank">{{p.to_json.supplement.supplement.menu.name}}</a>
-                                    	{% endif %}
-                                    </p> 
-                                {% endif %}
-                            </div>
-                            <div class="extra">
-                            	<div class="ui image label" onclick="window.open('{{p.branch.to_json.urls.relative}}', '_blank')">
-                                    <img src="{{p.restaurant.logo.url}}" />
-                                    {{p.restaurant.name}}, {{p.branch.name}}
-                                </div>
-                                <div class="ui label"><i class="icon clock"></i>{{p.updated_at}}</div>
-                                <div class="ui label"><i class="icon star"></i>{{p.to_json.interests.count}}</div>
-                            </div>
-                        </div>
-                        <script type="text/javascript">$("#ting-interest-promo-{{p.id}}").interestPromotion();</script>
+				                            {% endif %}
+			                            </div>
+			                            <div class="description">
+			                                <p><i class="icon calendar alternate outline"></i> {{p.to_json.period}}</p>
+			                                {% if p.has_reduction %}<p><i class="icon minus square outline"></i> Order this menu and get a {{p.to_json.reduction.amount}} {{p.to_json.reduction.reductionType}} reduction</p> {% endif %}
+			                                {% if p.has_supplement %}
+			                                    <p>
+			                                        <i class="icon plus square outline"></i>
+			                                        Order {{p.to_json.supplement.minQuantity}} pieces or packs of this menu and get {{p.to_json.supplement.quantity}}
+			                                        {% if p.is_supplement_same %}
+			                                            more for free
+			                                        {% else %} 
+			                                            free <a href="{{p.to_json.supplement.supplement.url}}" target="_blank">{{p.to_json.supplement.supplement.menu.name}}</a>
+			                                    	{% endif %}
+			                                    </p> 
+			                                {% endif %}
+			                            </div>
+			                            <div class="extra">
+			                            	<div class="ui image label" onclick="window.open('{{p.branch.to_json.urls.relative}}', '_blank')">
+			                                    <img src="{{p.restaurant.logo.url}}" />
+			                                    {{p.restaurant.name}}, {{p.branch.name}}
+			                                </div>
+			                                <div class="ui label"><i class="icon clock"></i>{{p.updated_at}}</div>
+			                                <div class="ui label"><i class="icon star"></i>{{p.to_json.interests.count}}</div>
+			                            </div>
+			                        </div>
+			                        <script type="text/javascript">$("#ting-interest-promo-{{p.id}}").interestPromotion();</script>
+								</div>
+							{% endfor %}
+							</div>
+						{% else %}
+						{% endif %}
 					</div>
-				{% endfor %}
 				</div>
-			{% else %}
-			{% endif %}
+				<div class="col-lg-3">
+					<h3 style="font-weight:100; text-transform:uppercase; margin-top: 1.5rem;">Menus You May Like</h3>
+
+					<div class="ui items">
+						{% for menu in menus %}
+							<div class="ting-menu-other">
+	                            <div class="item">
+	                                <div class="ui fluid image"><a href="{{menu.to_json.menu.url}}"><img src="{{menu.to_json.menu.images.images.0.image}}"/></a></div>
+	                            </div>
+	                            <div class="content" style="margin-top:5px;">
+	                                <a class="header" style="font-weight:500; font-size:17px; color: #666;" href="{{menu.to_json.menu.url}}">{{menu.to_json.menu.name}}</a>
+	                                <div class="description">
+	                                    <div class="ui disabled-rating star rating" data-rating="{{menu.to_json.menu.reviews.average}}" data-max-rating="5"></div>
+	                                    <p><i icon class="icon align left"></i> {{menu.to_json.menu.description}}</p>
+	                                    {% if menu.to_json.type.id == 1 %} <!-- <div class="ui label" style="margin-bottom:8px;"><i class="utensils spoon icon"></i> {{menu.to_json.type.name}}</div> --> <div class="ui label"><i class="icon boxes"></i> {{menu.to_json.menu.foodType}}</div>{% endif %}
+	                                    {% if menu.to_json.type.id == 2 %} <!-- <div class="ui label" style="margin-bottom:8px;"><i class="icon martini glass"></i> {{menu.to_json.type.name}}</div> --> <div class="ui label"><i class="icon boxes"></i> {{menu.to_json.menu.drinkType}}</div>{% endif %}
+	                                    {% if menu.to_json.type.id == 3 %} <!-- <div class="ui label" style="margin-bottom:8px;"><i class="icon utensils"></i> {{menu.to_json.type.name}}</div> --> <div class="ui label"><i class="icon clock alternate"></i> {{menu.to_json.menu.dishTime}}</div>{% endif %}
+	                                    <div class="ui icon label" style="margin-bottom:8px;"><i class="icon tag"></i> {{menu.to_json.menu.currency}} {{menu.to_json.menu.price|intcomma}}</div>
+	                                </div>
+	                            </div>
+	                            <hr/>
+	                        </div>
+						{% endfor %}
+					</div>
+				</div>		
+			</div>
 		</div>
 	</div>
 </secltion>

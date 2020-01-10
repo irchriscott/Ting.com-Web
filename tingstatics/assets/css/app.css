@@ -264,7 +264,7 @@ textarea{
     -webkit-box-shadow: 0 0 0 0 transparent inset;
     box-shadow: 0 0 0 0 transparent inset;
     -webkit-transition: color .1s ease,border-color .1s ease;
-    transition: color .1s ease,border-color .1s ease;
+    transition: color .1s ease, border-color .1s ease;
     display: block;
     text-align: center;
     font-size: 17px;
@@ -777,6 +777,17 @@ textarea{
     white-space: nowrap;
 }
 
+.ting-inline-menu {
+    position: relative;
+    width: 100%;
+    z-index: 200;
+    border-bottom: 2px solid rgba(34,36,38,.15);
+    height: 43px;
+    background: #FFF;
+    white-space: nowrap;
+    margin-top: 8px;
+}
+
 .ting-user-top-fixed-menu img{
     height: 32px;
     width: 32px;
@@ -794,15 +805,18 @@ textarea{
     font-weight: 500;
 }
 
-.ting-user-top-fixed-menu .row{
+.ting-user-top-fixed-menu .row,
+.ting-inline-menu .row{
     padding: 0 !important;
 }
 
-.ting-user-top-fixed-menu .ui.secondary.pointing.menu{
+.ting-user-top-fixed-menu .ui.secondary.pointing.menu,
+.ting-inline-menu .ui.secondary.pointing.menu{
     border-bottom: none !important;
 }
 
-.ting-user-container .ui.secondary.pointing.menu{
+.ting-user-container .ui.secondary.pointing.menu,
+.ting-inline-menu .ui.secondary.pointing.menu{
     white-space: nowrap;
 }
 
@@ -1885,4 +1899,59 @@ textarea{
 
 .ting-show-more-promotions:hover {
     color: #FFFFFF;
+}
+
+.ting-other-cuisines-container {
+    margin-top: 1.5rem
+}
+
+.ting-other-cuisines-container h2 {
+    display: block;
+    font-weight: bold;
+    color: #333;
+}
+
+.ting-other-cuisine {
+    display: block;
+    position: relative;
+}
+
+.ting-other-cuisine .ting-img {
+    height: 200px;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 3px;
+    border:1px solid #DDDDDD;
+    text-align: center;
+}
+
+.ting-other-cuisine .ting-img img {
+    width: 100%;
+    text-align: center;
+    -webkit-transition: ease-in all .3s;
+    -moz-transition: ease-in all .3s;
+    -ms-transition: ease-in all .3s;
+    -o-transition: ease-in all .3s;
+    transition: ease-in all .3s;
+}
+
+.ting-other-cuisine h5 {
+    color: #333;
+    margin-top: 12px;
+    font-weight: bold;
+    font-size: 17px;
+}
+
+.ting-other-cuisine p {
+    color: #333;
+    margin-top: -7px;
+    font-size: 12px;
+}
+
+.ting-other-cuisine .ting-img:hover img {
+    transform: scale(1.1);
+    -webkit-transform: scale(1.1);
+    -moz-transform: scale(1.1);
+    -ms-transform: scale(1.1);
+    -o-transform: scale(1.1);
 }
