@@ -256,13 +256,13 @@
 			                                        {% if p.is_supplement_same %}
 			                                            more for free
 			                                        {% else %} 
-			                                            free <a href="{{p.to_json.supplement.supplement.url}}" target="_blank">{{p.to_json.supplement.supplement.menu.name}}</a>
+			                                            free <a href="{{p.to_json.supplement.supplement.url}}" target="_self">{{p.to_json.supplement.supplement.menu.name}}</a>
 			                                    	{% endif %}
 			                                    </p> 
 			                                {% endif %}
 			                            </div>
 			                            <div class="extra">
-			                            	<div class="ui image label" onclick="window.open('{{p.branch.to_json.urls.relative}}', '_blank')">
+			                            	<div class="ui image label" onclick="window.open('{{p.branch.to_json.urls.relative}}', '_self')">
 			                                    <img src="{{p.restaurant.logo.url}}" />
 			                                    {{p.restaurant.name}}, {{p.branch.name}}
 			                                </div>

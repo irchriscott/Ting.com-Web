@@ -722,7 +722,7 @@ class Branch(models.Model):
 			'services': self.get_services,
 			'categories': {
 				'count': self.restaurant.categories.count(),
-				'categories': [category.to_json for category in self.restaurant.categories]
+				'categories': [category.category.to_json for category in self.restaurant.categories]
 			},
 			'tables':{
 				'count': self.tables_count,
@@ -809,7 +809,7 @@ class Branch(models.Model):
 			'services': self.get_services,
 			'categories': {
 				'count': self.restaurant.categories.count(),
-				'categories': [category.to_json for category in self.restaurant.categories]
+				'categories': [category.category.to_json for category in self.restaurant.categories]
 			},
 			'tables':{
 				'count': self.tables_count,
@@ -896,7 +896,7 @@ class Branch(models.Model):
 			'services': self.get_services,
 			'categories': {
 				'count': self.restaurant.categories.count(),
-				'categories': [category.to_json for category in self.restaurant.categories]
+				'categories': [category.category.to_json for category in self.restaurant.categories]
 			},
 			'tables':{
 				'count': self.tables_count,
@@ -978,7 +978,7 @@ class Branch(models.Model):
 			'services': self.get_services,
 			'categories': {
 				'count': self.restaurant.categories.count(),
-				'categories': [category.to_json for category in self.restaurant.categories]
+				'categories': [category.category.to_json for category in self.restaurant.categories]
 			},
 			'tables':{
 				'count': self.tables_count,
@@ -1935,6 +1935,7 @@ class Food(models.Model):
 			'branch': self.branch.to_json,
 			'name': self.name,
 			'category': self.category.to_json,
+			'cuisine': self.cuisine.to_json,
 			'foodType': utils.get_from_tuple(utils.FOOD_TYPE, self.food_type),
 			'foodTypeId' : self.food_type,
 			'description': self.description,
@@ -1975,6 +1976,7 @@ class Food(models.Model):
 			'id': self.pk,
 			'name': self.name,
 			'category': self.category.to_json,
+			'cuisine': self.cuisine.to_json,
 			'foodType': utils.get_from_tuple(utils.FOOD_TYPE, self.food_type),
 			'foodTypeId' : self.food_type,
 			'description': self.description,

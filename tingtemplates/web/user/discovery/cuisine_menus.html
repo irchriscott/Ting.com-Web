@@ -49,7 +49,7 @@
 		                        	</a>
 		                        </div>
 		                        <div class="ui content">
-		                        	<a class="header" href="{{menu.to_json.url}}" style="font-size:19px; font-weight:500;">{{menu.to_json.menu.name}}</a>
+		                        	<a class="header" href="{{menu.to_json.url}}" style="font-size:19px; font-weight:500; white-space: nowrap; text-overflow: ellipsis; width: calc(100% - 1.5rem); overflow: hidden;">{{menu.to_json.menu.name}}</a>
                                     <div class="meta" style="margin-top:5px;">
                                         <div class="ui disabled-rating star rating" data-rating="{{menu.to_json.menu.reviews.average}}" data-max-rating="5" style="margin-bottom:10px;"></div>
                                         <p style="display: block; white-space: nowrap; text-overflow: ellipsis; width: calc(100% - 1.5rem); overflow: hidden;"><i icon class="icon align left"></i> {{menu.to_json.menu.description}}</p>
@@ -75,6 +75,12 @@
                                         </div>
                                     </div>
                                     {% endcomment %}
+                                    <div class="extra">
+                                        <div class="ui image label" onclick="window.open('{{menu.branch.to_json.urls.relative}}', '_self')">
+                                            <img src="{{menu.restaurant.logo.url}}" />
+                                            {{menu.restaurant.name}}, {{menu.branch.name}}
+                                        </div>
+                                    </div>
                                     <div class="extra">
                                         <div class="ui label"><i class="icon boxes"></i> {{menu.to_json.menu.category.name}}</div>
                                         {% if menu.to_json.type.id == 1 %} <div class="ui label"><i class="icon utensils spoon"></i> {{menu.to_json.menu.foodType}}</div> {% endif %}

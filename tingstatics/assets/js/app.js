@@ -475,7 +475,7 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                 fbc.append(fb__cuisine);
                 var r_cuisine = window.__TING__Cuisines;
                 r_cuisine.forEach(function(c) {
-                    fbc.append($(filtercbx(c.name, c.id, "cuis", branches.filter(function(b){ return b.categories.categories.filter(function(ct){ return ct.category.id == c.id }).length > 0 }).length)))
+                    fbc.append($(filtercbx(c.name, c.id, "cuis", branches.filter(function(b){ return b.categories.categories.filter(function(ct){ return ct.id == c.id }).length > 0 }).length)))
                 });
                 fbc.append(fb__hr);
                 
@@ -637,7 +637,7 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                                 var bf = brs.filter(function(b){var ff = f.val.split(",");return b.reviews.count > parseInt(ff[0]) && b.reviews.count <= parseInt(ff[1])}).forEach(function(b){if(brs__reviews.includes(b) == false){brs__reviews.push(b)}})
                             } else if(f.gval == "cuis") {
                                 css__cuisines.push(f);
-                                var bf = brs.filter(function(b){ return b.categories.categories.filter(function(ct) { return ct.category.id == f.val }).length > 0 }).forEach(function(b){if(brs__cuisines.includes(b) == false){brs__cuisines.push(b)}})
+                                var bf = brs.filter(function(b){ return b.categories.categories.filter(function(ct) { return ct.id == f.val }).length > 0 }).forEach(function(b){if(brs__cuisines.includes(b) == false){brs__cuisines.push(b)}})
                             } else if(f.gval == "serv") {
                                 css__services.push(f);
                                 var bf = brs.filter(function(b){ return b.services.filter(function(s) { return s.id == f.val }).length > 0 }).forEach(function(b){if(brs__services.includes(b) == false){brs__services.push(b)}})
@@ -1151,15 +1151,55 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
 
             rb.append(rb__ui).append(`<hr/>`);
             rb.append(`
-                <div class="header" style="font-size:16px; font-weight:500;">Specials</div>
-                <hr/>
-                <div class="content">
-                    ${branch.specials.length > 0 
-                        ? `${branch.specials.map(function(s){
-                            return `<p><i class="icon ${s.icon}"></i> ${s.name}</p>`
-                        }).join("")}` 
+                <div class="header" id="ting-open-specials-popup" style="font-size:16px; font-weight:500; text-transform:uppercase; cursor: pointer;">Specials <span style="position:absolute; right: 0;"><i class="icon chevron right"></i></span></div>
+                <div class="ui flowing popup right center transition hidden" id="ting-specials-popup">
+                    <div class="header">Specials</div>
+                    <hr/>
+                    <div class="content" style="min-width:130px;">
+                        ${branch.specials.length > 0 
+                            ? `${branch.specials.map(function(s){
+                                return `<p><i class="icon ${s.icon}"></i> ${s.name}</p>`
+                            }).join("")}` 
                         : `<div class="ui red message">No Specials Available</div>`}
-                </div><hr/>`);
+                    </div>
+                </div>
+                <hr/>
+                <div class="header" id="ting-open-services-popup" style="font-size:16px; font-weight:500; text-transform:uppercase; cursor: pointer;">Services <span style="position:absolute; right: 0;"><i class="icon chevron right"></i></span></div>
+                <div class="ui flowing popup right center transition hidden" id="ting-services-popup">
+                    <div class="header">Services</div>
+                    <hr/>
+                    <div class="content" style="min-width:130px;">
+                        ${branch.services.length > 0 
+                            ? `${branch.services.map(function(s){
+                                return `<p><i class="icon ${s.icon}"></i> ${s.name}</p>`
+                            }).join("")}` 
+                        : `<div class="ui red message">No Specials Available</div>`}
+                    </div>
+                </div>
+                <hr/>
+                <div class="header" id="ting-open-cuisines-popup" style="font-size:16px; font-weight:500; text-transform:uppercase; cursor: pointer;">Cuisines <span style="position:absolute; right: 0;"><i class="icon chevron right"></i></span></div>
+                <div class="ui flowing popup right center transition hidden" id="ting-cuisines-popup">
+                    <div class="header">Cuisines</div>
+                    <hr/>
+                    <div class="ui items content" style="min-width:130px;">
+                        ${branch.categories.count > 0 
+                            ? `${branch.categories.categories.map(function(c){
+                                return `<div class="item">
+                                            <img class="ui avatar image" src="${c.image}" style="border-radius:2px;">
+                                            <div class="content">
+                                                <p class="header" style="font-weight: normal; font-size: 14px; margin-top:5px;">${c.name}</p>
+                                            </div>
+                                        </div>`
+                            }).join("")}` 
+                        : `<div class="ui red message">No Specials Available</div>`}
+                    </div>
+                </div>
+                <hr/>
+                <script type="text/javascript">
+                    $("#ting-open-specials-popup").popup({popup : "#ting-specials-popup", on : "click"});
+                    $("#ting-open-services-popup").popup({popup : "#ting-services-popup", on : "click"});
+                    $("#ting-open-cuisines-popup").popup({popup : "#ting-cuisines-popup", on : "click"});
+                </script>`);
             if(branch.restaurant.purposeId == 2){ rb.append(`<button class="ui primary fluid button" style="text-transform:uppercase;" ${branch.isAvailable == false ? `disabled` : ``}  id="ting-open-make-reservation">Make a Reservation</button>`)}
 
             var rb__pi = $(".ting-session-profile-image");
@@ -1696,8 +1736,13 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                                             }).join("") : `<div class="ui red message">No Images To Show</div>`}
                                         </div>
                                     </div>
+                                    ${menus[i].type.id !== 2 ? `
+                                        <div class="extra">
+                                            <div class="ui label"><i class="icon boxes"></i> ${m.category.name}</div>
+                                            <div class="ui image label"><img src="${m.cuisine.image}" /> ${m.cuisine.name}</div>
+                                        </div>
+                                    ` : ``}
                                     <div class="extra">
-                                        ${m.category !== undefined ? `<div class="ui label"><i class="icon boxes"></i> ${m.category.name}</div>` : ``}
                                         ${menus[i].type.id == 1 ? `<div class="ui label"><i class="icon utensils spoon"></i> ${m.foodType}</div>` : ``}
                                         ${menus[i].type.id == 2 ? `<div class="ui label"><i class="icon glass martini"></i> ${m.drinkType}</div>` : ``}
                                         ${menus[i].type.id == 3 ? `<div class="ui label"><i class="icon clock"></i> ${m.dishTime}</div>` : ``}
@@ -1832,8 +1877,13 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                         <div class="header"><h3>${m.name}</h3></div>
                         <div class="ui disabled-rating star large rating" style="margin-top:5px;" data-rating="${m.reviews.average}" data-max-rating="5" style="margin-bottom:10px;"></div>
                         <p style="margin-top:5px;"><i icon class="icon align left"></i> ${m.description}</p>
+                        ${menu.type.id != 2 ? `
+                            <div class="extra" style="margin-bottom:10px;">
+                                <div class="ui image label"><img src="${m.category.image}">${m.category.name}</div>
+                                <div class="ui image label"><img src="${m.cuisine.image}">${m.cuisine.name}</div>
+                            </div>
+                        ` : ``}
                         <div class="extra">
-                            ${menu.type.id != 2 ? `<div class="ui image label"><img src="${m.category.image}">${m.category.name}</div>` : ``}
                             ${menu.type.id == 1 ? `<div class="ui label"><i class="utensils spoon icon"></i> ${menu.type.name}</div> <div class="ui label"><i class="icon boxes"></i> ${m.foodType}</div>` : ``}
                             ${menu.type.id == 2 ? `<div class="ui label"><i class="icon martini glass"></i> ${menu.type.name}</div> <div class="ui label"><i class="icon boxes"></i> ${m.drinkType}</div>` : ``}
                             ${menu.type.id == 3 ? `<div class="ui label"><i class="icon utensils"></i> ${menu.type.name}</div> <div class="ui label"><i class="icon clock alternate"></i> ${m.dishTime}</div>` : ``}
