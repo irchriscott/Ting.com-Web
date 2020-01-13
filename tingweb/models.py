@@ -2851,6 +2851,18 @@ class Menu(models.Model):
 			return Drink.objects.get(pk=self.menu_id)
 		elif self.menu_type == 3:
 			return Dish.objects.get(pk=self.menu_id)
+
+	@property
+	def food(self):
+		return Food.objects.get(pk=self.menu_id)
+
+	@property
+	def drink(self):
+		return Drink.objects.get(pk=self.menu_id)
+	
+	@property
+	def dish(self):
+		return Dish.objects.get(pk=self.menu_id)
 	
 	@property
 	def like_ids(self):
@@ -3234,6 +3246,10 @@ class Promotion(models.Model):
 	@property
 	def uuid_url(self):
 		return '%s-%s' % (self.occasion_event.replace(' ', '-').lower(), self.uuid)
+
+	@property
+	def interess_url(self):
+		return reverse('ting_usr_promotion_interest', kwargs={'promo': self.pk})
 
 	@property
 	def promo_type(self):

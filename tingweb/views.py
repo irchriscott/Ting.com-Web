@@ -762,7 +762,7 @@ def discovery(request):
         rand_branches = branches.random(5)
 
         promotions = Promotion.objects.filter(branch__country=user.country, branch__town=user.town, is_on=True)[:5]
-        today_promos = [promo for promo in promotions if promo.is_on_today == True][:10]
+        today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
 
         for i in range(3, len(today_promos)):
            today_promos.remove(random.choice(today_promos))
@@ -771,7 +771,7 @@ def discovery(request):
         rand_branches = branches.random(5)
 
         promotions = Promotion.objects.filter(is_on=True)[:5]
-        today_promos = [promo for promo in promotions if promo.is_on_today == True][:10]
+        today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
 
         for i in range(3, len(today_promos)):
            today_promos.remove(random.choice(today_promos))
@@ -824,10 +824,10 @@ def discover_today_promotions(request):
     if is_logged_in == True:
         user = User.objects.get(pk=request.session['user'])
         promotions = Promotion.objects.filter(branch__country=user.country, branch__town=user.town, is_on=True)
-        today_promos = [promo for promo in promotions if promo.is_on_today == True]
+        today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
     else:
         promotions = Promotion.objects.filter(is_on=True)
-        today_promos = [promo for promo in promotions if promo.is_on_today == True]
+        today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
 
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,

@@ -43,12 +43,12 @@
 						<div class="ui col-md-6 items" style="margin: 0 !important;">
 							<div class="ui item ting-resto-item" style="margin-bottom: 1.5rem !important; margin-top: 0 !important;">
 								<div class="ui small image">
-									<a href="{{branch.to_json.urls.relative}}">
+									<a href="{% url 'ting_usr_get_restaurant_promotions' branch.pk branch.restaurant.pk branch.restaurant.slug %}">
 		                            	<img src="{{branch.restaurant.logo.url}}">
 		                        	</a>
 		                        </div>
 		                        <div class="ui content">
-		                            <a class="header" href="{{branch.to_json.urls.relative}}" style="font-size:19px; font-weight:500; white-space: nowrap; text-overflow: ellipsis; width: calc(100% - 1.5rem); overflow: hidden;">{{branch.restaurant.name}}, {{branch.name}}</a>
+		                            <a class="header" href="{% url 'ting_usr_get_restaurant_promotions' branch.pk branch.restaurant.pk branch.restaurant.slug %}" style="font-size:19px; font-weight:500; white-space: nowrap; text-overflow: ellipsis; width: calc(100% - 1.5rem); overflow: hidden;">{{branch.restaurant.name}}, {{branch.name}}</a>
 		                            <div class="meta" style="margin-top:5px;">
 		                                <div class="ui disabled-rating star rating" data-rating="{{branch.review_average}}" data-max-rating="5" style="margin-bottom:10px;"></div>
 		                                <p class="ting-resto-item-address" style="white-space: nowrap; text-overflow: ellipsis; width: calc(100% - 1.5rem); overflow: hidden;"><i icon class="icon map marker alternate"></i> {{branch.address}}</p>
@@ -134,7 +134,7 @@
 		                            </div>
 		                            <script type="text/javascript">
 		                            	function setTimeStatus() {
-		                            		var time = statusWorkTime("{{branch.to_json.restaurant.opening}}", "{{branch.to_json.restaurant.closing}}");
+		                            		var time = statusWorkTime("{{branch.restaurant.opening_str}}", "{{branch.restaurant.closing_str}}");
 		                                    {% if branch.is_available %}
 												$("#ting-resto-open-time-{{branch.pk}}").html(`<div class="ui ${time.clr} label"><i class="clock outline icon"></i> ${time.msg} </div>`);
 											{% else %}
