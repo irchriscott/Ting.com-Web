@@ -57,6 +57,7 @@ users = [
 	url(r'usr/g/restaurants/$', views.restaurants, name='ting_usr_global_restaurants'),
 	url(r'usr/g/restaurants/filter/$', views.filter_restaurants_search, name='ting_usr_global_restaurants_filter'),
 	url(r'usr/g/moments/$', views.moments, name='ting_usr_global_moments'),
+	url(r'usr/g/blogs/$', views.blogs, name='ting_usr_global_blogs'),
 
 	# Restaurant & Branch
 

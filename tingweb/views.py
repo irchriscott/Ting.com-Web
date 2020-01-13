@@ -56,15 +56,6 @@ def check_user_login(xhr=None):
     return decorator_wrapper
 
 
-def index(request):
-	template = 'web/index.html'
-	return render(request, template, {
-            'address_types': utils.USER_ADDRESS_TYPE,
-            'is_logged_in': True if 'user' in request.session else False,
-            'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None
-        })
-
-
 # USER LOGIN, SIGNUP & PROFILE
 
 
@@ -751,6 +742,48 @@ def cancel_reservation(request, reservation):
 # GLOBAL LINKS
 
 
+def index(request):
+    template = 'web/index.html'
+    cuisines = RestaurantCategory.objects.all()
+    is_logged_in = True if 'user' in request.session else False
+
+    if is_logged_in == True:
+        user = User.objects.get(pk=request.session['user'])
+        branches = Branch.objects.filter(country=user.country, town=user.town).order_by('-created_at')[:20]
+        rand_branches = branches.random(5)
+
+        promotions = Promotion.objects.filter(branch__country=user.country, branch__town=user.town, is_on=True)[:5]
+        today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
+
+        for i in range(3, len(today_promos)):
+           today_promos.remove(random.choice(today_promos))
+    else:
+        branches = Branch.objects.all().order_by('-created_at')[:20]
+        rand_branches = branches.random(5)
+
+        promotions = Promotion.objects.filter(is_on=True)[:5]
+        today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
+
+        for i in range(3, len(today_promos)):
+           today_promos.remove(random.choice(today_promos))
+
+    menus_all = Menu.objects.all()
+    menus = sorted(list(filter(lambda menu: menu.review_average >= 4, menus_all)), key=lambda menu: menu.review_average, reverse=True)[:6]
+    reviews = RestaurantReview.objects.filter(review__gte=4).random(10)
+
+    return render(request, template, {
+            'address_types': utils.USER_ADDRESS_TYPE,
+            'is_logged_in': True if 'user' in request.session else False,
+            'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
+            'cuisines': cuisines,
+            'recommanded_branches': rand_branches,
+            'recommanded_promotions': today_promos,
+            'menus': menus,
+            'reviews': sorted(reviews, key=lambda review: review.review, reverse=True)
+        })
+
+
 def discovery(request):
     template = 'web/user/global_discovery.html'
     cuisines = RestaurantCategory.objects.all()
@@ -776,6 +809,10 @@ def discovery(request):
         for i in range(3, len(today_promos)):
            today_promos.remove(random.choice(today_promos))
 
+    menus_all = Menu.objects.all()
+    menus = sorted(list(filter(lambda menu: menu.review_average >= 4, menus_all)), key=lambda menu: menu.review_average, reverse=True)[:10]
+    reviews = RestaurantReview.objects.filter(review__gte=4).random(10)
+
     return render(request, template, {
             'is_logged_in': is_logged_in,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
@@ -783,7 +820,9 @@ def discovery(request):
             'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
             'cuisines': cuisines,
             'recommanded_branches': rand_branches,
-            'recommanded_promotions': today_promos
+            'recommanded_promotions': today_promos,
+            'menus': menus,
+            'reviews': sorted(reviews, key=lambda review: review.review, reverse=True)
         })
 
 
@@ -854,8 +893,18 @@ def restaurants(request):
             'services': json.dumps(utils.RESTAURANT_SERVICES, default=str)
         })
 
+
 def moments(request):
     template = 'web/user/global_moments.html'
+    return render(request, template, {
+            'is_logged_in': True if 'user' in request.session else False,
+            'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
+            'address_types': utils.USER_ADDRESS_TYPE,
+        })
+
+
+def blogs(request):
+    template = 'web/user/global_blogs.html'
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,

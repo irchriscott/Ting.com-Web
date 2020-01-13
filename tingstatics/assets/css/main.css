@@ -2306,7 +2306,7 @@ a, a:focus, a:hover {
 }
 
 .testimonial-area {
-  background: url(../img/testimonial-bg.jpg) no-repeat center center;
+  background: no-repeat center center;
   background-size: cover;
 }
 

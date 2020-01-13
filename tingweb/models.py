@@ -1665,6 +1665,8 @@ class RestaurantReview(models.Model):
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
 
+	objects = RandomManager()
+
 	def __str__(self):
 		return self.user.name
 
@@ -2872,6 +2874,24 @@ class Menu(models.Model):
 		return True if u in self.like_ids else False
 
 	@property
+	def reviews(self):
+		return MenuReview.objects.filter(menu=self.pk).order_by('-created_at')
+
+	@property
+	def reviews_count(self):
+		return self.reviews.count()
+
+	@property
+	def review_average(self):
+		if self.reviews_count > 0:
+			total = 0
+			for review in self.reviews:
+				total += review.review
+			return round(total / self.reviews_count, 1)
+		else:
+			return 0
+
+	@property
 	def to_json(self):
 		if self.menu_type == 1:
 			food = Food.objects.get(pk=self.menu_id)
@@ -3155,6 +3175,8 @@ class MenuReview(models.Model):
 	comment = models.TextField(null=True, blank=True)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
+
+	objects = RandomManager()
 
 	def __str__(self):
 		return self.user.name

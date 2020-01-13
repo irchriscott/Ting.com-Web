@@ -1955,3 +1955,23 @@ textarea{
     -ms-transform: scale(1.1);
     -o-transform: scale(1.1);
 }
+
+.ting-reviewed-menus {
+    display: block;
+    position: relative;
+    margin-bottom: 40px;
+    margin-top: 45px;
+}
+
+.ting-reviewed-menus h2,
+.ting-try-today h2 {
+    font-weight: bold;
+    display: block;
+    color: #333;
+}
+
+.ting-menus-container {
+    display: block;
+    position: relative;
+    margin-top: 15px;
+}
