@@ -112,11 +112,23 @@
                     <input type="text" name="name" placeholder="Restaurant Name" required autocomplete="off">
                 </div>
                 <div class="field">
-                    <label>Select Account Purpose :</label>
-                    <select class="dropdown" name="purpose">
-                        <option value="1">Advertisment</option>
-                        <option value="2">Managment</option>
-                    </select>
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Select Account Purpose :</label>
+                            <select class="dropdown" name="purpose">
+                                <option value="1">Advertisment</option>
+                                <option value="2">Managment</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Restaurant Type:</label>
+                            <select class="dropdown" name="restaurant_type">
+                                {% for type in types %}
+                                    <option value="{{type.id}}">{{type.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>  
+                    </div>
                 </div>
                 <div class="field">
                     <label>Enter Branch Name :</label>

@@ -38,7 +38,7 @@ class AddNewBranch(forms.ModelForm):
 
 	class Meta:
 		model = Branch
-		fields = ('name', 'country', 'town', 'address', 'longitude', 'latitude', 'place_id', 'email', 'phone', 'region', 'road')
+		fields = ('name', 'country', 'town', 'address', 'longitude', 'latitude', 'place_id', 'email', 'phone', 'region', 'road', 'restaurant_type',)
 
 
 class UpdateBranchProfile(forms.ModelForm):

@@ -29,4 +29,4 @@ class BranchForm(forms.ModelForm):
 
 	class Meta:
 		model = Branch
-		fields = ('address', 'country', 'town', 'longitude', 'latitude', 'place_id', 'region', 'road')
+		fields = ('address', 'country', 'town', 'longitude', 'latitude', 'place_id', 'region', 'road', 'restaurant_type',)

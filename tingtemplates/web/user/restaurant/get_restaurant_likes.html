@@ -109,5 +109,7 @@
 	window.__TING__Token = $("input[name=csrfmiddlewaretoken]").val() || null;
 	window.__TING__URL_Like = decodeURI("{% url 'ting_usr_like_restaurant_toggle' '{restaurant}' '{branch}' %}");
 	window.__TING__URL_Load_Branch_Directions = decodeURI("{% url 'ting_usr_load_branch_directions' '{restaurant}' '{branch}' %}");
+	window.__TING__URL_Menus_Cuisine = decodeURI("{% url 'ting_usr_get_restaurant_menus_cuisine' '{branch}' '{cuisine}' '{slug}' %}");
+	window.__TING__URL_Menus_Category = decodeURI("{% url 'ting_usr_get_restaurant_menus_category' '{branch}' '{category}' '{slug}' %}");
 </script>
 {% endblock %}

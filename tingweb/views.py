@@ -18,7 +18,7 @@ from tingweb.mailer import SendUserResetPasswordMail, SendUserUpdateEmailMail, S
 from tingweb.models import (
                                 Restaurant, User, UserResetPassword, UserAddress, Branch, UserRestaurant, Menu,
                                 MenuLike, MenuReview, Promotion, PromotionInterest, RestaurantReview, Booking,
-                                Food, Dish, Drink
+                                Food, Dish, Drink, FoodCategory
                             )
 from tingweb.forms import (
                                 GoogleSignUpForm, UserLocationForm, EmailSignUpForm, UserImageForm, MenuReviewForm,
@@ -752,7 +752,7 @@ def index(request):
         branches = Branch.objects.filter(country=user.country, town=user.town).order_by('-created_at')[:20]
         rand_branches = branches.random(5)
 
-        promotions = Promotion.objects.filter(branch__country=user.country, branch__town=user.town, is_on=True)[:5]
+        promotions = Promotion.objects.filter(branch__country=user.country, branch__town=user.town, is_on=True)[:20]
         today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
 
         for i in range(3, len(today_promos)):
@@ -794,11 +794,13 @@ def discovery(request):
         branches = Branch.objects.filter(country=user.country, town=user.town).order_by('-created_at')[:20]
         rand_branches = branches.random(5)
 
-        promotions = Promotion.objects.filter(branch__country=user.country, branch__town=user.town, is_on=True)[:5]
+        promotions = Promotion.objects.filter(branch__country=user.country, branch__town=user.town, is_on=True)[:20]
         today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
 
         for i in range(3, len(today_promos)):
            today_promos.remove(random.choice(today_promos))
+
+        menus_all = Menu.objects.filter(branch__country=user.country, branch__town=user.town)
     else:
         branches = Branch.objects.all().order_by('-created_at')[:20]
         rand_branches = branches.random(5)
@@ -809,7 +811,8 @@ def discovery(request):
         for i in range(3, len(today_promos)):
            today_promos.remove(random.choice(today_promos))
 
-    menus_all = Menu.objects.all()
+        menus_all = Menu.objects.all()
+
     menus = sorted(list(filter(lambda menu: menu.review_average >= 4, menus_all)), key=lambda menu: menu.review_average, reverse=True)[:10]
     reviews = RestaurantReview.objects.filter(review__gte=4).random(10)
 
@@ -890,7 +893,8 @@ def restaurants(request):
             'towns': json.dumps(list(Branch.objects.values('town', 'country').annotate(branches=Count('town'))), default=str),
             'cuisines': json.dumps([category.to_json for category in RestaurantCategory.objects.all()], default=str),
             'specials': json.dumps(utils.RESTAURANT_SPECIALS, default=str),
-            'services': json.dumps(utils.RESTAURANT_SERVICES, default=str)
+            'services': json.dumps(utils.RESTAURANT_SERVICES, default=str),
+            'types': json.dumps(utils.RESTAURANT_TYPES, default=str)
         })
 
 
@@ -990,6 +994,43 @@ def get_restaurant_dishes(request, restaurant, branch, slug):
             'types': utils.DISH_TIME,
             'address_types': utils.USER_ADDRESS_TYPE,
             'table_locations': utils.TABLE_LOCATION
+        })
+
+
+def get_restaurant_menus_cuisine(request, branch, cuisine, slug):
+    template = 'web/user/restaurant/get_restaurant_menus_cuisine.html'
+    cuisine = RestaurantCategory.objects.get(pk=cuisine)
+    branch = Branch.objects.get(pk=branch)
+    foods = [food.menu for food in Food.objects.filter(branch__pk=branch.pk, cuisine__pk=cuisine.pk)]
+    dishes = [dish.menu for dish in Dish.objects.filter(branch__pk=branch.pk, cuisine__pk=cuisine.pk)]
+    menus = foods + dishes
+    return render(request, template, {
+            'is_logged_in': True if 'user' in request.session else False,
+            'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
+            'cuisine': cuisine,
+            'branch': branch,
+            'menus': menus,
+            'cuisines': sorted(branch.restaurant.categories, key=lambda c: random.random())[:4]
+        })
+
+
+def get_restaurant_menus_category(request, branch, category, slug):
+    template = 'web/user/restaurant/get_restaurant_menus_category.html'
+    category = FoodCategory.objects.get(pk=category)
+    branch = Branch.objects.get(pk=branch)
+    foods = [food.menu for food in Food.objects.filter(branch__pk=branch.pk, category__pk=category.pk)]
+    dishes = [dish.menu for dish in Dish.objects.filter(branch__pk=branch.pk, category__pk=category.pk)]
+    menus = foods + dishes
+    categories = FoodCategory.objects.filter(restaurant__pk=branch.restaurant.pk).exclude(pk=category.pk).random(4)
+    return render(request, template, {
+            'is_logged_in': True if 'user' in request.session else False,
+            'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
+            'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
+            'category': category,
+            'branch': branch,
+            'menus': menus,
+            'categories': categories
         })
 
 

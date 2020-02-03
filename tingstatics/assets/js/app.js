@@ -510,6 +510,14 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                 });
                 fbc.append(fb__hr);
 
+                var fb__types = `<h5 ${fb__h5__st}>Types</h5>`
+                fbc.append(fb__types);
+                var r_types = window.__TING__Types;
+                r_types.forEach(function(t) {
+                    fbc.append($(filtercbx(t.name, t.id, "typ", branches.filter(function(b){return b.type.id == t.id}).length)))
+                });
+                fbc.append(fb__hr);
+
                 var fb__chair_type = `<h5 ${fb__h5__st}>Chair Type</h5>`;
                 var fb__ct__iron = $(filtercbx("Iron", "iron", "chairt", branches.filter(function(b){return b.tables.iron > 0}).length));
                 var fb__ct__wooden = $(filtercbx("Wooden", "wooden", "chairt", branches.filter(function(b){return b.tables.wooden > 0}).length));
@@ -628,6 +636,7 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                         var brs__cuisines = []; var css__cuisines = [];
                         var brs__services = []; var css__services = [];
                         var brs__specials = []; var css__specials = [];
+                        var brs__types = []; var css__types = [];
 
                         for(var i = 0; i < fb.length; i++){
                             var f = fb[i];
@@ -652,13 +661,16 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                                 var bf = brs.filter(function(b){var ff = f.val.split(",");return b.reviews.count > parseInt(ff[0]) && b.reviews.count <= parseInt(ff[1])}).forEach(function(b){if(brs__reviews.includes(b) == false){brs__reviews.push(b)}})
                             } else if(f.gval == "cuis") {
                                 css__cuisines.push(f);
-                                var bf = brs.filter(function(b){ return b.categories.categories.filter(function(ct) { return ct.id == f.val }).length > 0 }).forEach(function(b){if(brs__cuisines.includes(b) == false){brs__cuisines.push(b)}})
+                                var bf = brs.filter(function(b){return b.categories.categories.filter(function(ct) { return ct.id == f.val }).length > 0 }).forEach(function(b){if(brs__cuisines.includes(b) == false){brs__cuisines.push(b)}})
                             } else if(f.gval == "serv") {
                                 css__services.push(f);
-                                var bf = brs.filter(function(b){ return b.services.filter(function(s) { return s.id == f.val }).length > 0 }).forEach(function(b){if(brs__services.includes(b) == false){brs__services.push(b)}})
+                                var bf = brs.filter(function(b){return b.services.filter(function(s) {return s.id == f.val }).length > 0}).forEach(function(b){if(brs__services.includes(b) == false){brs__services.push(b)}})
                             } else if(f.gval == "spec") {
                                 css__specials.push(f);
-                                var bf = brs.filter(function(b){ return b.specials.filter(function(s) { return s.id == f.val }).length > 0 }).forEach(function(b){if(brs__specials.includes(b) == false){brs__specials.push(b)}})
+                                var bf = brs.filter(function(b){return b.specials.filter(function(s) {return s.id == f.val }).length > 0}).forEach(function(b){if(brs__specials.includes(b) == false){brs__specials.push(b)}})
+                            } else if (f.gval == "typ") {
+                                css__types.push(f);
+                                var bf = brs.filter(function(b){return b.type.id == f.val}).forEach(function(b){ if(brs__types.includes(b) == false){brs__types.push(b)}})
                             }
                         }
                         var brs__conc = {
@@ -669,7 +681,8 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                             "reviews":{"brs": brs__reviews, "ccs": ccs__reviews},
                             "cuis":{"brs": brs__cuisines, "ccs": css__cuisines},
                             "serv":{"brs": brs__services, "ccs": css__services},
-                            "spec":{"brs": brs__specials, "ccs": css__specials}
+                            "spec":{"brs": brs__specials, "ccs": css__specials},
+                            "typ":{"brs": brs__types, "css": css__types}
                         }
                         var brs__all = [];
                         Object.keys(brs__conc).forEach(function(l){
@@ -1188,7 +1201,7 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                             ? `${branch.services.map(function(s){
                                 return `<p><i class="icon ${s.icon}"></i> ${s.name}</p>`
                             }).join("")}` 
-                        : `<div class="ui red message">No Specials Available</div>`}
+                        : `<div class="ui red message">No Services Available</div>`}
                     </div>
                 </div>
                 <hr/>
@@ -1199,14 +1212,32 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                     <div class="ui items content" style="min-width:130px;">
                         ${branch.categories.count > 0 
                             ? `${branch.categories.categories.map(function(c){
-                                return `<div class="item">
+                                return `<div style="cursor: pointer;" class="item ting-item-link" data-href="${decodeURIparams(window.__TING__URL_Menus_Cuisine, {"branch": branch.id, "cuisine": c.id, "slug": randomString(16)})}">
                                             <img class="ui avatar image" src="${c.image}" style="border-radius:2px;">
                                             <div class="content">
                                                 <p class="header" style="font-weight: normal; font-size: 14px; margin-top:5px;">${c.name}</p>
                                             </div>
                                         </div>`
                             }).join("")}` 
-                        : `<div class="ui red message">No Specials Available</div>`}
+                        : `<div class="ui red message">No Cuisine Available</div>`}
+                    </div>
+                </div>
+                <hr/>
+                <div class="header" id="ting-open-categories-popup" style="font-size:16px; font-weight:500; text-transform:uppercase; cursor: pointer;">Categories <span style="position:absolute; right: 0;"><i class="icon chevron right"></i></span></div>
+                <div class="ui flowing popup right center transition hidden" id="ting-categories-popup">
+                    <div class="header">Categories</div>
+                    <hr/>
+                    <div class="ui items content" style="min-width:130px;">
+                        ${branch.restaurant.foodCategories.count > 0 
+                            ? `${branch.restaurant.foodCategories.categories.map(function(c){
+                                return `<div style="cursor: pointer;" class="item ting-item-link" data-href="${decodeURIparams(window.__TING__URL_Menus_Category, {"branch": branch.id, "category": c.id, "slug": randomString(16)})}">    
+                                            <img class="ui avatar image" src="${c.image}" style="border-radius:2px;">
+                                            <div class="content">
+                                                <p class="header" style="font-weight: normal; font-size: 14px; margin-top:5px;">${c.name}</p>
+                                            </div>
+                                        </div>`
+                            }).join("")}` 
+                        : `<div class="ui red message">No Category Available</div>`}
                     </div>
                 </div>
                 <hr/>
@@ -1214,6 +1245,8 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                     $("#ting-open-specials-popup").popup({popup : "#ting-specials-popup", on : "click"});
                     $("#ting-open-services-popup").popup({popup : "#ting-services-popup", on : "click"});
                     $("#ting-open-cuisines-popup").popup({popup : "#ting-cuisines-popup", on : "click"});
+                    $("#ting-open-categories-popup").popup({popup : "#ting-categories-popup", on : "click"});
+                    $(".ting-item-link").click(function() { if($(this).attr("data-href") != null) { window.location = $(this).attr("data-href") }})
                 </script>`);
             if(branch.restaurant.purposeId == 2){ rb.append(`<button class="ui primary fluid button" style="text-transform:uppercase;" ${branch.isAvailable == false ? `disabled` : ``}  id="ting-open-make-reservation">Make a Reservation</button>`)}
 
@@ -3741,12 +3774,3 @@ HTMLMarker.prototype.draw = function(){
     panes.overlayImage.style.left = position.x + 30 + 'px';
     panes.overlayImage.style.top = position.y + 52 + 'px';
 }
-
-//0115
-//https://www.youtube.com/watch?v=EwQ-ETXSpGA
-//https://uicookies.com/css-slideshow/
-//https://tympanus.net/Development/DiagonalSlideshow/
-//https://tympanus.net/Development/MotionRevealSlideshow/
-//https://tympanus.net/Development/CrossroadsSlideshow/
-//https://codepen.io/JavaScriptJunkie/full/WgRBxw -> for use
-//162.241.42.255

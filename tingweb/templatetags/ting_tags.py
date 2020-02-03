@@ -103,6 +103,11 @@ def to_slug(value):
 	return value.lower().replace(' ', '-')
 
 
+@register.filter(name='from_slug')
+def from_slug(value):
+	return value.replace('-', '')
+
+
 @register.filter(name='dish_food_q')
 def dish_food_quantity(value, arg):
 	food = DishFood.objects.filter(food=int(value), dish=int(arg)).last()
@@ -143,6 +148,20 @@ def random_five_menu_category(value, arg):
 def random_five_menu_category_count(value, arg):
 	menus = Menu.objects.filter(branch__pk=value)
 	return len([menu for menu in menus if menu.menu_type != 2 and menu.to_json['menu']['category']['id'] == arg])
+
+
+@register.filter(name='category_menus_count')
+def category_menus_count(value, arg):
+	dishes = Dish.objects.filter(category__pk=arg, branch__pk=value).count()
+	foods = Food.objects.filter(category__pk=arg, branch__pk=value).count()
+	return dishes + foods
+
+
+@register.filter(name='cuisine_menus_count')
+def cuisine_menus_count(value, arg):
+	dishes = Dish.objects.filter(cuisine__pk=arg, branch__pk=value).count()
+	foods = Food.objects.filter(cuisine__pk=arg, branch__pk=value).count()
+	return dishes + foods
 
 
 @register.filter(name='menu_name')

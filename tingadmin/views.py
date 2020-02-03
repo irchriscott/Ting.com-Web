@@ -73,14 +73,14 @@ def logout(request):
 def dashboard(request):
 	template = 'admin/dashboard.html'
 	restaurants = Restaurant.objects.all().order_by('-created_at')
-	return render(request, template, {'restaurants': restaurants})
+	return render(request, template, {'restaurants': restaurants, 'types': utils.RESTAURANT_TYPES})
 
 
 @check_admin_login
 def restaurants(request):
 	template = 'admin/dashboard.html'
 	restaurants = Restaurant.objects.all().order_by('-created_at')
-	return render(request, template, {'restaurants': restaurants})
+	return render(request, template, {'restaurants': restaurants, 'types': utils.RESTAURANT_TYPES})
 
 
 @check_admin_login

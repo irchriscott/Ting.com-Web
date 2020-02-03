@@ -42,12 +42,28 @@
                     </div>
                 </div>
                 <div class="field">
-                    <label>Enter Branch Email :</label>
-                    <input type="email" name="email" placeholder="Branch Email" value="{{branch.email}}" required autocomplete="off">
+                    <label>Select Type: </label>
+                    <select class="ui dropdown" name="restaurant_type">
+                        {% for type in types %}
+                            {% if type.id == branch.restaurant_type %}
+                                <option value="{{type.id}}" selected="selected">{{type.name}}</option>
+                            {% else %}
+                                <option value="{{type.id}}">{{type.name}}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
                 </div>
                 <div class="field">
-                    <label>Enter Branch Phone :</label>
-                    <input type="text" name="phone" placeholder="Branch Name" value="{{branch.phone}}" required autocomplete="off">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Enter Branch Email :</label>
+                            <input type="email" name="email" placeholder="Branch Email" value="{{branch.email}}" required autocomplete="off">
+                        </div>
+                        <div class="field">
+                            <label>Enter Branch Phone :</label>
+                            <input type="text" name="phone" placeholder="Branch Name" value="{{branch.phone}}" required autocomplete="off">
+                        </div>
+                    </div>
                 </div>
             </form>
         </div>
@@ -55,6 +71,7 @@
 </div>
 <script type="text/javascript">
     $("#ting-update-branch-form").submitFormAjax();
+    $("select").dropdown()
     google.maps.event.addDomListener(window, 'load', InitializePlaces('ting-search-location-input-else-branch'));
     setTimeout(function () {
         initializeRestaurantMap("ting-branch-latitude", "ting-branch-longitude", "ting-search-location-input-branch", "ting-search-location-input-else-branch", "ting-branch-place-id", "ting-branch-region", "ting-branch-road", "ting-branch-map-container", true, "");

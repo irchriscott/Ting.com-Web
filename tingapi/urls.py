@@ -64,4 +64,17 @@ urlpatterns = [
 	url(r'usr/menu/promotion/get/(?P<promo>\d+)/$', views.api_get_promotion, name='api_promotion_get'),
 	url(r'usr/menu/promotion/interest/(?P<promo>\d+)/$', views.api_interest_promotion, name='api_promotion_interest'),
 
+	# CUISINES
+
+	url(r'usr/g/cuisines/all/$', views.api_get_cuisines),
+	url(r'usr/g/cuisine/r/(?P<cuisine>\d+)/$', views.api_get_cuisine_restaurants),
+	url(r'usr/g/cuisine/m/(?P<cuisine>\d+)/$', views.api_get_cuisine_menus),
+
+	# DISCOVER
+
+	url(r'usr/d/restaurants/$', views.api_get_discover_restaurants),
+	url(r'usr/d/today/promotions/rand/$', views.api_get_today_promotions_rand),
+	url(r'usr/d/today/promotions/all/$', views.api_get_today_promotions_all),
+	url(r'usr/d/menus/reviewed/$', views.api_get_reviewed_menu),
+	url(r'usr/d/menus/discover/$', views.api_get_discover_menus),
 ]

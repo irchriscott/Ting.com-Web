@@ -165,7 +165,7 @@
     <div class="header">
         Edit Branch
     </div>
-    <div class="content">
+    <div class="content scrolling">
         <div class="ting-data-content"></div>
         <div class="ui right ting-loader" style="margin: auto; text-align: center;">
             <img src="{% static 'imgs/loading.gif' %}">
@@ -232,12 +232,24 @@
                     </div>
                 </div>
                 <div class="field">
-                    <label>Enter Branch Email :</label>
-                    <input type="email" name="email" placeholder="Branch Email" required autocomplete="off">
+                    <label>Select Type: </label>
+                    <select class="ui dropdown" name="restaurant_type">
+                        {% for type in types %}
+                            <option value="{{type.id}}">{{type.name}}</option>
+                        {% endfor %}
+                    </select>
                 </div>
                 <div class="field">
-                    <label>Enter Branch Phone :</label>
-                    <input type="text" name="phone" placeholder="Branch Name" required autocomplete="off">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Enter Branch Email :</label>
+                            <input type="email" name="email" placeholder="Branch Email" required autocomplete="off">
+                        </div>
+                        <div class="field">
+                            <label>Enter Branch Phone :</label>
+                            <input type="text" name="phone" placeholder="Branch Name" required autocomplete="off">
+                        </div>
+                    </div>  
                 </div>
                 <div class="ting-action-modal">
                     <div class="actions">

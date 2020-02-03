@@ -17,12 +17,14 @@ from tingweb.backend import UserAuthentication
 from tingweb.mailer import SendUserResetPasswordMail, SendUserUpdateEmailMail, SendUserSuccessResetPasswordMail
 from tingweb.models import (
                                 Restaurant, User, UserResetPassword, UserAddress, Branch, UserRestaurant, Menu,
-                                MenuLike, MenuReview, Promotion, PromotionInterest, RestaurantReview, Booking
+                                MenuLike, MenuReview, Promotion, PromotionInterest, RestaurantReview, Booking,
+                                Food, Dish
                             )
 from tingweb.forms import (
                                 GoogleSignUpForm, UserLocationForm, EmailSignUpForm, UserImageForm, MenuReviewForm,
                                 RestaurantReviewForm, ReservationForm
                             )
+from tingadmin.models import RestaurantCategory
 import tingweb.views as web
 import ting.utils as utils
 from datetime import datetime, timedelta
@@ -315,3 +317,67 @@ def api_get_promotion(request, promo):
 @authenticate_user(xhr='api')
 def api_interest_promotion(request, promo):
 	return web.interest_promotion(request, promo)
+
+
+# CUISINES
+
+
+def api_get_cuisines(request):
+	cuisines = RestaurantCategory.objects.all()
+	return HttpResponse(json.dumps([cuisine.to_json for cuisine in cuisines], default=str), content_type='application/json', status=200)
+
+
+def api_get_cuisine_restaurants(request, cuisine):
+	cuisine = RestaurantCategory.objects.get(pk=cuisine)
+	branches = sorted(set(cuisine.restaurants), key=lambda branch: branch.review_average, reverse=True)
+	return HttpResponse(json.dumps([branch.to_json_s for branch in branches], default=str), content_type='application/json', status=200)
+
+
+def api_get_cuisine_menus(request, cuisine):
+	cuisine = RestaurantCategory.objects.get(pk=cuisine)
+	foods = [food.menu for food in Food.objects.filter(cuisine__pk=cuisine.pk)]
+	dishes = [dish.menu for dish in Dish.objects.filter(cuisine__pk=cuisine.pk)]
+	menus = foods + dishes
+	return HttpResponse(json.dumps([menu.to_json_s for menu in sorted(set(menus), key=lambda menu: menu.to_json['menu']['reviews']['average'], reverse=True)], default=str), content_type='application/json', status=200)
+
+
+# DISCOVER
+
+
+@authenticate_user(xhr='api')
+def api_get_discover_restaurants(request):
+	user = User.objects.get(pk=request.session['user'])
+	branches = Branch.objects.filter(country=user.country, town=user.town).order_by('-created_at')[:20]
+	rand_branches = branches.random(5)
+	return HttpResponse(json.dumps([branch.to_json_s for branch in rand_branches], default=str), content_type='application/json')
+
+
+@authenticate_user(xhr='api')
+def api_get_today_promotions_rand(request):
+	promotions = Promotion.objects.filter(branch__country=user.country, branch__town=user.town, is_on=True)[:20]
+	today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
+
+	for i in range(3, len(today_promos)):
+		today_promos.remove(random.choice(today_promos))
+
+	return HttpResponse(json.dumps([promo.to_json_s for promo in today_promos], default=str), content_type='application/json')
+
+
+@authenticate_user(xhr='api')
+def api_get_today_promotions_all(request):
+	promotions = Promotion.objects.filter(branch__country=user.country, branch__town=user.town, is_on=True)[:20]
+	today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
+	return HttpResponse(json.dumps([promo.to_json_s for promo in today_promos], default=str), content_type='application/json')
+
+
+@authenticate_user(xhr='api')
+def api_get_reviewed_menu(request):
+	menus_all = Menu.objects.filter(branch__country=user.country, branch__town=user.town)
+	menus = sorted(list(filter(lambda menu: menu.review_average >= 4, menus_all)), key=lambda menu: menu.review_average, reverse=True)[:10]
+	return HttpResponse(json.dumps([menu.to_json_s for menu in menus], default=str), content_type='application/json')
+
+
+@authenticate_user(xhr='api')
+def api_get_discover_menus(request):
+	menus = Menu.objects.filter(branch__country=user.country, branch__town=user.town).random(5)
+	return HttpResponse(json.dumps([menu.to_json_s for menu in menus], default=str), content_type='application/json')

@@ -133,7 +133,7 @@
 		                                </div>
 		                            </div>
 		                            <script type="text/javascript">
-		                            	function setTimeStatus() {
+		                            	function setTimeStatus{{branch.pk}}() {
 		                            		var time = statusWorkTime("{{branch.restaurant.opening_str}}", "{{branch.restaurant.closing_str}}");
 		                                    {% if branch.is_available %}
 												$("#ting-resto-open-time-{{branch.pk}}").html(`<div class="ui ${time.clr} label"><i class="clock outline icon"></i> ${time.msg} </div>`);
@@ -141,8 +141,8 @@
 												$("#ting-resto-open-time-{{branch.pk}}").html('<div class="ui red label"><i class="clock outline icon"></i> Not Available </div>');
 											{% endif %}
 		                            	}
-		                            	setTimeStatus();
-		                                setInterval(function(){ setTimeStatus();}, 30000);
+		                            	setTimeStatus{{branch.pk}}();
+		                                setInterval(function(){ setTimeStatus{{branch.pk}}();}, 30000);
 		                                $(".disabled-rating").rating("disable"); $("#bt-popup").dropdown();
 		                                $("#ting-rate-btn-{{branch.pk}}").popup({popup : "#ting-rate-popup-{{branch.pk}}", on : "click"});
 		                                $("#ting-specials-btn-{{branch.pk}}").popup({popup : "#ting-specials-popup-{{branch.pk}}", on : "click"});

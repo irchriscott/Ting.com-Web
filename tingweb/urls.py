@@ -77,6 +77,8 @@ users = [
 	url(r'usr/restaurant/reviews/add/(?P<restaurant>\d+)-(?P<branch>\d+)/$', views.add_restaurant_review, name='ting_usr_add_restaurant_review'),
 	url(r'usr/restaurant/likes/(?P<restaurant>\d+)-(?P<branch>\d+)-(?P<slug>[^/]+)$', views.get_restaurant_likes, name='ting_usr_get_restaurant_likes'),
 	url(r'usr/restaurant/about/(?P<restaurant>\d+)-(?P<branch>\d+)-(?P<slug>[^/]+)$', views.get_restaurant_about, name='ting_usr_get_restaurant_about'),
+	url(r'usr/restaurant/menus/cus/(?P<branch>[^/]+)-(?P<cuisine>[^/]+)-(?P<slug>[^/]+)$', views.get_restaurant_menus_cuisine, name='ting_usr_get_restaurant_menus_cuisine'),
+	url(r'usr/restaurant/menus/cat/(?P<branch>[^/]+)-(?P<category>[^/]+)-(?P<slug>[^/]+)$', views.get_restaurant_menus_category, name='ting_usr_get_restaurant_menus_category'),
 
 	# Menus & Promotions
 

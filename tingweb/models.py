@@ -522,6 +522,7 @@ class Branch(models.Model):
 	phone = models.CharField(max_length=255, null=True, blank=True)
 	specials = models.CharField(max_length=255, null=True, blank=True)
 	services = models.CharField(max_length=255, null=True, blank=True)
+	restaurant_type = models.IntegerField(null=False, blank=True, default=1)
 	is_available = models.BooleanField(default=True)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
@@ -538,6 +539,10 @@ class Branch(models.Model):
 	def name_hi(self):
 		return self.name.replace(' ', '-').lower()
 
+	@property
+	def restaurant_type_str(self):
+		return utils.get_from_dict(utils.RESTAURANT_TYPES, 'id', int(self.restaurant_type))
+	
 	@property
 	def likes(self):
 		return UserRestaurant.objects.filter(restaurant=self.restaurant.pk, branch=self.pk).order_by('-created_at')
@@ -718,6 +723,7 @@ class Branch(models.Model):
 			'email': self.email,
 			'phone': self.phone,
 			'isAvailable': self.is_available,
+			'type': self.restaurant_type_str,
 			'specials': self.get_specials,
 			'services': self.get_services,
 			'categories': {
@@ -805,6 +811,7 @@ class Branch(models.Model):
 			'email': self.email,
 			'phone': self.phone,
 			'isAvailable': self.is_available,
+			'type': self.restaurant_type_str,
 			'specials': self.get_specials,
 			'services': self.get_services,
 			'categories': {
@@ -892,6 +899,7 @@ class Branch(models.Model):
 			'email': self.email,
 			'phone': self.phone,
 			'isAvailable': self.is_available,
+			'type': self.restaurant_type_str,
 			'specials': self.get_specials,
 			'services': self.get_services,
 			'categories': {
@@ -962,6 +970,7 @@ class Branch(models.Model):
 	def to_json_s(self):
 		return {
 			'id': self.pk,
+			'restaurant': self.restaurant.to_json_s,
 			'name': self.name,
 			'country': self.country,
 			'town': self.town,
@@ -974,6 +983,7 @@ class Branch(models.Model):
 			'email': self.email,
 			'phone': self.phone,
 			'isAvailable': self.is_available,
+			'type': self.restaurant_type_str,
 			'specials': self.get_specials,
 			'services': self.get_services,
 			'categories': {
@@ -1740,6 +1750,8 @@ class FoodCategory(models.Model):
 	image = models.ImageField(upload_to=category_image_path, null=False, blank=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
+
+	objects = RandomManager()
 
 	def __str__(self):
 		return self.name
@@ -2901,6 +2913,10 @@ class Menu(models.Model):
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
+				'restaurant': {
+					'name': '%s, %s' % (self.restaurant.name, self.branch.name),
+					'logo': self.restaurant.logo.url
+				},
 				'forAllBranches': self.for_all_branches,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
@@ -2923,6 +2939,10 @@ class Menu(models.Model):
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
+				'restaurant': {
+					'name': '%s, %s' % (self.restaurant.name, self.branch.name),
+					'logo': self.restaurant.logo.url
+				},
 				'forAllBranches': self.for_all_branches,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
@@ -2944,6 +2964,10 @@ class Menu(models.Model):
 				'type':{
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
+				},
+				'restaurant': {
+					'name': '%s, %s' % (self.restaurant.name, self.branch.name),
+					'logo': self.restaurant.logo.url
 				},
 				'forAllBranches': self.for_all_branches,
 				'urls':{
@@ -2970,6 +2994,10 @@ class Menu(models.Model):
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
+				'restaurant': {
+					'name': '%s, %s' % (self.restaurant.name, self.branch.name),
+					'logo': self.restaurant.logo.url
+				},
 				'forAllBranches': self.for_all_branches,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
@@ -2992,6 +3020,10 @@ class Menu(models.Model):
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
+				'restaurant': {
+					'name': '%s, %s' % (self.restaurant.name, self.branch.name),
+					'logo': self.restaurant.logo.url
+				},
 				'forAllBranches': self.for_all_branches,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
@@ -3013,6 +3045,10 @@ class Menu(models.Model):
 				'type':{
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
+				},
+				'restaurant': {
+					'name': '%s, %s' % (self.restaurant.name, self.branch.name),
+					'logo': self.restaurant.logo.url
 				},
 				'forAllBranches': self.for_all_branches,
 				'urls':{
@@ -3039,6 +3075,10 @@ class Menu(models.Model):
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
+				'restaurant': {
+					'name': '%s, %s' % (self.restaurant.name, self.branch.name),
+					'logo': self.restaurant.logo.url
+				},
 				'forAllBranches': self.for_all_branches,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
@@ -3050,6 +3090,10 @@ class Menu(models.Model):
 					'apiReviews': reverse('api_restaurant_menu_reviews', kwargs={'menu': self.pk}),
 					'apiAddReview': reverse('api_restaurant_menu_add_review', kwargs={'menu': self.pk}),
 				},
+				'restaurant': {
+					'name': '%s, %s' % (self.restaurant.name, self.branch.name),
+					'logo': self.restaurant.logo.url
+				},
 				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
 				'menu': food.to_json_f
 			}
@@ -3060,6 +3104,10 @@ class Menu(models.Model):
 				'type':{
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
+				},
+				'restaurant': {
+					'name': '%s, %s' % (self.restaurant.name, self.branch.name),
+					'logo': self.restaurant.logo.url
 				},
 				'forAllBranches': self.for_all_branches,
 				'urls':{
@@ -3082,6 +3130,10 @@ class Menu(models.Model):
 				'type':{
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
+				},
+				'restaurant': {
+					'name': '%s, %s' % (self.restaurant.name, self.branch.name),
+					'logo': self.restaurant.logo.url
 				},
 				'forAllBranches': self.for_all_branches,
 				'urls':{
@@ -3108,6 +3160,10 @@ class Menu(models.Model):
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
+				'restaurant': {
+					'name': '%s, %s' % (self.restaurant.name, self.branch.name),
+					'logo': self.restaurant.logo.url
+				},
 				'forAllBranches': self.for_all_branches,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
@@ -3130,6 +3186,10 @@ class Menu(models.Model):
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
 				},
+				'restaurant': {
+					'name': '%s, %s' % (self.restaurant.name, self.branch.name),
+					'logo': self.restaurant.logo.url
+				},
 				'forAllBranches': self.for_all_branches,
 				'urls':{
 					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
@@ -3151,6 +3211,10 @@ class Menu(models.Model):
 				'type':{
 					'id': self.menu_type,
 					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
+				},
+				'restaurant': {
+					'name': '%s, %s' % (self.restaurant.name, self.branch.name),
+					'logo': self.restaurant.logo.url
 				},
 				'forAllBranches': self.for_all_branches,
 				'urls':{

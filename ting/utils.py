@@ -158,6 +158,17 @@ BOOKING_STATUSES = (
 		(7, 'Canceled')
 	)
 
+RESTAURANT_TYPES = [
+		{'id': 1, 'name': 'Restaurant'},
+		{'id': 2, 'name': 'Outlet'},
+		{'id': 3, 'name': 'Resto & Bar'},
+		{'id': 4, 'name': 'Bar'},
+		{'id': 5, 'name': 'Coffee Shop'},
+		{'id': 6, 'name': 'Supermarket'},
+		{'id': 7, 'name': 'Food Truck'},
+		{'id': 8, 'name': 'Backery'}
+]
+
 
 def get_from_tuple(data, key):
 	if isinstance(data, tuple) is True:

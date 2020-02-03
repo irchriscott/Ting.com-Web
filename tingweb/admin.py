@@ -494,10 +494,12 @@ def branches(request):
 	template = 'web/admin/branches.html'
 	admin = Administrator.objects.get(pk=request.session['admin'])
 	branches = Branch.objects.filter(restaurant__pk=admin.restaurant.pk)
+	types = utils.RESTAURANT_TYPES
 	return render(request, template, {
 			'branches': branches,
 			'admin': admin,
-			'restaurant': admin.restaurant
+			'restaurant': admin.restaurant,
+			'types': types
 		})
 
 
@@ -558,10 +560,12 @@ def edit_branch(request, branch):
 	template = 'web/admin/ajax/load_edit_branch.html'
 	branch = Branch.objects.get(pk=branch)
 	admin = Administrator.objects.get(pk=request.session['admin'])
+	types = utils.RESTAURANT_TYPES
 	return render(request, template, {
 			'branch': branch,
 			'admin': admin,
-			'restaurant': admin.restaurant
+			'restaurant': admin.restaurant,
+			'types': types
 		})
 
 
