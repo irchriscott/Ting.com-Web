@@ -755,7 +755,7 @@ def index(request):
         promotions = Promotion.objects.filter(branch__country=user.country, branch__town=user.town, is_on=True)[:20]
         today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
 
-        for i in range(3, len(today_promos)):
+        for i in range(4, len(today_promos)):
            today_promos.remove(random.choice(today_promos))
     else:
         branches = Branch.objects.all().order_by('-created_at')[:20]
@@ -764,7 +764,7 @@ def index(request):
         promotions = Promotion.objects.filter(is_on=True)[:5]
         today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
 
-        for i in range(3, len(today_promos)):
+        for i in range(4, len(today_promos)):
            today_promos.remove(random.choice(today_promos))
 
     menus_all = Menu.objects.all()
@@ -797,7 +797,7 @@ def discovery(request):
         promotions = Promotion.objects.filter(branch__country=user.country, branch__town=user.town, is_on=True)[:20]
         today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
 
-        for i in range(3, len(today_promos)):
+        for i in range(4, len(today_promos)):
            today_promos.remove(random.choice(today_promos))
 
         menus_all = Menu.objects.filter(branch__country=user.country, branch__town=user.town)
@@ -808,7 +808,7 @@ def discovery(request):
         promotions = Promotion.objects.filter(is_on=True)[:5]
         today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
 
-        for i in range(3, len(today_promos)):
+        for i in range(4, len(today_promos)):
            today_promos.remove(random.choice(today_promos))
 
         menus_all = Menu.objects.all()
@@ -866,10 +866,10 @@ def discover_today_promotions(request):
     if is_logged_in == True:
         user = User.objects.get(pk=request.session['user'])
         promotions = Promotion.objects.filter(branch__country=user.country, branch__town=user.town, is_on=True)
-        today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
+        today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))
     else:
         promotions = Promotion.objects.filter(is_on=True)
-        today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
+        today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))
 
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,

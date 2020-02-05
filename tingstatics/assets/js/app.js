@@ -803,82 +803,90 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                                             <div class="ui disabled-rating star rating" data-rating="${br.reviews.average}" data-max-rating="5" style="margin-bottom:10px;"></div>
                                             <p class="ting-resto-item-address" data-position="${i}" data-branch-id="${br.id}"><i icon class="icon map marker alternate"></i> ${br.address}</p>
                                         </div>
-                                        <div class="description">
-                                            <div class="ui small labeled icon button top left pointing dropdown bt-popup ting-tab-btn" data-tab='{"id": "${br.id}", "type": "cat", "pos": ${i}}' data-branch-id="${br.id}" data-tooltip="Categories" data-position="top left">
-                                                <i class="boxes link icon"></i> ${br.restaurant.foodCategories.count}
-                                                <div class="menu fluid" style="width: auto !important;">
-                                                    <div class="header">Categories</div>
-                                                    ${br.restaurant.foodCategories.categories.map(function(c){
-                                                        return `<div class="item" style="width: auto !important;" data-value="${c.id}">
-                                                                    <img class="ui mini avatar image" style="width: 30px; height: 30px;" src="${c.image}">
-                                                                    <span class="text">${c.name}</span>
-                                                                </div>`;
-                                                    }).join('')}
+                                        ${ br.menus.menus != null ? `
+                                            <div class="description">
+                                                <div class="ui small labeled icon button top left pointing dropdown bt-popup ting-tab-btn" data-tab='{"id": "${br.id}", "type": "cat", "pos": ${i}}' data-branch-id="${br.id}" data-tooltip="Categories" data-position="top left">
+                                                    <i class="boxes link icon"></i> ${br.restaurant.foodCategories.count}
+                                                    <div class="menu fluid" style="width: auto !important;">
+                                                        <div class="header">Categories</div>
+                                                        ${br.restaurant.foodCategories.categories.map(function(c){
+                                                            return `<div class="item" style="width: auto !important;" data-value="${c.id}">
+                                                                        <img class="ui mini avatar image" style="width: 30px; height: 30px;" src="${c.image}">
+                                                                        <span class="text">${c.name}</span>
+                                                                    </div>`;
+                                                        }).join('')}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div class="ui small labeled icon button top left pointing dropdown bt-popup ting-tab-btn" data-tab='{"id": "${br.id}", "type": "food", "pos": ${i}}' data-branch-id="${br.id}" data-tooltip="Foods" data-position="top left">
-                                                <i class="utensils spoon icon"></i> ${numerilize(br.menus.type.foods.count, br.menus.type.foods.count, 0)}
-                                                <div class="menu fluid">
-                                                    <div class="header">Foods</div>
-                                                    ${br.menus.menus.filter(function(m){return m.type.id == 1}).map(function(m){
-                                                        return `<div class="item" data-value="${m.menu.id}">
-                                                                    <img class="ui mini avatar image" style="width: 30px; height: 30px;" src="${m.menu.images.images[0].image}">
-                                                                    <span class="text">${m.menu.name}</span>
-                                                                    <span class="description">${m.menu.currency} ${numerilize(m.menu.price, m.menu.price, 0)}</span>
-                                                                </div>`;
-                                                    }).join('')}
+                                                <div class="ui small labeled icon button top left pointing dropdown bt-popup ting-tab-btn" data-tab='{"id": "${br.id}", "type": "food", "pos": ${i}}' data-branch-id="${br.id}" data-tooltip="Foods" data-position="top left">
+                                                    <i class="utensils spoon icon"></i> ${numerilize(br.menus.type.foods.count, br.menus.type.foods.count, 0)}
+                                                    <div class="menu fluid">
+                                                        <div class="header">Foods</div>
+                                                        ${br.menus.menus.filter(function(m){return m.type.id == 1}).map(function(m){
+                                                            return `<div class="item" data-value="${m.menu.id}">
+                                                                        <img class="ui mini avatar image" style="width: 30px; height: 30px;" src="${m.menu.images.images[0].image}">
+                                                                        <span class="text">${m.menu.name}</span>
+                                                                        <span class="description">${m.menu.currency} ${numerilize(m.menu.price, m.menu.price, 0)}</span>
+                                                                    </div>`;
+                                                        }).join('')}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div class="ui small labeled icon button top left pointing dropdown bt-popup ting-tab-btn" data-tab='{"id": "${br.id}", "type": "drink", "pos": ${i}}' data-branch-id="${br.id}" data-tooltip="Drinks" data-position="top left">
-                                                <i class="glass martini icon"></i> ${numerilize(br.menus.type.drinks, br.menus.type.drinks, 0)}
-                                                <div class="menu fluid">
-                                                    <div class="header">Drinks</div>
-                                                    ${br.menus.menus.filter(function(m){return m.type.id == 2}).map(function(m){
-                                                        return `<div class="item" data-value="${m.menu.id}">
-                                                                    <img class="ui mini avatar image" style="width: 30px; height: 30px;" src="${m.menu.images.images[0].image}">
-                                                                    <span class="text">${m.menu.name}</span>
-                                                                    <span class="description">${m.menu.currency} ${numerilize(m.menu.price, m.menu.price, 0)}</span>
-                                                                </div>`;
-                                                    }).join('')}
+                                                <div class="ui small labeled icon button top left pointing dropdown bt-popup ting-tab-btn" data-tab='{"id": "${br.id}", "type": "drink", "pos": ${i}}' data-branch-id="${br.id}" data-tooltip="Drinks" data-position="top left">
+                                                    <i class="glass martini icon"></i> ${numerilize(br.menus.type.drinks, br.menus.type.drinks, 0)}
+                                                    <div class="menu fluid">
+                                                        <div class="header">Drinks</div>
+                                                        ${br.menus.menus.filter(function(m){return m.type.id == 2}).map(function(m){
+                                                            return `<div class="item" data-value="${m.menu.id}">
+                                                                        <img class="ui mini avatar image" style="width: 30px; height: 30px;" src="${m.menu.images.images[0].image}">
+                                                                        <span class="text">${m.menu.name}</span>
+                                                                        <span class="description">${m.menu.currency} ${numerilize(m.menu.price, m.menu.price, 0)}</span>
+                                                                    </div>`;
+                                                        }).join('')}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div class="ui small labeled icon button top left pointing dropdown bt-popup ting-tab-btn" data-tab='{"id": "${br.id}", "type": "dish", "pos": ${i}}' data-branch-id="${br.id}" data-tooltip="Dishes" data-position="top left">
-                                                <i class="utensils icon"></i> ${numerilize(br.menus.type.dishes, br.menus.type.dishes, 0)}
-                                                <div class="menu fluid">
-                                                    <div class="header">Dishes</div>
-                                                    ${br.menus.menus.filter(function(m){return m.type.id == 3}).map(function(m){
-                                                        return `<div class="item" data-value="${m.menu.id}">
-                                                                    <img class="ui mini avatar image" style="width: 30px; height: 30px;" src="${m.menu.images.images[0].image}">
-                                                                    <span class="text">${m.menu.name}</span>
-                                                                    <span class="description">${m.menu.currency} ${numerilize(m.menu.price, m.menu.price, 0)}</span>
-                                                                </div>`;
-                                                    }).join('')}
+                                                <div class="ui small labeled icon button top left pointing dropdown bt-popup ting-tab-btn" data-tab='{"id": "${br.id}", "type": "dish", "pos": ${i}}' data-branch-id="${br.id}" data-tooltip="Dishes" data-position="top left">
+                                                    <i class="utensils icon"></i> ${numerilize(br.menus.type.dishes, br.menus.type.dishes, 0)}
+                                                    <div class="menu fluid">
+                                                        <div class="header">Dishes</div>
+                                                        ${br.menus.menus.filter(function(m){return m.type.id == 3}).map(function(m){
+                                                            return `<div class="item" data-value="${m.menu.id}">
+                                                                        <img class="ui mini avatar image" style="width: 30px; height: 30px;" src="${m.menu.images.images[0].image}">
+                                                                        <span class="text">${m.menu.name}</span>
+                                                                        <span class="description">${m.menu.currency} ${numerilize(m.menu.price, m.menu.price, 0)}</span>
+                                                                    </div>`;
+                                                        }).join('')}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div class="ting-menus-list-item" id="ting-menus-list-item-${br.id}">
-                                                ${br.restaurant.foodCategories.count > 0 ? br.restaurant.foodCategories.categories.sort(function(a, b){
-                                                    if(Date.parse(a.createdAt) > Date.parse(b.createdAt)){return -1}
-                                                    if(Date.parse(a.createdAt) < Date.parse(b.createdAt)){return 1}
-                                                    return 0;
-                                                }).slice(0, 4).map(function(c){
-                                                    return `<div class="ting-menu-image-list lst-popup-${br.id}-${c.id}">
-                                                                <img src="${c.image}" />
-                                                            </div>
-                                                            <div class="ui flowing popup basic transition hidden ting-menu-popup-${br.id}-${c.id}" style="top:-20px !important;">
-                                                                <div class="header">${c.name}</div>
-                                                                <div class="description">${c.description}</div>
-                                                            </div><script type="text/javascript">$(".lst-popup-${br.id}-${c.id}").popup({popup : ".ting-menu-popup-${br.id}-${c.id}", on : "hover", boundery: "body"});</script>`;
-                                                }).join("") : `<div class="ui red message">No Category To Show</div>`}
-                                                    
-                                            </div>
-                                        </div>
+                                                <div class="ting-menus-list-item" id="ting-menus-list-item-${br.id}">
+                                                    ${br.restaurant.foodCategories.count > 0 ? br.restaurant.foodCategories.categories.sort(function(a, b){
+                                                        if(Date.parse(a.createdAt) > Date.parse(b.createdAt)){return -1}
+                                                        if(Date.parse(a.createdAt) < Date.parse(b.createdAt)){return 1}
+                                                        return 0;
+                                                    }).slice(0, 4).map(function(c){
+                                                        return `<div class="ting-menu-image-list lst-popup-${br.id}-${c.id}">
+                                                                    <a href="${decodeURIparams(window.__TING__URL_Menus_Category, {"branch": br.id, "category": c.id, "slug": randomString(16)})}" class="ting-menu-url" target="_blank">
+                                                                        <img src="${c.image}" />
+                                                                    </a>
+                                                                </div>
+                                                                <div class="ui flowing popup basic transition hidden ting-menu-popup-${br.id}-${c.id}" style="top:-20px !important;">
+                                                                    <div class="header">${c.name}</div>
+                                                                    <div class="description">${c.description}</div>
+                                                                </div><script type="text/javascript">$(".lst-popup-${br.id}-${c.id}").popup({popup : ".ting-menu-popup-${br.id}-${c.id}", on : "hover", boundery: "body"});</script>`;
+                                                    }).join("") : `<div class="ui red message">No Category To Show</div>`}
+                                                        
+                                                </div>
+                                            </div>` 
+                                        : `` }
                                         
+                                        ${br.categories.count > 0 ? `<p><i icon class="icon utensils" style="color: #999999;"></i> ${br.categories.categories.shuffle().map(function(c){ return c.name }).join(", ")}</p>` : ``}
+                                        ${br.restaurant.foodCategories.count > 0 ? `<p><i icon class="icon boxes" style="color: #999999;"></i> ${br.restaurant.foodCategories.categories.shuffle().map(function(c){ return c.name }).join(", ")}</p>` : ``}
+
                                         <div class="extra">
                                             <div class="ui label ting-resto-item-map-direction" data-url="${decodeURIparams(window.__TING__URL_Load_Branch_Directions, {"restaurant": br.restaurant.id, "branch": br.id})}" data-position="${i}" data-branch-id="${br.id}"><i class="icon map marker alternate"></i> ${br.dist} Km</div>
                                             <span id="ting-resto-open-time-${br.id}"><div class="ui ${br.isAvailable == true ? s.clr : "red"} label"><i class="clock outline icon"></i> ${br.isAvailable == true ? s.msg : "Not Available"}</div></span>
                                             <div class="ui label" style="cursor:pointer;"><i class="heart outline icon"></i>${numerilize(br.likes.count, null, 0)}</div>
                                             <div class="ui label" id="ting-rate-btn-${br.id}" style="cursor:pointer;"><i class="star outline icon"></i>${numerilize(br.reviews.count, null, 0)}</div>
                                             <div class="ui label" id="ting-specials-btn-${br.id}" style="cursor:pointer;"><i class="plus icon"></i>${br.specials.length}</div>
+                                            <div class="ui label" id="ting-cuisines-btn-${br.id}" style="cursor:pointer;"><i class="utensils icon"></i>${br.categories.count}</div>
                                         </div>
                                         <script>
                                             setInterval(function(){
@@ -935,12 +943,27 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                                                     : `<div class="ui red message">No Specials Available</div>`}
                                             </div>
                                         </div>
+                                        <div class="ui flowing popup right center transition hidden" id="ting-cuisines-popup-${br.id}">
+                                            <div class="header">Cuisines</div>
+                                            <hr/>
+                                            <div class="ui items content" style="min-width:170px;">
+                                                ${br.categories.count > 0 
+                                                    ? `${br.categories.categories.map(function(c){
+                                                        return `<div style="cursor: pointer;" class="item">
+                                                                    <img class="ui avatar image" src="${c.image}" style="border-radius:2px;">
+                                                                    <div class="content">
+                                                                        <p class="header" href="${decodeURIparams(window.__TING__URL_Menus_Cuisine, {"branch": br.id, "cuisine": c.id, "slug": randomString(16)})}" style="font-weight: normal; font-size: 14px; margin-top:5px;">${c.name}</p>
+                                                                    </div>
+                                                                </div>`
+                                                    }).join("")}` 
+                                                : `<div class="ui red message">No Cuisine Available</div>`}
+                                            </div>
+                                        </div>
                                         <script type="text/javascript">
-                                            $(".disabled-rating").rating("disable"); $("#bt-popup").dropdown();
                                             $("#ting-rate-btn-${br.id}").popup({popup : "#ting-rate-popup-${br.id}", on : "click"});
                                             $("#ting-specials-btn-${br.id}").popup({popup : "#ting-specials-popup-${br.id}", on : "click"});
-                                            $(".bt-popup").popup();$("#ting-like-restaurant-${br.id}").likeRestaurant();
-                                            $(".header").click(function(){window.open($(this).attr("href"), "_blank"); });
+                                            $("#ting-cuisines-btn-${br.id}").popup({popup : "#ting-cuisines-popup-${br.id}", on : "click"});
+                                            $("#ting-like-restaurant-${br.id}").likeRestaurant();
                                         </script>
                                     </div>
                                 `;
@@ -1019,13 +1042,17 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                                             }).slice(0, 4);
                                             for(var i = 0; i < cs.length; i++){
                                                 cdtt.append(`<div class="ting-menu-image-list lst-popup-${brt.id}-${cs[i].id}">
-                                                                <img src="${cs[i].image}" />
+                                                                <a href="${decodeURIparams(window.__TING__URL_Menus_Category, {"branch": brt.id, "category": cs[i].id, "slug": randomString(16)})}" class="ting-menu-url-${brt.id}-c" target="_blank">
+                                                                    <img src="${cs[i].image}" />
+                                                                </a>
                                                             </div>
                                                             <div class="ui flowing popup basic transition hidden ting-menu-popup-${brt.id}-${cs[i].id}" style="top:-20px !important;">
                                                                 <div class="header">${cs[i].name}</div>
                                                                 <div class="description">${cs[i].description}</div>
-                                                            </div><script type="text/javascript">$(".lst-popup-${brt.id}-${cs[i].id}").popup({popup : ".ting-menu-popup-${brt.id}-${cs[i].id}", on : "hover", boundery: "body"});</script>`);
+                                                            </div><script type="text/javascript">$(".lst-popup-${brt.id}-${cs[i].id}").popup({popup : ".ting-menu-popup-${brt.id}-${cs[i].id}", on : "hover", boundery: "body"});</script>
+                                                        `);
                                             }
+                                            cdtt.append(`<script type="text/javascript"> $(".ting-menu-url-${brt.id}-c").click(function(){window.open($(this).attr("href"), "_blank")}); </script>`)
                                         } else {cdtt.html(`<div class="ui red message">No Category To Show</div>`)}
                                     } else if (dtt.type == "food"){
                                         var fds = brt.menus.menus.filter(function(f){return f.type.id == 1}).sort(function(a, b){
@@ -1036,7 +1063,7 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                                         if(fds.length > 0){
                                             for(var i = 0; i < fds.length; i++){
                                                 cdtt.append(`<div class="ting-menu-image-list lst-popup-${brt.id}-${fds[i].menu.id}">
-                                                                <a href="${fds[i].menu.url}" target="_blank" class="ting-menu-url"><img src="${fds[i].menu.images.images[Math.floor(Math.random() * (fds[i].menu.images.count - 1))].image}" /></a>
+                                                                <a href="${fds[i].menu.url}" target="_blank" class="ting-menu-url-${brt.id}-f"><img src="${fds[i].menu.images.images[Math.floor(Math.random() * (fds[i].menu.images.count - 1))].image}" /></a>
                                                             </div>
                                                             <div class="ui flowing popup basic transition hidden ting-menu-popup-${brt.id}-${fds[i].menu.id}">
                                                                 <div class="header">${fds[i].menu.name}</div>
@@ -1048,11 +1075,14 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                                                                     <div class="ui label"><i class="icon utensils spoon"></i> ${fds[i].menu.foodType}</div>
                                                                     <div class="ui label"><i class="icon tag"></i> ${fds[i].menu.currency} ${numerilize(fds[i].menu.price, fds[i].menu.price, 0)} ${fds[i].menu.isCountable == true ? ` (${fds[i].menu.quantity} pieces)` : ``}</div>
                                                                 </div>
-                                                            </div><script type="text/javascript">$(".lst-popup-${brt.id}-${fds[i].menu.id}").popup({popup : ".ting-menu-popup-${brt.id}-${fds[i].menu.id}", on : "hover"});
-                                                                $(".disabled-rating").rating("disable");
-                                                                $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
-                                                            </script>`);
+                                                            </div><script type="text/javascript">$(".lst-popup-${brt.id}-${fds[i].menu.id}").popup({popup : ".ting-menu-popup-${brt.id}-${fds[i].menu.id}", on : "hover"});</script>
+                                                        `);
                                             }
+                                            cdtt.append(`<script type="text/javascript">
+                                                            $(".disabled-rating").rating("disable"); 
+                                                            $(".ting-menu-url-${brt.id}-f").click(function(){window.open($(this).attr("href"), "_blank")})
+                                                        </script>
+                                                    `)
                                         } else {cdtt.html(`<div class="ui red message">No Food To Show</div>`)}
                                     } else if (dtt.type == "drink"){
                                         var fds = brt.menus.menus.filter(function(f){return f.type.id == 2}).sort(function(a, b){
@@ -1063,7 +1093,7 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                                         if(fds.length > 0){
                                             for(var i = 0; i < fds.length; i++){
                                                 cdtt.append(`<div class="ting-menu-image-list lst-popup-${brt.id}-${fds[i].menu.id}">
-                                                                <a href="${fds[i].menu.url}" target="_blank" class="ting-menu-url"><img src="${fds[i].menu.images.images[Math.floor(Math.random() * (fds[i].menu.images.count - 1))].image}" /></a>
+                                                                <a href="${fds[i].menu.url}" target="_blank" class="ting-menu-url-${brt.id}-dr"><img src="${fds[i].menu.images.images[Math.floor(Math.random() * (fds[i].menu.images.count - 1))].image}" /></a>
                                                             </div>
                                                             <div class="ui flowing popup basic transition hidden ting-menu-popup-${brt.id}-${fds[i].menu.id}">
                                                                 <div class="header">${fds[i].menu.name}</div>
@@ -1074,11 +1104,14 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                                                                     <div class="ui label"><i class="icon boxes"></i> ${fds[i].menu.drinkType}</div>
                                                                     <div class="ui label"><i class="icon tag"></i> ${fds[i].menu.currency} ${numerilize(fds[i].menu.price, fds[i].menu.price, 0)} ${fds[i].menu.isCountable == true ? `(${fds[i].menu.quantity} pieces)` : ``}</div>
                                                                 </div>
-                                                            </div><script type="text/javascript">$(".lst-popup-${brt.id}-${fds[i].menu.id}").popup({popup : ".ting-menu-popup-${brt.id}-${fds[i].menu.id}", on : "hover", boundery: "body"});
-                                                                $(".disabled-rating").rating("disable");
-                                                                $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
-                                                            </script>`);
+                                                            </div><script type="text/javascript">$(".lst-popup-${brt.id}-${fds[i].menu.id}").popup({popup : ".ting-menu-popup-${brt.id}-${fds[i].menu.id}", on : "hover", boundery: "body"});</script>
+                                                        `);
                                             }
+                                            cdtt.append(`<script type="text/javascript">
+                                                            $(".disabled-rating").rating("disable");
+                                                            $(".ting-menu-url-${brt.id}-dr").click(function(){window.open($(this).attr("href"), "_blank")})
+                                                        </script>
+                                                    `)
                                         } else {cdtt.html(`<div class="ui red message">No Drink To Show</div>`)}
                                     } else if (dtt.type == "dish"){
                                         var fds = brt.menus.menus.filter(function(f){return f.type.id == 3}).sort(function(a, b){
@@ -1089,7 +1122,7 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                                         if(fds.length > 0){
                                             for(var i = 0; i < fds.length; i++){
                                                 cdtt.append(`<div class="ting-menu-image-list lst-popup-${brt.id}-${fds[i].menu.id}">
-                                                                <a href="${fds[i].menu.url}" target="_blank" class="ting-menu-url"><img src="${fds[i].menu.images.images[Math.floor(Math.random() * (fds[i].menu.images.count - 1))].image}" /></a>
+                                                                <a href="${fds[i].menu.url}" target="_blank" class="ting-menu-url-${brt.id}-ds"><img src="${fds[i].menu.images.images[Math.floor(Math.random() * (fds[i].menu.images.count - 1))].image}" /></a>
                                                             </div>
                                                             <div class="ui flowing popup basic transition hidden ting-menu-popup-${brt.id}-${fds[i].menu.id}">
                                                                 <div class="header">${fds[i].menu.name}</div>
@@ -1101,11 +1134,14 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                                                                     <div class="ui label"><i class="icon clock"></i> ${fds[i].menu.dishTime}</div>
                                                                     <div class="ui label"><i class="icon tag"></i> ${fds[i].menu.currency} ${numerilize(fds[i].menu.price, fds[i].menu.price, 0)} ${fds[i].menu.isCountable == true ? `(${fds[i].menu.quantity} pieces)` : ``}</div>
                                                                 </div>
-                                                            </div><script type="text/javascript">$(".lst-popup-${brt.id}-${fds[i].menu.id}").popup({popup : ".ting-menu-popup-${brt.id}-${fds[i].menu.id}", on : "hover", boundery: "body"});
-                                                                $(".disabled-rating").rating("disable");
-                                                                $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
-                                                            </script>`);
+                                                            </div><script type="text/javascript">$(".lst-popup-${brt.id}-${fds[i].menu.id}").popup({popup : ".ting-menu-popup-${brt.id}-${fds[i].menu.id}", on : "hover", boundery: "body"});</script>
+                                                        `);
                                             }
+                                            cdtt.append(`<script type="text/javascript">
+                                                            $(".disabled-rating").rating("disable"); 
+                                                            $(".ting-menu-url-${brt.id}-ds").click(function(){window.open($(this).attr("href"), "_blank")})
+                                                        </script>
+                                                    `)
                                         } else {cdtt.html(`<div class="ui red message">No Dish To Show</div>`)}
                                     }
                                 } 
@@ -1128,6 +1164,18 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                             });
                             ctn.append(tc);
                         }
+                        ctn.append(`
+                            <script type="text/javascript">
+                                $(".bt-popup").popup();
+                                $(".disabled-rating").rating("disable"); 
+                                $(".header").click(function(){
+                                    if($(this).attr("href") != null && $(this).attr("href") != undefined && $(this).attr("href") != ""){
+                                        $('<a href="' + $(this).attr("href") + '" target="_blank"></a>')[0].click();
+                                    }
+                                });
+                                $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
+                            </script>
+                        `);
                         md.html(ctn);
                     } else {md.html(`<div class="ting-empty-data"><i class="icon utensils"></i><p>No Restaurant To Show</p></div>`)}
                 }
@@ -3325,6 +3373,14 @@ var numerilize = function(n, t, d){
         }
         return s.join(dec);
     }
+}
+
+Array.prototype.shuffle = function () {
+    for (var i = this.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        [this[i], this[j]] = [this[j], this[i]];
+    }
+    return this;
 }
 
 function hideModal(container){ $(container).modal("hide");}

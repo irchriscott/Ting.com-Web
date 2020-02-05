@@ -52,6 +52,8 @@
 	window.__TING__URL_Top_Five = decodeURI("{% url 'ting_usr_load_branch_top_five' '{restaurant}' '{branch}' %}");
 	window.__TING__URL_Filter_Restaurants = "{% url 'ting_usr_global_restaurants_filter' %}";
 	window.__TING__URL_Load_Branch_Directions = decodeURI("{% url 'ting_usr_load_branch_directions' '{restaurant}' '{branch}' %}");
+	window.__TING__URL_Menus_Cuisine = decodeURI("{% url 'ting_usr_get_restaurant_menus_cuisine' '{branch}' '{cuisine}' '{slug}' %}");
+	window.__TING__URL_Menus_Category = decodeURI("{% url 'ting_usr_get_restaurant_menus_category' '{branch}' '{category}' '{slug}' %}");
 	window.__TING__Countries = {{countries|safe}}
 	window.__TING__Towns = {{towns|safe}}
 	window.__TING__Cuisines = {{cuisines|safe}}

@@ -354,10 +354,11 @@ def api_get_discover_restaurants(request):
 
 @authenticate_user(xhr='api')
 def api_get_today_promotions_rand(request):
+	user = User.objects.get(pk=request.session['user'])
 	promotions = Promotion.objects.filter(branch__country=user.country, branch__town=user.town, is_on=True)[:20]
 	today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
 
-	for i in range(3, len(today_promos)):
+	for i in range(4, len(today_promos)):
 		today_promos.remove(random.choice(today_promos))
 
 	return HttpResponse(json.dumps([promo.to_json_s for promo in today_promos], default=str), content_type='application/json')
@@ -365,13 +366,15 @@ def api_get_today_promotions_rand(request):
 
 @authenticate_user(xhr='api')
 def api_get_today_promotions_all(request):
-	promotions = Promotion.objects.filter(branch__country=user.country, branch__town=user.town, is_on=True)[:20]
-	today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
+	user = User.objects.get(pk=request.session['user'])
+	promotions = Promotion.objects.filter(branch__country=user.country, branch__town=user.town, is_on=True)
+	today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))
 	return HttpResponse(json.dumps([promo.to_json_s for promo in today_promos], default=str), content_type='application/json')
 
 
 @authenticate_user(xhr='api')
 def api_get_reviewed_menu(request):
+	user = User.objects.get(pk=request.session['user'])
 	menus_all = Menu.objects.filter(branch__country=user.country, branch__town=user.town)
 	menus = sorted(list(filter(lambda menu: menu.review_average >= 4, menus_all)), key=lambda menu: menu.review_average, reverse=True)[:10]
 	return HttpResponse(json.dumps([menu.to_json_s for menu in menus], default=str), content_type='application/json')
@@ -379,5 +382,6 @@ def api_get_reviewed_menu(request):
 
 @authenticate_user(xhr='api')
 def api_get_discover_menus(request):
+	user = User.objects.get(pk=request.session['user'])
 	menus = Menu.objects.filter(branch__country=user.country, branch__town=user.town).random(5)
 	return HttpResponse(json.dumps([menu.to_json_s for menu in menus], default=str), content_type='application/json')

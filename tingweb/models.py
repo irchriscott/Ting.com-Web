@@ -3519,6 +3519,8 @@ class Promotion(models.Model):
 		return {
 			'id': self.pk,
 			'occasionEvent': self.occasion_event,
+			'restaurant': self.restaurant.to_json_s,
+			'branch': self.branch.to_json_s,
 			'uuid': self.uuid,
 			'uuidUrl': self.uuid_url,
 			'promotionItem': {
