@@ -499,7 +499,8 @@ class Restaurant(models.Model):
 				'count': self.likes_count
 			},
 			'foodCategories':{
-				'count': self.food_categories_count
+				'count': self.food_categories_count,
+				'categories': [category.to_json for category in self.food_categories]
 			},
 			'config': self.config.to_json,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
@@ -846,7 +847,7 @@ class Branch(models.Model):
 					'drinks': self.drinks_count,
 					'dishes': self.dishes_count
 				},
-				'menus': [menu.to_json for menu in self.menus]
+				'menus': [menu.to_json_s for menu in self.menus]
 			},
 			'reviews': {
 				'count': self.reviews_count,

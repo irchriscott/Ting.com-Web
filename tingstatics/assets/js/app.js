@@ -1998,7 +1998,7 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                                 ? `${m.foods.count > 0 
                                     ? `${m.foods.foods.map(function(f){
                                         return `
-                                            <div class="item ting-resto-item ting-menu-url" href="${f.url}"  style="padding:1rem !important;">
+                                            <div class="item ting-resto-item ting-menu-url" href="${f.food.url}"  style="padding:1rem !important; cursor: pointer;">
                                                 <div class="ui small image">
                                                     <div class="ui yellow ribbon label">
                                                         <i class="utensils spoon icon"></i> Food
@@ -2006,7 +2006,7 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                                                     <img src="${f.food.images.images[Math.floor(Math.random() * (f.food.images.count - 1))].image}" />
                                                 </div>
                                                 <div class="ui content">
-                                                    <a href="${f.food.url}" class="header" style="color:#666; font-weight:400;">${f.food.name}</a>
+                                                    <a class="header" style="color:#666; font-weight:400;">${f.food.name}</a>
                                                     <div class="description" style="margin-top:0;">
                                                         <div class="ui star rating disabled-rating" data-rating="${f.food.reviews.average}" data-max-rating="5" style="margin-top:5px;"></div>
                                                     </div>
@@ -2021,10 +2021,7 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                                                         <div class="ui ${f.food.isAvailable == true ? `green` : `red`} label" style="color: ${f.food.isAvailable == true ? `green` : `red`}">${f.food.isAvailable == true ? `<i class="icon check"></i> Available` : `<i class="icon times"></i> Not Available`}</div>
                                                     </div>
                                                 </div>
-                                            </div><script type="text/javascript">
-                                                $(".disabled-rating").rating("disable");
-                                                $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
-                                            </script>
+                                            </div>
                                         `;
                                     }).join("")}` 
                                     : ``}` 
@@ -2032,7 +2029,7 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                             ${menu.type.id == 3 
                                 ? `${m.hasDrink == true 
                                     ? `
-                                        <div class="item ting-resto-item ting-menu-url" href="${m.drink.url}"  style="padding:1rem !important;">
+                                        <div class="item ting-resto-item ting-menu-url" href="${m.drink.url}"  style="padding:1rem !important; cursor: pointer;">
                                                 <div class="ui small image">
                                                     <div class="ui yellow ribbon label">
                                                         <i class="glass martini icon"></i> Food
@@ -2040,7 +2037,7 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                                                     <img src="${m.drink.images.images[Math.floor(Math.random() * (m.drink.images.count - 1))].image}" />
                                                 </div>
                                                 <div class="ui content">
-                                                    <a href="${m.drink.url}" class="header" style="color:#666; font-weight:400;">${m.drink.name}</a>
+                                                    <a class="header" style="color:#666; font-weight:400;">${m.drink.name}</a>
                                                     <div class="description" style="margin-top:0;">
                                                         <div class="ui star rating disabled-rating" data-rating="${m.drink.reviews.average}" data-max-rating="5" style="margin-top:5px;"></div>
                                                     </div>
@@ -2053,10 +2050,7 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                                                         <div class="ui ${m.drink.isAvailable == true ? `green` : `red`} label" style="color: ${m.drink.isAvailable == true ? `green` : `red`}">${m.drink.isAvailable == true ? `<i class="icon check"></i> Available` : `<i class="icon times"></i> Not Available`}</div>
                                                     </div>
                                                 </div>
-                                            </div><script type="text/javascript">
-                                                $(".disabled-rating").rating("disable");
-                                                $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
-                                            </script>
+                                            </div>
                                     ` 
                                     : ``}` 
                                 : ``}
@@ -2093,6 +2087,10 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                             ` 
                             : `<div class="ui red message">No Promotion For This Menu</div>`}
                         </div>
+                        <script type="text/javascript">
+                            $(".disabled-rating").rating("disable");
+                            $(".ting-menu-url").click(function(){window.open($(this).attr("href"))})
+                        </script>
                     </div>
                     <hr/>
                     <div class="ting-meny-price">
@@ -2455,7 +2453,11 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                                             }).slice(0, 4).sort(function(){return Math.random() - 0.5}).map(function(m){
                                                 return `${_getmenu(m)}`;
                                             }).join("") : `<div class="ui red message">No Menu To Show</div>`}
-                                        </div>
+                                    </div>
+                                    <script type="text/javascript">
+                                        $(".disabled-rating").rating("disable");
+                                        $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
+                                    </script>
                                     ` 
                                 : ``}
                         </div>
@@ -2501,10 +2503,7 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                                     <div class="ui ${m.menu.isAvailable == true ? `green` : `red`} label" style="color: ${m.menu.isAvailable == true ? `green` : `red`}">${m.menu.isAvailable == true ? `<i class="icon check"></i> Available` : `<i class="icon times"></i> Not Available`}</div>
                                 </div>
                             </div>
-                        </div><script type="text/javascript">
-                            $(".disabled-rating").rating("disable");
-                            $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
-                        </script>
+                        </div>
                     `;
                 }
 
