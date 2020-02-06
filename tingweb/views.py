@@ -768,7 +768,7 @@ def index(request):
            today_promos.remove(random.choice(today_promos))
 
     menus_all = Menu.objects.all()
-    menus = sorted(list(filter(lambda menu: menu.review_average >= 4, menus_all)), key=lambda menu: menu.review_average, reverse=True)[:6]
+    menus = sorted(sorted(list(filter(lambda menu: menu.review_average >= 4, menus_all)), key=lambda menu: menu.reviews_count, reverse=True), key=lambda menu: menu.review_average, reverse=True)[:6]
     reviews = RestaurantReview.objects.filter(review__gte=4).random(10)
 
     return render(request, template, {
@@ -813,7 +813,7 @@ def discovery(request):
 
         menus_all = Menu.objects.all()
 
-    menus = sorted(list(filter(lambda menu: menu.review_average >= 4, menus_all)), key=lambda menu: menu.review_average, reverse=True)[:10]
+    menus = sorted(sorted(list(filter(lambda menu: menu.review_average >= 4, menus_all)), key=lambda menu: menu.reviews_count, reverse=True), key=lambda menu: menu.review_average, reverse=True)[:10]
     reviews = RestaurantReview.objects.filter(review__gte=4).random(10)
 
     return render(request, template, {

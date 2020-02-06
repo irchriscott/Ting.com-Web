@@ -36,6 +36,7 @@ urlpatterns = [
 
 	url(r'usr/profile/get/(?P<user>\d+)/$', views.api_user_get, name='api_user_get'),
 	url(r'usr/profile/get/auth/$', views.api_user_get_auth, name='api_user_get_auth'),
+	url(r'usr/profile/map/pin/(?P<user>\d+)/$', views.api_user_map_pin),
 
 	# RESTAURANT
 
@@ -50,6 +51,7 @@ urlpatterns = [
 	url(r'usr/g/restaurants/reviews/check/$', views.api_check_restaurant_review, name='api_restaurant_check_review'),
 	url(r'usr/g/restaurants/like/toggle/(?P<branch>\d+)/$', views.api_like_restaurant, name='api_like_restaurant'),
 	url(r'usr/g/restaurants/likes/(?P<branch>\d+)/$', views.api_load_restaurant_likes, name='api_restaurant_likes'),
+	url(r'usr/g/restaurants/map/pin/(?P<branch>\d+)/$', views.api_restaurant_map_pin),
 
 	# MENU
 
@@ -73,8 +75,9 @@ urlpatterns = [
 	# DISCOVER
 
 	url(r'usr/d/restaurants/$', views.api_get_discover_restaurants),
+	url(r'usr/d/restaurants/top/$', views.api_get_top_restaurants),
 	url(r'usr/d/today/promotions/rand/$', views.api_get_today_promotions_rand),
 	url(r'usr/d/today/promotions/all/$', views.api_get_today_promotions_all),
-	url(r'usr/d/menus/reviewed/$', views.api_get_reviewed_menu),
+	url(r'usr/d/menus/top/$', views.api_get_top_menus),
 	url(r'usr/d/menus/discover/$', views.api_get_discover_menus),
 ]

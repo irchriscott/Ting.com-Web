@@ -191,6 +191,14 @@ def api_user_get_auth(request):
 	return HttpResponse(json.dumps(user.to_json_u, default=str), content_type='application/json')
 
 
+def api_user_map_pin(request, user):
+	user = User.objects.get(pk=user)
+	return HttpResponse(json.dumps({
+			'id': user.pk,
+			'pin': user.get_pin_string
+		}, default=str), content_type='application/json')
+
+
 # RESTAURANT
 
 
@@ -262,6 +270,14 @@ def api_check_restaurant_review(request):
 			return HttpResponse(json.dumps(ResponseObject('error', 'Review Not Found', 404), default=str), content_type='application/json', status=404)
 	else:
 		return HttpResponse(json.dumps(ResponseObject('error', 'Method Not Allowed', 405), default=str), content_type='application/json', status=404)
+
+
+def api_restaurant_map_pin(request, branch):
+	branch = Branch.objects.get(pk=branch)
+	return HttpResponse(json.dumps({
+			'id': branch.pk,
+			'pin': branch.restaurant.get_pin_string
+		}, default=str), content_type='application/json')
 
 
 # MENU
@@ -347,9 +363,17 @@ def api_get_cuisine_menus(request, cuisine):
 @authenticate_user(xhr='api')
 def api_get_discover_restaurants(request):
 	user = User.objects.get(pk=request.session['user'])
-	branches = Branch.objects.filter(country=user.country, town=user.town).order_by('-created_at')[:20]
+	branches = Branch.objects.filter(country=user.country, town=user.town).order_by('-created_at')
 	rand_branches = branches.random(5)
 	return HttpResponse(json.dumps([branch.to_json_s for branch in rand_branches], default=str), content_type='application/json')
+
+
+@authenticate_user(xhr='api')
+def api_get_top_restaurants(request):
+	user = User.objects.get(pk=request.session['user'])
+	branches = Branch.objects.filter(country=user.country, town=user.town).order_by('-created_at')[:20]
+	top_branches = sorted(sorted(list(filter(lambda branch: branch.review_average >= 4, branches)), key=lambda branch: branch.reviews_count, reverse=True), key=lambda branch: branch.review_average, reverse=True)[:5]
+	return HttpResponse(json.dumps([branch.to_json_s for branch in top_branches], default=str), content_type='application/json')
 
 
 @authenticate_user(xhr='api')
@@ -373,10 +397,10 @@ def api_get_today_promotions_all(request):
 
 
 @authenticate_user(xhr='api')
-def api_get_reviewed_menu(request):
+def api_get_top_menus(request):
 	user = User.objects.get(pk=request.session['user'])
 	menus_all = Menu.objects.filter(branch__country=user.country, branch__town=user.town)
-	menus = sorted(list(filter(lambda menu: menu.review_average >= 4, menus_all)), key=lambda menu: menu.review_average, reverse=True)[:10]
+	menus = sorted(sorted(list(filter(lambda menu: menu.review_average >= 4, menus_all)), key=lambda menu: menu.reviews_count, reverse=True), key=lambda menu: menu.review_average, reverse=True)[:5]
 	return HttpResponse(json.dumps([menu.to_json_s for menu in menus], default=str), content_type='application/json')
 
 
