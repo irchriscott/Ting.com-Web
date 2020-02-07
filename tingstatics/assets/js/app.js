@@ -682,7 +682,7 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                             "cuis":{"brs": brs__cuisines, "ccs": css__cuisines},
                             "serv":{"brs": brs__services, "ccs": css__services},
                             "spec":{"brs": brs__specials, "ccs": css__specials},
-                            "typ":{"brs": brs__types, "css": css__types}
+                            "typ":{"brs": brs__types, "ccs": css__types}
                         }
                         var brs__all = [];
                         Object.keys(brs__conc).forEach(function(l){

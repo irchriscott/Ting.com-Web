@@ -199,11 +199,16 @@ def api_user_map_pin(request, user):
 		}, default=str), content_type='application/json')
 
 
+
 # RESTAURANT
 
 
+@authenticate_user(xhr='api')
 def api_restaurants(request):
-	branches = json.dumps([branch.to_json_r for branch in Branch.objects.all()], default=str)
+	user = User.objects.get(pk=request.session['user'])
+	country = request.GET.get('country') if request.GET.get('country') != None else user.country
+	town = request.GET.get('town') if request.GET.get('town') != None else user.town
+	branches = json.dumps([branch.to_json_r for branch in Branch.objects.filter(country=country, town=town)[:12]], default=str)
 	return HttpResponse(branches, content_type='application/json')
 
 
@@ -278,6 +283,18 @@ def api_restaurant_map_pin(request, branch):
 			'id': branch.pk,
 			'pin': branch.restaurant.get_pin_string
 		}, default=str), content_type='application/json')
+
+
+def api_get_restaurant_filters(request):
+	filters = {
+		'availability': utils.RESTAURANT_AVAILABILITY,
+		'cuisines': map(lambda c: {'id': c.pk, 'title': c.name}, RestaurantCategory.objects.all()),
+		'services': map(lambda s: {'id': s['id'], 'title': s['name']}, utils.RESTAURANT_SERVICES),
+		'specials': map(lambda s: {'id': s['id'], 'title': s['name']}, utils.RESTAURANT_SPECIALS),
+		'types': map(lambda t: {'id': t['id'], 'title': t['name']}, utils.RESTAURANT_TYPES),
+		'ratings': utils.RESTAURANT_RATINGS
+	}
+	return HttpResponse(json.dumps(filters, default=str), content_type='application/json')
 
 
 # MENU
@@ -363,7 +380,9 @@ def api_get_cuisine_menus(request, cuisine):
 @authenticate_user(xhr='api')
 def api_get_discover_restaurants(request):
 	user = User.objects.get(pk=request.session['user'])
-	branches = Branch.objects.filter(country=user.country, town=user.town).order_by('-created_at')
+	country = request.GET.get('country') if request.GET.get('country') != None else user.country
+	town = request.GET.get('town') if request.GET.get('town') != None else user.town
+	branches = Branch.objects.filter(country=country, town=town).order_by('-created_at')
 	rand_branches = branches.random(5)
 	return HttpResponse(json.dumps([branch.to_json_s for branch in rand_branches], default=str), content_type='application/json')
 
@@ -371,7 +390,9 @@ def api_get_discover_restaurants(request):
 @authenticate_user(xhr='api')
 def api_get_top_restaurants(request):
 	user = User.objects.get(pk=request.session['user'])
-	branches = Branch.objects.filter(country=user.country, town=user.town).order_by('-created_at')[:20]
+	country = request.GET.get('country') if request.GET.get('country') != None else user.country
+	town = request.GET.get('town') if request.GET.get('town') != None else user.town
+	branches = Branch.objects.filter(country=country, town=town).order_by('-created_at')[:20]
 	top_branches = sorted(sorted(list(filter(lambda branch: branch.review_average >= 4, branches)), key=lambda branch: branch.reviews_count, reverse=True), key=lambda branch: branch.review_average, reverse=True)[:5]
 	return HttpResponse(json.dumps([branch.to_json_s for branch in top_branches], default=str), content_type='application/json')
 
@@ -379,7 +400,9 @@ def api_get_top_restaurants(request):
 @authenticate_user(xhr='api')
 def api_get_today_promotions_rand(request):
 	user = User.objects.get(pk=request.session['user'])
-	promotions = Promotion.objects.filter(branch__country=user.country, branch__town=user.town, is_on=True)[:20]
+	country = request.GET.get('country') if request.GET.get('country') != None else user.country
+	town = request.GET.get('town') if request.GET.get('town') != None else user.town
+	promotions = Promotion.objects.filter(branch__country=country, branch__town=town, is_on=True)[:20]
 	today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
 
 	for i in range(4, len(today_promos)):
@@ -391,7 +414,9 @@ def api_get_today_promotions_rand(request):
 @authenticate_user(xhr='api')
 def api_get_today_promotions_all(request):
 	user = User.objects.get(pk=request.session['user'])
-	promotions = Promotion.objects.filter(branch__country=user.country, branch__town=user.town, is_on=True)
+	country = request.GET.get('country') if request.GET.get('country') != None else user.country
+	town = request.GET.get('town') if request.GET.get('town') != None else user.town
+	promotions = Promotion.objects.filter(branch__country=country, branch__town=town, is_on=True)
 	today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))
 	return HttpResponse(json.dumps([promo.to_json_s for promo in today_promos], default=str), content_type='application/json')
 
@@ -399,7 +424,9 @@ def api_get_today_promotions_all(request):
 @authenticate_user(xhr='api')
 def api_get_top_menus(request):
 	user = User.objects.get(pk=request.session['user'])
-	menus_all = Menu.objects.filter(branch__country=user.country, branch__town=user.town)
+	country = request.GET.get('country') if request.GET.get('country') != None else user.country
+	town = request.GET.get('town') if request.GET.get('town') != None else user.town
+	menus_all = Menu.objects.filter(branch__country=country, branch__town=town)
 	menus = sorted(sorted(list(filter(lambda menu: menu.review_average >= 4, menus_all)), key=lambda menu: menu.reviews_count, reverse=True), key=lambda menu: menu.review_average, reverse=True)[:5]
 	return HttpResponse(json.dumps([menu.to_json_s for menu in menus], default=str), content_type='application/json')
 
@@ -407,5 +434,7 @@ def api_get_top_menus(request):
 @authenticate_user(xhr='api')
 def api_get_discover_menus(request):
 	user = User.objects.get(pk=request.session['user'])
-	menus = Menu.objects.filter(branch__country=user.country, branch__town=user.town).random(5)
+	country = request.GET.get('country') if request.GET.get('country') != None else user.country
+	town = request.GET.get('town') if request.GET.get('town') != None else user.town
+	menus = Menu.objects.filter(branch__country=country, branch__town=town).random(5)
 	return HttpResponse(json.dumps([menu.to_json_s for menu in menus], default=str), content_type='application/json')

@@ -122,6 +122,22 @@ USER_ADDRESS_TYPE = (
 USER_ADDRESS_TYPE_LIST = ['Home', 'Work', 'School', 'Other']
 
 
+RESTAURANT_AVAILABILITY = [
+	{'id': 1, 'title': 'Not Available'},
+	{'id': 2, 'title': 'Opened'},
+	{'id': 3, 'title': 'Closed'}
+]
+
+
+RESTAURANT_RATINGS = [
+	{'id': 1, 'title': '1 Star'},
+	{'id': 2, 'title': '2 Stars'},
+	{'id': 3, 'title': '3 Stars'},
+	{'id': 4, 'title': '4 Stars'},
+	{'id': 5, 'title': '5 Stars'}
+]
+
+
 RESTAURANT_SPECIALS = [
 	{'id': 1, 'name': 'Wi-Fi',			'icon': 'wifi'},
 	{'id': 2, 'name': 'Phone Booth', 	'icon': 'phone'},
@@ -135,9 +151,11 @@ RESTAURANT_SPECIALS = [
 
 
 RESTAURANT_SERVICES = [
-	{'id': 1, 'name': 'Hotel', 	'icon': 'building'},
-	{'id': 2, 'name': 'Spa', 	'icon': 'smile'},
-	{'id': 3, 'name': 'Bar', 	'icon': 'glass martini'}
+	{'id': 1, 'name': 'Hotel', 			'icon': 'building'},
+	{'id': 2, 'name': 'Spa', 			'icon': 'smile'},
+	{'id': 3, 'name': 'Bar', 			'icon': 'glass martini'},
+	{'id': 4, 'name': 'Meeting Space', 	'icon': 'bullhorn'},
+	{'id': 5, 'name': 'Parties', 		'icon': 'birthday cake'}
 ]
 
 
