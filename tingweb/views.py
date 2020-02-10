@@ -888,7 +888,7 @@ def restaurants(request):
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
             'address_types': utils.USER_ADDRESS_TYPE,
             'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
-            'branches': json.dumps([branch.to_json_r for branch in Branch.objects.all()], default=str),
+            'branches': json.dumps([branch.to_json_s for branch in Branch.objects.all()], default=str),
             'countries': json.dumps(list(Branch.objects.values('country').annotate(branches=Count('country'))), default=str),
             'towns': json.dumps(list(Branch.objects.values('town', 'country').annotate(branches=Count('town'))), default=str),
             'cuisines': json.dumps([category.to_json for category in RestaurantCategory.objects.all()], default=str),
@@ -957,7 +957,7 @@ def get_restaurant_foods(request, restaurant, branch, slug):
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
             'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
-            'restaurant_json': json.dumps(restaurant.to_json_r, default=str),
+            'restaurant_json': json.dumps(restaurant.to_json, default=str),
             'restaurant': restaurant,
             'types': utils.FOOD_TYPE,
             'address_types': utils.USER_ADDRESS_TYPE,
@@ -973,7 +973,7 @@ def get_restaurant_drinks(request, restaurant, branch, slug):
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
             'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
-            'restaurant_json': json.dumps(restaurant.to_json_r, default=str),
+            'restaurant_json': json.dumps(restaurant.to_json, default=str),
             'restaurant': restaurant,
             'types': utils.DRINK_TYPE,
             'address_types': utils.USER_ADDRESS_TYPE,
@@ -989,7 +989,7 @@ def get_restaurant_dishes(request, restaurant, branch, slug):
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
             'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
-            'restaurant_json': json.dumps(restaurant.to_json_r, default=str),
+            'restaurant_json': json.dumps(restaurant.to_json, default=str),
             'restaurant': restaurant,
             'types': utils.DISH_TIME,
             'address_types': utils.USER_ADDRESS_TYPE,
@@ -1163,10 +1163,22 @@ def load_branch_top_five(request, restaurant, branch):
     template = 'web/user/restaurant/load_ajax_branch_top_five.html'
     restaurant = Restaurant.objects.get(pk=restaurant)
     branch = Branch.objects.get(pk=branch)
-
     tops = Menu.objects.filter(restaurant__pk=restaurant.pk, branch__pk=branch.pk)[:5]
-
     return render(request, template, {'restaurant':restaurant, 'branch':branch, 'menus':tops})
+
+
+def load_branch_menus_rand(request, branch):
+    template = 'web/user/menu/load_branch_menus_rand.html'
+    rand = request.GET.get('type')
+    branch = Branch.objects.get(pk=branch)
+    if rand == 'cat':
+        categories = FoodCategory.objects.filter(restaurant__pk=branch.restaurant.pk).random(4)
+        return render(request, template, {'categories': categories, 'type': rand, 'branch': branch})
+    else:
+        types = {'food': 1, 'drink': 2, 'dish': 3}
+        menus = Menu.objects.filter(branch__pk=branch.pk, restaurant__pk=branch.restaurant.pk, menu_type=types[rand]).random(4)
+        return render(request, template, {'menus': menus, 'type': rand, 'branch': branch})
+
 
 
 def load_branch_directions(request, restaurant, branch):
@@ -1306,8 +1318,8 @@ def get_promotion(request, promotion, slug):
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
             'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
-            'promotion_json': json.dumps(promotion.to_json_f, default=str),
-            'promotion': promotion.to_json_f,
+            'promotion_json': json.dumps(promotion.to_json_b, default=str),
+            'promotion': promotion.to_json_b,
             'address_types': utils.USER_ADDRESS_TYPE,
         })
 
@@ -1351,3 +1363,26 @@ def load_menu_reviews(request, menu):
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
             'reviews': reviews
         })
+
+
+def load_menu_today_promotion(request, menu):
+    template = 'web/user/menu/load_menu_today_promotion.html'
+    menu = Menu.objects.get(pk=menu)
+    promotions = Promotion.objects.filter(restaurant__pk=menu.restaurant.pk, branch__pk=menu.branch.pk)
+    today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))
+    today_type = list(filter(lambda promo: int(promo.promotion_menu_type) == 0 or int(promo.promotion_menu_type) == menu.menu_type, today_promos))
+    promos_category = list(filter(lambda promo: int(promo.promotion_menu_type) == 4, today_promos))
+    
+    if menu.menu_type == 1:
+        today_category = list(filter(lambda promo: promo.category.pk == menu.food.category.pk, promos_category))
+    elif menu.menu_type == 3:
+        today_category = list(filter(lambda promo: promo.category.pk == menu.dish.category.pk, promos_category))
+    else:
+        today_category = []
+
+    promos_menu = list(filter(lambda promo: int(promo.promotion_menu_type) == 5, today_promos))
+    today_menu = list(filter(lambda promo: promo.menu.pk == menu.pk, promos_menu))
+
+    today_menu_promotions = today_type + today_category + today_menu
+    promotion = random.choice(today_menu_promotions) if len(today_menu_promotions) > 0 else None
+    return render(request, template,{'promotion': promotion, 'menu': menu})

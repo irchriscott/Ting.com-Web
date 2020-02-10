@@ -41,6 +41,7 @@ urlpatterns = [
 	# RESTAURANT
 
 	url(r'usr/g/restaurants/all/$', views.api_restaurants),
+	url(r'usr/g/restaurants/search/filter/$', views.api_filter_restaurants),
 	url(r'usr/g/restaurants/get/(?P<branch>\d+)/$', views.api_get_restaurant, name='api_restaurant_get'),
 	url(r'usr/g/restaurants/promotions/(?P<branch>\d+)/$', views.api_load_restaurant_promotions, name='api_restaurant_promotions'),
 	url(r'usr/g/restaurants/foods/(?P<branch>\d+)/$', views.api_load_restaurant_foods, name='api_restaurant_foods'),

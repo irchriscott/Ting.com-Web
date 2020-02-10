@@ -79,6 +79,7 @@ users = [
 	url(r'usr/restaurant/about/(?P<restaurant>\d+)-(?P<branch>\d+)-(?P<slug>[^/]+)$', views.get_restaurant_about, name='ting_usr_get_restaurant_about'),
 	url(r'usr/restaurant/menus/cus/(?P<branch>[^/]+)-(?P<cuisine>[^/]+)-(?P<slug>[^/]+)$', views.get_restaurant_menus_cuisine, name='ting_usr_get_restaurant_menus_cuisine'),
 	url(r'usr/restaurant/menus/cat/(?P<branch>[^/]+)-(?P<category>[^/]+)-(?P<slug>[^/]+)$', views.get_restaurant_menus_category, name='ting_usr_get_restaurant_menus_category'),
+	url(r'usr/restaurant/menus/rad/(?P<branch>[^/]+)/$', views.load_branch_menus_rand, name='ting_usr_load_branch_menus_rand'),
 
 	# Menus & Promotions
 
@@ -88,6 +89,7 @@ users = [
 	url(r'usr/promo/interest/toogle/(?P<promo>[^/]+)/$', views.interest_promotion, name='ting_usr_promotion_interest'),
 	url(r'usr/menu/reviews/add/(?P<menu>\d+)/$', views.add_menu_review, name='ting_usr_menu_add_review'),
 	url(r'usr/menu/reviews/load/(?P<menu>\d+)/$', views.load_menu_reviews, name='ting_usr_menu_load_reviews'),
+	url(r'usr/menu/promotion/today/(?P<menu>[^/]+)/$', views.load_menu_today_promotion, name='ting_usr_load_menu_today_promotion'),
 
 	# Reservation
 

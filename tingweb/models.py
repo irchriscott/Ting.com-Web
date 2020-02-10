@@ -541,6 +541,20 @@ class Branch(models.Model):
 		return self.name.replace(' ', '-').lower()
 
 	@property
+	def is_opened(self):
+		now = datetime.strptime('1970-1-1 {0}'.format(datetime.strftime(datetime.now(), '%H:%M')), '%Y-%m-%d %H:%M')
+		opening = datetime.strptime('1970-1-1 {0}'.format(self.restaurant.opening_str), '%Y-%m-%d %H:%M')
+		closing = datetime.strptime('1970-1-1 {0}'.format(self.restaurant.closing_str), '%Y-%m-%d %H:%M')
+		return True if now >= opening and closing > now else False
+
+	@property
+	def availability(self):
+		if self.is_available:
+			return 2 if self.is_opened else 3
+		else:
+			return 1
+
+	@property
 	def restaurant_type_str(self):
 		return utils.get_from_dict(utils.RESTAURANT_TYPES, 'id', int(self.restaurant_type))
 	
@@ -769,11 +783,11 @@ class Branch(models.Model):
 				'count': self.reviews_count,
 				'average': self.review_average,
 				'percents': self.review_percent,
-				'reviews': [review.to_json_b for review in self.reviews]
+				'reviews': [review.to_json_b for review in self.reviews[:5]]
 			},
 			'likes':{
 				'count': self.likes_count,
-				'likes': [like.to_json for like in self.likes]
+				'likes': self.likes_ids
 			},
 			'urls':{
 				'relative': reverse('ting_usr_get_restaurant_promotions', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk, 'slug': self.restaurant.slug}),
@@ -847,17 +861,17 @@ class Branch(models.Model):
 					'drinks': self.drinks_count,
 					'dishes': self.dishes_count
 				},
-				'menus': [menu.to_json_s for menu in self.menus]
+				'menus': [menu.to_json_s for menu in self.menus.random(4)]
 			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
 				'percents': self.review_percent,
-				'reviews': [review.to_json_b for review in self.reviews]
+				'reviews': [review.to_json_b for review in self.reviews[:5]]
 			},
 			'likes':{
 				'count': self.likes_count,
-				'likes': [like.to_json for like in self.likes]
+				'likes': self.likes_ids
 			},
 			'urls':{
 				'relative': reverse('ting_usr_get_restaurant_promotions', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk, 'slug': self.restaurant.slug}),
@@ -945,7 +959,8 @@ class Branch(models.Model):
 				'percents': self.review_percent
 			},
 			'likes':{
-				'count': self.likes_count
+				'count': self.likes_count,
+				'likes': self.likes_ids
 			},
 			'urls':{
 				'relative': reverse('ting_usr_get_restaurant_promotions', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk, 'slug': self.restaurant.slug}),
@@ -1028,7 +1043,8 @@ class Branch(models.Model):
 				'percents': self.review_percent
 			},
 			'likes':{
-				'count': self.likes_count
+				'count': self.likes_count,
+				'likes': self.likes_ids
 			},
 			'urls':{
 				'relative': reverse('ting_usr_get_restaurant_promotions', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk, 'slug': self.restaurant.slug}),
@@ -1922,18 +1938,16 @@ class Food(models.Model):
 			'quantity': self.quantity,
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
-				'count': self.promotions_count,
-				'promotions': [promo.to_json for promo in self.promotions]
+				'count': self.promotions_count
 			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
-				'percents': self.review_percent,
-				'reviews': [review.to_json for review in self.reviews]
+				'percents': self.review_percent
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json for like in self.likes]
+				'likes': self.menu.like_ids
 			},
 			'images':{
 				'count': self.images.count(),
@@ -1972,11 +1986,11 @@ class Food(models.Model):
 				'count': self.reviews_count,
 				'average': self.review_average,
 				'percents': self.review_percent,
-				'reviews': [review.to_json for review in self.reviews]
+				'reviews': [review.to_json for review in self.reviews[:5]]
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json for like in self.likes]
+				'likes': self.menu.like_ids
 			},
 			'images':{
 				'count': self.images.count(),
@@ -2006,18 +2020,16 @@ class Food(models.Model):
 			'quantity': self.quantity,
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
-				'count': self.promotions_count,
-				'promotions': [promo.to_json for promo in self.promotions]
+				'count': self.promotions_count
 			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
-				'percents': self.review_percent,
-				'reviews': [review.to_json for review in self.reviews]
+				'percents': self.review_percent
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json for like in self.likes]
+				'likes': self.menu.like_ids
 			},
 			'images':{
 				'count': self.images.count(),
@@ -2049,12 +2061,11 @@ class Food(models.Model):
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
-				'percents': self.review_percent,
-				'reviews': [review.to_json for review in self.reviews]
+				'percents': self.review_percent
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json for like in self.likes]
+				'likes': self.menu.like_ids
 			},
 			'images':{
 				'count': self.images.count(),
@@ -2084,18 +2095,16 @@ class Food(models.Model):
 			'quantity': self.quantity,
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
-				'count': self.promotions_count,
-				'promotions': [promo.to_json_s for promo in self.promotions]
+				'count': self.promotions_count
 			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
-				'percents': self.review_percent,
-				'reviews': [review.to_json_s for review in self.reviews]
+				'percents': self.review_percent
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json for like in self.likes]
+				'likes': self.menu.like_ids
 			},
 			'images':{
 				'count': self.images.count(),
@@ -2240,18 +2249,16 @@ class Drink(models.Model):
 			'quantity': self.quantity,
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
-				'count': self.promotions_count,
-				'promotions': [promo.to_json for promo in self.promotions]
+				'count': self.promotions_count
 			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
-				'percents': self.review_percent,
-				'reviews': [review.to_json for review in self.reviews]
+				'percents': self.review_percent
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json for like in self.likes]
+				'likes': self.menu.like_ids
 			},
 			'images':{
 				'count': self.images.count(),
@@ -2288,11 +2295,11 @@ class Drink(models.Model):
 				'count': self.reviews_count,
 				'average': self.review_average,
 				'percents': self.review_percent,
-				'reviews': [review.to_json for review in self.reviews]
+				'reviews': [review.to_json for review in self.reviews[:5]]
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json for like in self.likes]
+				'likes': self.menu.like_ids
 			},
 			'images':{
 				'count': self.images.count(),
@@ -2320,18 +2327,16 @@ class Drink(models.Model):
 			'quantity': self.quantity,
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
-				'count': self.promotions_count,
-				'promotions': [promo.to_json for promo in self.promotions]
+				'count': self.promotions_count
 			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
-				'percents': self.review_percent,
-				'reviews': [review.to_json for review in self.reviews]
+				'percents': self.review_percent
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json for like in self.likes]
+				'likes': self.menu.like_ids
 			},
 			'images':{
 				'count': self.images.count(),
@@ -2361,12 +2366,11 @@ class Drink(models.Model):
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
-				'percents': self.review_percent,
-				'reviews': [review.to_json for review in self.reviews]
+				'percents': self.review_percent
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json for like in self.likes]
+				'likes': self.menu.like_ids
 			},
 			'images':{
 				'count': self.images.count(),
@@ -2394,18 +2398,16 @@ class Drink(models.Model):
 			'quantity': self.quantity,
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
-				'count': self.promotions_count,
-				'promotions': [promo.to_json_s for promo in self.promotions]
+				'count': self.promotions_count
 			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
-				'percents': self.review_percent,
-				'reviews': [review.to_json_s for review in self.reviews]
+				'percents': self.review_percent
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json for like in self.likes]
+				'likes': self.menu.like_ids
 			},
 			'images':{
 				'count': self.images.count(),
@@ -2571,22 +2573,20 @@ class Dish(models.Model):
 			'drink': self.drink.to_json_r if self.has_drink == True else {},
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
-				'count': self.promotions_count,
-				'promotions': [promo.to_json for promo in self.promotions]
+				'count': self.promotions_count
 			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
-				'percents': self.review_percent,
-				'reviews': [review.to_json for review in self.reviews]
+				'percents': self.review_percent
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json for like in self.likes]
+				'likes': self.menu.like_ids
 			},
 			'foods': {
 				'count': self.foods_count,
-				'foods': [food.to_json for food in self.foods]
+				'foods': [food.to_json_s for food in self.foods]
 			},
 			'images':{
 				'count': self.images.count(),
@@ -2627,15 +2627,15 @@ class Dish(models.Model):
 				'count': self.reviews_count,
 				'average': self.review_average,
 				'percents': self.review_percent,
-				'reviews': [review.to_json for review in self.reviews]
+				'reviews': [review.to_json for review in self.reviews[:5]]
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json for like in self.likes]
+				'likes': self.menu.like_ids
 			},
 			'foods': {
 				'count': self.foods_count,
-				'foods': [food.to_json for food in self.foods]
+				'foods': [food.to_json_s for food in self.foods]
 			},
 			'images':{
 				'count': self.images.count(),
@@ -2667,22 +2667,20 @@ class Dish(models.Model):
 			'drink': self.drink.to_json_r if self.has_drink == True else {},
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
-				'count': self.promotions_count,
-				'promotions': [promo.to_json for promo in self.promotions]
+				'count': self.promotions_count
 			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
-				'percents': self.review_percent,
-				'reviews': [review.to_json for review in self.reviews]
+				'percents': self.review_percent
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json for like in self.likes]
+				'likes': self.menu.like_ids
 			},
 			'foods': {
 				'count': self.foods_count,
-				'foods': [food.to_json for food in self.foods]
+				'foods': [food.to_json_s for food in self.foods]
 			},
 			'images':{
 				'count': self.images.count(),
@@ -2716,16 +2714,15 @@ class Dish(models.Model):
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
-				'percents': self.review_percent,
-				'reviews': [review.to_json for review in self.reviews]
+				'percents': self.review_percent
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json for like in self.likes]
+				'likes': self.menu.like_ids
 			},
 			'foods': {
 				'count': self.foods_count,
-				'foods': [food.to_json for food in self.foods]
+				'foods': [food.to_json_s for food in self.foods]
 			},
 			'images':{
 				'count': self.images.count(),
@@ -2757,18 +2754,16 @@ class Dish(models.Model):
 			'drink': self.drink.to_json_s if self.has_drink == True else {},
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
-				'count': self.promotions_count,
-				'promotions': [promo.to_json_s for promo in self.promotions]
+				'count': self.promotions_count
 			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
-				'percents': self.review_percent,
-				'reviews': [review.to_json_s for review in self.reviews]
+				'percents': self.review_percent
 			},
 			'likes': {
 				'count': self.likes_count,
-				'likes': [like.to_json for like in self.likes]
+				'likes': self.menu.like_ids
 			},
 			'foods': {
 				'count': self.foods_count,
@@ -3427,6 +3422,23 @@ class Promotion(models.Model):
 			return 'None'
 
 	@property
+	def promoted_menus(self):
+		if self.promotion_menu_type == '01':
+			return [menu for menu in Menu.objects.filter(branch__pk=self.branch.pk, menu_type=1)]
+		elif self.promotion_menu_type == '02':
+			return [menu for menu in Menu.objects.filter(branch__pk=self.branch.pk, menu_type=2)]
+		elif self.promotion_menu_type == '03':
+			return [menu for menu in Menu.objects.filter(branch__pk=self.branch.pk, menu_type=3)]
+		elif self.promotion_menu_type == '04':
+			return [self.menu]
+		elif self.promotion_menu_type == '05':
+			foods = [food.menu for food in Food.objects.filter(branch__pk=self.branch.pk, category__pk=self.category.pk)]
+			dishes = [dish.menu for dish in Dish.objects.filter(branch__pk=self.branch.pk, category__pk=self.category.pk)]
+			return foods + dishes
+		else:
+			return []
+
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
@@ -3437,6 +3449,9 @@ class Promotion(models.Model):
 				'type':{'id': self.promotion_menu_type, 'name': utils.get_from_tuple(utils.PROMOTION_MENU, self.promotion_menu_type)},
 				'category': self.category.to_json if self.promotion_menu_type == '05' else {},
 				'menu': self.menu.to_json_p if self.promotion_menu_type == '04' else {}
+			},
+			'menus': {
+				'count': len(self.promoted_menus)
 			},
 			'reduction':{
 				'hasReduction': self.has_reduction,
@@ -3457,7 +3472,7 @@ class Promotion(models.Model):
 			'isOnToday': self.is_on_today,
 			'interests':{
 				'count': self.interests_count,
-				'interests': [interest.to_json for interest in self.interests]
+				'interests': self.interests_ids
 			},
 			'urls':{
 				'relative': reverse('ting_usr_promotion_get', kwargs={'promotion': self.pk, 'slug': self.uuid_url}),
@@ -3474,8 +3489,8 @@ class Promotion(models.Model):
 	def to_json_f(self):
 		return {
 			'id': self.pk,
-			'restaurant': self.restaurant.to_json,
-			'branch': self.branch.to_json,
+			'restaurant': self.restaurant.to_json_s,
+			'branch': self.branch.to_json_s,
 			'occasionEvent': self.occasion_event,
 			'uuid': self.uuid,
 			'uuidUrl': self.uuid_url,
@@ -3483,6 +3498,10 @@ class Promotion(models.Model):
 				'type':{'id': self.promotion_menu_type, 'name': utils.get_from_tuple(utils.PROMOTION_MENU, self.promotion_menu_type)},
 				'category': self.category.to_json if self.promotion_menu_type == '05' else {},
 				'menu': self.menu.to_json_p if self.promotion_menu_type == '04' else {}
+			},
+			'menus': {
+				'count': len(self.promoted_menus),
+				'menus': [menu.to_json_s for menu in self.promoted_menus]
 			},
 			'reduction':{
 				'hasReduction': self.has_reduction,
@@ -3503,7 +3522,7 @@ class Promotion(models.Model):
 			'isOnToday': self.is_on_today,
 			'interests':{
 				'count': self.interests_count,
-				'interests': [interest.to_json for interest in self.interests]
+				'interests': self.interests_ids
 			},
 			'urls':{
 				'relative': reverse('ting_usr_promotion_get', kwargs={'promotion': self.pk, 'slug': self.uuid_url}),
@@ -3515,6 +3534,57 @@ class Promotion(models.Model):
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
+
+
+	@property
+	def to_json_b(self):
+		return {
+			'id': self.pk,
+			'restaurant': self.restaurant.to_json_s,
+			'branch': self.branch.to_json,
+			'occasionEvent': self.occasion_event,
+			'uuid': self.uuid,
+			'uuidUrl': self.uuid_url,
+			'promotionItem': {
+				'type':{'id': self.promotion_menu_type, 'name': utils.get_from_tuple(utils.PROMOTION_MENU, self.promotion_menu_type)},
+				'category': self.category.to_json if self.promotion_menu_type == '05' else {},
+				'menu': self.menu.to_json_p if self.promotion_menu_type == '04' else {}
+			},
+			'menus': {
+				'count': len(self.promoted_menus)
+			},
+			'reduction':{
+				'hasReduction': self.has_reduction,
+				'amount': self.amount,
+				'reductionType': self.reduction_type
+			},
+			'supplement':{
+				'hasSupplement': self.has_supplement,
+				'minQuantity': self.supplement_min_quantity,
+				'isSame': self.is_supplement_same,
+				'supplement': self.supplement.to_json_p if self.is_supplement_same == False else {},
+				'quantity': self.supplement_quantity
+			},
+			'period': self.promo_period,
+			'description': self.description,
+			'posterImage': self.poster_image.url,
+			'isOn': self.is_on,
+			'isOnToday': self.is_on_today,
+			'interests':{
+				'count': self.interests_count,
+				'interests': self.interests_ids
+			},
+			'urls':{
+				'relative': reverse('ting_usr_promotion_get', kwargs={'promotion': self.pk, 'slug': self.uuid_url}),
+				'interest': reverse('ting_usr_promotion_interest', kwargs={'promo': self.pk}),
+				'apiGet': reverse('api_promotion_get', kwargs={'promo': self.pk}),
+				'apiInterest': reverse('api_promotion_interest', kwargs={'promo': self.pk})
+			},
+			'forAllBranches': self.for_all_branches,
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
 
 	@property
 	def to_json_s(self):
@@ -3530,6 +3600,9 @@ class Promotion(models.Model):
 				'category': self.category.to_json if self.promotion_menu_type == '05' else {},
 				'menu': self.menu.to_json_p if self.promotion_menu_type == '04' else {}
 			},
+			'menus': {
+				'count': len(self.promoted_menus)
+			},
 			'reduction':{
 				'hasReduction': self.has_reduction,
 				'amount': self.amount,
@@ -3549,7 +3622,7 @@ class Promotion(models.Model):
 			'isOnToday': self.is_on_today,
 			'interests':{
 				'count': self.interests_count,
-				'interests': [interest.to_json for interest in self.interests]
+				'interests': self.interests_ids
 			},
 			'urls':{
 				'relative': reverse('ting_usr_promotion_get', kwargs={'promotion': self.pk, 'slug': self.uuid_url}),

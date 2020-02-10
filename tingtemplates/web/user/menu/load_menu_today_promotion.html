@@ -1,0 +1,38 @@
+{% if promotion != None %}
+<div class="ui green message ting-promo-btn-{{menu.pk}}" sy><i class="icon check"></i> Promotion Available</div>
+<div class="ui flowing popup top left transition hidden ting-promo-popup-${menus[i].id}">
+    <div class="header">{{promotion.occasion_event}}</div>
+    <hr/>
+    <div class="description">
+        <p><i class="icon calendar alternate outline"></i> {{promotion.promo_period}}</p>
+        {% if promotion.has_reduction %}
+            <p>
+                <i class="icon minus square outline"></i> 
+                Order this menu and get a {{promotion.amount}} {{promotion.reduction_type}} reduction
+            </p>
+        {% endif %}
+     
+        {% if promotion.has_supplement %}
+            <p>
+                <i class="icon plus square outline"></i>
+                Order {{promotion.supplement_min_quantity}} pieces or packs of this menu and get {{promotion.supplement_quantity}}
+                {% if promotion.is_supplement_same %}
+                    more for free 
+                {% else %}
+                    free 
+                    {% if promotion.supplement.menu.menu_type == 1 %}
+                        {{promotion.supplement.menu.food.name}}
+                    {% elif promotion.supplement.menu.menu_type == 2 %}
+                        {{promotion.supplement.menu.drink.name}}
+                    {% elif promotion.supplement.menu.menu_type == 3 %}
+                        {{promotion.supplement.menu.dish.name}}
+                    {% endif %}
+                {% endif %}
+            </p>
+        {% endif %}
+    </div>
+</div>
+<script type="text/javascript">$(".ting-promo-btn-{{menu.pk}}").popup({popup : ".ting-promo-popup-{{menu.pk}}", on : "hover"});</script>
+{% else %}
+<div class="ui red message">No Promotion For This Menu</div>
+{% endif %}

@@ -297,6 +297,34 @@ def api_get_restaurant_filters(request):
 	return HttpResponse(json.dumps(filters, default=str), content_type='application/json')
 
 
+@csrf_exempt
+@authenticate_user(xhr='api')
+def api_filter_restaurants(request):
+	user = User.objects.get(pk=request.session['user'])
+	country = request.POST.get('country') if request.POST.get('country') != None else user.country
+	town = request.POST.get('town') if request.POST.get('town') != None else user.town
+	query = request.POST.get('query')
+	restaurants = Branch.objects.filter(country=country, town=town).filter(Q(restaurant__name__icontains=query) | Q(name__icontains=query))
+
+	filters = json.loads(request.POST.get('filters'))
+
+	brs__avail = map(lambda b: int(b.pk), list(filter(lambda b: b.availability in filters['availability'], restaurants)))
+	brs__cuisines = map(lambda b: int(b.pk), list(filter(lambda b: any((True for c in filters['cuisines'] if c in list(map(lambda i: i.pk, b.restaurant.categories)))), restaurants)))
+	brs__services = map(lambda b: int(b.pk), list(filter(lambda b: any((True for s in filters['services'] if s in map(lambda v: int(v), b.services_ids))), restaurants)))
+	brs__specials = map(lambda b: int(b.pk), list(filter(lambda b: any((True for s in filters['specials'] if s in map(lambda v: int(v), b.specials_ids))), restaurants)))
+	brs__types = map(lambda b: int(b.pk), list(filter(lambda b: b.restaurant_type in filters['types'], restaurants)))
+	brs__ratings = map(lambda b: int(b.pk), list(filter(lambda b: b.review_average in filters['ratings'], restaurants)))
+
+	brs__f__all = [brs__avail, brs__cuisines, brs__services, brs__specials, brs__types, brs__ratings]
+	brs__k__all = [filters['availability'], filters['cuisines'], filters['services'], filters['specials'], filters['types'], filters['ratings']]
+	
+	brs__ids__pts = [brs[0] for brs in zip(*[bs for i, bs in enumerate(brs__f__all) if len(brs__k__all[i]) != 0]) if len(set(brs)) == 1]
+	brs__ids__all = brs__ids__pts if len(list(filter(lambda b: len(b) != 0, brs__f__all))) != len(brs__f__all) else list(reduce(lambda x, y: x & y, (set(brs) for i, brs in enumerate(brs__f__all) if len(brs__k__all[i]) != 0)))
+
+	branches = json.dumps([branch.to_json_r for branch in restaurants.filter(pk__in=brs__ids__all)], default=str) if len(list(filter(lambda f: len(f) != 0, brs__k__all))) != 0 else json.dumps([branch.to_json_r for branch in restaurants], default=str)
+	return HttpResponse(branches, content_type='application/json')
+
+
 # MENU
 
 

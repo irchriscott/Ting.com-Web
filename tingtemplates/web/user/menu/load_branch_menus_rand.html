@@ -1,0 +1,84 @@
+{% load humanize %}
+{% if type == 'cat' %}
+	{% if categories.count > 0 %}
+		{% for category in categories %}
+			<div class="ting-menu-image-list lst-popup-{{branch.pk}}-{{category.pk}}">
+                <a href="{% url 'ting_usr_get_restaurant_menus_category' branch.pk category.pk branch.restaurant.slug %}" target="_blank">
+                    <img src="{{category.image.url}}" />
+                </a>
+            </div>
+            <div class="ui flowing popup basic transition hidden ting-menu-popup-{{branch.pk}}-{{category.pk}}" style="top:-20px !important;">
+                <div class="header">{{category.name}}</div>
+                <div class="description">{{category.description}}</div>
+            </div>
+            <script type="text/javascript">$(".lst-popup-{{branch.pk}}-{{category.pk}}").popup({popup : ".ting-menu-popup-{{branch.pk}}-{{category.pk}}", on : "hover", boundery: "body"});</script>
+		{% endfor %}
+	{% else %}
+		<div class="ui red message">No Category To Show</div>
+	{% endif %}
+{% else %}
+	{% if menus.count > 0 %}
+		{% for menu in menus %}
+			<div class="ting-menu-image-list lst-popup-{{branch.pk}}-{{menu.pk}}">
+                {% if menu.menu_type == 1 %}
+    				<a href="{% url 'ting_usr_menu_get' menu.pk menu.food.slug %}" target="_blank">
+                        <img src="{{menu.food.images.0.image.url}}">
+                    </a>
+                {% elif menu.menu_type == 2 %}
+                    <a href="{% url 'ting_usr_menu_get' menu.pk menu.drink.slug %}" target="_blank">
+                        <img src="{{menu.drink.images.0.image.url}}">
+                    </a>
+               	{% elif menu.menu_type == 3 %}
+                    <a href="{% url 'ting_usr_menu_get' menu.pk menu.dish.slug %}" target="_blank">
+                        <img src="{{menu.dish.images.0.image.url}}">
+                	</a>
+                {% endif %}
+            </div>
+            <div class="ui flowing popup basic transition hidden ting-menu-popup-{{branch.pk}}-{{menu.pk}}">
+                {% if menu.menu_type == 1 %}
+                	<div class="header">{{menu.food.name}}</div>
+	                <div class="ui star rating disabled-rating" data-rating="{{menu.food.review_average}}" data-max-rating="5" style="margin-top:5px;"></div>
+	                <div class="description">{{menu.food.description}}</div>
+	            	<p class="ui {% if menu.food.is_available %} green {% else %} red {% endif %}" style="color: {% if menu.food.is_available %} green {% else %} red {% endif %}">{% if menu.food.is_available %}<i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
+                {% elif menu.menu_type == 2 %}
+                	<div class="header">{{menu.drink.name}}</div>
+                	<div class="ui star rating disabled-rating" data-rating="{{menu.drink.review_average}}" data-max-rating="5" style="margin-top:5px;"></div>
+                	<div class="description">{{menu.drink.description}}</div>
+            		<p class="ui {% if menu.drink.is_available %} green {% else %} red {% endif %}" style="color: {% if menu.drink.is_available %} green {% else %} red {% endif %}">{% if menu.drink.is_available %}<i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
+                {% elif menu.menu_type == 3 %}
+                	<div class="header">{{menu.dish.name}}</div>
+                	<div class="ui star rating disabled-rating" data-rating="{{menu.dish.review_average}}" data-max-rating="5" style="margin-top:5px;"></div>
+                	<div class="description">{{menu.dish.description}}</div>
+            		<p class="ui {% if menu.dish.is_available %} green {% else %} red {% endif %}" style="color: {% if menu.dish.is_available %} green {% else %} red {% endif %}">{% if menu.dish.is_available %}<i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
+                {% endif %}
+                <div class="extra">
+                	{% if menu.menu_type != 2 %}
+                    <div class="ui label"><i class="icon boxes"></i>
+                        {% if menu.menu_type == 1 %}
+                            {{menu.food.category.name}}
+                        {% elif menu.menu_type == 3 %}
+                            {{menu.dish.category.name}}
+                        {% endif %}  
+                    </div>
+                    {% endif %}
+                    
+                    {% if menu.menu_type == 1 %} <div class="ui label"><i class="icon utensils spoon"></i> {{menu.food.type_str}}</div> {% endif %}
+                    {% if menu.menu_type == 2 %} <div class="ui label"><i class="icon martini glass"></i> {{menu.drink.type_str}}</div> {% endif %}
+                    {% if menu.menu_type == 3 %} <div class="ui label"><i class="icon clock"></i> {{menu.dish.dish_time_str}}</div> {% endif %}
+                                        
+                    {% if menu.menu_type == 1 %}
+                    	<div class="ui label"><i class="icon tag"></i> {{menu.food.currency}} {{menu.food.price|intcomma}} {% if menu.food.is_countable %} {{menu.food.quantity}} Pieces / Packs {% endif %}</div>
+                    {% elif menu.menu_type == 2 %}
+						<div class="ui label"><i class="icon tag"></i> {{menu.drink.currency}} {{menu.drink.price|intcomma}} {% if menu.drink.is_countable %} {{menu.drink.quantity}} Bottles / Cups {% endif %}</div>
+                   	{% elif menu.menu_type == 3 %}
+                        <div class="ui label"><i class="icon tag"></i> {{menu.dish.currency}} {{menu.dish.price|intcomma}} {% if menu.dish.is_countable %} {{menu.dish.quantity}} Plates / Packs {% endif %}</div>
+                    {% endif %} 
+                </div>
+            </div>
+            <script type="text/javascript">$(".lst-popup-{{branch.pk}}-{{menu.pk}}").popup({popup : ".ting-menu-popup-{{branch.pk}}-{{menu.pk}}", on : "hover"});</script>
+		{% endfor %}
+		<script type="text/javascript">$(".disabled-rating").rating("disable");</script>
+	{% else %}
+		<div class="ui red message">No {{type}} To Show</div>
+	{% endif %}
+{% endif %}

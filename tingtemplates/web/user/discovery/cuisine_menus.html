@@ -137,7 +137,7 @@
                                         </div>
                                         {% if menu.menu_type == 1 %} <div class="ui label"><i class="icon utensils spoon"></i> {{menu.food.type_str}}</div> {% endif %}
                                         {% if menu.menu_type == 3 %} <div class="ui label"><i class="icon clock"></i> {{menu.dish.dish_time_str}}</div> {% endif %}
-                                        {% if menu.food.is_available or menu.dish.is_available %}
+                                        {% if menu.food.is_available or menu.dish.is_available or menu.drink.is_available %}
                                         <div class="ui green label"><i class="check icon"></i> Available</div>
                                         {% else %}
                                         <div class="ui red label"><i class="times icon"></i> Not Available</div>
