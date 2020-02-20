@@ -73,7 +73,7 @@ textarea{
 }
 
 .ting-menu-icon i {
-    font-size: 18px;
+    font-size: 16px !important;
 }
 
 .ting-bold{
@@ -136,6 +136,19 @@ textarea{
     padding-top: 0px;
 }
 
+.ting-admin-content-panel {
+    height: calc(100vh - 73px);
+    overflow-y: auto;
+    padding-bottom: 50px;
+    overflow-x: hidden !important;
+}
+
+.ting-admin-orders-panel {
+    height: calc(100vh - 73px);
+    overflow: hidden !important;
+    padding: 0 !important;
+}
+
 .ting-menu-logo{
     display: block;
     position: relative;
@@ -188,7 +201,7 @@ textarea{
 
 .ting-side-menu .ting-side-menu-items .ting-menu-item .ting-menu-legend p{
     color: #ffffff;
-    font-size: 17px;
+    font-size: 15px;
 }
 
 .ting-search-place{
@@ -245,11 +258,11 @@ textarea{
     top: -36px;
 }
 
-.ting-file-input{
+.ting-file-input {
     position: relative;
 }
 
-.ting-file-input span{
+.ting-file-input span {
     margin: 0;
     outline: 0;
     -webkit-appearance: none;
@@ -272,7 +285,7 @@ textarea{
     font-weight: bold;
 }
 
-.ting-file-input input{
+.ting-file-input input {
     position: absolute;
     cursor: pointer;
     top: 0px;
@@ -283,58 +296,58 @@ textarea{
     min-height: 230px !important;
 }
 
-.fr-element ul{
+.fr-element ul {
     list-style: initial !important;
     margin-left: 15px !important;
 }
 
-.fr-element ol{
+.fr-element ol {
     list-style: binary !important;
     margin-left: 15px !important;
 }
 
-.fr-toolbar{
+.fr-toolbar {
     border-top: 2px solid #000000 !important;
 }
 
-.ting-loader img{
+.ting-loader img {
     width: 20px;
     height: 20px;
 }
 
-.ting-form-loader{
+.ting-form-loader {
     display: none;
     position: absolute;
     left: 243px;
     margin-top: -63px;
 }
 
-.ting-form-loader-else{
+.ting-form-loader-else {
     position: absolute;
     right: 250px;
     margin-top: 3px;
     display: none;
 }
 
-.ting-form-loader-submit{
+.ting-form-loader-submit {
     display: none;
     position: absolute;
     left: 258px;
     margin-top: -63px;
 }
 
-.ting-admin-welcome{
+.ting-admin-welcome {
     background: #FFF;
     text-align: center;
     padding-top: 50px;
 }
 
-.ting-admin-welcome h1{
+.ting-admin-welcome h1 {
     font-size: 68px;
     font-weight: 100;
 }
 
-.ting-admin-welcome h2{
+.ting-admin-welcome h2 {
     font-weight: 100;
     font-size: 40px;
     margin-top: 20px;
@@ -1974,4 +1987,28 @@ textarea{
     display: block;
     position: relative;
     margin-top: 15px;
+}
+
+.ui.dropdown .menu .item .dropdown.icon:before {
+    content: '' !important;
+}
+
+.ting-side-orders h2 {
+    margin: 0 1rem;
+}
+
+.ting-sides-pannel-content {
+    margin-top: 15px;
+    height: calc(100vh - 73px - 60px);
+    overflow-y: auto;
+    padding: 0;
+}
+
+.ting-side-pannel-item {
+    padding: 1rem !important;
+    border-bottom: 1px solid #DDDDDD !important;
+}
+
+.ting-side-pannel-item .content {
+    padding-left: 1rem !important;
 }

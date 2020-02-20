@@ -1,0 +1,59 @@
+{% load ting_tags %}
+{% if placements.count > 0 %}
+	<div class="ui items">
+		{% for placement in placements %}
+			<div class="item ting-side-pannel-item">
+		    	<div class="ui avatar">
+		      		<img src="{{placement.user.image.url}}">
+		    	</div>
+		    	<div class="content">
+		      		<a class="header" style="color:#666666;">{{placement.user.name}}</a>
+		      		{% if admin.pk|has_p:"can_done_placement" == True and placement.is_done == False %}
+			      		<div class="ui right pointing dropdown item" style="position: absolute; top: 0; right: 0;">
+	                        <i class="icon chevron down"></i>
+	                        <div class="menu">
+	                            <div class="header">Options</div>
+	                            <a class="item ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_done_placement' placement.token %}" ting-modal-target="ting-end-placement-{{placement.id}}" style="align-self: flex-start; width: 100%"><i class="check icon"></i> End Placement</a>
+	                          	<div class="ui modal mini" data-modal="ting-end-placement-{{placement.id}}">
+			                        <div class="header">
+			                            End Placement
+			                        </div>
+			                        <div class="content">
+			                            <p>Do you really want to end this placement ?</p>
+			                        </div>
+			                        <div class="actions">
+			                            <div class="ui positive button right labeled icon">
+			                                Yes
+		                                    <i class="icon check"></i>
+			                            </div>
+			                            <div class="ui red deny button right labeled icon">
+			                                No
+			                                <i class="icon times"></i>
+			                            </div>
+			                        </div>
+			                    </div>                
+	                        </div>
+	                    </div>
+	                {% endif %}
+		      		<div class="meta" style="margin-top: 2px;">
+		        		<h1 style="font-size: 24px;">{{placement.table.number}}</h1>
+		      		</div>
+		      		<div class="extra" style="margin-top: -2px;">
+		      			{% if placement.waiter != None %}
+		      				<div class="ui image label">
+							  <img src="{{placement.waiter.image.url}}">
+							  {{placement.waiter.name}}
+							</div>
+		      			{% else %}
+		      			{% endif %}
+		      			<div class="ui label"><i class="clipboard outline icon"></i> {% if placement.bill != None and placement.bill != "" %} {{placement.bill.number}} {% else %} - {% endif %}</div>
+		        		<div class="ui label"><i class="users icon"></i> {{placement.people}}</div>
+		      		</div>
+		    	</div>
+		  	</div>
+		{% endfor %}
+		<script type="text/javascript">$(".dropdown").dropdown();$(".ting-open-ajax-modal").openModal();</script>
+	</div>
+{% else %}
+<p class="ting-error">No Placement</p>
+{% endif %}

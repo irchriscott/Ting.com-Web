@@ -212,6 +212,8 @@ admins = [
 	url(r'adm/tables/edit/(?P<table>\d+)/$', admin.load_edit_table, name='ting_wb_adm_load_edit_table'),
 	url(r'adm/tables/update/(?P<table>\d+)/$', admin.update_table, name='ting_wb_adm_update_table'),
 	url(r'adm/tables/avail/toggle/(?P<table>\d+)/$', admin.avail_table_toggle, name='ting_wb_adm_avail_toggle_table'),
+	url(r'adm/tables/waiter/(?P<waiter>\d+)/assign/(?P<table>\d+)/$', admin.assign_waiter_table, name='ting_wb_adm_assign_waiter_table'),
+	url(r'adm/tables/waiter/remove/(?P<table>\d+)/$', admin.remove_waiter_table, name='ting_wb_adm_remove_waiter_table'),
 
 	# Promotions
 
@@ -229,6 +231,14 @@ admins = [
 	url(r'adm/reservations/load/(?P<reservation>\d+)/$', admin.load_reservation, name='ting_wb_adm_load_reservation'),
 	url(r'adm/reservations/accept/(?P<reservation>\d+)/$', admin.accept_reservation, name='ting_wb_adm_accept_reservation'),
 	url(r'adm/reservations/decline/(?P<reservation>\d+)/$', admin.decline_reservation, name='ting_wb_adm_decline_reservation'),
+
+	# Placements & Orders
+
+	url(r'adm/placements/all/$', admin.placements, name='ting_wb_adm_placements'),
+	url(r'adm/placements/load/all/$', admin.load_placements, name='ting_wb_adm_load_placements'),
+	url(r'adm/placements/dashboard/load/all/$', admin.load_placements_dashboard, name='ting_wb_adm_load_placements_dashboard'),
+	url(r'adm/placements/(?P<token>[^/]+)/done/$', admin.done_placement, name='ting_wb_adm_done_placement'),
+	url(r'adm/placements/(?P<token>[^/]+)/assign/waiter/(?P<waiter>\d+)/$', admin.assign_waiter_placement, name='ting_wb_adm_assign_waiter_placement'),
 ]
 
 urlpatterns = admins + users

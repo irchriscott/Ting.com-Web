@@ -346,7 +346,7 @@ class Restaurant(models.Model):
 			},
 			'tables': {
 				'count': self.tables_count,
-				'tables': [table.to_json for table in self.tables]
+				'tables': [table.to_json_s for table in self.tables]
 			},
 			'likes':{
 				'count': self.likes_count,
@@ -405,7 +405,7 @@ class Restaurant(models.Model):
 			},
 			'tables': {
 				'count': self.tables_count,
-				'tables': [table.to_json for table in self.tables]
+				'tables': [table.to_json_s for table in self.tables]
 			},
 			'foodCategories':{
 				'count': self.food_categories_count,
@@ -521,6 +521,7 @@ class Branch(models.Model):
 	place_id = models.CharField(max_length=200, null=False, blank=False)
 	email = models.EmailField(null=True, blank=True)
 	phone = models.CharField(max_length=255, null=True, blank=True)
+	channel = models.CharField(max_length=255, null=True, blank=True)
 	specials = models.CharField(max_length=255, null=True, blank=True)
 	services = models.CharField(max_length=255, null=True, blank=True)
 	restaurant_type = models.IntegerField(null=False, blank=True, default=1)
@@ -720,6 +721,17 @@ class Branch(models.Model):
 	@property
 	def promotions_count(self):
 		return self.promotions.count()
+
+	@property
+	def socket_data(self):
+		return {
+			'id': self.pk,
+			'type': 1,
+			'name': '%s, %s' % (self.restaurant.name, self.name),
+			'email': self.email,
+			'image': self.restaurant.logo.url,
+			'channel': self.channel
+		}
 	
 	@property
 	def to_json(self):
@@ -737,6 +749,7 @@ class Branch(models.Model):
 			'placeId': self.place_id,
 			'email': self.email,
 			'phone': self.phone,
+			'channel': self.channel,
 			'isAvailable': self.is_available,
 			'type': self.restaurant_type_str,
 			'specials': self.get_specials,
@@ -756,7 +769,7 @@ class Branch(models.Model):
 				'outside': self.tables.filter(location=2).count(),
 				'balcony': self.tables.filter(location=3).count(),
 				'rooftop': self.tables.filter(location=4).count(),
-				'tables': [table.to_json for table in self.tables]
+				'tables': [table.to_json_s for table in self.tables]
 			},
 			'menus':{
 				'count': self.menus_count,
@@ -825,6 +838,7 @@ class Branch(models.Model):
 			'placeId': self.place_id,
 			'email': self.email,
 			'phone': self.phone,
+			'channel': self.channel,
 			'isAvailable': self.is_available,
 			'type': self.restaurant_type_str,
 			'specials': self.get_specials,
@@ -844,7 +858,7 @@ class Branch(models.Model):
 				'outside': self.tables.filter(location=2).count(),
 				'balcony': self.tables.filter(location=3).count(),
 				'rooftop': self.tables.filter(location=4).count(),
-				'tables': [table.to_json for table in self.tables]
+				'tables': [table.to_json_s for table in self.tables]
 			},
 			'menus':{
 				'count': self.menus_count,
@@ -913,6 +927,7 @@ class Branch(models.Model):
 			'placeId': self.place_id,
 			'email': self.email,
 			'phone': self.phone,
+			'channel': self.channel,
 			'isAvailable': self.is_available,
 			'type': self.restaurant_type_str,
 			'specials': self.get_specials,
@@ -932,7 +947,7 @@ class Branch(models.Model):
 				'outside': self.tables.filter(location=2).count(),
 				'balcony': self.tables.filter(location=3).count(),
 				'rooftop': self.tables.filter(location=4).count(),
-				'tables': [table.to_json for table in self.tables]
+				'tables': [table.to_json_s for table in self.tables]
 			},
 			'menus':{
 				'count': self.menus_count,
@@ -998,6 +1013,7 @@ class Branch(models.Model):
 			'placeId': self.place_id,
 			'email': self.email,
 			'phone': self.phone,
+			'channel': self.channel,
 			'isAvailable': self.is_available,
 			'type': self.restaurant_type_str,
 			'specials': self.get_specials,
@@ -1109,10 +1125,138 @@ class CategoryRestaurant(models.Model):
 		}
 
 
+class Administrator(models.Model):
+	restaurant = models.ForeignKey(Restaurant)
+	branch = models.ForeignKey(Branch)
+	token = models.TextField(null=False, blank=False)
+	name = models.CharField(max_length=200, null=False, blank=False)
+	username = models.CharField(max_length=100, null=False, blank=False, unique=True)
+	email = models.EmailField(null=False, blank=False, unique=True)
+	password = models.TextField(null=False, blank=False)
+	phone = models.CharField(max_length=15, blank=False, null=False)
+	image = models.ImageField(upload_to=administrator_image_path, null=False, blank=False)
+	admin_type = models.CharField(max_length=100, null=False, blank=True)
+	badge_number = models.CharField(max_length=200, null=True, blank=True)
+	channel = models.CharField(max_length=255, null=True, blank=True)
+	is_disabled = models.BooleanField(default=False)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now_add=True)
+
+	def __str__(self):
+		return self.name
+
+	def __unicode__(self):
+		return self.name
+
+	@property
+	def admin_type_str(self):
+		return utils.get_from_tuple(utils.ADMIN_TYPE, self.admin_type)
+
+	@property
+	def bills(self):
+		return Bill.objects.filter(admin=self.pk).order_by('-created_at')
+
+	def bills_count(self):
+		return self.bills.count()
+
+	@property
+	def placements(self):
+		return Placement.objects.filter(waiter=self.pk).order_by('-created_at')
+
+	def placements_count(self):
+		return self.placements.count()
+
+	@property
+	def permissions(self):
+		_permissions = AdminPermission.objects.get(admin=self.pk)
+		return _permissions.permissions.split(',')
+
+	def permissions_objs(self):
+		return [Permission.objects.get(permission=perm) for perm in self.permissions]
+
+	def has_permission(self, permission):
+		return True if permission in self.permissions else False
+
+	@property
+	def socket_data(self):
+		return {
+			'id': self.pk,
+			'type': 2,
+			'name': self.name,
+			'email': self.email,
+			'image': self.image.url,
+			'channel': self.channel
+		}
+
+	@property
+	def to_json(self):
+		return {
+			'id': self.pk,
+			'branch': self.branch.to_json_s,
+			'name': self.name,
+			'username': self.username,
+			'type': self.admin_type_str,
+			'email': self.email,
+			'phone': self.phone,
+			'image': self.image.url,
+			'badgeNumber': self.badge_number,
+			'channel': self.channel,
+			'permissions': self.permissions,
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+	@property
+	def to_json_s(self):
+		return {
+			'id': self.pk,
+			'name': self.name,
+			'username': self.username,
+			'type': self.admin_type_str,
+			'email': self.email,
+			'phone': self.phone,
+			'image': self.image.url,
+			'badgeNumber': self.badge_number,
+			'channel': self.channel,
+			'permissions': self.permissions,
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+
+class AdministratorResetPassword(models.Model):
+	admin = models.ForeignKey(Administrator)
+	email = models.EmailField(max_length=200, null=False, blank=False)
+	token = models.TextField(null=False, blank=False)
+	is_active = models.BooleanField(default=True)
+	created_at = models.DateTimeField(auto_now_add=True)
+	expired_at = models.DateTimeField(null=False, blank=False)
+
+	def __str__(self):
+		return self.email
+
+	def __unicode__(self):
+		return self.email
+
+
+class AdminPermission(models.Model):
+	admin = models.OneToOneField(Administrator)
+	permissions = models.TextField(null=False, blank=False)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now_add=True)
+
+	def __str__(self):
+		return self.admin
+
+	def __unicode__(self):
+		return self.admin
+
+
 class RestaurantTable(models.Model):
 	restaurant = models.ForeignKey(Restaurant)
 	branch = models.ForeignKey(Branch)
-	uuid = models.CharField(max_length=100, null=False, blank=False)
+	waiter = models.ForeignKey(Administrator, null=True, blank=True)
+	uuid = models.CharField(max_length=100, null=False, blank=False, unique=True)
 	max_people = models.IntegerField(null=False, blank=False)
 	number = models.CharField(max_length=20, null=False, blank=False)
 	location = models.IntegerField(null=False, blank=False)
@@ -1154,6 +1298,7 @@ class RestaurantTable(models.Model):
 	def to_json(self):
 		return {
 			'id': self.pk,
+			'branch': self.branch.to_json_s,
 			'uuid': self.uuid,
 			'maxPeople': self.max_people,
 			'number': self.number,
@@ -1165,102 +1310,20 @@ class RestaurantTable(models.Model):
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
-
-class Administrator(models.Model):
-	restaurant = models.ForeignKey(Restaurant)
-	branch = models.ForeignKey(Branch)
-	token = models.TextField(null=False, blank=False)
-	name = models.CharField(max_length=200, null=False, blank=False)
-	username = models.CharField(max_length=100, null=False, blank=False, unique=True)
-	email = models.EmailField(null=False, blank=False, unique=True)
-	password = models.TextField(null=False, blank=False)
-	phone = models.CharField(max_length=15, blank=False, null=False)
-	image = models.ImageField(upload_to=administrator_image_path, null=False, blank=False)
-	admin_type = models.CharField(max_length=100, null=False, blank=True)
-	badge_number = models.CharField(max_length=200, null=True, blank=True)
-	is_disabled = models.BooleanField(default=False)
-	created_at = models.DateTimeField(auto_now_add=True)
-	updated_at = models.DateTimeField(auto_now_add=True)
-
-	def __str__(self):
-		return self.name
-
-	def __unicode__(self):
-		return self.name
-
 	@property
-	def admin_type_str(self):
-		return utils.get_from_tuple(utils.ADMIN_TYPE, self.admin_type)
-
-	@property
-	def bills(self):
-		return Bill.objects.filter(admin=self.pk).order_by('-created_at')
-
-	def bills_count(self):
-		return self.bills.count()
-
-	@property
-	def placements(self):
-		return Placement.objects.filter(waiter=self.pk).order_by('-created_at')
-
-	def placements_count(self):
-		return self.placements.count()
-
-	@property
-	def permissions(self):
-		_permissions = AdminPermission.objects.get(admin=self.pk)
-		return _permissions.permissions.split(',')
-
-	def permissions_objs(self):
-		return [Permission.objects.get(permission=perm) for perm in self.permissions]
-
-	def has_permission(self, permission):
-		return True if permission in self.permissions else False
-
-	@property
-	def to_json(self):
+	def to_json_s(self):
 		return {
 			'id': self.pk,
-			'branch': self.branch.to_json,
-			'name': self.name,
-			'username': self.username,
-			'type': self.admin_type_str,
-			'email': self.email,
-			'phone': self.phone,
-			'image': self.image,
-			'badgeNumber': self.badge_number,
-			'permissions': self.permissions,
+			'uuid': self.uuid,
+			'maxPeople': self.max_people,
+			'number': self.number,
+			'location': self.location_str,
+			'chairType': self.chair_type_str,
+			'description': self.description,
+			'isAvailable': self.is_available,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
-
-
-class AdministratorResetPassword(models.Model):
-	admin = models.ForeignKey(Administrator)
-	email = models.EmailField(max_length=200, null=False, blank=False)
-	token = models.TextField(null=False, blank=False)
-	is_active = models.BooleanField(default=True)
-	created_at = models.DateTimeField(auto_now_add=True)
-	expired_at = models.DateTimeField(null=False, blank=False)
-
-	def __str__(self):
-		return self.email
-
-	def __unicode__(self):
-		return self.email
-
-
-class AdminPermission(models.Model):
-	admin = models.OneToOneField(Administrator)
-	permissions = models.TextField(null=False, blank=False)
-	created_at = models.DateTimeField(auto_now_add=True)
-	updated_at = models.DateTimeField(auto_now_add=True)
-
-	def __str__(self):
-		return self.admin
-
-	def __unicode__(self):
-		return self.admin
 
 
 class RestaurantConfig(models.Model):
@@ -1342,6 +1405,7 @@ class User(models.Model):
 	gender = models.CharField(max_length=20, blank=False, null=False)
 	country = models.CharField(max_length=200, null=False, blank=False)
 	town = models.CharField(max_length=255, null=False, blank=False)
+	channel = models.CharField(max_length=255, null=True, blank=True)
 	is_authenticated = models.BooleanField(default=False)
 	is_top = models.BooleanField(default=False)
 	created_at = models.DateTimeField(auto_now_add=True)
@@ -1431,6 +1495,17 @@ class User(models.Model):
 	def get_pin_string(self):
 		file = open('tinguploads/users/pins/' + self.map_ping_svg_name, 'r')
 		return file.read()
+
+	@property
+	def socket_data(self):
+		return {
+			'id': self.pk,
+			'type': 3,
+			'name': self.name,
+			'email': self.email,
+			'image': self.image.url,
+			'channel': self.channel
+		}
 	
 	@property
 	def to_json(self):
@@ -1448,6 +1523,7 @@ class User(models.Model):
 			'gender': self.gender,
 			'country': self.country,
 			'town': self.town,
+			'channel': self.channel,
 			'restaurants': {
 				'count': self.restaurants_count,
 				'restaurants': [restaurant.to_json_u for restaurant in self.restaurants]
@@ -1490,6 +1566,7 @@ class User(models.Model):
 			'gender': self.gender,
 			'country': self.country,
 			'town': self.town,
+			'channel': self.channel,
 			'restaurants': {
 				'count': self.restaurants_count,
 				'restaurants': [restaurant.to_json_u for restaurant in self.restaurants]
@@ -1529,6 +1606,7 @@ class User(models.Model):
 			'gender': self.gender,
 			'country': self.country,
 			'town': self.town,
+			'channel': self.channel,
 			'urls':{
 				'loadRestaurants': reverse('ting_usr_load_restaurants', kwargs={'user': self.pk}),
 				'loadReservations': reverse('ting_usr_load_reservations', kwargs={'user': self.pk}),
@@ -1558,6 +1636,7 @@ class User(models.Model):
 			'gender': self.gender,
 			'country': self.country,
 			'town': self.town,
+			'channel': self.channel,
 			'urls':{
 				'loadRestaurants': reverse('ting_usr_load_restaurants', kwargs={'user': self.pk}),
 				'loadReservations': reverse('ting_usr_load_reservations', kwargs={'user': self.pk}),
@@ -2115,6 +2194,50 @@ class Food(models.Model):
 		}
 
 
+	@property
+	def to_json_f_s(self):
+		return {
+			'id': self.pk,
+			'restaurant': self.restaurant.to_json_s,
+			'branch': self.branch.to_json_s,
+			'name': self.name,
+			'category': self.category.to_json,
+			'cuisine': self.cuisine.to_json,
+			'foodType': utils.get_from_tuple(utils.FOOD_TYPE, self.food_type),
+			'foodTypeId' : self.food_type,
+			'description': self.description,
+			'ingredients': self.ingredients,
+			'showIngredients': self.show_ingredients,
+			'price': self.price,
+			'lastPrice': self.last_price,
+			'currency': self.currency,
+			'isCountable': self.is_countable,
+			'isAvailable': self.is_available,
+			'quantity': self.quantity,
+			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
+			'promotions':{
+				'count': self.promotions_count,
+				'promotions': [promo.to_json for promo in self.promotions]
+			},
+			'reviews': {
+				'count': self.reviews_count,
+				'average': self.review_average,
+				'percents': self.review_percent,
+				'reviews': [review.to_json for review in self.reviews[:5]]
+			},
+			'likes': {
+				'count': self.likes_count,
+				'likes': self.menu.like_ids
+			},
+			'images':{
+				'count': self.images.count(),
+				'images': [image.to_json for image in self.images]
+			},
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+
 class FoodImage(models.Model):
 	food = models.ForeignKey(Food)
 	image = models.ImageField(upload_to=food_image_path, null=False, blank=False)
@@ -2404,6 +2527,48 @@ class Drink(models.Model):
 				'count': self.reviews_count,
 				'average': self.review_average,
 				'percents': self.review_percent
+			},
+			'likes': {
+				'count': self.likes_count,
+				'likes': self.menu.like_ids
+			},
+			'images':{
+				'count': self.images.count(),
+				'images': [image.to_json for image in self.images]
+			},
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+
+	@property
+	def to_json_f_s(self):
+		return {
+			'id': self.pk,
+			'restaurant': self.restaurant.to_json_s,
+			'branch': self.branch.to_json_s,
+			'name': self.name,
+			'drinkTypeId': self.drink_type,
+			'drinkType': self.type_str,
+			'description': self.description,
+			'ingredients': self.ingredients,
+			'showIngredients': self.show_ingredients,
+			'price': self.price,
+			'lastPrice': self.last_price,
+			'currency': self.currency,
+			'isCountable': self.is_countable,
+			'isAvailable': self.is_available,
+			'quantity': self.quantity,
+			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
+			'promotions':{
+				'count': self.promotions_count,
+				'promotions': [promo.to_json for promo in self.promotions]
+			},
+			'reviews': {
+				'count': self.reviews_count,
+				'average': self.review_average,
+				'percents': self.review_percent,
+				'reviews': [review.to_json for review in self.reviews[:5]]
 			},
 			'likes': {
 				'count': self.likes_count,
@@ -2760,6 +2925,55 @@ class Dish(models.Model):
 				'count': self.reviews_count,
 				'average': self.review_average,
 				'percents': self.review_percent
+			},
+			'likes': {
+				'count': self.likes_count,
+				'likes': self.menu.like_ids
+			},
+			'foods': {
+				'count': self.foods_count,
+				'foods': [food.to_json_s for food in self.foods]
+			},
+			'images':{
+				'count': self.images.count(),
+				'images': [image.to_json for image in self.images]
+			},
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+	@property
+	def to_json_f_s(self):
+		return {
+			'id': self.pk,
+			'restaurant': self.restaurant.to_json_s,
+			'branch': self.branch.to_json_s,
+			'name': self.name,
+			'category': self.category.to_json,
+			'cuisine': self.cuisine.to_json,
+			'dishTimeId': self.dish_time,
+			'dishTime': self.dish_time_str,
+			'description': self.description,
+			'ingredients': self.ingredients,
+			'showIngredients': self.show_ingredients,
+			'price': self.price,
+			'lastPrice': self.last_price,
+			'currency': self.currency,
+			'isCountable': self.is_countable,
+			'isAvailable': self.is_available,
+			'quantity': self.quantity,
+			'hasDrink': self.has_drink,
+			'drink': self.drink.to_json_r if self.has_drink == True else {},
+			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
+			'promotions':{
+				'count': self.promotions_count,
+				'promotions': [promo.to_json for promo in self.promotions]
+			},
+			'reviews': {
+				'count': self.reviews_count,
+				'average': self.review_average,
+				'percents': self.review_percent,
+				'reviews': [review.to_json for review in self.reviews[:5]]
 			},
 			'likes': {
 				'count': self.likes_count,
@@ -3228,6 +3442,91 @@ class Menu(models.Model):
 				'menu': dish.to_json_s
 			}
 
+	@property
+	def to_json_f_s(self):
+		if self.menu_type == 1:
+			food = Food.objects.get(pk=self.menu_id)
+			return {
+				'id': self.pk,
+				'type':{
+					'id': self.menu_type,
+					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
+				},
+				'restaurant': {
+					'name': '%s, %s' % (self.restaurant.name, self.branch.name),
+					'logo': self.restaurant.logo.url
+				},
+				'forAllBranches': self.for_all_branches,
+				'urls':{
+					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
+					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
+					'loadReviews': reverse('ting_usr_menu_load_reviews', kwargs={'menu': self.pk}),
+					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk}),
+					'apiGet': reverse('api_restaurant_menu_get', kwargs={'menu': self.pk}),
+					'apiLike': reverse('api_restaurant_menu_like', kwargs={'menu': self.pk}),
+					'apiReviews': reverse('api_restaurant_menu_reviews', kwargs={'menu': self.pk}),
+					'apiAddReview': reverse('api_restaurant_menu_add_review', kwargs={'menu': self.pk}),
+				},
+				'restaurant': {
+					'name': '%s, %s' % (self.restaurant.name, self.branch.name),
+					'logo': self.restaurant.logo.url
+				},
+				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
+				'menu': food.to_json_f_s
+			}
+		elif self.menu_type == 2:
+			drink = Drink.objects.get(pk=self.menu_id)
+			return {
+				'id': self.pk,
+				'type':{
+					'id': self.menu_type,
+					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
+				},
+				'restaurant': {
+					'name': '%s, %s' % (self.restaurant.name, self.branch.name),
+					'logo': self.restaurant.logo.url
+				},
+				'forAllBranches': self.for_all_branches,
+				'urls':{
+					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
+					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
+					'loadReviews': reverse('ting_usr_menu_load_reviews', kwargs={'menu': self.pk}),
+					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk}),
+					'apiGet': reverse('api_restaurant_menu_get', kwargs={'menu': self.pk}),
+					'apiLike': reverse('api_restaurant_menu_like', kwargs={'menu': self.pk}),
+					'apiReviews': reverse('api_restaurant_menu_reviews', kwargs={'menu': self.pk}),
+					'apiAddReview': reverse('api_restaurant_menu_add_review', kwargs={'menu': self.pk}),
+				},
+				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': drink.slug}),
+				'menu': drink.to_json_f_s
+			}
+		elif self.menu_type == 3:
+			dish = Dish.objects.get(pk=self.menu_id)
+			return {
+				'id': self.pk,
+				'type':{
+					'id': self.menu_type,
+					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
+				},
+				'restaurant': {
+					'name': '%s, %s' % (self.restaurant.name, self.branch.name),
+					'logo': self.restaurant.logo.url
+				},
+				'forAllBranches': self.for_all_branches,
+				'urls':{
+					'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': dish.slug}),
+					'like': reverse('ting_usr_menu_like', kwargs={'menu': self.pk}),
+					'loadReviews': reverse('ting_usr_menu_load_reviews', kwargs={'menu': self.pk}),
+					'addReview': reverse('ting_usr_menu_add_review', kwargs={'menu': self.pk}),
+					'apiGet': reverse('api_restaurant_menu_get', kwargs={'menu': self.pk}),
+					'apiLike': reverse('api_restaurant_menu_like', kwargs={'menu': self.pk}),
+					'apiReviews': reverse('api_restaurant_menu_reviews', kwargs={'menu': self.pk}),
+					'apiAddReview': reverse('api_restaurant_menu_add_review', kwargs={'menu': self.pk}),
+				},
+				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': dish.slug}),
+				'menu': dish.to_json_f_s
+			}
+
 
 class MenuReview(models.Model):
 	user = models.ForeignKey(User)
@@ -3423,7 +3722,9 @@ class Promotion(models.Model):
 
 	@property
 	def promoted_menus(self):
-		if self.promotion_menu_type == '01':
+		if self.promotion_menu_type == '00':
+			return [menu for menu in Menu.objects.filter(branch__pk=self.branch.pk)]
+		elif self.promotion_menu_type == '01':
 			return [menu for menu in Menu.objects.filter(branch__pk=self.branch.pk, menu_type=1)]
 		elif self.promotion_menu_type == '02':
 			return [menu for menu in Menu.objects.filter(branch__pk=self.branch.pk, menu_type=2)]
@@ -3667,7 +3968,7 @@ class Booking(models.Model):
 	branch = models.ForeignKey(Branch)
 	user = models.ForeignKey(User)
 	table = models.ForeignKey(RestaurantTable, null=True, blank=True)
-	token = models.CharField(max_length=100, null=False, blank=False)
+	token = models.CharField(max_length=100, null=False, blank=False, unique=True)
 	people = models.IntegerField(null=False, blank=False)
 	location = models.IntegerField(null=False, blank=False)
 	amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
@@ -3699,9 +4000,24 @@ class Booking(models.Model):
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'restaurant': self.restaurant.to_json_u,
-			'branch': self.branch.to_json_u,
-			'table': self.table.to_json if self.table != None else {},
+			'branch': self.branch.to_json_s,
+			'table': self.table.to_json_s if self.table != None else None,
+			'token': self.token,
+			'people': self.people,
+			'date': self.date,
+			'time': self.time,
+			'isComplete': self.is_complete,
+			'isCanceled': self.is_canceled,
+			'isAccepted': self. is_accepted,
+			'isRefunded': self.is_refunded,
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+	@property
+	def to_json_s(self):
+		return {
+			'id': self.pk,
 			'token': self.token,
 			'people': self.people,
 			'date': self.date,
@@ -3722,7 +4038,7 @@ class Placement(models.Model):
 	table = models.ForeignKey(RestaurantTable)
 	booking = models.ForeignKey(Booking, null=True, blank=True)
 	waiter = models.ForeignKey(Administrator, null=True, blank=True)
-	token = models.CharField(max_length=100, null=False, blank=False)
+	token = models.CharField(max_length=200, null=False, blank=False, unique=True)
 	people = models.IntegerField(null=False, blank=False)
 	is_done = models.BooleanField(default=False)
 	need_someone = models.BooleanField(default=False)
@@ -3738,20 +4054,18 @@ class Placement(models.Model):
 	def bills(self):
 		return Bill.objects.filter(placement=self.pk).order_by('-created_at')
 
+	@property
 	def bill(self):
-		return Bill.objects.get(placement=self.pk)
+		return Bill.objects.filter(placement=self.pk).first()
 
 	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'restaurant': self.restaurant.to_json,
-			'branch': self.branch.to_json,
-			'user': self.user.to_json_b,
+			'user': self.user.to_json_s,
 			'table': self.table.to_json,
-			'booking': self.booking.to_json,
-			'waiter': self.waiter.to_json,
-			'bill': self.bill.to_json,
+			'booking': self.booking.to_json_s if self.booking != None else None,
+			'waiter': self.waiter.to_json_s if self.waiter != None else None,
 			'token': self.token,
 			'people': self.people,
 			'isDone': self.is_done,
@@ -3765,7 +4079,7 @@ class Bill(models.Model):
 	placement = models.OneToOneField(Placement)
 	admin = models.ForeignKey(Administrator)
 	number = models.CharField(max_length=20, null=False, blank=False)
-	token = models.CharField(max_length=100, null=False, blank=False)
+	token = models.CharField(max_length=200, null=False, blank=False, unique=True)
 	amount = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
 	discount = models.DecimalField(max_digits=18, decimal_places=2, default=0.00)
 	currency = models.CharField(max_length=100, null=True, blank=True)
@@ -3792,7 +4106,7 @@ class Bill(models.Model):
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'admin': self.admin.to_json,
+			'admin': self.admin.to_json_s,
 			'number': self.number,
 			'token': self.token,
 			'amount': self.amount,
@@ -3814,7 +4128,7 @@ class Bill(models.Model):
 class Order(models.Model):
 	bill = models.ForeignKey(Bill)
 	menu = models.ForeignKey(Menu)
-	token = models.CharField(max_length=100, null=False, blank=False)
+	token = models.CharField(max_length=200, null=False, blank=False, unique=True)
 	quantity = models.IntegerField(default=1)
 	price = models.DecimalField(max_digits=18, decimal_places=2, null=False, blank=False)
 	currency = models.CharField(max_length=100, null=False, blank=False)
@@ -3836,7 +4150,7 @@ class Order(models.Model):
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'menu': self.menu.to_json,
+			'menu': self.menu.to_json_s,
 			'token': self.token,
 			'quantity': self.quantity,
 			'price': self.price,

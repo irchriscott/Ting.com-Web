@@ -14,7 +14,7 @@ from tingweb.models import (
 							Restaurant, Administrator, AdminPermission, RestaurantLicenceKey, RestaurantConfig,
 							Menu, Food, Drink, Dish, FoodCategory, FoodImage, AdministratorResetPassword, DrinkImage,
 							DishImage, DishFood, RestaurantTable, Branch, Promotion, User, Booking, UserNotification,
-							CategoryRestaurant
+							CategoryRestaurant, Placement
 						)
 from tingweb.backend import AdminAuthentication
 from tingweb.mailer import (
@@ -30,18 +30,45 @@ from tingweb.forms import (
 							PromotionEditForm, UpdateBranchProfile
 						) 
 from tingadmin.models import RestaurantCategory
-import ting.utils as utils
-from datetime import datetime, timedelta, date
-import tingadmin.permissions as permissions
+from pusher_push_notifications import PushNotifications
+from pubnub.callbacks import SubscribeCallback
+from pubnub.enums import PNStatusCategory
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.pubnub import PubNub
+from background_task import background
 from tingweb.views import get_restaurant_map_pin_svg
+from datetime import datetime, timedelta, date
+import ting.utils as utils
+import tingadmin.permissions as permissions
+import pusher
 import pytz
+import json
 
 
 utc = pytz.UTC
 today = datetime.now().replace(tzinfo=utc)
 
 
-# Create your views here.
+pnconfig = PNConfiguration()
+pnconfig.subscribe_key = utils.PUBNUB_SUBSCRIBE_KEY
+pnconfig.publish_key = utils.PUBNUB_PUBLISH_KEY
+
+pubnub = PubNub(pnconfig)
+
+pusher_client = pusher.Pusher(
+	app_id=utils.PUSHER_APP_ID,
+	key=utils.PUSHER_KEY,
+	secret=utils.PUSHER_SECRET,
+	cluster=utils.PUSHER_CLUSTER,
+	ssl=True
+)
+
+beams_client = PushNotifications(
+    instance_id=utils.PUSHER_BEAMS_INSTANCE,
+    secret_key=utils.PUSHER_BEAMS_SECRET_KEY,
+)
+
+# Login Decorators
 
 
 def check_admin_login(func):
@@ -74,8 +101,15 @@ def has_admin_permissions(permission=None, xhr=None):
 	def decorator_wrapper(func):
 		def wrapper(request, *args, **kwargs):
 			if 'admin' in request.session:
-				if isinstance(permission, list) == False:
-					admin = Administrator.objects.get(pk=request.session['admin'])
+				admin = Administrator.objects.get(pk=request.session['admin'])
+				if type(permission) == list:
+					if any((True for p in permission if p in admin.permissions)) == False:
+						if request.method == 'POST' or request.is_ajax():
+							return HttpJsonResponse(ResponseObject('error', 'Permission Denied !!!', 401))
+						else:
+							messages.error(request, 'Permission Denied !!! !!!')
+							return HttpResponseRedirect(reverse('ting_wb_adm_dashboard'))
+				else:
 					if admin.has_permission(permission) == False:
 						if request.method == 'POST' or request.is_ajax():
 							return HttpJsonResponse(ResponseObject('error', 'Permission Denied !!!', 401))
@@ -90,6 +124,196 @@ def has_admin_permissions(permission=None, xhr=None):
 		return wrapper
 	
 	return decorator_wrapper
+
+
+# Pubnub Socket
+
+
+def ting_publish_callback(envelope, status):
+    pass
+
+
+class TingSubscriptionCallback(SubscribeCallback):
+
+	def status(self, pubnub, status):
+		pass
+
+	def presence(self, pubnub, presence):
+		pass
+
+	def message(self, pubnub, message):
+		
+		response = json.loads(str(message.message)) if type(message.message) == str or type(message.message) == unicode else message.message
+		
+		if response['type'] == 'request_resto_table':
+			
+			user = response['sender']
+			table = RestaurantTable.objects.filter(pk=response['args']['table']).first()
+			
+			if table != None:
+
+				if table.is_available == True:
+				
+					token = response['args']['token']
+					check_placement = Placement.objects.filter(token=token, user__pk=user['id'])
+
+					if check_placement.count() == 0:
+						
+						placement = Placement(
+								restaurant=Restaurant.objects.get(pk=table.restaurant.pk),
+								branch=Branch.objects.get(pk=table.branch.pk),
+								user=User.objects.get(pk=int(user['id'])),
+								table=RestaurantTable.objects.get(pk=table.pk),
+								waiter=Administrator.objects.get(pk=table.waiter.pk) if table.waiter != None else None,
+								token=token,
+								people=1
+							)
+						placement.save()
+
+						user_message = {
+							'status': 200,
+							'type': 'response_resto_table',
+							'uuid': pnconfig.uuid,
+							'sender': placement.branch.socket_data,
+							'receiver': placement.user.socket_data,
+							'message': None,
+							'args': None,
+							'data': {'token': placement.token}
+						}
+
+						pubnub.publish().channel(placement.user.channel).message(user_message).pn_async(ting_publish_callback)
+
+						if table.waiter != None:
+							
+							if table.waiter.is_disabled == False:
+
+								waiter_message = {
+									'status': 200,
+									'type': 'response_w_resto_table',
+									'uuid': pnconfig.uuid,
+									'sender': placement.branch.socket_data,
+									'receiver': placement.waiter.socket_data,
+									'message': None,
+									'args': None,
+									'data': {'token': placement.token, 'user': placement.user.socket_data, 'table': placement.table.number }
+								}
+
+								pubnub.publish().channel(table.waiter.channel).message(waiter_message).pn_async(ting_publish_callback)
+
+								try:
+									pusher_client.trigger(placement.user.channel, placement.user.channel, {
+											'title': 'Your Waiter', 
+											'body': 'You will be served today by %s' % placement.waiter.name,
+											'image': utils.HOST_END_POINT + placement.waiter.image.url,
+											'navigate': 'current_restaurant',
+											'data': placement.token
+										})
+								except Exception as e:
+									pass
+						
+								try:
+									beams_client.publish_to_interests(
+								    	interests=[placement.user.channel],
+								    	publish_body={
+								        	'apns': {
+								            	'aps': {
+								                	'alert': {
+									                	'title': 'Your Waiter',
+									                	'body': 'You will be served today by %s' % placement.waiter.name
+									            	}
+								            	}
+								        	},
+								        	'fcm': {
+								            	'notification': {
+								                	'title': 'Your Waiter',
+								                	'body': 'You will be served today by %s' % placement.waiter.name
+								            	},
+								            	'data': {
+								            		'navigate': 'current_restaurant',
+													'data': placement.token
+								            	}
+								        	}
+								    	}
+									)
+								except Exception as e:
+									pass
+					else:
+						
+						placement = check_placement.first()
+
+						if placement.is_done == False:
+
+							user_message = {
+								'status': 200,
+								'type': 'response_resto_table',
+								'uuid': pnconfig.uuid,
+								'sender': placement.branch.socket_data,
+								'receiver': placement.user.socket_data,
+								'message': None,
+								'args': None,
+								'data': {'token': placement.token}
+							}
+
+							pubnub.publish().channel(placement.user.channel).message(user_message).pn_async(ting_publish_callback)
+						else:
+
+							user_message = {
+								'status': 200,
+								'type': 'response_resto_placement_done',
+								'uuid': pnconfig.uuid,
+								'sender': placement.branch.socket_data,
+								'receiver': placement.user.socket_data,
+								'message': None,
+								'args': None,
+								'data': None
+							}
+
+							pubnub.publish().channel(placement.user.channel).message(user_message).pn_async(ting_publish_callback)
+				else:
+
+					user_message = {
+						'status': 404,
+						'type': 'response_error',
+						'uuid': pnconfig.uuid,
+						'sender': None,
+						'receiver': user,
+						'message': 'Table Not Available',
+						'args': None,
+						'data': None
+					}
+
+					pubnub.publish().channel(user['channel']).message(user_message).pn_async(ting_publish_callback)
+
+			else:
+				user_message = {
+					'status': 404,
+					'type': 'response_error',
+					'uuid': pnconfig.uuid,
+					'sender': None,
+					'receiver': user,
+					'message': 'Table Not Found',
+					'args': None,
+					'data': None
+				}
+
+				pubnub.publish().channel(user['channel']).message(user_message).pn_async(ting_publish_callback)
+
+
+def subscribe_ting_socket(func):
+	def wrapper(request, *args, **kwargs):
+		admin = Administrator.objects.get(pk=request.session['admin'])
+
+		pubnub.add_listener(TingSubscriptionCallback())
+		pubnub.subscribe().channels([admin.channel, admin.branch.channel]).with_presence().execute()
+		
+		return func(request, *args, **kwargs)
+	
+	wrapper.__doc__ = func.__doc__
+	wrapper.__name__ = func.__name__
+	return wrapper
+
+
+# Login & Signup
 
 
 class AdminLogin(TemplateView):
@@ -233,7 +457,8 @@ def welcome_to_ting(request):
 
 	return render(request, template, {
 			'admin': admin,
-			'restaurant': admin.restaurant
+			'restaurant': admin.restaurant,
+			'admin_json': json.dumps(admin.to_json, default=str)
 		})
 
 
@@ -273,6 +498,7 @@ def activate_licence_key(request):
 
 
 @check_admin_login
+@subscribe_ting_socket
 def dashboard(request):
 	template = 'web/admin/dashboard.html'
 	admin = Administrator.objects.get(pk=request.session['admin'])
@@ -285,7 +511,8 @@ def dashboard(request):
 
 	return render(request, template, {
 			'admin': admin,
-			'restaurant': admin.restaurant
+			'restaurant': admin.restaurant,
+			'admin_json': json.dumps(admin.to_json, default=str)
 		})
 
 
@@ -294,6 +521,7 @@ def dashboard(request):
 
 @check_admin_login
 @is_admin_enabled
+@subscribe_ting_socket
 def restaurant(request):
 	template = 'web/admin/restaurant.html'
 	admin = Administrator.objects.get(pk=request.session['admin'])
@@ -308,7 +536,8 @@ def restaurant(request):
 			'branch': admin.branch,
 			'modes': utils.BOOKING_PAYEMENT_MODE,
 			'services': utils.RESTAURANT_SERVICES,
-			'categories': categories
+			'categories': categories,
+			'admin_json': json.dumps(admin.to_json, default=str)
 		})
 
 
@@ -489,6 +718,7 @@ def update_restaurant_categories(request):
 
 @check_admin_login
 @is_admin_enabled
+@subscribe_ting_socket
 @has_admin_permissions(permission='can_view_branch')
 def branches(request):
 	template = 'web/admin/branches.html'
@@ -499,7 +729,8 @@ def branches(request):
 			'branches': branches,
 			'admin': admin,
 			'restaurant': admin.restaurant,
-			'types': types
+			'types': types,
+			'admin_json': json.dumps(admin.to_json, default=str)
 		})
 
 
@@ -510,7 +741,8 @@ def add_new_branch(request):
 	if request.method == 'POST':
 		admin = Administrator.objects.get(pk=request.session['admin'])
 		branch = AddNewBranch(request.POST, instance=Branch(
-					restaurant=Restaurant.objects.get(pk=admin.restaurant.pk)
+					restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
+					channel=get_random_string(64)
 				))
 
 		if branch.is_valid():
@@ -624,18 +856,20 @@ def load_branch(request, branch):
 
 @check_admin_login
 @is_admin_enabled
-@has_admin_permissions(permission='can_view_admin')
+@subscribe_ting_socket
+@has_admin_permissions(permission=['can_view_admin', 'can_view_all_admin'])
 def administrators(request):
 	template = 'web/admin/administrators.html'	
 	admin = Administrator.objects.get(pk=request.session['admin'])
-	administrators = admin.restaurant.administrators
+	administrators = Administrator.objects.filter(restaurant__pk=admin.pk).order_by('name') if admin.has_permission('can_view_all_admin') else Administrator.objects.filter(restaurant__pk=admin.pk, branch__pk=admin.branch.pk).order_by('name')
 	branches = Branch.objects.filter(restaurant__pk=admin.restaurant.pk)
 	return render(request, template, {
 			'admin': admin,
 			'restaurant': admin.restaurant,
 			'administrators': administrators,
 			'types': utils.ADMIN_TYPE,
-			'branches': branches
+			'branches': branches,
+			'admin_json': json.dumps(admin.to_json, default=str)
 		})
 
 
@@ -649,7 +883,8 @@ def admin_session(request):
 	return render(request, template, {
 			'admin': admin,
 			'restaurant': admin.restaurant,
-			'types': types
+			'types': types,
+			'admin_json': json.dumps(admin.to_json, default=str)
 		})
 
 
@@ -678,6 +913,7 @@ def add_new_admin(request):
 				branch=Branch.objects.get(pk=branch),
 				token=admin_token,
 				image=utils.DEFAULT_ADMIN_IMAGE,
+				channel=get_random_string(64),
 				password=make_password(password)
 			))
 
@@ -685,8 +921,6 @@ def add_new_admin(request):
 			if check_password(request.POST.get('password'), session.password) == True:
 
 				admin = form.save()
-
-				_permissions = []
 
 				if admin.restaurant.purpose == 1:
 					_permissions = permissions.advertisment_new_account_permissions
@@ -870,13 +1104,15 @@ def disable_admin_account_toggle(request, token):
 
 @check_admin_login
 @is_admin_enabled
+@subscribe_ting_socket
 def admin_security(request):
 	template = 'web/admin/security.html'
 	admin = Administrator.objects.get(pk=request.session['admin'])
 	
 	return render(request, template, {
 			'admin': admin,
-			'restaurant': admin.restaurant
+			'restaurant': admin.restaurant,
+			'admin_json': json.dumps(admin.to_json, default=str)
 		})
 
 
@@ -911,6 +1147,7 @@ def update_admin_password(request):
 
 @check_admin_login
 @is_admin_enabled
+@subscribe_ting_socket
 def admin_permissions(request):
 	template = 'web/admin/permissions.html'
 	admin = Administrator.objects.get(pk=request.session['admin'])
@@ -927,7 +1164,9 @@ def admin_permissions(request):
 			'booking': permissions.booking,
 			'management': permissions.management,
 			'promotion': permissions.promotion,
-			'restaurant': admin.restaurant
+			'placements': permissions.placements,
+			'restaurant': admin.restaurant,
+			'admin_json': json.dumps(admin.to_json, default=str)
 		})
 
 
@@ -950,6 +1189,7 @@ def edit_admin_permissions(request, token):
 			'booking': permissions.booking,
 			'promotion': permissions.promotion,
 			'management': permissions.management,
+			'placements': permissions.placements,
 			'restaurant': admin.restaurant
 		})
 
@@ -992,6 +1232,7 @@ def update_admin_permissions(request, token):
 
 @check_admin_login
 @is_admin_enabled
+@subscribe_ting_socket
 @has_admin_permissions(permission='can_view_category')
 def categories(request):
 	template = 'web/admin/categories.html'
@@ -1000,7 +1241,8 @@ def categories(request):
 	return render(request, template, {
 			'admin': admin,
 			'restaurant': admin.restaurant,
-			'categories': categories
+			'categories': categories,
+			'admin_json': json.dumps(admin.to_json, default=str)
 		})
 
 
@@ -1100,6 +1342,7 @@ def update_category(request, slug):
 
 @check_admin_login
 @is_admin_enabled
+@subscribe_ting_socket
 @has_admin_permissions(permission='can_view_menu')
 def menu_food(request):
 	template = 'web/admin/menu_food.html'
@@ -1116,7 +1359,8 @@ def menu_food(request):
 			'categories': categories,
 			'types': types,
 			'currencies': currencies,
-			'cuisines': cuisines
+			'cuisines': cuisines,
+			'admin_json': json.dumps(admin.to_json, default=str)
 		})
 
 
@@ -1441,6 +1685,7 @@ def load_menu_food(request, food):
 
 @check_admin_login
 @is_admin_enabled
+@subscribe_ting_socket
 @has_admin_permissions(permission='can_view_menu')
 def menu_drinks(request):
 	template = 'web/admin/menu_drinks.html'
@@ -1451,7 +1696,8 @@ def menu_drinks(request):
 			'restaurant': admin.restaurant,
 			'drinks': drinks,
 			'currencies': utils.CURRENCIES,
-			'types': utils.DRINK_TYPE
+			'types': utils.DRINK_TYPE,
+			'admin_json': json.dumps(admin.to_json, default=str)
 		})
 
 
@@ -1715,6 +1961,7 @@ def load_menu_drink(request, drink):
 
 @check_admin_login
 @is_admin_enabled
+@subscribe_ting_socket
 @has_admin_permissions(permission='can_view_menu')
 def menu_dishes(request):
 	template = 'web/admin/menu_dishes.html'
@@ -1731,7 +1978,8 @@ def menu_dishes(request):
 			'currencies': utils.CURRENCIES,
 			'types': utils.DISH_TIME,
 			'drinks': drinks,
-			'cuisines': cuisines
+			'cuisines': cuisines,
+			'admin_json': json.dumps(admin.to_json, default=str)
 		})
 
 
@@ -2171,18 +2419,22 @@ def update_food_menu_for_dish_menu(request, dish):
 
 @check_admin_login
 @is_admin_enabled
+@subscribe_ting_socket
 @has_admin_permissions(permission='can_view_table', xhr='ajax')
 def tables(request):
 	template = 'web/admin/tables.html'
 	admin = Administrator.objects.get(pk=request.session['admin'])
 	tables = RestaurantTable.objects.filter(restaurant__pk=admin.restaurant.pk, branch__pk=admin.branch.pk)
-	
+	waiters = Administrator.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, admin_type=4)
+
 	return render(request, template, {
 			'admin': admin,
 			'restaurant': admin.restaurant,
 			'tables':tables,
 			'locations': utils.TABLE_LOCATION,
-			'types': utils.CHAIR_TYPE
+			'types': utils.CHAIR_TYPE,
+			'waiters': waiters,
+			'admin_json': json.dumps(admin.to_json, default=str)
 		})
 
 
@@ -2284,14 +2536,56 @@ def avail_table_toggle(request, table):
 		table.save()
 
 		messages.success(request, 'Restaurant Table Unavailed Successfully !!!')
-		return HttpJsonResponse(ResponseObject('success', 'Menu Dish Unavailed Successfully !!!', 200, 
+		return HttpJsonResponse(ResponseObject('success', 'Restaurant Unavailed Successfully !!!', 200, 
 					reverse('ting_wb_adm_tables')))
 	else:
 		table.is_available = True
 		table.save()
 
 		messages.success(request, 'Restaurant Table Availed Successfully !!!')
-		return HttpJsonResponse(ResponseObject('success', 'Menu Dish Availed Successfully !!!', 200, 
+		return HttpJsonResponse(ResponseObject('success', 'Restaurant Availed Successfully !!!', 200, 
+					reverse('ting_wb_adm_tables')))
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_table', xhr='ajax')
+def assign_waiter_table(request, waiter, table):
+	table = get_object_or_404(RestaurantTable, pk=table)
+	table.updated_at = timezone.now()
+	admin = Administrator.objects.get(pk=request.session['admin'])
+
+	if admin.restaurant.pk != table.restaurant.pk or admin.branch.pk != table.branch.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
+				reverse('ting_wb_adm_tables')))
+
+	table.waiter = Administrator.objects.get(pk=waiter)
+	table.save()
+
+	messages.success(request, 'Waiter Assigned To Table Successfully !!!')
+	return HttpJsonResponse(ResponseObject('success', 'Waiter Assigned To Table Successfully !!!', 200, 
+					reverse('ting_wb_adm_tables')))
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_table', xhr='ajax')
+def remove_waiter_table(request, table):
+	table = get_object_or_404(RestaurantTable, pk=table)
+	table.updated_at = timezone.now()
+	admin = Administrator.objects.get(pk=request.session['admin'])
+
+	if admin.restaurant.pk != table.restaurant.pk or admin.branch.pk != table.branch.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
+				reverse('ting_wb_adm_tables')))
+
+	table.waiter = None
+	table.save()
+
+	messages.success(request, 'Waiter Remove To Table Successfully !!!')
+	return HttpJsonResponse(ResponseObject('success', 'Waiter Removed To Table Successfully !!!', 200, 
 					reverse('ting_wb_adm_tables')))
 
 
@@ -2300,6 +2594,7 @@ def avail_table_toggle(request, table):
 
 @check_admin_login
 @is_admin_enabled
+@subscribe_ting_socket
 @has_admin_permissions(permission='can_view_promotion')
 def promotions(request):
 	template = 'web/admin/promotions.html'
@@ -2316,7 +2611,8 @@ def promotions(request):
 			'promotion_types': utils.PROMOTION_MENU,
 			'currencies': utils.CURRENCIES,
 			'periods': utils.PROMOTION_PERIOD,
-			'categories': categories
+			'categories': categories,
+			'admin_json': json.dumps(admin.to_json, default=str)
 		})
 
 
@@ -2616,6 +2912,7 @@ def load_promotion(request, promotion):
 
 @check_admin_login
 @is_admin_enabled
+@subscribe_ting_socket
 @has_admin_permissions(permission='can_view_booking')
 def reservations(request):
 	template = 'web/admin/reservations.html'
@@ -2629,6 +2926,7 @@ def reservations(request):
 			'bookings': today_bookings,
 			'today': dt,
 			'new_bookings': new_bookings,
+			'admin_json': json.dumps(admin.to_json, default=str),
 			'tables': RestaurantTable.objects.filter(restaurant__pk=admin.restaurant.pk, branch__pk=admin.branch.pk).order_by('-created_at')
 		})
 
@@ -2746,3 +3044,207 @@ def decline_reservation(request, reservation):
 			return HttpJsonResponse(ResponseObject('error', 'Cannot Accept This Reservation For It Is %s !!!' % book.status_str, 406))
 	else:
 		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
+
+
+# PLACEMENTS & ORDERS
+
+
+@check_admin_login
+@is_admin_enabled
+@subscribe_ting_socket
+@has_admin_permissions(permission='can_view_placements')
+def placements(request):
+	template = 'web/admin/placements.html'
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	return render(request, template, {'admin': admin, 'restaurant': admin.restaurant, 'admin_json': json.dumps(admin.to_json, default=str)})
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_placements')
+def load_placements(request):
+	template = 'web/admin/ajax/load_placements.html'
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	if admin.admin_type == "4":
+		placements = Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, waiter=admin.pk, is_done=False).order_by('-created_at')
+	else:
+		placements = Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, is_done=False).order_by('-created_at')
+	waiters = Administrator.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, admin_type=4, is_disabled=False)
+	return render(request, template, {'placements': placements, 'waiters': waiters, 'admin': admin})
+
+
+@check_admin_login
+@is_admin_enabled
+def load_placements_dashboard(request):
+	template = 'web/admin/ajax/load_placements_dashboard.html'
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	if admin.admin_type == "4":
+		placements = Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, waiter=admin.pk, is_done=False).order_by('-created_at')
+	else:
+		placements = Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, is_done=False).order_by('-created_at')
+	
+	return render(request, template, {'placements': placements, 'admin': admin})
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_done_placement')
+def done_placement(request, token):
+	placement = Placement.objects.filter(token=token).first()
+	admin = Administrator.objects.get(pk=request.session['admin'])
+
+	if admin.restaurant.pk != placement.restaurant.pk or admin.branch.pk != placement.branch.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
+				reverse('ting_wb_adm_placements')))
+
+	placement.is_done = True
+	placement.save()
+	notify_user_placement_done.now(placement.pk)
+	messages.success(request, 'Placement Ended Successfully !!!')
+	return HttpJsonResponse(ResponseObject('success', 'Placement Ended Successfully !!!', 200, 
+				reverse('ting_wb_adm_placements')))
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_assign_table')
+def assign_waiter_placement(request, token, waiter):
+	placement = Placement.objects.filter(token=token).first()
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	waiter = Administrator.objects.get(pk=waiter)
+
+	if admin.restaurant.pk != placement.restaurant.pk or admin.branch.pk != placement.branch.pk or waiter.branch.pk != admin.branch.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
+				reverse('ting_wb_adm_placements')))
+
+	placement.waiter = Administrator.objects.get(pk=waiter.pk)
+	placement.save()
+	notify_user_placement_waiter_assigned.now(placement.pk)
+	messages.success(request, 'Waiter Assigned Successfully !!!')
+	return HttpJsonResponse(ResponseObject('success', 'Waiter Assigned Successfully !!!', 200, 
+				reverse('ting_wb_adm_placements')))
+
+
+@background(schedule=60)
+def notify_user_placement_done(placement):
+	placement = Placement.objects.get(pk=placement)
+	user_message = {
+		'status': 200,
+		'type': 'response_resto_placement_done',
+		'uuid': pnconfig.uuid,
+		'sender': placement.branch.socket_data,
+		'receiver': placement.user.socket_data,
+		'message': None,
+		'args': None,
+		'data': None
+	}
+
+	pubnub.publish().channel(placement.user.channel).message(user_message).pn_async(ting_publish_callback)
+
+	try:
+		pusher_client.trigger(placement.user.channel, placement.user.channel, {
+			'title': 'Placement Terminated', 
+			'body': 'Your placement of %s at %s, %s has been terminated' % (placement.created_at.strftime('%a %d %b, %Y'), placement.restaurant.name, placement.branch.name),
+			'text': 'Your placement of %s at %s, %s has been terminated' % (placement.created_at.strftime('%a %d %b, %Y'), placement.restaurant.name, placement.branch.name),
+			'navigate': 'placement_done',
+			'data': None
+		})
+	except Exception as e:
+		pass
+				
+	try:
+		beams_client.publish_to_interests(
+			interests=[placement.user.channel],
+			publish_body={
+				'apns': {
+					'aps': {
+						'alert': {
+							'title': 'Placement Terminated', 
+							'body': 'Your placement of %s at %s, %s has been terminated' % (placement.created_at.strftime('%a %d %b, %Y'), placement.restaurant.name, placement.branch.name),
+						}
+					}
+				},
+				'fcm': {
+					'notification': {
+						'title': 'Placement Terminated', 
+						'body': 'Your placement of %s at %s, %s has been terminated' % (placement.created_at.strftime('%a %d %b, %Y'), placement.restaurant.name, placement.branch.name),
+					},
+					'data': {
+						'navigate': 'placement_done',
+						'data': None
+					}
+				}
+			}
+		)
+	except Exception as e:
+		pass
+
+
+@background(schedule=60)
+def notify_user_placement_waiter_assigned(placement):
+	placement = Placement.objects.get(pk=placement)
+	waiter_message = {
+		'status': 200,
+		'type': 'response_w_resto_table',
+		'uuid': pnconfig.uuid,
+		'sender': placement.branch.socket_data,
+		'receiver': placement.waiter.socket_data,
+		'message': None,
+		'args': None,
+		'data': {'token': placement.token, 'user': placement.user.socket_data, 'table': placement.table.number }
+	}
+
+	pubnub.publish().channel(placement.waiter.channel).message(waiter_message).pn_async(ting_publish_callback)
+
+	user_message = {
+		'status': 200,
+		'type': 'response_resto_table_waiter',
+		'uuid': pnconfig.uuid,
+		'sender': placement.branch.socket_data,
+		'receiver': placement.user.socket_data,
+		'message': None,
+		'args': None,
+		'data': {'token': placement.token, 'waiter': placement.waiter.socket_data }
+	}
+
+	pubnub.publish().channel(placement.user.channel).message(user_message).pn_async(ting_publish_callback)
+	
+	try:
+		pusher_client.trigger(placement.user.channel, placement.user.channel, {
+			'title': 'Your Waiter', 
+			'body': 'You will be served today by %s' % placement.waiter.name,
+			'image': utils.HOST_END_POINT + placement.waiter.image.url,
+			'navigate': 'current_restaurant',
+			'data': placement.token
+		})
+	except Exception as e:
+		pass
+				
+	try:
+		beams_client.publish_to_interests(
+			interests=[placement.user.channel],
+			publish_body={
+				'apns': {
+					'aps': {
+						'alert': {
+							'title': 'Your Waiter', 
+							'body': 'You will be served today by %s' % placement.waiter.name,
+						}
+					}
+				},
+				'fcm': {
+					'notification': {
+						'title': 'Your Waiter', 
+						'body': 'You will be served today by %s' % placement.waiter.name,
+					},
+					'data': {
+						'navigate': 'current_restaurant',
+						'data': placement.token
+					}
+				}
+			}
+		)
+	except Exception as e:
+		pass

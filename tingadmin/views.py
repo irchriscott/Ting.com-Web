@@ -103,7 +103,8 @@ def add_restaurant(request):
 		branch_form = BranchForm(request.POST, instance=Branch(
 				name=request.POST.get('branch'),
 				phone=phone,
-				email=email
+				email=email,
+				channel=get_random_string(64)
 			))
 
 		if restaurant_form.is_valid() and branch_form.is_valid():
@@ -138,6 +139,7 @@ def add_restaurant(request):
 					email=email,
 					password=make_password(password),
 					admin_type=utils.ADMIN_TYPE[0][0],
+					channel=get_random_string(64),
 					image=utils.DEFAULT_ADMIN_IMAGE,
 					phone=phone
 				)

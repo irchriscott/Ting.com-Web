@@ -6,6 +6,10 @@
 <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
 <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}">
 {% endblock %}
+{% block js %}
+<script src="https://cdn.pubnub.com/sdk/javascript/pubnub.4.21.7.min.js"></script>
+<script src="{% static 'js/socket.js' %}"></script>
+{% endblock %}
 {% block title %}
     <title>Ting.com - Admin / Menus - Drinks</title>
 {% endblock %}
@@ -16,7 +20,7 @@
         {% include '../../web/admin/navbar.html' %}
         <div class="ui grid divided" style="margin-left: 10px;">
             <div class="row">
-                <div class="twelve wide column">
+                <div class="twelve wide column ting-admin-content-panel">
                     
                     <div class="ui grid">
                         <div class="row ting-data-container-header">
@@ -69,10 +73,7 @@
                                             <td>{{drink.type_str}}</td>
                                             <td>{{drink.price|intcomma}} {{drink.currency}}</td>
                                             <td>
-                                                <div class="ui small blue labeled icon button ting-open-ajax-modal" ting-modal-type="ajax" ting-data-url="{% url 'ting_wb_adm_menu_drink_load' drink.pk %}" ting-modal-target="ting-load-menu-drink">
-                                                    <i class="glass martini icon"></i> Load
-                                                </div>
-                                                <div class="ui right dropdown item" style="margin-top: -10px !important;">
+                                                <div class="ui right pointing dropdown item button" style="margin-top: -10px !important;">
                                                     <i class="icon chevron down"></i>
                                                     <div class="menu">
                                                         <div class="header">Options</div>
@@ -108,6 +109,9 @@
                                                         </div>
                                                         {% endif %}
                                                     </div>
+                                                </div>
+                                                <div class="ui small blue labeled icon button ting-open-ajax-modal" ting-modal-type="ajax" ting-data-url="{% url 'ting_wb_adm_menu_drink_load' drink.pk %}" ting-modal-target="ting-load-menu-drink">
+                                                    <i class="glass martini icon"></i> Load
                                                 </div>
                                             </td>
                                         </tr>
@@ -208,7 +212,7 @@
                     </div>
 
                 </div>
-                <div class="four wide column">
+                <div class="four wide column ting-admin-orders-panel">
                     {% include '../../web/admin/sideorders.html' %}
                 </div>
             </div>

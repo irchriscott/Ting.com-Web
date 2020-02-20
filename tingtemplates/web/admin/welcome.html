@@ -4,6 +4,10 @@
 <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
 <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}">
 {% endblock %}
+{% block js %}
+<script src="https://cdn.pubnub.com/sdk/javascript/pubnub.4.21.7.min.js"></script>
+<script src="{% static 'js/socket.js' %}"></script>
+{% endblock %}
 {% block title %}
     <title>Ting.com - Admin / Welcome</title>
 {% endblock %}
@@ -112,5 +116,5 @@
         </div>    
     </div>
 </div>
-
+<script type="text/javascript">window.__TING__Administrator = {{admin_json|safe}}</script>
 {% endblock %}

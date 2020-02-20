@@ -5,6 +5,10 @@
 <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
 <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}">
 {% endblock %}
+{% block js %}
+<script src="https://cdn.pubnub.com/sdk/javascript/pubnub.4.21.7.min.js"></script>
+<script src="{% static 'js/socket.js' %}"></script>
+{% endblock %}
 {% block title %}
     <title>Ting.com - Admin / Tables</title>
 {% endblock %}
@@ -15,7 +19,7 @@
         {% include '../../web/admin/navbar.html' %}
         <div class="ui grid divided" style="margin-left: 10px;">
             <div class="row">
-                <div class="twelve wide column">
+                <div class="twelve wide column ting-admin-content-panel">
                     
                     <div class="ui grid">
                         <div class="row ting-data-container-header">
@@ -42,6 +46,7 @@
                                     <th>Location</th>
                                     <th>Chair Type</th>
                                     <th>Max People</th>
+                                    <th>Default Waiter</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -54,10 +59,35 @@
                                             <td>{{table.chair_type_str}}</td>
                                             <td>{{table.max_people}}</td>
                                             <td>
-                                                <div class="ui small blue labeled icon button ting-open-ajax-modal" id="ting-table-qr-code-{{table.id}}">
-                                                    <i class="qrcode icon"></i> Load
+                                                <div class="ui small labeled icon top right pointing dropdown button">
+                                                    <i class="user icon"></i>
+                                                    <span class="text">{% if table.waiter != None %}<img src="{{table.waiter.image.url}}" class="avatar" style="width: 30px;">{{table.waiter.name}} {% else %} Waiter {% endif %}</span>
+                                                    {% if admin.pk|has_p:"can_update_table" == True %}
+                                                    <div class="menu">
+                                                        <div class="ui search icon input">
+                                                            <i class="search icon"></i>
+                                                            <input type="text" name="search" placeholder="Search Waiter...">
+                                                        </div>
+                                                        <div class="divider"></div>
+                                                        <div class="header">
+                                                            <i class="user icon"></i>
+                                                            Waiters
+                                                        </div>
+                                                        {% if waiters.count > 0 %}
+                                                            {% for waiter in waiters %}
+                                                                <a class="item ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_assign_waiter_table' waiter.pk table.pk %}" ting-modal-target="ting-add-waiter-to-table-{{table.id}}"><img src="{{waiter.image.url}}" class="avatar" style="width: 30px;">{{waiter.name}}</a>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                        {% if table.waiter != None %}
+                                                        <div class="divider"></div>
+                                                        <a class="item ting-open-ajax-modal red" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_remove_waiter_table' table.pk %}" ting-modal-target="ting-remove-waiter-to-table-{{table.id}}" style="color: #db2828;"><i class="icon trash outline alternate red"></i> Remove</a>
+                                                        {% endif %}
+                                                    </div>
+                                                    {% endif %}
                                                 </div>
-                                                <div class="ui dropdown item" style="margin-top: -10px !important;">
+                                            </td>
+                                            <td>
+                                                <div class="ui right pointing dropdown item button" style="margin-top: -10px !important;">
                                                     <i class="icon chevron down"></i>
                                                     <div class="menu">
                                                         <div class="header">Options</div>
@@ -74,6 +104,9 @@
                                                         </a>
                                                         {% endif %}
                                                     </div>
+                                                </div>
+                                                <div class="ui small blue labeled icon button ting-open-ajax-modal" id="ting-table-qr-code-{{table.id}}">
+                                                    <i class="qrcode icon"></i> Load
                                                 </div>
                                             </td>
                                         </tr>
@@ -100,6 +133,44 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        {% endif %}
+                                        {% if admin.pk|has_p:"can_update_table" == True %}
+                                            <div class="ui modal mini" data-modal="ting-add-waiter-to-table-{{table.id}}">
+                                                <div class="header">
+                                                    Assign Default Waiter To Table
+                                                </div>
+                                                <div class="content">
+                                                    <p>Do you really want to assign this waiter to this table ?</p>
+                                                </div>
+                                                <div class="actions">
+                                                    <div class="ui positive button right labeled icon">
+                                                        Yes
+                                                        <i class="icon check"></i>
+                                                    </div>
+                                                    <div class="ui red deny button right labeled icon">
+                                                        No
+                                                        <i class="icon times"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="ui modal mini" data-modal="ting-remove-waiter-to-table-{{table.id}}">
+                                                <div class="header">
+                                                    Remove Default Waiter To Table
+                                                </div>
+                                                <div class="content">
+                                                    <p>Do you really want to remove default waiter to this table ?</p>
+                                                </div>
+                                                <div class="actions">
+                                                    <div class="ui positive button right labeled icon">
+                                                        Yes
+                                                        <i class="icon check"></i>
+                                                    </div>
+                                                    <div class="ui red deny button right labeled icon">
+                                                        No
+                                                        <i class="icon times"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         {% endif %}
                                         <div class="ui modal tiny" data-modal="ting-table-qr-code-{{table.id}}">
                                             <div class="header">
@@ -151,7 +222,7 @@
                     </div>
 
                 </div>
-                <div class="four wide column">
+                <div class="four wide column ting-admin-orders-panel">
                     {% include '../../web/admin/sideorders.html' %}
                 </div>
             </div>
@@ -200,8 +271,28 @@
                     <input type="text" name="number" placeholder="Table Number" required autocomplete="off">
                 </div>
                 <div class="field">
-                    <label>Enter Maximum Number Of People :</label>
-                    <input type="number" name="max_people" placeholder="Maximum Number Of People" required autocomplete="off">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Enter Maximum Number Of People :</label>
+                            <input type="number" name="max_people" placeholder="Maximum Number Of People" required autocomplete="off">
+                        </div>
+                        <div class="field">
+                            <label>Enter Default Waiter (Not Required):</label>
+                            <div class="ui fluid search selection dropdown">
+                                <input type="hidden" name="waiter">
+                                <i class="dropdown icon"></i>
+                                <div class="default text">Select Waiter</div>
+                                <div class="menu">
+                                    {% for waiter in waiters %}
+                                        <div class="item" data-value="{{waiter.pk}}">
+                                            <img class="ui mini avatar image" style="width: 30px; height: 30px;" src="{{waiter.image.url}}">
+                                            {{waiter.name}}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="field">
                     <div class="two fields">

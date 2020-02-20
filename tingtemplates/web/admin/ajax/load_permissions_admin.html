@@ -136,6 +136,17 @@
                                 </div>
                             {% endfor %}
                         </div>
+                        <div class="five wide column">
+                            <h5 style="margin-bottom: 15px;">Placements</h5>
+                            {% for perm in placements %}
+                                <div class="field">
+                                    <div class="ui checkbox">
+                                        <input type="checkbox" name="permission" value="{{perm.permission}}" {% if admin.pk|has_p:perm.permission == True %} checked {% endif %}>
+                                        <label style="line-height: 1.3 !important;">{{perm.title|prefix:"Can"}}</label>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
                 {% else %}

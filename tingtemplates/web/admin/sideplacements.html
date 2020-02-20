@@ -1,0 +1,10 @@
+{% load staticfiles %}
+<div class="ting-side-orders">
+	<h2>{% if admin.admin_type == "4" %}My{% else %}{% endif %} Placements</h2>
+	<div class="ting-sides-pannel-content" id="ting-sides-pannel-content-placements">
+		<div class="ui right ting-loader" style="margin: 60px auto; text-align: center; padding: 40px 0;">
+            <img src="{% static 'imgs/loading.gif' %}">
+        </div>
+	</div>
+</div>
+<script type="text/javascript">loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements)</script>

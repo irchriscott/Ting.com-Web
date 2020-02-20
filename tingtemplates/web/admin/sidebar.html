@@ -1,8 +1,37 @@
 {% load staticfiles %}
 {% load ting_tags %}
+<div class="ting-user-location-values">
+    <input type="hidden" id="ting-lat">
+    <input type="hidden" id="ting-long">
+    {% if is_logged_in == True %}
+    <input type="hidden" id="ting-addr">
+    {% endif %}
+    <input type="hidden" id="ting-place">
+    <input type="hidden" id="ting-country">
+    <input type="hidden" id="ting-town">
+    <input type="hidden" id="ting-ip">
+    <input type="hidden" id="ting-tz">
+    <input type="hidden" id="ting-currency">
+    <script type="text/javascript">
+        window.__TING__Administrator = {{admin_json|safe}}
+        window.__TING__URL__Load__Placements = decodeURI("{% url 'ting_wb_adm_load_placements' %}")
+        window.__TING__URL__Get__Placements = decodeURI("{% url 'ting_wb_adm_placements' %}")
+        window.__TING__URL__Load__Dash__Placements = decodeURI("{% url 'ting_wb_adm_load_placements_dashboard' %}")
+        $(document).ready(function(){
+            setTimeout(function(){
+                if($("#ting-lat").val() != "" && $("#ting-lat").val() != null){
+                    getUserCurrentLocation("ting-lat", "ting-long", "ting-addr", "ting-town", "ting-country", "ting-user-address", "ting-place");
+                }
+            }, 3000)
+        });
+    </script>
+    <style type="text/css">
+        body { width: 100vw; height: 100vh; overflow: hidden;  }
+    </style>
+</div>
 <div class="ui visible sidebar inverted vertical menu">
-    <div class="ting-menu-logo" style="margin-top:20px;">
-        <h3 style="text-align: left;"><span class="ting-secondary-color">Ting</span><span class="ting-primary-color">.com</span></h3>
+    <div class="ting-menu-logo" style="margin-top:40px;">
+        <h3 style="text-align: left; font-size: 24px; font-weight: bold;"><span class="ting-secondary-color">Ting</span><span class="ting-primary-color">.com</span></h3>
     </div>
     <div class="ting-side-menu">
         <div class="ting-side-menu-items">
@@ -64,7 +93,7 @@
                 </a>
             </div>
             {% endif %}
-            {% if admin.pk|has_p:"can_view_admin" == True %}
+            {% if admin.pk|has_p:"can_view_admin" == True or admin.pk|has_p:"can_view_all_admin" == True %}
             <div class="ting-menu-item">
                 <a href="{% url 'ting_wb_adm_administrators' %}">
                     <div class="ting-menu-icon">
@@ -106,6 +135,18 @@
                     </div>
                     <div class="ting-menu-legend">
                         <p>Reservations</p>
+                    </div>
+                </a>
+            </div>
+            {% endif %}
+            {% if admin.pk|has_p:"can_view_placements" == True %}
+            <div class="ting-menu-item">
+                <a href="{% url 'ting_wb_adm_placements' %}">
+                    <div class="ting-menu-icon">
+                        <i class="dot circle link icon"></i>
+                    </div>
+                    <div class="ting-menu-legend">
+                        <p>Placements</p>
                     </div>
                 </a>
             </div>

@@ -6,6 +6,10 @@
 <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
 <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}">
 {% endblock %}
+{% block js %}
+<script src="https://cdn.pubnub.com/sdk/javascript/pubnub.4.21.7.min.js"></script>
+<script src="{% static 'js/socket.js' %}"></script>
+{% endblock %}
 {% block title %}
     <title>Ting.com - Admin / Session Profile</title>
 {% endblock %}
@@ -16,7 +20,7 @@
         {% include '../../web/admin/navbar.html' %}
         <div class="ui grid divided" style="margin-left: 10px;">
             <div class="row">
-                <div class="twelve wide column">
+                <div class="twelve wide column ting-admin-content-panel">
                     
                     <div class="row justify-content-start align-items-center d-flex ting-restaurant-about-mini">
                         <div class="" style="padding-left: 2rem;">
@@ -61,7 +65,7 @@
                                     <p><i class="icon phone"></i>{{admin.phone|none}}</p>
                                     <p><i class="icon id badge"></i>{{admin.badge_number|none}}</p>
                                     <p><i class="icon street view"></i>{{admin.admin_type_str}}</p>
-                                    <p><i class="icon clock"></i>{{restaurant.created_at|localtime}}</p>
+                                    <p><i class="icon clock"></i>{{admin.created_at|localtime}}</p>
                                 </div>
                                 {% if admin.pk|has_p:"can_update_admin" == True %}
                                 <button class="large ui button left icon positive labeled" id="ting-admin-edit-profile">
@@ -75,7 +79,7 @@
                     </div>
 
                 </div>
-                <div class="four wide column">
+                <div class="four wide column ting-admin-orders-panel">
                     {% include '../../web/admin/sideorders.html' %}
                 </div>
             </div>

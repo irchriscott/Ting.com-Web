@@ -82,4 +82,8 @@ urlpatterns = [
 	url(r'usr/d/today/promotions/all/$', views.api_get_today_promotions_all),
 	url(r'usr/d/menus/top/$', views.api_get_top_menus),
 	url(r'usr/d/menus/discover/$', views.api_get_discover_menus),
+
+	# PLACEMENT & ORDERS
+
+	url(r'usr/po/table/request/$', views.api_request_table_restaurant),
 ]

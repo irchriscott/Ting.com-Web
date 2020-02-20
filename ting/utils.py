@@ -188,6 +188,21 @@ RESTAURANT_TYPES = [
 ]
 
 
+SOCKET_REQUEST_TYPES = [
+	'request_resto_table'
+]
+
+SOCKET_RESPONSE_A_TYPES = [
+	'response_w_resto_table'
+]
+
+SOCKET_RESPONSE_U_TYPES = [
+	'response_resto_table',
+	'response_error',
+	'response_resto_placement_done',
+	'response_resto_table_waiter'
+]
+
 def get_from_tuple(data, key):
 	if isinstance(data, tuple) is True:
 		for t in data:
@@ -210,15 +225,33 @@ def get_from_dict(data, k, v):
 	return v
 
 
-DEFAULT_USER_IMAGE = 'users/default.jpg'
+DEFAULT_USER_IMAGE 			= 'users/default.jpg'
 
-DEFAULT_ADMIN_IMAGE = 'administrators/default.jpg'
+DEFAULT_ADMIN_IMAGE 		= 'administrators/default.jpg'
 
-DEFAULT_RESTAURANT_IMAGE = 'restaurants/default.jpg'
+DEFAULT_RESTAURANT_IMAGE 	= 'restaurants/default.jpg'
 
-DEFAULT_ADMIN_NAME = 'Restaurant Admin'
+DEFAULT_ADMIN_NAME 			= 'Restaurant Admin'
 
-DEFAULT_ADMIN_USERNAME = 'admin'
+DEFAULT_ADMIN_USERNAME 		= 'admin'
+
+PUBNUB_SUBSCRIBE_KEY 		= 'sub-c-6597d23e-1b1d-11ea-b79a-866798696d74'
+
+PUBNUB_PUBLISH_KEY 			= 'pub-c-62f722d6-c307-4dd9-89dc-e598a9164424'
+
+PUSHER_APP_ID 				= '949894'
+
+PUSHER_KEY 					= '299875b04b5fe1dc527a'
+
+PUSHER_SECRET		 		= '6528a9e8016a7355e41c'
+
+PUSHER_CLUSTER 				= 'mt1'
+
+PUSHER_BEAMS_INSTANCE		= 'f47c28dd-63ae-49c0-9f30-88560b21e061'
+
+PUSHER_BEAMS_SECRET_KEY		= '4F360544EE0422D1C115854EDA7B749B8DBD6711EA805849966BC339AB256CB3'
+
+HOST_END_POINT				= 'http://10.0.2.2:8000'
 
 def image_as_base64(image_file, format='png'):
 

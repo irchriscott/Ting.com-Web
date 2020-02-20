@@ -65,7 +65,8 @@ def sign_up_with_google(request):
         user_form = GoogleSignUpForm(request.POST, instance=User(
                 image=utils.DEFAULT_USER_IMAGE,
                 username='%s_%s' % (request.POST.get('name').replace(' ', '_').lower(), str(random.randint(1, 101))),
-                phone=''
+                phone='',
+                channel=get_random_string(64)
             ))
         token = request.POST.get('token')
         email = request.POST.get('email')
@@ -124,7 +125,8 @@ def sign_up_with_email(request):
         user_form = EmailSignUpForm(request.POST, instance=User(
                 token=get_random_string(512),
                 image=utils.DEFAULT_USER_IMAGE,
-                phone=''
+                phone='',
+                channel=get_random_string(64)
             ))
 
         link = request.POST.get('link') if request.POST.get('link') != '' else reverse('ting_index')
@@ -384,7 +386,7 @@ def update_user_email(request):
                     user.updated_at = timezone.new()
                     user.save()
 
-                    mail = SendUserUpdateEmailMail(email=email, context={
+                    mail = SendUserUpdateEmailMail(email=user.email, context={
                             'name': user.name,
                             'link': reverse('ting_wb_adm_login'),
                             'ip': request.POST.get('ip'),

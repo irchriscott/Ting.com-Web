@@ -18,7 +18,7 @@ from tingweb.mailer import SendUserResetPasswordMail, SendUserUpdateEmailMail, S
 from tingweb.models import (
                                 Restaurant, User, UserResetPassword, UserAddress, Branch, UserRestaurant, Menu,
                                 MenuLike, MenuReview, Promotion, PromotionInterest, RestaurantReview, Booking,
-                                Food, Dish
+                                Food, Dish, RestaurantTable
                             )
 from tingweb.forms import (
                                 GoogleSignUpForm, UserLocationForm, EmailSignUpForm, UserImageForm, MenuReviewForm,
@@ -330,7 +330,7 @@ def api_filter_restaurants(request):
 
 def api_get_menu(request, menu):
 	menu = Menu.objects.get(pk=menu)
-	return HttpResponse(json.dumps(menu.to_json_f, default=str), content_type='application/json')
+	return HttpResponse(json.dumps(menu.to_json_f_s, default=str), content_type='application/json')
 
 
 @csrf_exempt
@@ -363,7 +363,7 @@ def api_check_menu_review(request):
 		else:
 			return HttpResponse(json.dumps(ResponseObject('error', 'Review Not Found', 404), default=str), content_type='application/json', status=404)
 	else:
-		return HttpResponse(json.dumps(ResponseObject('error', 'Method Not Allowed', 405), default=str), content_type='application/json', status=404)
+		return HttpResponse(json.dumps(ResponseObject('error', 'Method Not Allowed', 405), default=str), content_type='application/json', status=405)
 
 
 # PROMOTION
@@ -466,3 +466,12 @@ def api_get_discover_menus(request):
 	town = request.GET.get('town') if request.GET.get('town') != None else user.town
 	menus = Menu.objects.filter(branch__country=country, branch__town=town).random(5)
 	return HttpResponse(json.dumps([menu.to_json_s for menu in menus], default=str), content_type='application/json')
+
+
+# PLACEMENTS & ORDERS
+
+@authenticate_user(xhr='api')
+def api_request_table_restaurant(request):
+	table_uuid = request.GET.get('table')
+	table = RestaurantTable.objects.filter(uuid=table_uuid).first()
+	return HttpResponse(json.dumps(table.to_json, default=str), content_type='application/json') if table != None else HttpResponse(json.dumps(ResponseObject('error', 'Table Not Found', 404), default=str), content_type='application/json', status=404)

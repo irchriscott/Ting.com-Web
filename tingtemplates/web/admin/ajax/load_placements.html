@@ -1,0 +1,114 @@
+{% load ting_tags %}
+<table class="ui single line table">
+    <thead>
+        <tr>
+            <th>Table</th>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Peoples</th>
+            <th>Bill No</th>
+            <th>Waiter</th>
+            {% if admin.pk|has_p:"can_done_placement" == True %}
+            <th>Actions</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% if placements.count > 0 %}
+            {% for placement in placements %}
+                <tr>
+                    <td><div class="ui ribbon label">{{placement.table.number}}</div></td>
+                    <td><img src="{{placement.user.image.url}}"></td>
+                    <td>{{placement.user.name}}</td>
+                    <td>{{placement.people}}</td>
+                    <td>{% if placement.bill != None and placement.bill != "" %} {{placement.bill.number}} {% else %} - {% endif %}</td>
+                    <td>
+                        {% if placement.waiter != None %}
+                            <div class="ui relaxed horizontal list">
+                                <div class="item">
+                                    <img class="ui avatar image" src="{{placement.waiter.image.url}}">
+                                    <div class="content">
+                                        <a class="header" style="font-weight: normal;">{{placement.waiter.name}}</a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            {% if admin.pk|has_p:"can_assign_table" == True %}
+                                <div class="ui small labeled icon top right pointing dropdown button">
+                                    <i class="user icon"></i>
+                                    <span class="text">Waiter</span>
+                                    <div class="menu">
+                                        <div class="ui search icon input">
+                                            <i class="search icon"></i>
+                                            <input type="text" name="search" placeholder="Search Waiter...">
+                                        </div>
+                                        <div class="divider"></div>
+                                        <div class="header">
+                                            <i class="user icon"></i>
+                                            Waiters
+                                        </div>
+                                        {% if waiters.count > 0 %}
+                                            {% for waiter in waiters %}
+                                                <a class="item ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_assign_waiter_placement' placement.token waiter.pk %}" ting-modal-target="ting-add-waiter-to-table-{{placement.id}}"><img src="{{waiter.image.url}}" class="avatar" style="width: 30px;">{{waiter.name}}</a>
+                                            {% endfor %}
+                                        {% endif %}                 
+                                    </div>
+                                </div>
+                                <div class="ui modal mini" data-modal="ting-add-waiter-to-table-{{placement.id}}">
+                                    <div class="header">
+                                        Assign Waiter To Table
+                                    </div>
+                                    <div class="content">
+                                        <p>Do you really want to assign this waiter to this table ?</p>
+                                    </div>
+                                    <div class="actions">
+                                        <div class="ui positive button right labeled icon">
+                                            Yes
+                                            <i class="icon check"></i>
+                                        </div>
+                                        <div class="ui red deny button right labeled icon">
+                                            No
+                                            <i class="icon times"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}-{% endif %}
+                        {% endif %}
+                    </td>
+                    {% if admin.pk|has_p:"can_done_placement" == True %}
+                    <td>
+                        <div class="ui small {% if placement.is_done == False %}blue{% else %}green{% endif %} labeled icon button {% if placement.is_done == False %}ting-open-ajax-modal{% endif %}" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_done_placement' placement.token %}" ting-modal-target="ting-end-placement-{{placement.id}}">
+                            <i class="check icon"></i> {% if placement.is_done == False %}End{% else %}Ended{% endif %}
+                        </div>
+                        <div class="ui modal mini" data-modal="ting-end-placement-{{placement.id}}">
+                            <div class="header">
+                                End Placement
+                            </div>
+                            <div class="content">
+                                <p>Do you really want to end this placement ?</p>
+                            </div>
+                            <div class="actions">
+                                <div class="ui positive button right labeled icon">
+                                    Yes
+                                    <i class="icon check"></i>
+                                </div>
+                                <div class="ui red deny button right labeled icon">
+                                    No
+                                    <i class="icon times"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <th colspan="9">
+                    <p class="ting-error">No Placement For You</p>
+                </th>
+            </tr>
+        {% endif %}
+    </tbody>
+    <script type="text/javascript">$(".dropdown").dropdown();$(".ting-open-ajax-modal").openModal();</script>
+</table>
