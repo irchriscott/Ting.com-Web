@@ -18,7 +18,7 @@ from tingweb.mailer import SendUserResetPasswordMail, SendUserUpdateEmailMail, S
 from tingweb.models import (
                                 Restaurant, User, UserResetPassword, UserAddress, Branch, UserRestaurant, Menu,
                                 MenuLike, MenuReview, Promotion, PromotionInterest, RestaurantReview, Booking,
-                                Food, Dish, RestaurantTable
+                                Food, Dish, RestaurantTable, Placement
                             )
 from tingweb.forms import (
                                 GoogleSignUpForm, UserLocationForm, EmailSignUpForm, UserImageForm, MenuReviewForm,
@@ -475,3 +475,10 @@ def api_request_table_restaurant(request):
 	table_uuid = request.GET.get('table')
 	table = RestaurantTable.objects.filter(uuid=table_uuid).first()
 	return HttpResponse(json.dumps(table.to_json, default=str), content_type='application/json') if table != None else HttpResponse(json.dumps(ResponseObject('error', 'Table Not Found', 404), default=str), content_type='application/json', status=404)
+
+
+@authenticate_user(xhr='api')
+def api_get_placement(request):
+	token = request.GET.get('token')
+	placement = Placement.objects.filter(token=token).first()
+	return HttpResponse(json.dumps(placement.to_json, default=str), content_type='application/json')

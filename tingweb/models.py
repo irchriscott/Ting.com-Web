@@ -4031,53 +4031,9 @@ class Booking(models.Model):
 		}
 
 
-class Placement(models.Model):
+class Bill(models.Model):
 	restaurant = models.ForeignKey(Restaurant)
 	branch = models.ForeignKey(Branch)
-	user = models.ForeignKey(User)
-	table = models.ForeignKey(RestaurantTable)
-	booking = models.ForeignKey(Booking, null=True, blank=True)
-	waiter = models.ForeignKey(Administrator, null=True, blank=True)
-	token = models.CharField(max_length=200, null=False, blank=False, unique=True)
-	people = models.IntegerField(null=False, blank=False)
-	is_done = models.BooleanField(default=False)
-	need_someone = models.BooleanField(default=False)
-	created_at = models.DateTimeField(auto_now_add=True)
-	updated_at = models.DateTimeField(auto_now_add=True)
-
-	def __str__(self):
-		return self.user.name
-
-	def __unicode__(self):
-		return self.user.name
-
-	def bills(self):
-		return Bill.objects.filter(placement=self.pk).order_by('-created_at')
-
-	@property
-	def bill(self):
-		return Bill.objects.filter(placement=self.pk).first()
-
-	@property
-	def to_json(self):
-		return {
-			'id': self.pk,
-			'user': self.user.to_json_s,
-			'table': self.table.to_json,
-			'booking': self.booking.to_json_s if self.booking != None else None,
-			'waiter': self.waiter.to_json_s if self.waiter != None else None,
-			'token': self.token,
-			'people': self.people,
-			'isDone': self.is_done,
-			'needSomeone': self.need_someone,
-			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
-		}
-
-
-class Bill(models.Model):
-	placement = models.OneToOneField(Placement)
-	admin = models.ForeignKey(Administrator)
 	number = models.CharField(max_length=20, null=False, blank=False)
 	token = models.CharField(max_length=200, null=False, blank=False, unique=True)
 	amount = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
@@ -4106,7 +4062,6 @@ class Bill(models.Model):
 	def to_json(self):
 		return {
 			'id': self.pk,
-			'admin': self.admin.to_json_s,
 			'number': self.number,
 			'token': self.token,
 			'amount': self.amount,
@@ -4120,6 +4075,65 @@ class Bill(models.Model):
 				'count': self.orders_count,
 				'orders': [order.to_json for order in self.orders]
 			},
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+	@property
+	def to_json_s(self):
+		return {
+			'id': self.pk,
+			'number': self.number,
+			'token': self.token,
+			'amount': self.amount,
+			'discount': self.discount,
+			'currency': self.currency,
+			'isRequested': self.is_requested,
+			'isPaid': self.is_paid,
+			'isComplete': self.is_complete,
+			'paidBy': self.paid_by,
+			'orders': {
+				'count': self.orders_count
+			},
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+
+class Placement(models.Model):
+	restaurant = models.ForeignKey(Restaurant)
+	branch = models.ForeignKey(Branch)
+	user = models.ForeignKey(User)
+	table = models.ForeignKey(RestaurantTable)
+	booking = models.ForeignKey(Booking, null=True, blank=True)
+	waiter = models.ForeignKey(Administrator, null=True, blank=True)
+	bill = models.ForeignKey(Bill, null=True, blank=True)
+	token = models.CharField(max_length=200, null=False, blank=False, unique=True)
+	people = models.IntegerField(null=False, blank=False)
+	is_done = models.BooleanField(default=False)
+	need_someone = models.BooleanField(default=False)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now_add=True)
+
+	def __str__(self):
+		return self.user.name
+
+	def __unicode__(self):
+		return self.user.name
+
+	@property
+	def to_json(self):
+		return {
+			'id': self.pk,
+			'user': self.user.to_json_s,
+			'table': self.table.to_json,
+			'booking': self.booking.to_json_s if self.booking != None else None,
+			'waiter': self.waiter.to_json_s if self.waiter != None else None,
+			'bill': self.bill.to_json_s if self.bill != None and self.bill != '' else None,
+			'token': self.token,
+			'people': self.people,
+			'isDone': self.is_done,
+			'needSomeone': self.need_someone,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
