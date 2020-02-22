@@ -189,7 +189,9 @@ RESTAURANT_TYPES = [
 
 
 SOCKET_REQUEST_TYPES = [
-	'request_resto_table'
+	'request_resto_table',
+	'request_assign_waiter',
+	'request_table_order'
 ]
 
 SOCKET_RESPONSE_A_TYPES = [

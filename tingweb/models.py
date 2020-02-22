@@ -1996,6 +1996,11 @@ class Food(models.Model):
 		return self.promotions.count()
 
 	@property
+	def today_promotion(self):
+		promos = list(filter(lambda p: p.is_on_today == True, self.promotions))
+		return promos[0].string_data_json if len(promos) > 0 else None
+
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
@@ -2017,7 +2022,8 @@ class Food(models.Model):
 			'quantity': self.quantity,
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
-				'count': self.promotions_count
+				'count': self.promotions_count,
+				'todayPromotion': self.today_promotion
 			},
 			'reviews': {
 				'count': self.reviews_count,
@@ -2059,6 +2065,7 @@ class Food(models.Model):
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
 				'count': self.promotions_count,
+				'todayPromotion': self.today_promotion,
 				'promotions': [promo.to_json for promo in self.promotions]
 			},
 			'reviews': {
@@ -2099,7 +2106,8 @@ class Food(models.Model):
 			'quantity': self.quantity,
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
-				'count': self.promotions_count
+				'count': self.promotions_count,
+				'todayPromotion': self.today_promotion
 			},
 			'reviews': {
 				'count': self.reviews_count,
@@ -2137,6 +2145,10 @@ class Food(models.Model):
 			'isAvailable': self.is_available,
 			'quantity': self.quantity,
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
+			'promotions':{
+				'count': self.promotions_count,
+				'todayPromotion': self.today_promotion
+			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
@@ -2174,7 +2186,8 @@ class Food(models.Model):
 			'quantity': self.quantity,
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
-				'count': self.promotions_count
+				'count': self.promotions_count,
+				'todayPromotion': self.today_promotion
 			},
 			'reviews': {
 				'count': self.reviews_count,
@@ -2217,6 +2230,7 @@ class Food(models.Model):
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
 				'count': self.promotions_count,
+				'todayPromotion': self.today_promotion,
 				'promotions': [promo.to_json for promo in self.promotions]
 			},
 			'reviews': {
@@ -2353,6 +2367,11 @@ class Drink(models.Model):
 		return self.promotions.count()
 
 	@property
+	def today_promotion(self):
+		promos = list(filter(lambda p: p.is_on_today == True, self.promotions))
+		return promos[0].string_data_json if len(promos) > 0 else None
+
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
@@ -2372,7 +2391,8 @@ class Drink(models.Model):
 			'quantity': self.quantity,
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
-				'count': self.promotions_count
+				'count': self.promotions_count,
+				'todayPromotion': self.today_promotion
 			},
 			'reviews': {
 				'count': self.reviews_count,
@@ -2412,6 +2432,7 @@ class Drink(models.Model):
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
 				'count': self.promotions_count,
+				'todayPromotion': self.today_promotion,
 				'promotions': [promo.to_json for promo in self.promotions]
 			},
 			'reviews': {
@@ -2450,7 +2471,8 @@ class Drink(models.Model):
 			'quantity': self.quantity,
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
-				'count': self.promotions_count
+				'count': self.promotions_count,
+				'todayPromotion': self.today_promotion
 			},
 			'reviews': {
 				'count': self.reviews_count,
@@ -2486,6 +2508,10 @@ class Drink(models.Model):
 			'isAvailable': self.is_available,
 			'quantity': self.quantity,
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
+			'promotions':{
+				'count': self.promotions_count,
+				'todayPromotion': self.today_promotion
+			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
@@ -2521,7 +2547,8 @@ class Drink(models.Model):
 			'quantity': self.quantity,
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
-				'count': self.promotions_count
+				'count': self.promotions_count,
+				'todayPromotion': self.today_promotion
 			},
 			'reviews': {
 				'count': self.reviews_count,
@@ -2562,6 +2589,7 @@ class Drink(models.Model):
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
 				'count': self.promotions_count,
+				'todayPromotion': self.today_promotion,
 				'promotions': [promo.to_json for promo in self.promotions]
 			},
 			'reviews': {
@@ -2715,6 +2743,11 @@ class Dish(models.Model):
 		return self.promotions.count()
 
 	@property
+	def today_promotion(self):
+		promos = list(filter(lambda p: p.is_on_today == True, self.promotions))
+		return promos[0].string_data_json if len(promos) > 0 else None
+
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
@@ -2738,7 +2771,8 @@ class Dish(models.Model):
 			'drink': self.drink.to_json_r if self.has_drink == True else {},
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
-				'count': self.promotions_count
+				'count': self.promotions_count,
+				'todayPromotion': self.today_promotion
 			},
 			'reviews': {
 				'count': self.reviews_count,
@@ -2786,6 +2820,7 @@ class Dish(models.Model):
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
 				'count': self.promotions_count,
+				'todayPromotion': self.today_promotion,
 				'promotions': [promo.to_json for promo in self.promotions]
 			},
 			'reviews': {
@@ -2832,7 +2867,8 @@ class Dish(models.Model):
 			'drink': self.drink.to_json_r if self.has_drink == True else {},
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
-				'count': self.promotions_count
+				'count': self.promotions_count,
+				'todayPromotion': self.today_promotion
 			},
 			'reviews': {
 				'count': self.reviews_count,
@@ -2876,6 +2912,10 @@ class Dish(models.Model):
 			'hasDrink': self.has_drink,
 			'drink': self.drink.to_json_r if self.has_drink == True else {},
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
+			'promotions':{
+				'count': self.promotions_count,
+				'todayPromotion': self.today_promotion
+			},
 			'reviews': {
 				'count': self.reviews_count,
 				'average': self.review_average,
@@ -2919,7 +2959,8 @@ class Dish(models.Model):
 			'drink': self.drink.to_json_s if self.has_drink == True else {},
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
-				'count': self.promotions_count
+				'count': self.promotions_count,
+				'todayPromotion': self.today_promotion
 			},
 			'reviews': {
 				'count': self.reviews_count,
@@ -2967,6 +3008,7 @@ class Dish(models.Model):
 			'url': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug}),
 			'promotions':{
 				'count': self.promotions_count,
+				'todayPromotion': self.today_promotion,
 				'promotions': [promo.to_json for promo in self.promotions]
 			},
 			'reviews': {
@@ -3687,6 +3729,28 @@ class Promotion(models.Model):
 		return '%s %s' % (self.amount, self.reduction_type) if self.has_reduction else 'None'
 
 	@property
+	def reduction_string(self):
+		return 'Order this menu and get %s' % self.reduction if self.has_reduction else None
+	
+	@property
+	def supplement_string(self):
+		if self.has_supplement:
+			if self.is_supplement_same == False:
+				if self.supplement.menu_type == 1:
+					menu = Food.objects.get(pk=self.supplement.menu_id)
+					return 'Order %s of this menu and get %s free %s' % (self.supplement_min_quantity, self.supplement_quantity, menu.name)
+				elif self.supplement.menu_type == 2:
+					menu = Drink.objects.get(pk=self.supplement.menu_id)
+					return 'Order %s of this menu and get %s free %s' % (self.supplement_min_quantity, self.supplement_quantity, menu.name)
+				elif self.supplement.menu_type == 3:
+					menu = Food.objects.get(pk=self.supplement.menu_id)
+					return 'Order %s of this menu and get %s free %s' % (self.supplement_min_quantity, self.supplement_quantity, menu.name)
+			else:
+				return 'Order %s of this menu and get %s more for free' % (self.supplement_min_quantity, self.supplement_quantity)
+		else:
+			return None
+	
+	@property
 	def is_on_today(self):
 		today = date.today()
 		if self.is_special == True:
@@ -3738,6 +3802,10 @@ class Promotion(models.Model):
 			return foods + dishes
 		else:
 			return []
+
+	@property
+	def string_data_json(self):
+		return {'id': self.pk, 'occasionEvent': self.occasion_event, 'posterImage': self.poster_image.url, 'supplement': self.supplement_string, 'reduction': self.reduction_string}
 
 	@property
 	def to_json(self):
@@ -4146,6 +4214,7 @@ class Order(models.Model):
 	quantity = models.IntegerField(default=1)
 	price = models.DecimalField(max_digits=18, decimal_places=2, null=False, blank=False)
 	currency = models.CharField(max_length=100, null=False, blank=False)
+	conditions = models.TextField(null=True, blank=True)
 	is_declined = models.BooleanField(default=False)
 	reasons = models.TextField(blank=True, null=True)
 	is_delivered = models.BooleanField(default=False)
@@ -4169,8 +4238,13 @@ class Order(models.Model):
 			'quantity': self.quantity,
 			'price': self.price,
 			'currency': self.currency,
+			'conditions': self.conditions,
 			'isDeclined': self.is_declined,
 			'reasons': self.reasons,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
+
+# APP SETTINGS : 
+# On click "Order", don't show the popup of Quantity and Conditions,
+# Just submit one as quantity and null as conditions.

@@ -87,4 +87,7 @@ urlpatterns = [
 
 	url(r'usr/po/table/request/$', views.api_request_table_restaurant),
 	url(r'usr/po/placement/get/$', views.api_get_placement),
+	url(r'usr/po/placement/people/update/$', views.api_update_people_placement),
+	url(r'usr/po/orders/branch/menus/$', views.api_get_restaurant_menu_orders),
+	url(r'usr/po/orders/menu/place/$', views.api_place_order_menu),
 ]

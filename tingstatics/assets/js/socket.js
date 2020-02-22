@@ -50,7 +50,36 @@ $(document).ready(function() {
                             onClosed: function () {}
                         });
                         loadAjaxURL("ting-data-placements-container", window.__TING__URL__Load__Placements);
-                        loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements)
+                        loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements);
+                    }
+                    break;
+                case 'request_assign_waiter':
+                    if(admin.permissions.includes('can_assign_table')) {
+                        iziToast.show({
+                            id: message.uuid,
+                            title: 'Waiter Needed',
+                            titleSize: '16px',
+                            message: '<p style="color:#FFFFFF; margin-top:5px;">A waiter is needed on table <b>' + message.data.table + '</b>. Please assign !</p>',
+                            messageSize: '13px',
+                            theme: 'dark',
+                            image: message.sender.image,
+                            imageWidth: 120,
+                            maxWidth: 450,
+                            position: 'topRight',
+                            timeout: 30000,
+                            progressBar: false,
+                            buttons: [
+                                ['<button>VIEW PLACEMENTS</button>', function (instance, toast) {
+                                    window.location = window.__TING__URL__Get__Placements
+                                }, true] 
+                            ],
+                            onOpening: function () {},
+                            onOpened: function () {},
+                            onClosing: function () {},
+                            onClosed: function () {}
+                        });
+                        loadAjaxURL("ting-data-placements-container", window.__TING__URL__Load__Placements);
+                        loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements);
                     }
                     break;
                 case 'response_w_resto_table':
@@ -73,7 +102,9 @@ $(document).ready(function() {
                         onClosed: function () {}
                     });
                     loadAjaxURL("ting-data-placements-container", window.__TING__URL__Load__Placements);
-                    loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements)
+                    loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements);
+                    break;
+                case 'request_table_order':
                     break;
                 default:
                     break;

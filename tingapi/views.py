@@ -25,15 +25,30 @@ from tingweb.forms import (
                                 RestaurantReviewForm, ReservationForm
                             )
 from tingadmin.models import RestaurantCategory
+from pubnub.callbacks import SubscribeCallback
+from pubnub.enums import PNStatusCategory
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.pubnub import PubNub
+from datetime import datetime, timedelta
+from background_task import background
 import tingweb.views as web
 import ting.utils as utils
-from datetime import datetime, timedelta
 import json
 import imgkit
 import os
 import re
 
-# Create your views here.
+
+pnconfig = PNConfiguration()
+pnconfig.subscribe_key = utils.PUBNUB_SUBSCRIBE_KEY
+pnconfig.publish_key = utils.PUBNUB_PUBLISH_KEY
+
+pubnub = PubNub(pnconfig)
+
+
+def ting_publish_callback(envelope, status):
+	pass
+
 
 @csrf_exempt
 def api_check_user_email_username(request):
@@ -480,5 +495,80 @@ def api_request_table_restaurant(request):
 @authenticate_user(xhr='api')
 def api_get_placement(request):
 	token = request.GET.get('token')
+	user = User.objects.get(pk=request.session['user'])
 	placement = Placement.objects.filter(token=token).first()
-	return HttpResponse(json.dumps(placement.to_json, default=str), content_type='application/json')
+	return HttpResponse(json.dumps(placement.to_json, default=str), content_type='application/json') if user.pk == placement.user.pk else HttpResponse(json.dumps(ResponseObject('info', 'You Are Not The Owner', 403), default=str), content_type='application/json', status=403)
+
+
+@csrf_exempt
+@authenticate_user(xhr='api')
+def api_update_people_placement(request):
+	if request.method == 'POST':
+		user = User.objects.get(pk=request.session['user'])
+		placement_token = request.POST.get('token')
+		people = request.POST.get('people')
+		placement = Placement.objects.filter(token=placement_token).first()
+		if placement.user.pk != user.pk:
+			return HttpJsonResponse(ResponseObject('error', 'Not The Owner !!!', 403))
+		placement.people = people
+		placement.save()
+		return HttpResponse(json.dumps(placement.to_json, default=str), content_type='application/json')
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
+
+
+@authenticate_user(xhr='api')
+def api_get_restaurant_menu_orders(request):
+	branch = request.GET.get('branch')
+	menu_type = request.GET.get('type')
+	menus = Menu.objects.filter(branch__pk=branch, menu_type=menu_type)
+	return HttpResponse(json.dumps([menu.to_json_s for menu in menus], default=str), content_type='application/json')
+
+
+@authenticate_user(xhr='api')
+def api_place_order_menu(request):
+	if request.method == 'POST':
+		user = User.objects.get(pk=request.session['user'])
+		placement_token = request.POST.get('token')
+		quantity = request.POST.get('quantity')
+		conditions = request.POST.get('conditions')
+
+		placement = Placement.objects.filter(token=placement_token).first()
+		if placement.user.pk != user.pk:
+			return HttpJsonResponse(ResponseObject('error', 'Not The Owner !!!', 403))
+
+		notify_waiter_placed_order.now(placement.pk)
+
+		return HttpJsonResponse(ResponseObject('success', 'Order Sent !!!', 200))
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
+
+
+@background(schedule=60)
+def notify_waiter_placed_order(placement):
+	placement = Placement.objects.get(pk=placement)
+	branch_message = {
+		'status': 200,
+		'type': 'request_table_order',
+		'uuid': pnconfig.uuid,
+		'sender': placement.user.socket_data,
+		'receiver': placement.branch.socket_data,
+		'message': None,
+		'args': None,
+		'data': {'token': placement.token, 'user': placement.user.socket_data, 'table': placement.table.number }
+	}
+	pubnub.publish().channel(placement.branch.channel).message(branch_message).pn_async(ting_publish_callback)
+
+	if placement.waiter != None:
+		waiter_message = {
+			'status': 200,
+			'type': 'request_table_order',
+			'uuid': pnconfig.uuid,
+			'sender': placement.user.socket_data,
+			'receiver': placement.waiter.socket_data,
+			'message': None,
+			'args': None,
+			'data': {'token': placement.token, 'user': placement.user.socket_data, 'table': placement.table.number }
+		}
+		pubnub.publish().channel(placement.waiter.channel).message(waiter_message).pn_async(ting_publish_callback)
+	

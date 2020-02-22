@@ -170,7 +170,9 @@ waiter_permissions = global_permissions + [
 						'can_send_bill',
 						'can_complete_bill',
 						'can_accept_booking',
-						'can_cancel_booking'
+						'can_cancel_booking',
+						'can_accept_orders',
+						'can_receive_orders'
 					]
 
 accountant_permission = global_permissions + [
