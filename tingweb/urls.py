@@ -239,6 +239,9 @@ admins = [
 	url(r'adm/placements/dashboard/load/all/$', admin.load_placements_dashboard, name='ting_wb_adm_load_placements_dashboard'),
 	url(r'adm/placements/(?P<token>[^/]+)/done/$', admin.done_placement, name='ting_wb_adm_done_placement'),
 	url(r'adm/placements/(?P<token>[^/]+)/assign/waiter/(?P<waiter>\d+)/$', admin.assign_waiter_placement, name='ting_wb_adm_assign_waiter_placement'),
+	url(r'adm/orders/dashboard/load/all/$', admin.load_orders_dashboard, name='ting_wb_adm_load_orders_dashboard'),
+	url(r'adm/orders/(?P<order>\d+)/accept/$', admin.accept_user_order, name='ting_wb_adm_accept_user_order'),
+	url(r'adm/orders/(?P<order>\d+)/decline/$', admin.decline_user_order, name='ting_wb_adm_decline_user_order'),
 ]
 
 urlpatterns = admins + users

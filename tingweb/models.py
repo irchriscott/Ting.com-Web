@@ -10,6 +10,7 @@ from tingadmin.models import RestaurantCategory, TingLicenceKey, Permission
 from datetime import date, datetime
 from time import time
 import ting.utils as utils
+import random
 import os
 
 # Create your models here.
@@ -3111,15 +3112,6 @@ class Menu(models.Model):
 		return self.menu_type
 
 	@property
-	def menu(self):
-		if self.menu_type == 1:
-			return Food.objects.get(pk=self.menu_id)
-		elif self.menu_type == 2:
-			return Drink.objects.get(pk=self.menu_id)
-		elif self.menu_type == 3:
-			return Dish.objects.get(pk=self.menu_id)
-
-	@property
 	def food(self):
 		return Food.objects.get(pk=self.menu_id)
 
@@ -3130,6 +3122,40 @@ class Menu(models.Model):
 	@property
 	def dish(self):
 		return Dish.objects.get(pk=self.menu_id)
+
+	@property
+	def menu(self):
+		if self.menu_type == 1:
+			return self.food
+		elif self.menu_type == 2:
+			return self.drink
+		elif self.menu_type == 3:
+			return self.dish
+		else:
+			return None
+
+	@property
+	def images(self):
+		if self.menu_type == 1:
+			return self.food.images
+		elif self.menu_type == 2:
+			return self.drink.images
+		elif self.menu_type == 3:
+			return self.dish.images
+		else:
+			return []
+
+	@property
+	def name(self):
+		if self.menu_type == 1:
+			return self.food.name
+		elif self.menu_type == 2:
+			return self.drink.name
+		elif self.menu_type == 3:
+			return self.dish.name
+		else:
+			return None
+	
 	
 	@property
 	def like_ids(self):
@@ -3906,6 +3932,57 @@ class Promotion(models.Model):
 
 
 	@property
+	def to_json_f_a(self):
+		return {
+			'id': self.pk,
+			'restaurant': self.restaurant.to_json_s,
+			'branch': self.branch.to_json_s,
+			'occasionEvent': self.occasion_event,
+			'uuid': self.uuid,
+			'uuidUrl': self.uuid_url,
+			'promotionItem': {
+				'type':{'id': self.promotion_menu_type, 'name': utils.get_from_tuple(utils.PROMOTION_MENU, self.promotion_menu_type)},
+				'category': self.category.to_json if self.promotion_menu_type == '05' else {},
+				'menu': self.menu.to_json_p if self.promotion_menu_type == '04' else {}
+			},
+			'menus': {
+				'count': len(self.promoted_menus),
+				'menus': [menu.to_json_s for menu in random.sample(self.promoted_menus, k=4)] if len(self.promoted_menus) > 4 else [menu.to_json_s for menu in self.promoted_menus]
+			},
+			'reduction':{
+				'hasReduction': self.has_reduction,
+				'amount': self.amount,
+				'reductionType': self.reduction_type
+			},
+			'supplement':{
+				'hasSupplement': self.has_supplement,
+				'minQuantity': self.supplement_min_quantity,
+				'isSame': self.is_supplement_same,
+				'supplement': self.supplement.to_json_p if self.is_supplement_same == False else {},
+				'quantity': self.supplement_quantity
+			},
+			'period': self.promo_period,
+			'description': self.description,
+			'posterImage': self.poster_image.url,
+			'isOn': self.is_on,
+			'isOnToday': self.is_on_today,
+			'interests':{
+				'count': self.interests_count,
+				'interests': self.interests_ids
+			},
+			'urls':{
+				'relative': reverse('ting_usr_promotion_get', kwargs={'promotion': self.pk, 'slug': self.uuid_url}),
+				'interest': reverse('ting_usr_promotion_interest', kwargs={'promo': self.pk}),
+				'apiGet': reverse('api_promotion_get', kwargs={'promo': self.pk}),
+				'apiInterest': reverse('api_promotion_interest', kwargs={'promo': self.pk})
+			},
+			'forAllBranches': self.for_all_branches,
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+
+	@property
 	def to_json_b(self):
 		return {
 			'id': self.pk,
@@ -4104,6 +4181,7 @@ class Bill(models.Model):
 	branch = models.ForeignKey(Branch)
 	number = models.CharField(max_length=20, null=False, blank=False)
 	token = models.CharField(max_length=200, null=False, blank=False, unique=True)
+	placement_id = models.IntegerField(null=True, blank=True)
 	amount = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
 	discount = models.DecimalField(max_digits=18, decimal_places=2, default=0.00)
 	currency = models.CharField(max_length=100, null=True, blank=True)
@@ -4120,11 +4198,17 @@ class Bill(models.Model):
 	def __unicode__(self):
 		return self.number
 
+	@property	
 	def orders(self):
 		return Order.objects.filter(bill=self.pk).order_by('-created_at')
 
+	@property
 	def orders_count(self):
 		return self.orders.count()
+
+	@property
+	def placement(self):
+		return Placement.objects.get(pk=self.placement_id)
 
 	@property
 	def to_json(self):
@@ -4239,12 +4323,12 @@ class Order(models.Model):
 			'price': self.price,
 			'currency': self.currency,
 			'conditions': self.conditions,
+			'isAccepted': self.is_delivered,
 			'isDeclined': self.is_declined,
 			'reasons': self.reasons,
+			'hasPromotion': self.has_promotion,
+			'promotion': self.promotion.string_data_json if self.promotion != None else None,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
-# APP SETTINGS : 
-# On click "Order", don't show the popup of Quantity and Conditions,
-# Just submit one as quantity and null as conditions.

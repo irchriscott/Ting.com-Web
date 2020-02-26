@@ -42,7 +42,8 @@ urlpatterns = [
 
 	url(r'usr/g/restaurants/all/$', views.api_restaurants),
 	url(r'usr/g/restaurants/search/filter/$', views.api_filter_restaurants),
-	url(r'usr/g/restaurants/get/(?P<branch>\d+)/$', views.api_get_restaurant, name='api_restaurant_get'),
+	url(r'usr/g/restaurants/get/(?P<branch>\d+)/$', views.api_get_restaurant, name='api_restaurant_get_top_menus'),
+	url(r'usr/g/restaurants/get/(?P<branch>\d+)/menus/top/$', views.api_restaurant_top_menus, name='api_restaurant_get'),
 	url(r'usr/g/restaurants/promotions/(?P<branch>\d+)/$', views.api_load_restaurant_promotions, name='api_restaurant_promotions'),
 	url(r'usr/g/restaurants/foods/(?P<branch>\d+)/$', views.api_load_restaurant_foods, name='api_restaurant_foods'),
 	url(r'usr/g/restaurants/drinks/(?P<branch>\d+)/$', views.api_load_restaurant_drinks, name='api_restaurant_drinks'),
@@ -67,6 +68,7 @@ urlpatterns = [
 
 	url(r'usr/menu/promotion/get/(?P<promo>\d+)/$', views.api_get_promotion, name='api_promotion_get'),
 	url(r'usr/menu/promotion/interest/(?P<promo>\d+)/$', views.api_interest_promotion, name='api_promotion_interest'),
+	url(r'usr/menu/promotion/get/(?P<promo>\d+)/menus/promoted/$', views.api_promotion_promoted_menus, name='api_promotion_get_promoted_menus'),
 
 	# CUISINES
 
@@ -90,4 +92,5 @@ urlpatterns = [
 	url(r'usr/po/placement/people/update/$', views.api_update_people_placement),
 	url(r'usr/po/orders/branch/menus/$', views.api_get_restaurant_menu_orders),
 	url(r'usr/po/orders/menu/place/$', views.api_place_order_menu),
+	url(r'usr/po/placement/orders/all/$', views.api_get_placement_menu_orders),
 ]

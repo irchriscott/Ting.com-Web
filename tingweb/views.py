@@ -755,19 +755,13 @@ def index(request):
         rand_branches = branches.random(5)
 
         promotions = Promotion.objects.filter(branch__country=user.country, branch__town=user.town, is_on=True)[:20]
-        today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
-
-        for i in range(4, len(today_promos)):
-           today_promos.remove(random.choice(today_promos))
+        today_promos = random.sample(list(filter(lambda promo: promo.is_on_today == True, promotions))[:10], k=4)
     else:
         branches = Branch.objects.all().order_by('-created_at')[:20]
         rand_branches = branches.random(5)
 
         promotions = Promotion.objects.filter(is_on=True)[:5]
-        today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
-
-        for i in range(4, len(today_promos)):
-           today_promos.remove(random.choice(today_promos))
+        today_promos = random.sample(list(filter(lambda promo: promo.is_on_today == True, promotions))[:10], k=4)
 
     menus_all = Menu.objects.all()
     menus = sorted(sorted(list(filter(lambda menu: menu.review_average >= 4, menus_all)), key=lambda menu: menu.reviews_count, reverse=True), key=lambda menu: menu.review_average, reverse=True)[:6]
@@ -797,10 +791,7 @@ def discovery(request):
         rand_branches = branches.random(5)
 
         promotions = Promotion.objects.filter(branch__country=user.country, branch__town=user.town, is_on=True)[:20]
-        today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
-
-        for i in range(4, len(today_promos)):
-           today_promos.remove(random.choice(today_promos))
+        today_promos = random.sample(list(filter(lambda promo: promo.is_on_today == True, promotions))[:10], k=4)
 
         menus_all = Menu.objects.filter(branch__country=user.country, branch__town=user.town)
     else:
@@ -808,10 +799,7 @@ def discovery(request):
         rand_branches = branches.random(5)
 
         promotions = Promotion.objects.filter(is_on=True)[:5]
-        today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
-
-        for i in range(4, len(today_promos)):
-           today_promos.remove(random.choice(today_promos))
+        today_promos = random.sample(list(filter(lambda promo: promo.is_on_today == True, promotions))[:10], k=4)
 
         menus_all = Menu.objects.all()
 
@@ -1373,7 +1361,7 @@ def load_menu_today_promotion(request, menu):
     promotions = Promotion.objects.filter(restaurant__pk=menu.restaurant.pk, branch__pk=menu.branch.pk)
     today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))
     today_type = list(filter(lambda promo: int(promo.promotion_menu_type) == 0 or int(promo.promotion_menu_type) == menu.menu_type, today_promos))
-    promos_category = list(filter(lambda promo: int(promo.promotion_menu_type) == 4, today_promos))
+    promos_category = list(filter(lambda promo: int(promo.promotion_menu_type) == 5, today_promos))
     
     if menu.menu_type == 1:
         today_category = list(filter(lambda promo: promo.category.pk == menu.food.category.pk, promos_category))
@@ -1382,7 +1370,7 @@ def load_menu_today_promotion(request, menu):
     else:
         today_category = []
 
-    promos_menu = list(filter(lambda promo: int(promo.promotion_menu_type) == 5, today_promos))
+    promos_menu = list(filter(lambda promo: int(promo.promotion_menu_type) == 4, today_promos))
     today_menu = list(filter(lambda promo: promo.menu.pk == menu.pk, promos_menu))
 
     today_menu_promotions = today_type + today_category + today_menu

@@ -40,14 +40,14 @@
 		      		</div>
 		      		<div class="extra" style="margin-top: -2px;">
 		      			{% if placement.waiter != None %}
-		      				<div class="ui image label">
+		      				<div class="ui image label" style="cursor: pointer;" data-tooltip="Waiter" data-position="top left">
 							  <img src="{{placement.waiter.image.url}}">
 							  {{placement.waiter.name}}
 							</div>
 		      			{% else %}
 		      			{% endif %}
-		      			<div class="ui label"><i class="clipboard outline icon"></i> {% if placement.bill != None and placement.bill != "" %} {{placement.bill.number}} {% else %} - {% endif %}</div>
-		        		<div class="ui label"><i class="users icon"></i> {{placement.people}}</div>
+		      			<div class="ui label" style="cursor: pointer;" data-tooltip="Bill Number" data-position="top left"><i class="clipboard outline icon"></i> {% if placement.bill != None and placement.bill != "" %} {{placement.bill.number}} {% else %} - {% endif %}</div>
+		        		<div class="ui label" style="cursor: pointer;" data-tooltip="People" data-position="top left"><i class="users icon"></i> {{placement.people}}</div>
 		      		</div>
 		    	</div>
 		  	</div>

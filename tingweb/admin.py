@@ -9,12 +9,13 @@ from django.http import HttpResponseRedirect, HttpResponse, request
 from django.urls import reverse
 from django.contrib import messages
 from django.utils import timezone
+from django.db.models import Q, Count, Sum
 from ting.responses import ResponseObject, HttpJsonResponse
 from tingweb.models import (
 							Restaurant, Administrator, AdminPermission, RestaurantLicenceKey, RestaurantConfig,
 							Menu, Food, Drink, Dish, FoodCategory, FoodImage, AdministratorResetPassword, DrinkImage,
 							DishImage, DishFood, RestaurantTable, Branch, Promotion, User, Booking, UserNotification,
-							CategoryRestaurant, Placement
+							CategoryRestaurant, Placement, Order
 						)
 from tingweb.backend import AdminAuthentication
 from tingweb.mailer import (
@@ -3248,3 +3249,184 @@ def notify_user_placement_waiter_assigned(placement):
 		)
 	except Exception as e:
 		pass
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission=['can_view_orders', 'can_receive_orders'])
+def load_orders_dashboard(request):
+	template = 'web/admin/ajax/load_orders_dashboard.html'
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	orders = Order.objects.filter(menu__branch__pk=admin.branch.pk, menu__restaurant__pk=admin.restaurant.pk).filter(Q(is_delivered=False) & Q(is_declined=False)).order_by('updated_at')
+	return render(request, template, {
+			'orders': orders if admin.admin_type != "4" else list(filter(lambda od: od.bill.placement.waiter.pk == admin.pk, list(filter(lambda od: od.bill.placement.waiter != None, orders)))), 
+			'admin': admin
+		})
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_accept_orders')
+def accept_user_order(request, order):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	order = Order.objects.get(pk=order)
+
+	placement = Placement.objects.get(pk=order.bill.placement_id)
+
+	if admin.restaurant.pk != order.menu.restaurant.pk or admin.branch.pk != order.menu.branch.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
+				reverse('ting_wb_adm_dashboard')))
+
+	order.is_delivered = True
+	order.save()
+
+	notify_waiter_order_updated(placement.pk)
+	notify_user_order_accepted.now(placement.pk, order.pk)
+	messages.success(request, 'Order Accepted Successfully !!!')
+	return HttpJsonResponse(ResponseObject('success', 'Order Accepted Successfully !!!', 200, 
+				reverse('ting_wb_adm_dashboard')))
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_accept_orders')
+def decline_user_order(request, order):
+	if request.method == 'POST':
+		admin = Administrator.objects.get(pk=request.session['admin'])
+		order = Order.objects.get(pk=order)
+		reasons = request.POST.get('reasons')
+
+		placement = Placement.objects.get(pk=order.bill.placement_id)
+
+		if admin.restaurant.pk != order.menu.restaurant.pk or admin.branch.pk != order.menu.branch.pk:
+			messages.error(request, 'Data Not For This Restaurant !!!')
+			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
+					reverse('ting_wb_adm_dashboard')))
+
+		order.is_declined = True
+		order.reasons = reasons
+		order.save()
+
+		notify_waiter_order_updated(placement.pk)
+		notify_user_order_declined.now(placement.pk, order.pk)
+		messages.success(request, 'Order Declined Successfully !!!')
+		return HttpJsonResponse(ResponseObject('success', 'Order Declined Successfully !!!', 200, 
+					reverse('ting_wb_adm_dashboard')))
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
+
+
+@background(schedule=60)
+def notify_user_order_accepted(placement, order):
+	placement = Placement.objects.get(pk=placement)
+	order = Order.objects.get(pk=order)
+	try:
+		pusher_client.trigger(placement.user.channel, placement.user.channel, {
+			'title': 'Order Accepted', 
+			'body': 'Your %s order(s) of %s has been accepted' % (order.quantity, order.menu.name),
+			'image': utils.HOST_END_POINT + order.menu.images[0].image.url,
+			'navigate': 'current_restaurant',
+			'data': placement.token
+		})
+	except Exception as e:
+		pass
+				
+	try:
+		beams_client.publish_to_interests(
+			interests=[placement.user.channel],
+			publish_body={
+				'apns': {
+					'aps': {
+						'alert': {
+							'title': 'Order Accepted', 
+							'body': 'Your %s order(s) of %s has been accepted' % (order.quantity, order.menu.name),
+						}
+					}
+				},
+				'fcm': {
+					'notification': {
+						'title': 'Order Accepted', 
+						'body': 'Your %s order(s) of %s has been accepted' % (order.quantity, order.menu.name),
+					},
+					'data': {
+						'navigate': 'current_restaurant',
+						'data': placement.token
+					}
+				}
+			}
+		)
+	except Exception as e:
+		pass
+
+
+@background(schedule=60)
+def notify_user_order_declined(placement, order):
+	placement = Placement.objects.get(pk=placement)
+	order = Order.objects.get(pk=order)
+	try:
+		pusher_client.trigger(placement.user.channel, placement.user.channel, {
+			'title': 'Order Declined', 
+			'body': 'Your %s order(s) of %s has been declined' % (order.quantity, order.menu.name),
+			'image': utils.HOST_END_POINT + order.menu.images[0].image.url,
+			'text': 'Reasons: %s' % order.reasons,
+			'navigate': 'current_restaurant',
+			'data': placement.token
+		})
+	except Exception as e:
+		pass
+				
+	try:
+		beams_client.publish_to_interests(
+			interests=[placement.user.channel],
+			publish_body={
+				'apns': {
+					'aps': {
+						'alert': {
+							'title': 'Order Declined', 
+							'body': 'Your %s order(s) of %s has been declined' % (order.quantity, order.menu.name),
+						}
+					}
+				},
+				'fcm': {
+					'notification': {
+						'title': 'Order Declined', 
+						'body': 'Your %s order(s) of %s has been declined' % (order.quantity, order.menu.name),
+					},
+					'data': {
+						'navigate': 'current_restaurant',
+						'data': placement.token
+					}
+				}
+			}
+		)
+	except Exception as e:
+		pass
+
+
+def notify_waiter_order_updated(placement):
+	placement = Placement.objects.get(pk=placement)
+	branch_message = {
+		'status': 200,
+		'type': 'response_w_orders_updated',
+		'uuid': pnconfig.uuid,
+		'sender': placement.user.socket_data,
+		'receiver': placement.branch.socket_data,
+		'message': None,
+		'args': None,
+		'data': None
+	}
+	pubnub.publish().channel(placement.branch.channel).message(branch_message).pn_async(ting_publish_callback)
+
+	if placement.waiter != None:
+		waiter_message = {
+			'status': 200,
+			'type': 'response_w_orders_updated',
+			'uuid': pnconfig.uuid,
+			'sender': placement.user.socket_data,
+			'receiver': placement.waiter.socket_data,
+			'message': None,
+			'args': None,
+			'data': None
+		}
+		pubnub.publish().channel(placement.waiter.channel).message(waiter_message).pn_async(ting_publish_callback)

@@ -195,7 +195,9 @@ SOCKET_REQUEST_TYPES = [
 ]
 
 SOCKET_RESPONSE_A_TYPES = [
-	'response_w_resto_table'
+	'response_w_resto_table',
+	'request_w_table_order',
+	'response_w_orders_updated'
 ]
 
 SOCKET_RESPONSE_U_TYPES = [
@@ -255,6 +257,7 @@ PUSHER_BEAMS_SECRET_KEY		= '4F360544EE0422D1C115854EDA7B749B8DBD6711EA805849966B
 
 HOST_END_POINT				= 'http://10.0.2.2:8000'
 
+
 def image_as_base64(image_file, format='png'):
 
 	if not os.path.isfile(image_file):
@@ -264,3 +267,20 @@ def image_as_base64(image_file, format='png'):
 	with open(image_file, 'rb') as img_f:
 		encoded_string = base64.b64encode(img_f.read())
 	return 'data:image/%s;base64,%s' % (format, encoded_string)
+
+
+def int_to_string(number):
+	zeros = ['', '00', '0']
+	number = str(number)
+	return '%s%s' % (zeros[len(number)], number) if len(number) < 3 else str(number)
+
+
+def promoted_price(price, promo):			
+	if promo != None:
+		if promo.has_reduction:
+			if promo.reduction_type == '%':
+				return price - ((price * promo.amount) / 100)
+			else:
+				return price - promo.amount
+	return price
+		

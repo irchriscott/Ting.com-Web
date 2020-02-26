@@ -14,9 +14,10 @@
     <input type="hidden" id="ting-currency">
     <script type="text/javascript">
         window.__TING__Administrator = {{admin_json|safe}}
-        window.__TING__URL__Load__Placements = decodeURI("{% url 'ting_wb_adm_load_placements' %}")
-        window.__TING__URL__Get__Placements = decodeURI("{% url 'ting_wb_adm_placements' %}")
-        window.__TING__URL__Load__Dash__Placements = decodeURI("{% url 'ting_wb_adm_load_placements_dashboard' %}")
+        window.__TING__URL__Load__Placements = decodeURI("{% url 'ting_wb_adm_load_placements' %}");
+        window.__TING__URL__Get__Placements = decodeURI("{% url 'ting_wb_adm_placements' %}");
+        window.__TING__URL__Load__Dash__Placements = decodeURI("{% url 'ting_wb_adm_load_placements_dashboard' %}");
+        window.__TING__URL__Load__Dash__Orders = decodeURI("{% url 'ting_wb_adm_load_orders_dashboard' %}");
         $(document).ready(function(){
             setTimeout(function(){
                 if($("#ting-lat").val() != "" && $("#ting-lat").val() != null){

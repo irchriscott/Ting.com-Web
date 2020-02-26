@@ -3025,6 +3025,31 @@ jQuery.fn.openModal = function(){
                     }
                 }).modal("show");
 
+            } else if (type == "form") {
+
+                $("[data-modal=" + $(this).attr("ting-modal-target") + "]").modal({
+                    onVisible: function(callback){
+                        callback = $.isFunction(callback) ? callback : function () { };
+                    },
+                    onHidden: function(callback){
+                        callback = $.isFunction(callback) ? callback : function () { };
+                    },
+                    onApprove(){
+                        if(form_id != null && form_id != ""){
+                            var form = $(this).find("#" + form_id);
+                            if(form != null){
+                                form.submit();
+                            } else {
+                                showErrorMessage(randomString(12), "There Is No Form To Submit !!!")
+                            }
+                        } else {
+                            showErrorMessage(randomString(12), "Form ID Not Specified !!!")
+                        }
+                        return false;
+                    },
+                    onShow: function(){}
+                }).modal("show");
+
             } else if (type == "confirm"){
 
                 $("[data-modal=" + $(this).attr("ting-modal-target") + "]").modal({

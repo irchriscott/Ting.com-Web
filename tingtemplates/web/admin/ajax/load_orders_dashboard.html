@@ -1,0 +1,85 @@
+{% load ting_tags %}
+{% if orders|length > 0 %}
+	<div class="ui items">
+		{% for order in orders %}
+			<div class="item ting-side-pannel-item">
+		    	<div class="ui avatar">
+		      		<img src="{{order.bill.placement.user.image.url}}">
+		    	</div>
+		    	<div class="content">
+		      		<a class="header" style="color:#666666;">{{order.quantity}} - {{order.menu.name}}</a>
+		      		{% if admin.pk|has_p:"can_accept_orders" %}
+			      		<div class="ui right pointing dropdown item" style="position: absolute; top: 0; right: 0;">
+	                        <i class="icon chevron down"></i>
+	                        <div class="menu">
+	                            <div class="header">Options</div>
+	                            <a class="item ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_accept_user_order' order.pk %}" ting-modal-target="ting-accept-order-{{order.id}}" style="align-self: flex-start; width: 100%"><i class="check icon"></i> Accept Order</a>
+	                            <a class="item ting-open-ajax-modal" ting-modal-type="form" ting-data-url="{% url 'ting_wb_adm_decline_user_order' order.pk %}" ting-modal-form="ting-decline-order-form-{{order.pk}}" ting-modal-target="ting-decline-order-{{order.id}}" style="align-self: flex-start; width: 100%"><i class="close icon"></i> Decline Order</a>
+	                          	<div class="ui modal mini" data-modal="ting-accept-order-{{order.id}}">
+			                        <div class="header">
+			                            Accept Order
+			                        </div>
+			                        <div class="content">
+			                            <p>Do you really want to accept this order ?</p>
+			                        </div>
+			                        <div class="actions">
+			                            <div class="ui positive button right labeled icon">
+			                                Yes
+		                                    <i class="icon check"></i>
+			                            </div>
+			                            <div class="ui red deny button right labeled icon">
+			                                No
+			                                <i class="icon times"></i>
+			                            </div>
+			                        </div>
+			                    </div> 
+			                    <div class="ui modal mini" data-modal="ting-decline-order-{{order.id}}">
+			                        <div class="header">
+			                            Decline Order
+			                        </div>
+			                        <div class="content">
+			                            <form class="ui form" id="ting-decline-order-form-{{order.pk}}" method="POST" action="{% url 'ting_wb_adm_decline_user_order' order.pk %}">
+			                            	{% csrf_token %}
+			                            	<div class="field">
+							                    <label>Enter Reasons :</label>
+							                    <textarea name="reasons" placeholder="Reasons" required></textarea>
+							                </div>
+			                            </form>
+			                        </div>
+			                        <div class="actions">
+			                            <div class="ui positive button right labeled icon">
+			                                Submit
+		                                    <i class="icon check"></i>
+			                            </div>
+			                            <div class="ui red deny button right labeled icon">
+			                                Cancel
+			                                <i class="icon times"></i>
+			                            </div>
+			                        </div>
+			                        <script type="text/javascript">$("#ting-decline-order-form-{{order.pk}}").submitFormAjax();</script>
+			                    </div>                
+	                        </div>
+	                    </div>
+	                {% endif %}
+		      		<div class="meta" style="margin-top: 2px;">
+		        		<h1 style="font-size: 24px;">{{order.bill.placement.table.number}}</h1>
+		      		</div>
+		      		<div class="extra" style="margin-top: -2px;">
+		      			{% if order.bill.placement.waiter != None %}
+		      				<div class="ui image label" style="cursor: pointer;" data-tooltip="Waiter" data-position="top left">
+							  <img src="{{order.bill.placement.waiter.image.url}}">
+							  {{order.bill.placement.waiter.name}}
+							</div>
+		      			{% endif %}
+		      			<div class="ui label" style="cursor: pointer;" data-tooltip="Bill Number" data-position="top left"><i class="clipboard outline icon"></i> {{order.bill.number}}</div>
+		        		<div class="ui label" style="cursor: pointer;" data-tooltip="People" data-position="top left"><i class="users icon"></i> {{order.bill.placement.people}}</div>
+		        		<div class="ui label" style="cursor: pointer;" data-tooltip="Has Promotion" data-position="top left"><i class="star icon"></i> {{order.has_promotion|yesno}}</div>
+		      		</div>
+		    	</div>
+		  	</div>
+		{% endfor %}
+		<script type="text/javascript">$(".dropdown").dropdown();$(".ting-open-ajax-modal").openModal();</script>
+	</div>
+{% else %}
+	<p class="ting-error">No Order</p>
+{% endif %}

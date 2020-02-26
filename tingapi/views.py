@@ -18,7 +18,7 @@ from tingweb.mailer import SendUserResetPasswordMail, SendUserUpdateEmailMail, S
 from tingweb.models import (
                                 Restaurant, User, UserResetPassword, UserAddress, Branch, UserRestaurant, Menu,
                                 MenuLike, MenuReview, Promotion, PromotionInterest, RestaurantReview, Booking,
-                                Food, Dish, RestaurantTable, Placement
+                                Food, Drink, Dish, RestaurantTable, Placement, Order, Bill
                             )
 from tingweb.forms import (
                                 GoogleSignUpForm, UserLocationForm, EmailSignUpForm, UserImageForm, MenuReviewForm,
@@ -29,10 +29,11 @@ from pubnub.callbacks import SubscribeCallback
 from pubnub.enums import PNStatusCategory
 from pubnub.pnconfiguration import PNConfiguration
 from pubnub.pubnub import PubNub
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from background_task import background
 import tingweb.views as web
 import ting.utils as utils
+import random
 import json
 import imgkit
 import os
@@ -223,8 +224,13 @@ def api_restaurants(request):
 	user = User.objects.get(pk=request.session['user'])
 	country = request.GET.get('country') if request.GET.get('country') != None else user.country
 	town = request.GET.get('town') if request.GET.get('town') != None else user.town
-	branches = json.dumps([branch.to_json_r for branch in Branch.objects.filter(country=country, town=town)[:12]], default=str)
+	branches = json.dumps([branch.to_json_s for branch in Branch.objects.filter(country=country, town=town)[:12]], default=str)
 	return HttpResponse(branches, content_type='application/json')
+
+
+def api_restaurant_top_menus(request, branch):
+	branch = Branch.objects.get(pk=branch)
+	return HttpResponse(json.dumps([menu.to_json_s for menu in branch.menus.random(4)], default=str), content_type='application/json')
 
 
 def api_get_restaurant(request, branch):
@@ -234,7 +240,29 @@ def api_get_restaurant(request, branch):
 
 def api_load_restaurant_promotions(request, branch):
 	promotions = Promotion.objects.filter(branch__pk=branch).order_by('-created_at')
-	return HttpResponse(json.dumps([promotion.to_json_f for promotion in promotions], default=str), content_type='application/json')
+	return HttpResponse(json.dumps([promotion.to_json for promotion in promotions], default=str), content_type='application/json')
+
+
+def api_promotion_promoted_menus(request, promo):
+	promotion = Promotion.objects.get(pk=promo)
+	promo_type = int(promotion.promotion_menu_type)
+
+	if promo_type == 0:
+		menus = Menu.objects.filter(branch__pk=promotion.branch.pk, restaurant__pk=promotion.restaurant.pk).random(4)
+		return HttpResponse(json.dumps([menu.to_json_s for menu in menus], default=str), content_type='application/json')
+	if promo_type in [1, 2, 3]:
+		menus = Menu.objects.filter(branch__pk=promotion.branch.pk, restaurant__pk=promotion.restaurant.pk, menu_type=promo_type).random(4)
+		return HttpResponse(json.dumps([menu.to_json_s for menu in menus], default=str), content_type='application/json')
+	elif promo_type == 4:
+		return HttpResponse(json.dumps([promotion.menu.to_json_s], default=str), content_type='application/json')
+	elif promo_type == 5:
+		foods = [food.menu for food in Food.objects.filter(branch__pk=promotion.branch.pk, restaurant__pk=promotion.restaurant.pk, category__pk=promotion.category.pk)]
+		dishes = [dish.menu for dish in Dish.objects.filter(branch__pk=promotion.branch.pk, restaurant__pk=promotion.restaurant.pk, category__pk=promotion.category.pk)]
+		menus = foods + dishes
+		menu_itter = random.sample(menus, k=4) if len(menus) > 4 else menus
+		return HttpResponse(json.dumps([menu.to_json_s for menu in menu_itter], default=str), content_type='application/json')
+	else:
+		return HttpResponse(json.dumps([], default=str), content_type='application/json')
 
 
 def api_load_restaurant_foods(request, branch):
@@ -336,7 +364,7 @@ def api_filter_restaurants(request):
 	brs__ids__pts = [brs[0] for brs in zip(*[bs for i, bs in enumerate(brs__f__all) if len(brs__k__all[i]) != 0]) if len(set(brs)) == 1]
 	brs__ids__all = brs__ids__pts if len(list(filter(lambda b: len(b) != 0, brs__f__all))) != len(brs__f__all) else list(reduce(lambda x, y: x & y, (set(brs) for i, brs in enumerate(brs__f__all) if len(brs__k__all[i]) != 0)))
 
-	branches = json.dumps([branch.to_json_r for branch in restaurants.filter(pk__in=brs__ids__all)], default=str) if len(list(filter(lambda f: len(f) != 0, brs__k__all))) != 0 else json.dumps([branch.to_json_r for branch in restaurants], default=str)
+	branches = json.dumps([branch.to_json_s for branch in restaurants.filter(pk__in=brs__ids__all)], default=str) if len(list(filter(lambda f: len(f) != 0, brs__k__all))) != 0 else json.dumps([branch.to_json_r for branch in restaurants], default=str)
 	return HttpResponse(branches, content_type='application/json')
 
 
@@ -386,7 +414,7 @@ def api_check_menu_review(request):
 
 def api_get_promotion(request, promo):
 	promotion = Promotion.objects.get(pk=promo)
-	return HttpResponse(json.dumps(promotion.to_json_f, default=str), content_type='application/json')
+	return HttpResponse(json.dumps(promotion.to_json_f_a, default=str), content_type='application/json')
 
 
 @csrf_exempt
@@ -525,6 +553,7 @@ def api_get_restaurant_menu_orders(request):
 	return HttpResponse(json.dumps([menu.to_json_s for menu in menus], default=str), content_type='application/json')
 
 
+@csrf_exempt
 @authenticate_user(xhr='api')
 def api_place_order_menu(request):
 	if request.method == 'POST':
@@ -532,10 +561,89 @@ def api_place_order_menu(request):
 		placement_token = request.POST.get('token')
 		quantity = request.POST.get('quantity')
 		conditions = request.POST.get('conditions')
+		menu_id = request.POST.get('menu')
+		menu = Menu.objects.get(pk=menu_id)
+
+		if menu.menu_type == 1:
+			food = Food.objects.get(pk=menu.menu_id)
+			if food.is_available == False:
+				return HttpJsonResponse(ResponseObject('error', 'Menu Not Available !!!', 202))
+		elif menu.menu_type == 2:
+			drink = Drink.objects.get(pk=menu.menu_id)
+			if drink.is_available == False:
+				return HttpJsonResponse(ResponseObject('error', 'Menu Not Available !!!', 202))
+		elif menu.menu_type == 3:
+			dish = Dish.objects.get(pk=menu.menu_id)
+			if dish.is_available == False:
+				return HttpJsonResponse(ResponseObject('error', 'Menu Not Available !!!', 202))
 
 		placement = Placement.objects.filter(token=placement_token).first()
+
 		if placement.user.pk != user.pk:
 			return HttpJsonResponse(ResponseObject('error', 'Not The Owner !!!', 403))
+
+		if placement.bill == None:
+			
+			today = timezone.datetime.today()
+			last_bill = Bill.objects.filter(branch__pk=placement.branch.pk, restaurant__pk=placement.restaurant.pk, created_at__date=today.date()).last()
+			bill_number = int(last_bill.number) + 1 if last_bill != None else 1
+
+			new_bill = Bill(
+					restaurant=Restaurant.objects.get(pk=placement.restaurant.pk),
+					branch=Branch.objects.get(pk=placement.branch.pk),
+					number=utils.int_to_string(bill_number),
+					token=get_random_string(200),
+					placement_id=placement.pk
+				)
+			new_bill.save()
+
+			placement.bill = Bill.objects.get(pk=new_bill.pk)
+			placement.save()
+
+		placement = Placement.objects.filter(token=placement_token).first()
+
+		if menu.menu_type == 1:
+			food = Food.objects.get(pk=menu.menu_id)
+			order = Order(
+				bill=Bill.objects.get(pk=placement.bill.pk),
+				menu=Menu.objects.get(pk=menu.pk),
+				token=get_random_string(200),
+				quantity=quantity,
+				price=utils.promoted_price(food.price, food.today_promotion),
+				currency=food.currency,
+				conditions=conditions,
+				has_promotion=True if food.today_promotion != None else False,
+				promotion=Promotion.objects.get(pk=food.today_promotion.pk) if food.today_promotion != None else None
+			)
+			order.save()
+		elif menu.menu_type == 2:
+			drink = Drink.objects.get(pk=menu.menu_id)
+			order = Order(
+				bill=Bill.objects.get(pk=placement.bill.pk),
+				menu=Menu.objects.get(pk=menu.pk),
+				token=get_random_string(200),
+				quantity=quantity,
+				price=utils.promoted_price(drink.price, drink.today_promotion),
+				currency=drink.currency,
+				conditions=conditions,
+				has_promotion=True if drink.today_promotion != None else False,
+				promotion=Promotion.objects.get(pk=drink.today_promotion.pk) if drink.today_promotion != None else None
+			)
+			order.save()
+		elif menu.menu_type == 3:
+			dish = Dish.objects.get(pk=menu.menu_id)
+			order = Order(
+				bill=Bill.objects.get(pk=placement.bill.pk),
+				menu=Menu.objects.get(pk=menu.pk),
+				token=get_random_string(200),
+				quantity=quantity,
+				price=utils.promoted_price(dish.price, dish.today_promotion),
+				currency=dish.currency,
+				conditions=conditions,
+				has_promotion=True if dish.today_promotion != None else False,
+				promotion=Promotion.objects.get(pk=dish.today_promotion.pk) if dish.today_promotion != None else None
+			)
+			order.save()
 
 		notify_waiter_placed_order.now(placement.pk)
 
@@ -562,7 +670,7 @@ def notify_waiter_placed_order(placement):
 	if placement.waiter != None:
 		waiter_message = {
 			'status': 200,
-			'type': 'request_table_order',
+			'type': 'request_w_table_order',
 			'uuid': pnconfig.uuid,
 			'sender': placement.user.socket_data,
 			'receiver': placement.waiter.socket_data,
@@ -571,4 +679,12 @@ def notify_waiter_placed_order(placement):
 			'data': {'token': placement.token, 'user': placement.user.socket_data, 'table': placement.table.number }
 		}
 		pubnub.publish().channel(placement.waiter.channel).message(waiter_message).pn_async(ting_publish_callback)
+
+
+@authenticate_user(xhr='api')
+def api_get_placement_menu_orders(request):
+	token = request.GET.get('token')
+	placement = Placement.objects.filter(token=token).first()
+	orders = Order.objects.filter(bill__pk=placement.bill.pk) if placement.bill != None else []
+	return HttpResponse(json.dumps([order.to_json for order in orders], default=str), content_type='application/json')
 	
