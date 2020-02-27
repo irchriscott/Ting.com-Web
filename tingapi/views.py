@@ -513,6 +513,7 @@ def api_get_discover_menus(request):
 
 # PLACEMENTS & ORDERS
 
+
 @authenticate_user(xhr='api')
 def api_request_table_restaurant(request):
 	table_uuid = request.GET.get('table')
@@ -549,7 +550,8 @@ def api_update_people_placement(request):
 def api_get_restaurant_menu_orders(request):
 	branch = request.GET.get('branch')
 	menu_type = request.GET.get('type')
-	menus = Menu.objects.filter(branch__pk=branch, menu_type=menu_type)
+	query = request.GET.get('query')
+	menus = Menu.objects.filter(branch__pk=branch, menu_type=menu_type, name__icontains=query)
 	return HttpResponse(json.dumps([menu.to_json_s for menu in menus], default=str), content_type='application/json')
 
 
@@ -609,11 +611,11 @@ def api_place_order_menu(request):
 				menu=Menu.objects.get(pk=menu.pk),
 				token=get_random_string(200),
 				quantity=quantity,
-				price=utils.promoted_price(food.price, food.today_promotion),
+				price=utils.promoted_price(food.price, food.today_promotion_object),
 				currency=food.currency,
 				conditions=conditions,
-				has_promotion=True if food.today_promotion != None else False,
-				promotion=Promotion.objects.get(pk=food.today_promotion.pk) if food.today_promotion != None else None
+				has_promotion=True if food.today_promotion_object != None else False,
+				promotion=Promotion.objects.get(pk=food.today_promotion_object.pk) if food.today_promotion_object != None else None
 			)
 			order.save()
 		elif menu.menu_type == 2:
@@ -623,11 +625,11 @@ def api_place_order_menu(request):
 				menu=Menu.objects.get(pk=menu.pk),
 				token=get_random_string(200),
 				quantity=quantity,
-				price=utils.promoted_price(drink.price, drink.today_promotion),
+				price=utils.promoted_price(drink.price, drink.today_promotion_object),
 				currency=drink.currency,
 				conditions=conditions,
-				has_promotion=True if drink.today_promotion != None else False,
-				promotion=Promotion.objects.get(pk=drink.today_promotion.pk) if drink.today_promotion != None else None
+				has_promotion=True if drink.today_promotion_object != None else False,
+				promotion=Promotion.objects.get(pk=drink.today_promotion_object.pk) if drink.today_promotion_object != None else None
 			)
 			order.save()
 		elif menu.menu_type == 3:
@@ -637,17 +639,77 @@ def api_place_order_menu(request):
 				menu=Menu.objects.get(pk=menu.pk),
 				token=get_random_string(200),
 				quantity=quantity,
-				price=utils.promoted_price(dish.price, dish.today_promotion),
+				price=utils.promoted_price(dish.price, dish.today_promotion_object),
 				currency=dish.currency,
 				conditions=conditions,
-				has_promotion=True if dish.today_promotion != None else False,
-				promotion=Promotion.objects.get(pk=dish.today_promotion.pk) if dish.today_promotion != None else None
+				has_promotion=True if dish.today_promotion_object != None else False,
+				promotion=Promotion.objects.get(pk=dish.today_promotion_object.pk) if dish.today_promotion_object != None else None
 			)
 			order.save()
 
 		notify_waiter_placed_order.now(placement.pk)
 
 		return HttpJsonResponse(ResponseObject('success', 'Order Sent !!!', 200))
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
+
+
+@csrf_exempt
+@authenticate_user(xhr='api')
+def api_re_place_order_menu(request, order):
+	if request.method == 'POST':
+		user = User.objects.get(pk=request.session['user'])
+		order = Order.objects.get(pk=order)
+		placement = Placement.objects.get(pk=order.bill.placement_id)
+
+		quantity = request.POST.get('quantity')
+		conditions = request.POST.get('conditions')
+
+		if placement.user.pk != user.pk:
+			return HttpJsonResponse(ResponseObject('error', 'Not The Owner !!!', 403))
+
+		if order.menu.menu_type == 1:
+			food = Food.objects.get(pk=order.menu.menu_id)
+			price = utils.promoted_price(food.price, food.today_promotion_object)
+		elif order.menu.menu_type == 2:
+			drink = Drink.objects.get(pk=order.menu.menu_id)
+			price = utils.promoted_price(drink.price, drink.today_promotion_object)
+		elif order.menu.menu_type == 3:
+			dish = Dish.objects.get(pk=order.menu.menu_id)
+			price = utils.promoted_price(dish.price, dish.today_promotion_object)
+		else:
+			price = 0
+
+		order.quantity = quantity
+		order.conditions = conditions
+		order.price = price
+		order.is_declined = False
+		order.is_delivered = False
+		order.updated_at = timezone.now()
+		order.save()
+
+		notify_waiter_placed_order.now(placement.pk)
+
+		return HttpJsonResponse(ResponseObject('success', 'Order Sent !!!', 200))
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
+
+
+@csrf_exempt
+@authenticate_user(xhr='api')
+def api_cancel_order_menu(request, order):
+	if request.method == 'POST':
+		user = User.objects.get(pk=request.session['user'])
+		order = Order.objects.get(pk=order)
+		placement = Placement.objects.get(pk=order.bill.placement_id)
+
+		if placement.user.pk != user.pk:
+			return HttpJsonResponse(ResponseObject('error', 'Not The Owner !!!', 403))
+		
+		order.delete()
+		notify_waiter_order_updated.now(placement.pk)
+
+		return HttpJsonResponse(ResponseObject('success', 'Order Canceled !!!', 200))
 	else:
 		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
@@ -681,10 +743,40 @@ def notify_waiter_placed_order(placement):
 		pubnub.publish().channel(placement.waiter.channel).message(waiter_message).pn_async(ting_publish_callback)
 
 
+@background(schedule=60)
+def notify_waiter_order_updated(placement):
+	placement = Placement.objects.get(pk=placement)
+	branch_message = {
+		'status': 200,
+		'type': 'response_w_orders_updated',
+		'uuid': pnconfig.uuid,
+		'sender': placement.user.socket_data,
+		'receiver': placement.branch.socket_data,
+		'message': None,
+		'args': None,
+		'data': None
+	}
+	pubnub.publish().channel(placement.branch.channel).message(branch_message).pn_async(ting_publish_callback)
+
+	if placement.waiter != None:
+		waiter_message = {
+			'status': 200,
+			'type': 'response_w_orders_updated',
+			'uuid': pnconfig.uuid,
+			'sender': placement.user.socket_data,
+			'receiver': placement.waiter.socket_data,
+			'message': None,
+			'args': None,
+			'data': None
+		}
+		pubnub.publish().channel(placement.waiter.channel).message(waiter_message).pn_async(ting_publish_callback)
+
+
 @authenticate_user(xhr='api')
 def api_get_placement_menu_orders(request):
 	token = request.GET.get('token')
+	query = request.GET.get('query')
 	placement = Placement.objects.filter(token=token).first()
-	orders = Order.objects.filter(bill__pk=placement.bill.pk) if placement.bill != None else []
+	orders = Order.objects.filter(bill__pk=placement.bill.pk, menu__name__icontains=query) if placement.bill != None else []
 	return HttpResponse(json.dumps([order.to_json for order in orders], default=str), content_type='application/json')
 	

@@ -1997,6 +1997,11 @@ class Food(models.Model):
 		return self.promotions.count()
 
 	@property
+	def today_promotion_object(self):
+		promos = list(filter(lambda p: p.is_on_today == True, self.promotions))
+		return promos[0] if len(promos) > 0 else None
+
+	@property
 	def today_promotion(self):
 		promos = list(filter(lambda p: p.is_on_today == True, self.promotions))
 		return promos[0].string_data_json if len(promos) > 0 else None
@@ -2366,6 +2371,11 @@ class Drink(models.Model):
 	@property
 	def promotions_count(self):
 		return self.promotions.count()
+
+	@property
+	def today_promotion_object(self):
+		promos = list(filter(lambda p: p.is_on_today == True, self.promotions))
+		return promos[0] if len(promos) > 0 else None
 
 	@property
 	def today_promotion(self):
@@ -2744,6 +2754,11 @@ class Dish(models.Model):
 		return self.promotions.count()
 
 	@property
+	def today_promotion_object(self):
+		promos = list(filter(lambda p: p.is_on_today == True, self.promotions))
+		return promos[0] if len(promos) > 0 else None
+
+	@property
 	def today_promotion(self):
 		promos = list(filter(lambda p: p.is_on_today == True, self.promotions))
 		return promos[0].string_data_json if len(promos) > 0 else None
@@ -3097,6 +3112,7 @@ class Menu(models.Model):
 	restaurant = models.ForeignKey(Restaurant)
 	branch = models.ForeignKey(Branch)
 	admin = models.ForeignKey(Administrator)
+	name = models.CharField(max_length=200, null=True, blank=True)
 	menu_type = models.IntegerField(null=False, blank=False)
 	menu_id = models.IntegerField(null=False, blank=False)
 	for_all_branches = models.BooleanField(default=False)
@@ -3144,18 +3160,6 @@ class Menu(models.Model):
 			return self.dish.images
 		else:
 			return []
-
-	@property
-	def name(self):
-		if self.menu_type == 1:
-			return self.food.name
-		elif self.menu_type == 2:
-			return self.drink.name
-		elif self.menu_type == 3:
-			return self.dish.name
-		else:
-			return None
-	
 	
 	@property
 	def like_ids(self):

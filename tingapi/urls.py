@@ -93,4 +93,6 @@ urlpatterns = [
 	url(r'usr/po/orders/branch/menus/$', views.api_get_restaurant_menu_orders),
 	url(r'usr/po/orders/menu/place/$', views.api_place_order_menu),
 	url(r'usr/po/placement/orders/all/$', views.api_get_placement_menu_orders),
+	url(r'usr/po/placement/order/(?P<order>\d+)/re/place/$', views.api_re_place_order_menu),
+	url(r'usr/po/placement/order/(?P<order>\d+)/cancel/$', views.api_cancel_order_menu),
 ]

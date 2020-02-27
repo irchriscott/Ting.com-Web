@@ -191,13 +191,15 @@ RESTAURANT_TYPES = [
 SOCKET_REQUEST_TYPES = [
 	'request_resto_table',
 	'request_assign_waiter',
-	'request_table_order'
+	'request_table_order',
+	'request_notify_order'
 ]
 
 SOCKET_RESPONSE_A_TYPES = [
 	'response_w_resto_table',
 	'request_w_table_order',
-	'response_w_orders_updated'
+	'response_w_orders_updated',
+	'request_w_notify_order'
 ]
 
 SOCKET_RESPONSE_U_TYPES = [

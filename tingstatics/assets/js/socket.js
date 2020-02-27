@@ -152,6 +152,52 @@ $(document).ready(function() {
                         loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements);
                     }
                     break;
+                case 'request_notify_order':
+                    iziToast.show({
+                        id: message.uuid, 
+                        title: 'Order Delayed On Table ' + message.data.table,
+                        titleSize: '16px',
+                        message: '<p style="color:#FFFFFF; margin-top:5px;"> ' + message.sender.name + ' has placed an order on table <b>' + message.data.table + '</b> but it seems it is delaying. Please, Accept or Decline the order.</p>',
+                        messageSize: '13px',
+                        theme: 'dark',
+                        image: message.sender.image,
+                        imageWidth: 120,
+                        maxWidth: 450,
+                        position: 'topRight',
+                        timeout: 30000,
+                        progressBar: false,
+                        onOpening: function () {},
+                        onOpened: function () {},
+                        onClosing: function () {},
+                        onClosed: function () {}
+                    });
+                    loadAjaxURL("ting-sides-pannel-content-orders", window.__TING__URL__Load__Dash__Orders);
+                    loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements);
+                    break;
+                case 'request_w_notify_order':
+                    if (!admin.permissions.includes('can_receive_orders')){
+                        iziToast.show({
+                            id: message.uuid, 
+                            title: 'Order Delayed On Table ' + message.data.table,
+                            titleSize: '16px',
+                            message: '<p style="color:#FFFFFF; margin-top:5px;"> ' + message.sender.name + ' has placed an order on table <b>' + message.data.table + '</b> but it seems it is delaying. Please, Accept or Decline the order</p>',
+                            messageSize: '13px',
+                            theme: 'dark',
+                            image: message.sendere.image,
+                            imageWidth: 120,
+                            maxWidth: 450,
+                            position: 'topRight',
+                            timeout: 30000,
+                            progressBar: false,
+                            onOpening: function () {},
+                            onOpened: function () {},
+                            onClosing: function () {},
+                            onClosed: function () {}
+                        });
+                        loadAjaxURL("ting-sides-pannel-content-orders", window.__TING__URL__Load__Dash__Orders);
+                        loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements);
+                    }
+                    break;
                 case 'response_w_orders_updated':
                     loadAjaxURL("ting-sides-pannel-content-orders", window.__TING__URL__Load__Dash__Orders);
                     loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements);

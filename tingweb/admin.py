@@ -1409,6 +1409,7 @@ def add_new_menu_food(request):
 						restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
 						branch=Branch.objects.get(pk=branch.pk),
 						admin=Administrator.objects.get(pk=admin.pk),
+						name=food.name,
 						menu_type=utils.MENU_TYPE[0][0],
 						menu_id=food.pk,
 						for_all_branches=for_all_branches
@@ -1617,6 +1618,8 @@ def update_menu_food(request, food):
 
 				menu = Menu.objects.filter(menu_type=1, menu_id=foo.pk).first()
 				menu.admin = Administrator.objects.get(pk=admin.pk)
+				menu.name = foo.name
+				menu.for_all_branches = for_all_branches
 				menu.updated_at = timezone.now()
 				menu.save()
 
@@ -1744,6 +1747,7 @@ def add_new_menu_drink(request):
 						restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
 						branch=Branch.objects.get(pk=branch.pk),
 						admin=Administrator.objects.get(pk=admin.pk),
+						name=drink.name,
 						menu_type=utils.MENU_TYPE[1][0],
 						menu_id=drink.pk,
 						for_all_branches=for_all_branches
@@ -1909,6 +1913,8 @@ def update_menu_drink(request, drink):
 
 				menu = Menu.objects.filter(menu_type=2, menu_id=drin.pk).first()
 				menu.admin = Administrator.objects.get(pk=admin.pk)
+				menu.name = drin.name
+				menu.for_all_branches = for_all_branches
 				menu.updated_at = timezone.now()
 				menu.save()
 
@@ -2028,8 +2034,10 @@ def add_new_menu_dish(request):
 						restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
 						branch=Branch.objects.get(pk=branch.pk),
 						admin=Administrator.objects.get(pk=admin.pk),
+						name=dish.name,
 						menu_type=utils.MENU_TYPE[2][0],
-						menu_id=dish.pk
+						menu_id=dish.pk,
+						for_all_branches=for_all_branches
 					)
 				menu.save()
 
@@ -2235,6 +2243,8 @@ def update_menu_dish(request, dish):
 
 				menu = Menu.objects.filter(menu_type=3, menu_id=dis.pk).first()
 				menu.admin = Administrator.objects.get(pk=admin.pk)
+				menu.name = dis.name
+				menu.for_all_branches = for_all_branches
 				menu.updated_at = timezone.now()
 				menu.save()
 
