@@ -943,7 +943,21 @@ def api_get_placement_menu_orders(request):
 	query = request.GET.get('query')
 	placement = Placement.objects.filter(token=token).first()
 	orders = Order.objects.filter(bill__pk=placement.bill.pk, menu__name__icontains=query) if placement.bill != None else []
-	return HttpResponse(json.dumps([order.to_json for order in orders], default=str), content_type='application/json')
+	
+	page = request.GET.get('page', 1)
+	paginator = Paginator(orders, settings.PAGINATOR_ITEM_COUNT)
+
+	if paginator.num_pages >= int(page):
+		try:
+			_orders = json.dumps([order.to_json for order in paginator.page(page)], default=str)
+		except PageNotAnInteger:
+			_orders = json.dumps([order.to_json for order in paginator.page(1)], default=str)
+		except EmptyPage:
+			_orders = json.dumps([order.to_json for order in paginator.page(paginator.num_pages)], default=str)
+	else:
+		_orders = json.dumps([], default=str)
+
+	return HttpResponse(_orders, content_type='application/json')
 
 
 @authenticate_user(xhr='api')
