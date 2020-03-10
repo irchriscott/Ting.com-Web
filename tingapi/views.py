@@ -11,7 +11,9 @@ from django.utils import timezone
 from django.conf import settings
 from django.db.models import Q, Count, Sum
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 from django.core import serializers
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ting.responses import ResponseObject, HttpJsonResponse
 from tingweb.backend import UserAuthentication
 from tingweb.mailer import SendUserResetPasswordMail, SendUserUpdateEmailMail, SendUserSuccessResetPasswordMail
@@ -101,16 +103,19 @@ def authenticate_user(xhr=None):
 
 
 @csrf_exempt
+@require_http_methods(['POST'])
 def api_sign_up_with_email(request):
 	return web.sign_up_with_email(request)
 
 
 @csrf_exempt
+@require_http_methods(['POST'])
 def api_sign_up_with_google(request):
 	return web.sign_up_with_google(request)
 
 
 @csrf_exempt
+@require_http_methods(['POST'])
 def api_login(request):
 	return web.login(request)
 
@@ -224,8 +229,22 @@ def api_restaurants(request):
 	user = User.objects.get(pk=request.session['user'])
 	country = request.GET.get('country') if request.GET.get('country') != None else user.country
 	town = request.GET.get('town') if request.GET.get('town') != None else user.town
-	branches = json.dumps([branch.to_json_s for branch in Branch.objects.filter(country=country, town=town)[:12]], default=str)
-	return HttpResponse(branches, content_type='application/json')
+	branches = Branch.objects.filter(country=country, town=town)
+	
+	page = request.GET.get('page', 1)
+	paginator = Paginator(branches, settings.PAGINATOR_ITEM_COUNT)
+	
+	if paginator.num_pages >= int(page):
+		try:
+			_branches = json.dumps([branch.to_json_s for branch in paginator.page(page)], default=str)
+		except PageNotAnInteger:
+			_branches = json.dumps([branch.to_json_s for branch in paginator.page(1)], default=str)
+		except EmptyPage:
+			_branches = json.dumps([branch.to_json_s for branch in paginator.page(paginator.num_pages)], default=str)
+	else:
+		_branches = json.dumps([], default=str)
+
+	return HttpResponse(_branches, content_type='application/json')
 
 
 def api_restaurant_top_menus(request, branch):
@@ -240,7 +259,20 @@ def api_get_restaurant(request, branch):
 
 def api_load_restaurant_promotions(request, branch):
 	promotions = Promotion.objects.filter(branch__pk=branch).order_by('-created_at')
-	return HttpResponse(json.dumps([promotion.to_json for promotion in promotions], default=str), content_type='application/json')
+	page = request.GET.get('page', 1)
+	paginator = Paginator(promotions, settings.PAGINATOR_ITEM_COUNT)
+
+	if paginator.num_pages >= int(page):
+		try:
+			_promotions = json.dumps([promotion.to_json for promotion in paginator.page(page)], default=str)
+		except PageNotAnInteger:
+			_promotions = json.dumps([promotion.to_json for promotion in paginator.page(1)], default=str)
+		except EmptyPage:
+			_promotions = json.dumps([promotion.to_json for promotion in paginator.page(paginator.num_pages)], default=str)
+	else:
+		_promotions = json.dumps([], default=str)
+
+	return HttpResponse(_promotions, content_type='application/json')
 
 
 def api_promotion_promoted_menus(request, promo):
@@ -267,22 +299,74 @@ def api_promotion_promoted_menus(request, promo):
 
 def api_load_restaurant_foods(request, branch):
 	foods = Menu.objects.filter(branch__pk=branch, menu_type=1).order_by('-created_at')
-	return HttpResponse(json.dumps([food.to_json for food in foods], default=str), content_type='application/json')
+	page = request.GET.get('page', 1)
+	paginator = Paginator(foods, settings.PAGINATOR_ITEM_COUNT)
+
+	if paginator.num_pages >= int(page):
+		try:
+			_foods = json.dumps([food.to_json for food in paginator.page(page)], default=str)
+		except PageNotAnInteger:
+			_foods = json.dumps([food.to_json for food in paginator.page(1)], default=str)
+		finally:
+			_foods = json.dumps([food.to_json for food in paginator.page(paginator.num_pages)], default=str)
+	else:
+		_foods = json.dumps([], default=str)
+
+	return HttpResponse(_foods, content_type='application/json')
 
 
 def api_load_restaurant_drinks(request, branch):
 	drinks = Menu.objects.filter(branch__pk=branch, menu_type=2).order_by('-created_at')
-	return HttpResponse(json.dumps([drink.to_json for drink in drinks], default=str), content_type='application/json')
+	page = request.GET.get('page', 1)
+	paginator = Paginator(drinks, settings.PAGINATOR_ITEM_COUNT)
+
+	if paginator.num_pages >= int(page):
+		try:
+			_drinks = json.dumps([drink.to_json for drink in paginator.page(page)], default=str)
+		except PageNotAnInteger:
+			_drinks = json.dumps([drink.to_json for drink in paginator.page(1)], default=str)
+		finally:
+			_drinks = json.dumps([drink.to_json for drink in paginator.page(paginator.num_pages)], default=str)
+	else:
+		_drinks = json.dumps([], default=str)
+
+	return HttpResponse(_drinks, content_type='application/json')
 
 
 def api_load_restaurant_dishes(request, branch):
 	dishes = Menu.objects.filter(branch__pk=branch, menu_type=3).order_by('-created_at')
-	return HttpResponse(json.dumps([dish.to_json for dish in dishes], default=str), content_type='application/json')
+	page = request.GET.get('page', 1)
+	paginator = Paginator(dishes, settings.PAGINATOR_ITEM_COUNT)
+
+	if paginator.num_pages >= int(page):
+		try:
+			_dishes = json.dumps([dish.to_json for dish in paginator.page(page)], default=str)
+		except PageNotAnInteger:
+			_dishes = json.dumps([dish.to_json for dish in paginator.page(1)], default=str)
+		finally:
+			_dishes = json.dumps([dish.to_json for dish in paginator.page(paginator.num_pages)], default=str)
+	else:
+		_dishes = json.dumps([], default=str)
+
+	return HttpResponse(_dishes, content_type='application/json')
 
 
 def api_load_restaurant_reviews(request, branch):
 	reviews = RestaurantReview.objects.filter(branch__pk=branch).order_by('-created_at')
-	return HttpResponse(json.dumps([review.to_json_b for review in reviews], default=str), content_type='application/json')
+	page = request.GET.get('page', 1)
+	paginator = Paginator(reviews, settings.PAGINATOR_ITEM_COUNT)
+
+	if paginator.num_pages >= int(page):
+		try:
+			_reviews = json.dumps([review.to_json_b for review in paginator.page(page)], default=str)
+		except PageNotAnInteger:
+			_reviews = json.dumps([review.to_json_b for review in paginator.page(1)], default=str)
+		finally:
+			_reviews = json.dumps([review.to_json_b for review in paginator.page(paginator.num_pages)], default=str)
+	else:
+		_reviews = json.dumps([], default=str)
+
+	return HttpResponse(_reviews, content_type='application/json')
 
 
 @csrf_exempt
@@ -301,7 +385,20 @@ def api_add_restaurant_review(request, branch):
 
 def api_load_restaurant_likes(request, branch):
 	likes = UserRestaurant.objects.filter(branch__pk=branch).order_by('-created_at')
-	return HttpResponse(json.dumps([like.to_json for like in likes], default=str), content_type='application/json')
+	page = request.GET.get('page', 1)
+	paginator = Paginator(likes, settings.PAGINATOR_ITEM_COUNT)
+
+	if paginator.num_pages >= int(page):
+		try:
+			_likes = json.dumps([like.to_json for like in paginator.page(page)], default=str)
+		except PageNotAnInteger:
+			_likes = json.dumps([like.to_json for like in paginator.page(1)], default=str)
+		finally:
+			_likes = json.dumps([like.to_json for like in paginator.page(paginator.num_pages)], default=str)
+	else:
+		_likes = json.dumps([], default=str)
+
+	return HttpResponse(_likes, content_type='application/json')
 
 
 @csrf_exempt
@@ -364,8 +461,22 @@ def api_filter_restaurants(request):
 	brs__ids__pts = [brs[0] for brs in zip(*[bs for i, bs in enumerate(brs__f__all) if len(brs__k__all[i]) != 0]) if len(set(brs)) == 1]
 	brs__ids__all = brs__ids__pts if len(list(filter(lambda b: len(b) != 0, brs__f__all))) != len(brs__f__all) else list(reduce(lambda x, y: x & y, (set(brs) for i, brs in enumerate(brs__f__all) if len(brs__k__all[i]) != 0)))
 
-	branches = json.dumps([branch.to_json_s for branch in restaurants.filter(pk__in=brs__ids__all)], default=str) if len(list(filter(lambda f: len(f) != 0, brs__k__all))) != 0 else json.dumps([branch.to_json_r for branch in restaurants], default=str)
-	return HttpResponse(branches, content_type='application/json')
+	branches = restaurants.filter(pk__in=brs__ids__all) if len(list(filter(lambda f: len(f) != 0, brs__k__all))) != 0 else restaurants
+	
+	page = request.POST.get('page', 1)
+	paginator = Paginator(branches, settings.PAGINATOR_ITEM_COUNT)
+	
+	if paginator.num_pages >= int(page):
+		try:
+			_branches = json.dumps([branch.to_json_s for branch in paginator.page(page)], default=str)
+		except PageNotAnInteger:
+			_branches = json.dumps([branch.to_json_s for branch in paginator.page(1)], default=str)
+		except EmptyPage:
+			_branches = json.dumps([branch.to_json_s for branch in paginator.page(paginator.num_pages)], default=str)
+	else:
+		_branches = json.dumps([], default=str)
+
+	return HttpResponse(_branches, content_type='application/json')
 
 
 # MENU
@@ -384,7 +495,20 @@ def api_like_menu(request, menu):
 
 def api_load_menu_reviews(request, menu):
 	reviews = MenuReview.objects.filter(menu__pk=menu).order_by('-created_at')
-	return HttpResponse(json.dumps([review.to_json for review in reviews], default=str), content_type='application/json')
+	page = request.GET.get('page', 1)
+	paginator = Paginator(reviews, settings.PAGINATOR_ITEM_COUNT)
+
+	if paginator.num_pages >= int(page):
+		try:
+			_reviews = json.dumps([review.to_json for review in paginator.page(page)], default=str)
+		except PageNotAnInteger:
+			_reviews = json.dumps([review.to_json for review in paginator.page(1)], default=str)
+		finally:
+			_reviews = json.dumps([review.to_json for review in paginator.page(paginator.num_pages)], default=str)
+	else:
+		_reviews = json.dumps([], default=str)
+
+	return HttpResponse(_reviews, content_type='application/json')
 
 
 @csrf_exempt
@@ -434,15 +558,42 @@ def api_get_cuisines(request):
 def api_get_cuisine_restaurants(request, cuisine):
 	cuisine = RestaurantCategory.objects.get(pk=cuisine)
 	branches = sorted(set(cuisine.restaurants), key=lambda branch: branch.review_average, reverse=True)
-	return HttpResponse(json.dumps([branch.to_json_s for branch in branches], default=str), content_type='application/json', status=200)
+	page = request.GET.get('page', 1)
+	paginator = Paginator(branches, settings.PAGINATOR_ITEM_COUNT)
+	
+	if paginator.num_pages >= int(page):
+		try:
+			_branches = json.dumps([branch.to_json_s for branch in paginator.page(page)], default=str)
+		except PageNotAnInteger:
+			_branches = json.dumps([branch.to_json_s for branch in paginator.page(1)], default=str)
+		except EmptyPage:
+			_branches = json.dumps([branch.to_json_s for branch in paginator.page(paginator.num_pages)], default=str)
+	else:
+		_branches = json.dumps([], default=str)
+
+	return HttpResponse(_branches, content_type='application/json')
 
 
 def api_get_cuisine_menus(request, cuisine):
 	cuisine = RestaurantCategory.objects.get(pk=cuisine)
 	foods = [food.menu for food in Food.objects.filter(cuisine__pk=cuisine.pk)]
 	dishes = [dish.menu for dish in Dish.objects.filter(cuisine__pk=cuisine.pk)]
-	menus = foods + dishes
-	return HttpResponse(json.dumps([menu.to_json_s for menu in sorted(set(menus), key=lambda menu: menu.to_json['menu']['reviews']['average'], reverse=True)], default=str), content_type='application/json', status=200)
+	menus = sorted(set(foods + dishes), key=lambda menu: menu.to_json['menu']['reviews']['average'], reverse=True)
+
+	page = request.GET.get('page', 1)
+	paginator = Paginator(menus, settings.PAGINATOR_ITEM_COUNT)
+
+	if paginator.num_pages >= int(page):
+		try:
+			_menus = json.dumps([menu.to_json_s for menu in paginator.page(page)], default=str)
+		except PageNotAnInteger:
+			_menus = json.dumps([menu.to_json_s for menu in paginator.page(1)], default=str)
+		except EmptyPage:
+			_menus = json.dumps([menu.to_json_s for menu in paginator.page(paginator.num_pages)], default=str)
+	else:
+		_menus = json.dumps([], default=str)
+
+	return HttpResponse(_menus, content_type='application/json')
 
 
 # DISCOVER
@@ -552,7 +703,21 @@ def api_get_restaurant_menu_orders(request):
 	menu_type = request.GET.get('type')
 	query = request.GET.get('query')
 	menus = Menu.objects.filter(branch__pk=branch, menu_type=menu_type, name__icontains=query)
-	return HttpResponse(json.dumps([menu.to_json_s for menu in menus], default=str), content_type='application/json')
+	
+	page = request.GET.get('page', 1)
+	paginator = Paginator(menus, settings.PAGINATOR_ITEM_COUNT)
+
+	if paginator.num_pages >= int(page):
+		try:
+			_menus = json.dumps([menu.to_json_s for menu in paginator.page(page)], default=str)
+		except PageNotAnInteger:
+			_menus = json.dumps([menu.to_json_s for menu in paginator.page(1)], default=str)
+		except EmptyPage:
+			_menus = json.dumps([menu.to_json_s for menu in paginator.page(paginator.num_pages)], default=str)
+	else:
+		_menus = json.dumps([], default=str)
+
+	return HttpResponse(_menus, content_type='application/json')
 
 
 @csrf_exempt
@@ -779,4 +944,12 @@ def api_get_placement_menu_orders(request):
 	placement = Placement.objects.filter(token=token).first()
 	orders = Order.objects.filter(bill__pk=placement.bill.pk, menu__name__icontains=query) if placement.bill != None else []
 	return HttpResponse(json.dumps([order.to_json for order in orders], default=str), content_type='application/json')
+
+
+@authenticate_user(xhr='api')
+def api_get_placement_bill(request):
+	token = request.GET.get('token')
+	placement = Placement.objects.filter(token=token).first()
+	bill = Bill.objects.filter(placement_id=placement.pk).first()
+	
 	

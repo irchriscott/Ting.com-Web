@@ -755,13 +755,19 @@ def index(request):
         rand_branches = branches.random(5)
 
         promotions = Promotion.objects.filter(branch__country=user.country, branch__town=user.town, is_on=True)[:20]
-        today_promos = random.sample(list(filter(lambda promo: promo.is_on_today == True, promotions))[:10], k=4)
+        try:
+            today_promos = random.sample(list(filter(lambda promo: promo.is_on_today == True, promotions))[:10], k=4)
+        except Exception:
+            today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
     else:
         branches = Branch.objects.all().order_by('-created_at')[:20]
         rand_branches = branches.random(5)
 
         promotions = Promotion.objects.filter(is_on=True)[:5]
-        today_promos = random.sample(list(filter(lambda promo: promo.is_on_today == True, promotions))[:10], k=4)
+        try:
+            today_promos = random.sample(list(filter(lambda promo: promo.is_on_today == True, promotions))[:10], k=4)
+        except Exception:
+            today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
 
     menus_all = Menu.objects.all()
     menus = sorted(sorted(list(filter(lambda menu: menu.review_average >= 4, menus_all)), key=lambda menu: menu.reviews_count, reverse=True), key=lambda menu: menu.review_average, reverse=True)[:6]
@@ -791,7 +797,10 @@ def discovery(request):
         rand_branches = branches.random(5)
 
         promotions = Promotion.objects.filter(branch__country=user.country, branch__town=user.town, is_on=True)[:20]
-        today_promos = random.sample(list(filter(lambda promo: promo.is_on_today == True, promotions))[:10], k=4)
+        try:
+            today_promos = random.sample(list(filter(lambda promo: promo.is_on_today == True, promotions))[:10], k=4)
+        except Exception:
+            today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
 
         menus_all = Menu.objects.filter(branch__country=user.country, branch__town=user.town)
     else:
@@ -799,7 +808,10 @@ def discovery(request):
         rand_branches = branches.random(5)
 
         promotions = Promotion.objects.filter(is_on=True)[:5]
-        today_promos = random.sample(list(filter(lambda promo: promo.is_on_today == True, promotions))[:10], k=4)
+        try:
+            today_promos = random.sample(list(filter(lambda promo: promo.is_on_today == True, promotions))[:10], k=4)
+        except Exception:
+            today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))[:10]
 
         menus_all = Menu.objects.all()
 
@@ -826,6 +838,7 @@ def discover_cuisine_restaurants(request, cuisine, slug):
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
+            'address_types': utils.USER_ADDRESS_TYPE,
             'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
             'cuisine': cuisine,
             'branches': branches,
@@ -842,6 +855,7 @@ def discover_cuisine_menus(request, cuisine, slug):
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
+            'address_types': utils.USER_ADDRESS_TYPE,
             'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
             'cuisine': cuisine,
             'menus': sorted(set(menus), key=lambda menu: menu.to_json['menu']['reviews']['average'], reverse=True),
@@ -864,6 +878,7 @@ def discover_today_promotions(request):
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
+            'address_types': utils.USER_ADDRESS_TYPE,
             'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
             'promotions_json': json.dumps([promo.to_json for promo in today_promos], default=str),
             'promotions': today_promos,

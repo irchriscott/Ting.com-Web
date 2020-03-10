@@ -149,3 +149,5 @@ STATICFILES_DIRS = (
 MEDIA_URL = '/tinguploads/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'tinguploads')
+
+PAGINATOR_ITEM_COUNT = 3
