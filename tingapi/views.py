@@ -254,7 +254,7 @@ def api_restaurant_top_menus(request, branch):
 
 def api_get_restaurant(request, branch):
 	branch = Branch.objects.get(pk=branch)
-	return HttpResponse(json.dumps(branch.to_json, default=str), content_type='application/json')
+	return HttpResponse(json.dumps(branch.to_json_s, default=str), content_type='application/json')
 
 
 def api_load_restaurant_promotions(request, branch):
