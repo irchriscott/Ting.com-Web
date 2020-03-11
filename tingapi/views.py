@@ -262,6 +262,9 @@ def api_load_restaurant_promotions(request, branch):
 	page = request.GET.get('page', 1)
 	paginator = Paginator(promotions, settings.PAGINATOR_ITEM_COUNT)
 
+	if page != None:
+		return HttpResponse(json.dumps([promotion.to_json for promotion in promotions], default=str), content_type='application/json')
+
 	if paginator.num_pages >= int(page):
 		try:
 			_promotions = json.dumps([promotion.to_json for promotion in paginator.page(page)], default=str)
@@ -302,6 +305,9 @@ def api_load_restaurant_foods(request, branch):
 	page = request.GET.get('page', 1)
 	paginator = Paginator(foods, settings.PAGINATOR_ITEM_COUNT)
 
+	if page != None:
+		return HttpResponse(json.dumps([food.to_json for food in foods], default=str), content_type='application/json')
+
 	if paginator.num_pages >= int(page):
 		try:
 			_foods = json.dumps([food.to_json for food in paginator.page(page)], default=str)
@@ -320,6 +326,9 @@ def api_load_restaurant_drinks(request, branch):
 	page = request.GET.get('page', 1)
 	paginator = Paginator(drinks, settings.PAGINATOR_ITEM_COUNT)
 
+	if page != None:
+		return HttpResponse(json.dumps([drink.to_json for drink in drinks], default=str), content_type='application/json')
+
 	if paginator.num_pages >= int(page):
 		try:
 			_drinks = json.dumps([drink.to_json for drink in paginator.page(page)], default=str)
@@ -337,6 +346,9 @@ def api_load_restaurant_dishes(request, branch):
 	dishes = Menu.objects.filter(branch__pk=branch, menu_type=3).order_by('-created_at')
 	page = request.GET.get('page', 1)
 	paginator = Paginator(dishes, settings.PAGINATOR_ITEM_COUNT)
+
+	if page != None:
+		return HttpResponse(json.dumps([dish.to_json for dish in dishes], default=str), content_type='application/json')
 
 	if paginator.num_pages >= int(page):
 		try:
