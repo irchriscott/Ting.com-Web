@@ -95,4 +95,8 @@ urlpatterns = [
 	url(r'usr/po/placement/orders/all/$', views.api_get_placement_menu_orders),
 	url(r'usr/po/placement/order/(?P<order>\d+)/re/place/$', views.api_re_place_order_menu),
 	url(r'usr/po/placement/order/(?P<order>\d+)/cancel/$', views.api_cancel_order_menu),
+	url(r'usr/po/placement/bill/$', views.api_get_placement_bill),
+	url(r'usr/po/placement/bill/tips/update/$', views.api_placement_bill_update_tips),
+	url(r'usr/po/placement/bill/complete/$', views.api_placement_bill_conplete),
+	url(r'usr/po/placement/bill/request/$', views.api_placement_bill_request),
 ]

@@ -20,7 +20,7 @@ from tingweb.mailer import SendUserResetPasswordMail, SendUserUpdateEmailMail, S
 from tingweb.models import (
                                 Restaurant, User, UserResetPassword, UserAddress, Branch, UserRestaurant, Menu,
                                 MenuLike, MenuReview, Promotion, PromotionInterest, RestaurantReview, Booking,
-                                Food, Drink, Dish, RestaurantTable, Placement, Order, Bill
+                                Food, Drink, Dish, RestaurantTable, Placement, Order, Bill, BillExtra
                             )
 from tingweb.forms import (
                                 GoogleSignUpForm, UserLocationForm, EmailSignUpForm, UserImageForm, MenuReviewForm,
@@ -36,6 +36,7 @@ from background_task import background
 import tingweb.views as web
 import ting.utils as utils
 import random
+import decimal
 import json
 import imgkit
 import os
@@ -772,7 +773,8 @@ def api_place_order_menu(request):
 					branch=Branch.objects.get(pk=placement.branch.pk),
 					number=utils.int_to_string(bill_number),
 					token=get_random_string(200),
-					placement_id=placement.pk
+					placement_id=placement.pk,
+					currency=menu.currency
 				)
 			new_bill.save()
 
@@ -780,6 +782,9 @@ def api_place_order_menu(request):
 			placement.save()
 
 		placement = Placement.objects.filter(token=placement_token).first()
+
+		if placement.bill.is_complete:
+			return HttpJsonResponse(ResponseObject('error', 'Bill Is Completed. Cannot Procceed With Order', 405))
 
 		if menu.menu_type == 1:
 			food = Food.objects.get(pk=menu.menu_id)
@@ -880,7 +885,7 @@ def api_cancel_order_menu(request, order):
 		order = Order.objects.get(pk=order)
 		placement = Placement.objects.get(pk=order.bill.placement_id)
 
-		if placement.user.pk != user.pk:
+		if placement.user.pk != user.pk: 
 			return HttpJsonResponse(ResponseObject('error', 'Not The Owner !!!', 403))
 		
 		order.delete()
@@ -953,9 +958,14 @@ def notify_waiter_order_updated(placement):
 def api_get_placement_menu_orders(request):
 	token = request.GET.get('token')
 	query = request.GET.get('query')
+
+	user = User.objects.get(pk=request.session['user'])
 	placement = Placement.objects.filter(token=token).first()
 	orders = Order.objects.filter(bill__pk=placement.bill.pk, menu__name__icontains=query) if placement.bill != None else []
 	
+	if placement.user.pk != user.pk: 
+		return HttpJsonResponse(ResponseObject('error', 'Not The Owner !!!', 403))
+
 	page = request.GET.get('page', 1)
 	paginator = Paginator(orders, settings.PAGINATOR_ITEM_COUNT)
 
@@ -977,5 +987,158 @@ def api_get_placement_bill(request):
 	token = request.GET.get('token')
 	placement = Placement.objects.filter(token=token).first()
 	bill = Bill.objects.filter(placement_id=placement.pk).first()
+
+	if bill != None:
+
+		orders = Order.objects.filter(bill__pk=bill.pk)
+		extras = BillExtra.objects.filter(bill__pk=bill.pk)
+		user = User.objects.get(pk=request.session['user'])
+
+		if placement.user.pk != user.pk: 
+			return HttpJsonResponse(ResponseObject('error', 'Not The Owner !!!', 403))
+		
+		total_amount = 0
+		for order in orders: 
+			total_amount = total_amount + (order.price * order.quantity) if order.is_delivered == True else total_amount + 0
+
+		extras_total = 0
+		for extra in extras:
+			extras_total = extras_total + (extra.quantity * extra.price)
+
+		bill.amount = total_amount
+		bill.extras_total = extras_total
+		bill.total = total_amount + extras_total + bill.tips - ((total_amount * bill.discount) / 100)
+		bill.save()
+
+		return HttpResponse(json.dumps(bill.to_json, default=str), content_type='application/json')
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'Bill Not Found !!!', 404))
+
+@csrf_exempt
+@authenticate_user(xhr='api')
+def api_placement_bill_update_tips(request):
+	if request.method == 'POST':
+		token = request.POST.get('token')
+		tips = request.POST.get('tips')
+
+		placement = Placement.objects.filter(token=token).first()
+		bill = Bill.objects.filter(placement_id=placement.pk).first()
+
+		user = User.objects.get(pk=request.session['user'])
+
+		if placement.user.pk != user.pk: 
+			return HttpJsonResponse(ResponseObject('error', 'Not The Owner !!!', 403))
+
+		if bill != None:
+
+			extras_total = 0
+			extras = BillExtra.objects.filter(bill__pk=bill.pk)
+
+			for extra in extras:
+				extras_total = extras_total + (extra.quantity * extra.price)
+
+			if bill.is_paid or bill.is_requested: 
+				return HttpJsonResponse(ResponseObject('error', 'Cannot Procceed. Bill Paid Or Requested !!!', 405))
+
+			bill.tips = tips
+			bill.extras_total = extras_total
+			bill.total = bill.amount + extras_total + decimal.Decimal(tips) - ((bill.amount * bill.discount) / 100)
+			bill.save()
+
+			return HttpResponse(json.dumps(bill.to_json, default=str), content_type='application/json')
+		else:
+			return HttpJsonResponse(ResponseObject('error', 'Bill Not Found !!!', 404))
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
+
+
+@authenticate_user(xhr='api')
+def api_placement_bill_conplete(request):
+	token = request.GET.get('token')
+	placement = Placement.objects.filter(token=token).first()
+	bill = Bill.objects.filter(placement_id=placement.pk).first()
+
+	user = User.objects.get(pk=request.session['user'])
+
+	if placement.user.pk != user.pk: 
+		return HttpJsonResponse(ResponseObject('error', 'Not The Owner !!!', 403))
+
+	if bill != None:
+
+		extras_total = 0
+		extras = BillExtra.objects.filter(bill__pk=bill.pk)
+
+		for extra in extras:
+			extras_total = extras_total + (extra.quantity * extra.price)
+
+		bill.extras_total = extras_total
+		bill.total = bill.amount + extras_total + bill.tips - ((bill.amount * bill.discount) / 100)
+		bill.is_complete = True
+		bill.save()
+
+		return HttpResponse(json.dumps(bill.to_json, default=str), content_type='application/json')
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'Bill Not Found !!!', 404))
+
+
+@authenticate_user(xhr='api')
+def api_placement_bill_request(request):
+	token = request.GET.get('token')
+	placement = Placement.objects.filter(token=token).first()
+	bill = Bill.objects.filter(placement_id=placement.pk).first()
+
+	user = User.objects.get(pk=request.session['user'])
+
+	if placement.user.pk != user.pk: 
+		return HttpJsonResponse(ResponseObject('error', 'Not The Owner !!!', 403))
+
+	if bill != None:
+
+		extras_total = 0
+		extras = BillExtra.objects.filter(bill__pk=bill.pk)
+
+		for extra in extras:
+			extras_total = extras_total + (extra.quantity * extra.price)
+
+		bill.extras_total = extras_total
+		bill.total = bill.amount + extras_total + bill.tips - ((bill.amount * bill.discount) / 100)
+		bill.is_requested = True
+		bill.is_complete = True
+		bill.save()
+
+		notify_waiter_bill_requested.now(placement.pk)
+
+		return HttpResponse(json.dumps(bill.to_json, default=str), content_type='application/json')
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'Bill Not Found !!!', 404))
+
+
+@background(schedule=60)
+def notify_waiter_bill_requested(placement):
+	placement = Placement.objects.get(pk=placement)
+	branch_message = {
+		'status': 200,
+		'type': 'request_bill_request',
+		'uuid': pnconfig.uuid,
+		'sender': placement.user.socket_data,
+		'receiver': placement.branch.socket_data,
+		'message': None,
+		'args': None,
+		'data': {'token': placement.token, 'user': placement.user.socket_data, 'table': placement.table.number }
+	}
+	pubnub.publish().channel(placement.branch.channel).message(branch_message).pn_async(ting_publish_callback)
+
+	if placement.waiter != None:
+		waiter_message = {
+			'status': 200,
+			'type': 'request_w_bill_request',
+			'uuid': pnconfig.uuid,
+			'sender': placement.user.socket_data,
+			'receiver': placement.waiter.socket_data,
+			'message': None,
+			'args': None,
+			'data': {'token': placement.token, 'user': placement.user.socket_data, 'table': placement.table.number }
+		}
+		pubnub.publish().channel(placement.waiter.channel).message(waiter_message).pn_async(ting_publish_callback)
 	
 	

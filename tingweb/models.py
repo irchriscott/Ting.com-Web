@@ -4188,6 +4188,9 @@ class Bill(models.Model):
 	placement_id = models.IntegerField(null=True, blank=True)
 	amount = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
 	discount = models.DecimalField(max_digits=18, decimal_places=2, default=0.00)
+	tips = models.DecimalField(max_digits=18, decimal_places=2, default=0.00)
+	extras_total = models.DecimalField(max_digits=18, decimal_places=2, default=0.00)
+	total = models.DecimalField(max_digits=18, decimal_places=2, default=0.00)
 	currency = models.CharField(max_length=100, null=True, blank=True)
 	is_requested = models.BooleanField(default=False)
 	is_paid = models.BooleanField(default=False)
@@ -4215,6 +4218,10 @@ class Bill(models.Model):
 		return Placement.objects.get(pk=self.placement_id)
 
 	@property
+	def extras(self):
+		return BillExtra.objects.filter(bill__pk=self.pk)
+
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
@@ -4222,6 +4229,9 @@ class Bill(models.Model):
 			'token': self.token,
 			'amount': self.amount,
 			'discount': self.discount,
+			'tips': self.tips,
+			'extrasTotal': self.extras_total,
+			'total': self.total,
 			'currency': self.currency,
 			'isRequested': self.is_requested,
 			'isPaid': self.is_paid,
@@ -4229,8 +4239,9 @@ class Bill(models.Model):
 			'paidBy': self.paid_by,
 			'orders': {
 				'count': self.orders_count,
-				'orders': [order.to_json for order in self.orders]
+				'orders': [order.to_json_s for order in self.orders]
 			},
+			'extras': [extra.to_json for extra in self.extras],
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
@@ -4243,6 +4254,9 @@ class Bill(models.Model):
 			'token': self.token,
 			'amount': self.amount,
 			'discount': self.discount,
+			'tips': self.tips,
+			'extrasTotal': self.extras_total,
+			'total': self.total,
 			'currency': self.currency,
 			'isRequested': self.is_requested,
 			'isPaid': self.is_paid,
@@ -4251,9 +4265,39 @@ class Bill(models.Model):
 			'orders': {
 				'count': self.orders_count
 			},
+			'extras': [extra.to_json for extra in self.extras],
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
+
+
+
+class BillExtra(models.Model):
+	bill = models.ForeignKey(Bill)
+	name = models.CharField(max_length=200, null=False, blank=False)
+	price = models.DecimalField(max_digits=18, decimal_places=2, default=0.00)
+	quantity = models.IntegerField(null=False, blank=False, default=1)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now_add=True)
+
+	def __str__(self):
+		return self.name
+
+	def __unicode__(self):
+		return self.name
+
+	@property
+	def to_json(self):
+		return {
+			'id': self.pk,
+			'name': self.name,
+			'price': self.price,
+			'quantity': self.quantity,
+			'total': self.price * self.quantity,
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+	
 
 
 class Placement(models.Model):
@@ -4335,4 +4379,24 @@ class Order(models.Model):
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
+
+	@property
+	def to_json_s(self):
+		return {
+			'id': self.pk,
+			'menu': self.menu.name,
+			'token': self.token,
+			'quantity': self.quantity,
+			'price': self.price,
+			'currency': self.currency,
+			'conditions': self.conditions,
+			'isAccepted': self.is_delivered,
+			'isDeclined': self.is_declined,
+			'reasons': self.reasons,
+			'hasPromotion': self.has_promotion,
+			'promotion': self.promotion.string_data_json if self.promotion != None else None,
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+	
 

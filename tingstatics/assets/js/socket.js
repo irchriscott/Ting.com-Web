@@ -203,6 +203,52 @@ $(document).ready(function() {
                     loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements);
                     loadAjaxURL("ting-data-placements-container", window.__TING__URL__Load__Placements);
                     break;
+                case 'request_bill_request':
+                    iziToast.show({
+                        id: message.uuid, 
+                        title: 'Bill Requested On Table ' + message.data.table,
+                        titleSize: '16px',
+                        message: '<p style="color:#FFFFFF; margin-top:5px;"> ' + message.sender.name + ' has requested his bill for him to further finalize his placement.</p>',
+                        messageSize: '13px',
+                        theme: 'dark',
+                        image: message.sender.image,
+                        imageWidth: 120,
+                        maxWidth: 450,
+                        position: 'topRight',
+                        timeout: 30000,
+                        progressBar: false,
+                        onOpening: function () {},
+                        onOpened: function () {},
+                        onClosing: function () {},
+                        onClosed: function () {}
+                    });
+                    loadAjaxURL("ting-sides-pannel-content-orders", window.__TING__URL__Load__Dash__Orders);
+                    loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements);
+                    break;
+                case 'request_w_bill_request':
+                    if (!admin.permissions.includes('can_complete_bill')){
+                        iziToast.show({
+                            id: message.uuid, 
+                            title: 'Bill Requested On Table ' + message.data.table,
+                            titleSize: '16px',
+                            message: '<p style="color:#FFFFFF; margin-top:5px;"> ' + message.sender.name + ' has requested his bill for him to further finalize his placement.</p>',
+                            messageSize: '13px',
+                            theme: 'dark',
+                            image: message.sendere.image,
+                            imageWidth: 120,
+                            maxWidth: 450,
+                            position: 'topRight',
+                            timeout: 30000,
+                            progressBar: false,
+                            onOpening: function () {},
+                            onOpened: function () {},
+                            onClosing: function () {},
+                            onClosed: function () {}
+                        });
+                        loadAjaxURL("ting-sides-pannel-content-orders", window.__TING__URL__Load__Dash__Orders);
+                        loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements);
+                    }
+                    break;
                 default:
                     break;
             }
