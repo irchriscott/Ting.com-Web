@@ -18,6 +18,8 @@
         window.__TING__URL__Get__Placements = decodeURI("{% url 'ting_wb_adm_placements' %}");
         window.__TING__URL__Load__Dash__Placements = decodeURI("{% url 'ting_wb_adm_load_placements_dashboard' %}");
         window.__TING__URL__Load__Dash__Orders = decodeURI("{% url 'ting_wb_adm_load_orders_dashboard' %}");
+        window.__TING__URL__Load__Admin__Messages = decodeURI("{% url 'ting_wb_adm_load_messages' %}");
+        window.__TING__URL__Load__Admin__Messages__Count = decodeURI("{% url 'ting_wb_adm_get_messages_count' %}");
         $(document).ready(function(){
             setTimeout(function(){
                 if($("#ting-lat").val() != "" && $("#ting-lat").val() != null){
@@ -29,6 +31,38 @@
     <style type="text/css">
         body { width: 100vw; height: 100vh; overflow: hidden;  }
     </style>
+</div>
+<div class="ui modal ting-load-placement" data-modal="ting-load-placement">
+    <div class="header">
+        Placement
+    </div>
+    <div class="content scrolling">
+        <div class="ting-data-content"></div>
+        <div class="ui right ting-loader" style="margin: auto; text-align: center;">
+            <img src="{% static 'imgs/loading.gif' %}">
+        </div>
+    </div>
+    <div class="actions">
+        <div class="ui red deny button left">
+            Close
+        </div>
+    </div>
+</div>
+<div class="ui small modal" data-modal="ting-load-order">
+    <div class="header">
+        Order
+    </div>
+    <div class="content scrolling">
+        <div class="ting-data-content"></div>
+        <div class="ui right ting-loader" style="margin: auto; text-align: center;">
+            <img src="{% static 'imgs/loading.gif' %}">
+        </div>
+    </div>
+    <div class="actions">
+        <div class="ui red deny button left">
+            Close
+        </div>
+    </div>
 </div>
 <div class="ui visible sidebar inverted vertical menu">
     <div class="ting-menu-logo" style="margin-top:40px;">

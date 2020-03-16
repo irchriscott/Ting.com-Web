@@ -1,0 +1,211 @@
+{% load staticfiles %}
+{% load ting_tags %}
+{% load tz %}
+<div class="content">
+    <div class="image">
+        <div class="ui grid">
+            <div class="row">
+                <div class="six wide column" style="padding-left: 2rem;">
+                    <img src="{{placement.user.image.url}}" style="width: 100%;">
+                </div>
+                                
+                <div class="ten wide column">
+                    <div class="ting-restaurant-about ting-no-p-top">
+                      	<h3>ABOUT</h3>
+                      	<div class="ting-restaurant-about-data" style="margin-top: 14px;">
+                          	<p><i class="icon user"></i>{{placement.user.name}}</p>
+                          	<p><i class="fas fa-chair"></i>{{placement.table.number}}</p>
+                          	<p><i class="icon users"></i>{{placement.people}}</p>
+                          	<p><i class="icon clipboard list"></i>{% if placement.bill != None %}{{placement.bill.number}}{% else %} - {% endif %}</p>
+                          	<p><i class="icon user outline"></i>{% if placement.waiter != None %}{{placement.waiter.name}}{% else %} - {% endif %}</p>
+                          	<p><i class="icon clock"></i>{{placement.created_at|localtime}}</p>
+                          	{% if admin.pk|has_p:"can_done_placement" == True and placement.is_done == False %}
+                          		<div class="ui small {% if placement.is_done == False %}blue{% else %}green{% endif %} labeled icon button {% if placement.is_done == False %}ting-open-ajax-modal{% endif %}" ting-modal-type="confirm-ajax" ting-modal-data='{ "title" : "End Placement", "message" : "Do you really want to end this placement ?", "load": true }' ting-hide-content="" ting-data-url="{% url 'ting_wb_adm_done_placement' placement.token %}" ting-modal-target="ting-end-placement-{{placement.id}}">
+	                            <i class="check icon"></i> {% if placement.is_done == False %}End{% else %}Ended{% endif %}
+		                        </div>
+		                        <div class="ui modal mini" data-modal="ting-end-placement-{{placement.id}}">
+		                            <div class="header">
+		                                End Placement
+		                            </div>
+		                            <div class="content">
+		                                <p>Do you really want to end this placement ?</p>
+		                            </div>
+		                            <div class="actions">
+		                                <div class="ui positive button right labeled icon">
+		                                    Yes
+		                                    <i class="icon check"></i>
+		                                </div>
+		                                <div class="ui red deny button right labeled icon">
+		                                    No
+		                                    <i class="icon times"></i>
+		                                </div>
+		                            </div>
+		                        </div>
+		                        <script type="text/javascript">$(".ting-open-ajax-modal").openModal();</script>
+                          	{% endif %}
+                      </div>    
+                  </div>         
+                </div>            
+            </div>
+        </div>
+        <div class="ting-placement-bill">
+        	{% if admin.pk|has_p:"can_done_placement" == True and placement.is_done == False %}{% else %}<br>{% endif %}
+        	<h3>Orders</h3>
+        	<table class="ui single line table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Qt.</th>
+                        <th>Total</th>
+                        <th>Has P.</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if orders.count > 0 %}
+                        {% for order in orders %}
+                            <tr>
+                                <td><div class="ui ribbon label">{{order.pk}}</div></td>
+                                <td><img src="{{order.menu.pk|menu_image}}" style="width: 40px; height: 40px;"></td>
+                                <td>{{order.menu.pk|menu_name}}</td>
+                                <td>{{order.currency}} {{order.price}}</td>
+                                <td>{{order.quantity}}</td>
+                                <td>{{order.currency}} {{order.total}}</td>
+                                <td>{{order.has_promotion|yesno}}</td>
+                                <td></td>
+                            </tr>         
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <th colspan="9">
+                                <div class="ting-empty-data"><i class="icon clipboard list"></i><p>No Order To Show</p></div>
+                            </th>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+            <br>
+            <h3>Extras</h3>
+
+        	<table class="ui single line table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Qt.</th>
+                        <th>Total</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if extras.count > 0 %}
+                        {% for extra in extras %}
+                            <tr>
+                                <td><div class="ui ribbon label">{{extra.pk}}</div></td>
+                                <td>{{extra.name}}</td>
+                                <td>{{placement.bill.currency}} {{extra.price}}</td>
+                                <td>{{extra.quantity}}</td>
+                                <td>{{placement.bill.currency}} {{extra.total}}</td>
+                                <td></td>
+                            </tr>         
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <th colspan="9">
+                                <div class="ting-empty-data"><i class="icon clipboard list" style="font-size: 40px;"></i><p style="font-size: 18px;">No Extras To Show</p></div>
+                            </th>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+            <button class="ui labeled blue icon button" id="ting-admin-open-add-bill-extra"><i class="add icon"></i>ADD EXTRA</button>
+            <div class="ui modal tiny" id="ting-admin-add-bill-extra">
+			    <div class="header">
+			        Add Extra
+			    </div>
+			    <div class="content">
+			        <div class="ting-search-place">
+			            <form class="ui form" action="{% url 'ting_wb_adm_add_bill_extra' placement.pk %}" method="POST" id="ting-admin-add-bill-extra-form">
+			                {% csrf_token %}
+			                <div class="field">
+			                    <label>Enter Extra Name :</label>
+			                    <input type="text" name="name" placeholder="Extra Name" required autocomplete="off">
+			                </div>
+			                <div class="field">
+			                	<div class="two fields">
+			                		<div class="field">
+					                    <label>Enter Extra Single Price :</label>
+					                    <input type="number" name="price" placeholder="Extra Price">
+					                </div>
+					                <div class="field">
+					                    <label>Enter Quantity :</label>
+					                    <input type="number" name="quantity" placeholder="Extra Quantity">
+					                </div>
+			                	</div>
+			                </div>
+			                <div class="ting-action-modal" style="margin-top: 0rem">
+			                    <div class="actions">
+			                        <div class="ui red deny button">
+			                            Cancel
+			                        </div>
+			                    </div>
+			                    <button type="submit" class="ui positive right labeled icon button">
+			                        Save
+			                        <i class="checkmark icon"></i>
+			                    </button>
+			                    <div class="ui right ting-loader ting-form-loader">
+			                        <img src="{% static 'imgs/loading.gif' %}">
+			                    </div>
+			                </div>
+			            </form>
+			        </div>
+			    </div>
+			</div>
+			<script type="text/javascript">
+				$("#ting-admin-open-add-bill-extra").click(function(){
+					$("#ting-admin-add-bill-extra").modal({
+						closable: false,
+						onApprove: function () {},
+						onDeny: function(callback){
+                        	callback = $.isFunction(callback) ? callback : function () { };
+							$(".ting-load-placement").modal('show');
+						},
+						onHidden: function(callback){
+                        	callback = $.isFunction(callback) ? callback : function () { };
+							$(".ting-load-placement").modal('show');
+						}
+					}).modal('show')
+				});
+
+				$("#ting-admin-add-bill-extra-form").submit(function(e){
+					e.preventDefault();
+					
+					$(this).find("button").attr("disabled", "disabled");
+					$(this).find(".ting-form-loader").show();
+					
+					var formData = new FormData($(this)[0]);
+					var url = $(this).attr("action");
+					var method = $(this).attr("method");
+					console.log(formData);
+
+					$.ajax({
+						type: method,
+						url: url,
+						data: formData,
+						processData: false,
+                		contentType: false,
+                		success: function(response) {
+                			showSuccessMessage(response.type, response.message);
+                			$(".ting-load-placement").modal('show');
+                		},
+                		error: function (_, t, e) { showErrorMessage(t, e); }
+					});
+				});
+			</script>
+        </div>
+    </div>
+</div>

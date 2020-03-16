@@ -20,7 +20,7 @@ from tingweb.mailer import SendUserResetPasswordMail, SendUserUpdateEmailMail, S
 from tingweb.models import (
                                 Restaurant, User, UserResetPassword, UserAddress, Branch, UserRestaurant, Menu,
                                 MenuLike, MenuReview, Promotion, PromotionInterest, RestaurantReview, Booking,
-                                Food, Drink, Dish, RestaurantTable, Placement, Order, Bill, BillExtra
+                                Food, Drink, Dish, RestaurantTable, Placement, Order, Bill, BillExtra, PlacementMessage
                             )
 from tingweb.forms import (
                                 GoogleSignUpForm, UserLocationForm, EmailSignUpForm, UserImageForm, MenuReviewForm,
@@ -1142,3 +1142,51 @@ def notify_waiter_bill_requested(placement):
 		pubnub.publish().channel(placement.waiter.channel).message(waiter_message).pn_async(ting_publish_callback)
 	
 	
+
+
+@csrf_exempt
+@authenticate_user(xhr='api')
+def api_send_waiter_request(request):
+	if request.method == 'POST':
+		token = request.POST.get('token')
+		placement = Placement.objects.filter(token=token).first()
+		message_text = request.POST.get('message')
+
+		message = PlacementMessage(
+				placement=Placement.objects.get(pk=placement.pk),
+				message=message_text
+			)
+		message.save()
+		notify_waiter_request_message.now(placement.pk, message_text)
+		return HttpJsonResponse(ResponseObject('success', 'Requested Sent Successfully !!!', 200))
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
+
+
+@background(schedule=60)
+def notify_waiter_request_message(placement, message):
+	placement = Placement.objects.get(pk=placement)
+	if placement.waiter != None:
+		waiter_message = {
+			'status': 200,
+			'type': 'response_w_request_message',
+			'uuid': pnconfig.uuid,
+			'sender': placement.user.socket_data,
+			'receiver': placement.waiter.socket_data,
+			'message': message,
+			'args': None,
+			'data': {'token': placement.token, 'user': placement.user.socket_data, 'table': placement.table.number }
+		}
+		pubnub.publish().channel(placement.waiter.channel).message(waiter_message).pn_async(ting_publish_callback)
+	else:
+		branch_message = {
+			'status': 200,
+			'type': 'response_w_request_message',
+			'uuid': pnconfig.uuid,
+			'sender': placement.user.socket_data,
+			'receiver': placement.branch.socket_data,
+			'message': message,
+			'args': None,
+			'data': {'token': placement.token, 'user': placement.user.socket_data, 'table': placement.table.number }
+		}
+		pubnub.publish().channel(placement.branch.channel).message(branch_message).pn_async(ting_publish_callback)

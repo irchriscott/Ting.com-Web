@@ -10,12 +10,13 @@ from django.urls import reverse
 from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Q, Count, Sum
+from django.db.models.query import QuerySet
 from ting.responses import ResponseObject, HttpJsonResponse
 from tingweb.models import (
 							Restaurant, Administrator, AdminPermission, RestaurantLicenceKey, RestaurantConfig,
 							Menu, Food, Drink, Dish, FoodCategory, FoodImage, AdministratorResetPassword, DrinkImage,
 							DishImage, DishFood, RestaurantTable, Branch, Promotion, User, Booking, UserNotification,
-							CategoryRestaurant, Placement, Order
+							CategoryRestaurant, Placement, Order, PlacementMessage, BillExtra, Bill
 						)
 from tingweb.backend import AdminAuthentication
 from tingweb.mailer import (
@@ -3089,12 +3090,99 @@ def load_placements(request):
 def load_placements_dashboard(request):
 	template = 'web/admin/ajax/load_placements_dashboard.html'
 	admin = Administrator.objects.get(pk=request.session['admin'])
-	if admin.admin_type == "4":
+	if admin.admin_type == '4':
 		placements = Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, waiter=admin.pk, is_done=False).order_by('-created_at')
 	else:
 		placements = Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, is_done=False).order_by('-created_at')
 	
 	return render(request, template, {'placements': placements, 'admin': admin})
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_placements')
+def load_user_placement(request, placement):
+	template = 'web/admin/ajax/load_user_placement.html'
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	placement = Placement.objects.get(pk=placement)
+	orders = Order.objects.filter(bill__pk=placement.bill.pk) if placement.bill != None else QuerySet([])
+	extras = BillExtra.objects.filter(bill__placement_id=placement.pk)
+	bill = Bill.objects.filter(placement_id=placement.pk).first()
+
+	if bill != None:
+
+		total_amount = 0
+		for order in orders: 
+			total_amount = total_amount + (order.price * order.quantity) if order.is_delivered == True else total_amount + 0
+
+		extras_total = 0
+		for extra in extras:
+			extras_total = extras_total + (extra.quantity * extra.price)
+
+		bill.amount = total_amount
+		bill.extras_total = extras_total
+		bill.total = total_amount + extras_total + bill.tips - ((total_amount * bill.discount) / 100)
+		bill.save()
+
+	if placement.branch.pk != admin.branch.pk:
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant ', 405))
+
+	if placement.waiter != None:
+		if placement.waiter.pk != admin.pk != None and admin.admin_type == '4':
+			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Admin ', 405))
+
+	return render(request, template, {'admin': admin, 'placement': placement, 'orders': orders, 'extras': extras})
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_placements')
+def add_bill_extra(request, placement):
+	if request.method == 'POST':
+		placement = Placement.objects.get(pk=placement)
+		admin = Administrator.objects.get(pk=request.session['admin'])
+		price = request.POST.get('price', 0)
+		quantity = request.POST.get('quantity', 1)
+		name = request.POST.get('name', 'Extra')
+
+		if placement.branch.pk != admin.branch.pk:
+			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant ', 405))
+
+		if placement.waiter != None:
+			if placement.waiter.pk != admin.pk != None and admin.admin_type == '4':
+				return HttpJsonResponse(ResponseObject('error', 'Data Not For This Admin ', 405))
+
+		if placement.bill == None:
+			
+			today = timezone.datetime.today()
+			last_bill = Bill.objects.filter(branch__pk=placement.branch.pk, restaurant__pk=placement.restaurant.pk, created_at__date=today.date()).last()
+			bill_number = int(last_bill.number) + 1 if last_bill != None else 1
+
+			new_bill = Bill(
+					restaurant=Restaurant.objects.get(pk=placement.restaurant.pk),
+					branch=Branch.objects.get(pk=placement.branch.pk),
+					number=utils.int_to_string(bill_number),
+					token=get_random_string(200),
+					placement_id=placement.pk,
+					currency=admin.restaurant.config.currency
+				)
+			new_bill.save()
+
+			placement.bill = Bill.objects.get(pk=new_bill.pk)
+			placement.save()
+
+		placement = Placement.objects.get(pk=placement.pk)
+
+		bill_extra = BillExtra(
+				bill=Bill.objects.get(pk=placement.bill.pk),
+				price=price,
+				quantity=quantity,
+				name=name
+			)
+		bill_extra.save()
+		return HttpJsonResponse(ResponseObject('success', 'Bill Extra Saved !!!', 200))
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
 
 
 @check_admin_login
@@ -3269,9 +3357,23 @@ def load_orders_dashboard(request):
 	admin = Administrator.objects.get(pk=request.session['admin'])
 	orders = Order.objects.filter(menu__branch__pk=admin.branch.pk, menu__restaurant__pk=admin.restaurant.pk).filter(Q(is_delivered=False) & Q(is_declined=False)).order_by('updated_at')
 	return render(request, template, {
-			'orders': orders if admin.admin_type != "4" else list(filter(lambda od: od.bill.placement.waiter.pk == admin.pk, list(filter(lambda od: od.bill.placement.waiter != None, orders)))), 
+			'orders': orders if admin.admin_type != '4' else list(filter(lambda od: od.bill.placement.waiter.pk == admin.pk, list(filter(lambda od: od.bill.placement.waiter != None, orders)))), 
 			'admin': admin
 		})
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission=['can_view_orders', 'can_receive_orders'])
+def load_user_placement_order(request, order):
+	template = 'web/admin/ajax/load_user_placement_order.html'
+	admin =  Administrator.objects.get(pk=request.session['pk'])
+	order = Order.objects.get(pk=order)
+
+	if order.menu.branch.pk != admin.branch.pk:
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant ', 405))
+
+	return render(request, template, {'admin': admin, 'order': order})
 
 
 @check_admin_login
@@ -3291,7 +3393,7 @@ def accept_user_order(request, order):
 	order.is_delivered = True
 	order.save()
 
-	notify_waiter_order_updated(placement.pk)
+	notify_waiter_order_updated.now(placement.pk)
 	notify_user_order_accepted.now(placement.pk, order.pk)
 	messages.success(request, 'Order Accepted Successfully !!!')
 	return HttpJsonResponse(ResponseObject('success', 'Order Accepted Successfully !!!', 200, 
@@ -3318,7 +3420,7 @@ def decline_user_order(request, order):
 		order.reasons = reasons
 		order.save()
 
-		notify_waiter_order_updated(placement.pk)
+		notify_waiter_order_updated.now(placement.pk)
 		notify_user_order_declined.now(placement.pk, order.pk)
 		messages.success(request, 'Order Declined Successfully !!!')
 		return HttpJsonResponse(ResponseObject('success', 'Order Declined Successfully !!!', 200, 
@@ -3414,6 +3516,7 @@ def notify_user_order_declined(placement, order):
 		pass
 
 
+@background(schedule=60)
 def notify_waiter_order_updated(placement):
 	placement = Placement.objects.get(pk=placement)
 	branch_message = {
@@ -3440,3 +3543,43 @@ def notify_waiter_order_updated(placement):
 			'data': None
 		}
 		pubnub.publish().channel(placement.waiter.channel).message(waiter_message).pn_async(ting_publish_callback)
+
+
+@check_admin_login
+@is_admin_enabled
+def get_admin_messages_count(request):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	messages = PlacementMessage.objects.filter(placement__waiter__pk=admin.pk, is_read=False).count()
+	return HttpResponse(messages)
+
+
+@check_admin_login
+@is_admin_enabled
+def load_admin_messages(request):
+	template = 'web/admin/ajax/load_admin_messages.html'
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	messages = PlacementMessage.objects.filter(placement__waiter__pk=admin.pk, is_read=False).order_by('created_at')
+	return render(request, template, {'messages': messages})
+
+
+@check_admin_login
+@is_admin_enabled
+def delete_admin_message(request, message):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	message = PlacementMessage.objects.get(pk=message)
+
+	if message.placement.branch.pk != admin.branch.pk:
+		messages.error(request, 'Data Not For This Restaurant !!!')
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant ', 405, 
+				reverse('ting_wb_adm_dashboard')))
+
+	if message.placement.waiter != None:
+		if message.placement.waiter.pk != admin.pk != None and admin.admin_type == '4':
+			messages.error(request, 'Data Not For This Waiter !!!')
+			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Admin ', 405, 
+					reverse('ting_wb_adm_dashboard')))
+
+	message.delete()
+	messages.success(request, 'Order Declined Successfully !!!')
+	return HttpJsonResponse(ResponseObject('success', 'Message Deleted Successfully !!!', 200, 
+				reverse('ting_wb_adm_dashboard')))

@@ -236,12 +236,18 @@ admins = [
 
 	url(r'adm/placements/all/$', admin.placements, name='ting_wb_adm_placements'),
 	url(r'adm/placements/load/all/$', admin.load_placements, name='ting_wb_adm_load_placements'),
+	url(r'adm/placements/get/(?P<placement>\d+)/$', admin.load_user_placement, name='ting_wb_adm_load_user_placement'),
+	url(r'adm/placements/messages/load/all/$', admin.load_admin_messages, name='ting_wb_adm_load_messages'),
+	url(r'adm/placements/messages/(?P<message>\d+)/delete/$', admin.delete_admin_message, name='ting_wb_adm_delete_message'),
+	url(r'adm/placements/messages/load/count/$', admin.get_admin_messages_count, name='ting_wb_adm_get_messages_count'),
 	url(r'adm/placements/dashboard/load/all/$', admin.load_placements_dashboard, name='ting_wb_adm_load_placements_dashboard'),
 	url(r'adm/placements/(?P<token>[^/]+)/done/$', admin.done_placement, name='ting_wb_adm_done_placement'),
 	url(r'adm/placements/(?P<token>[^/]+)/assign/waiter/(?P<waiter>\d+)/$', admin.assign_waiter_placement, name='ting_wb_adm_assign_waiter_placement'),
 	url(r'adm/orders/dashboard/load/all/$', admin.load_orders_dashboard, name='ting_wb_adm_load_orders_dashboard'),
+	url(r'adm/orders/(?P<order>\d+)/load/$', admin.load_user_placement_order, name='ting_wb_adm_load_user_placement_order'),
 	url(r'adm/orders/(?P<order>\d+)/accept/$', admin.accept_user_order, name='ting_wb_adm_accept_user_order'),
 	url(r'adm/orders/(?P<order>\d+)/decline/$', admin.decline_user_order, name='ting_wb_adm_decline_user_order'),
+	url(r'adm/orders/extras/(?P<placement>\d+)/add/$', admin.add_bill_extra, name='ting_wb_adm_add_bill_extra'),
 ]
 
 urlpatterns = admins + users

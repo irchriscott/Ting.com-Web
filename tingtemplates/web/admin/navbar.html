@@ -1,3 +1,4 @@
+{% load staticfiles %}
 <div class="ui secondary menu ting-no-p-right" style="border-bottom: 1px solid #DDD; padding-top: 10px;">
     <div class="ui item ting-no-p-top">
         <div class="ting-profile-image-menu">
@@ -12,6 +13,18 @@
                 <i class="search link icon"></i>
             </div>
         </div>
+
+        <div class="ui right dropdown item" id="ting-show-admin-messages" style="margin-top: -10px !important;">
+            <span class="ting-messages-count-nod" {% if admin.messages_count > 0 %}{% else %} style="display: none;" {% endif %} id="ting-admin-messages-count"></span>
+            <i class="icon bell"></i>
+        </div>
+
+        <div class="ting-messages-container" id="ting-admin-messages-container">
+            <div class="ui right ting-loader" style="margin: auto; text-align: center; padding: 30px 0;">
+                <img src="{% static 'imgs/loading.gif' %}">
+            </div>
+        </div>
+
         <div class="ui item ting-no-p-top">
         	<div class="ting-profile-image-menu">
         		<img src="{{admin.image.url}}" alt="{{admin.username}}">

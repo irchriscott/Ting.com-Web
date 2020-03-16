@@ -1179,6 +1179,14 @@ class Administrator(models.Model):
 		return True if permission in self.permissions else False
 
 	@property
+	def messages(self):
+		return PlacementMessage.objects.filter(placement__waiter__pk=self.pk, is_read=False).order_by('created_at')
+	
+	@property
+	def messages_count(self):
+		return self.messages.count()
+	
+	@property
 	def socket_data(self):
 		return {
 			'id': self.pk,
@@ -4271,7 +4279,6 @@ class Bill(models.Model):
 		}
 
 
-
 class BillExtra(models.Model):
 	bill = models.ForeignKey(Bill)
 	name = models.CharField(max_length=200, null=False, blank=False)
@@ -4287,18 +4294,21 @@ class BillExtra(models.Model):
 		return self.name
 
 	@property
+	def total(self):
+		return self.price * self.quantity
+	
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
 			'name': self.name,
 			'price': self.price,
 			'quantity': self.quantity,
-			'total': self.price * self.quantity,
+			'total': self.total,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 	
-
 
 class Placement(models.Model):
 	restaurant = models.ForeignKey(Restaurant)
@@ -4339,6 +4349,20 @@ class Placement(models.Model):
 		}
 
 
+class PlacementMessage(models.Model):
+	placement = models.ForeignKey(Placement)
+	message = models.TextField(null=False, blank=False)
+	is_read = models.BooleanField(default=False)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now_add=True)
+
+	def __str__(self):
+		return self.message
+
+	def __unicode__(self):
+		return self.message
+
+
 class Order(models.Model):
 	bill = models.ForeignKey(Bill)
 	menu = models.ForeignKey(Menu)
@@ -4360,6 +4384,10 @@ class Order(models.Model):
 
 	def __unicode__(self):
 		return self.bill.number
+
+	@property
+	def total(self):
+		return self.quantity * self.price
 
 	@property
 	def to_json(self):
@@ -4399,4 +4427,3 @@ class Order(models.Model):
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 	
-

@@ -2012,3 +2012,49 @@ textarea{
 .ting-side-pannel-item .content {
     padding-left: 1rem !important;
 }
+
+.ting-messages-count-nod {
+    position: absolute;
+    display: inline-flex;
+    justify-content: center;
+    text-align: center;
+    padding: 4px 6px;
+    font-size: 11px;
+    color: #FFFFFF;
+    background: red;
+    border-radius: 10px;
+    top: -6px;
+    right: 4px;
+}
+
+.ting-messages-container {
+    position: absolute;
+    width: 420px;
+    padding: 15px;
+    max-width: 60vh;
+    top: 40px;
+    right: 150px;
+    border-radius: .28571429rem;
+    background: #fff;
+    margin: 0 0 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    -webkit-box-orient: vertical !important;
+    -webkit-box-direction: normal !important;
+    -ms-flex-direction: column !important;
+    flex-direction: column !important;
+    z-index: 1000;
+    display: none;
+}
+
+.ting-placement-bill {
+    display: block;
+    position: relative;
+}
+
+.ting-placement-bill h3 {
+    font-weight: 100;
+    text-transform: uppercase;
+}

@@ -51,7 +51,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% if tables.count > 0 %}
+                                {% if 0 > 0 %}
                                     {% for table in tables %}
                                         <tr>
                                             <td><div class="ui ribbon label">{{table.number}}</div></td>
@@ -194,7 +194,7 @@
                                 {% else %}
                                     <tr>
                                         <th colspan="9">
-                                            <p class="ting-error">No Added Table</p>
+                                            <div class="ting-empty-data"><i class="fas fa-chair"></i><p style="margin-top: 30px !important;">No Table To Show</p></div>
                                         </th>
                                     </tr>
                                 {% endif %}

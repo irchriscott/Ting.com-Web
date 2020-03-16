@@ -9,14 +9,17 @@ $(document).ready(function() {
         uuid: uuid
     });
 
-    // button.addEventListener('click', () => {
-    //     pubnub.publish({
-    //         channel : "pubnub_onboarding_channel",
-    //         message : {"sender": uuid, "content": "Hello From JavaScript SDK"}
-    // }, function(status, response) {
-    //       //Handle error here
-    //     });
-    // });
+    loadAdminMessagesCount();
+    loadAdminMessages();
+
+    $("#ting-show-admin-messages").click(function(event){ 
+        $("#ting-admin-messages-container").slideDown(150);
+        event.stopPropagation();
+        loadAdminMessages();
+    });
+
+    $("#ting-admin-messages-container, .modals, .dimmer").click(function(event) { event.stopPropagation(); });
+    $(window).click(function() { $("#ting-admin-messages-container").slideUp(150); });
 
     pubnub.subscribe({ channels: [admin.channel, admin.branch.channel], withPresence: true });
 
@@ -183,7 +186,7 @@ $(document).ready(function() {
                             message: '<p style="color:#FFFFFF; margin-top:5px;"> ' + message.sender.name + ' has placed an order on table <b>' + message.data.table + '</b> but it seems it is delaying. Please, Accept or Decline the order</p>',
                             messageSize: '13px',
                             theme: 'dark',
-                            image: message.sendere.image,
+                            image: message.sender.image,
                             imageWidth: 120,
                             maxWidth: 450,
                             position: 'topRight',
@@ -234,7 +237,7 @@ $(document).ready(function() {
                             message: '<p style="color:#FFFFFF; margin-top:5px;"> ' + message.sender.name + ' has requested his bill for him to further finalize his placement.</p>',
                             messageSize: '13px',
                             theme: 'dark',
-                            image: message.sendere.image,
+                            image: message.sender.image,
                             imageWidth: 120,
                             maxWidth: 450,
                             position: 'topRight',
@@ -249,17 +252,66 @@ $(document).ready(function() {
                         loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements);
                     }
                     break;
+                case 'response_w_request_message':
+                    if(admin.permissions.includes('can_get_requests') || admin.id == message.receiver.id) {
+                        iziToast.show({
+                            id: message.uuid, 
+                            title: 'Request From ' + message.sender.name + ', Table ' + message.data.table,
+                            titleSize: '16px',
+                            message: '<p style="color:#FFFFFF; margin-top:5px;"> ' + message.message + '</p>',
+                            messageSize: '13px',
+                            theme: 'dark',
+                            image: message.sender.image,
+                            imageWidth: 120,
+                            maxWidth: 450,
+                            position: 'topRight',
+                            timeout: 30000,
+                            progressBar: false,
+                            onOpening: function () {},
+                            onOpened: function () {},
+                            onClosing: function () {},
+                            onClosed: function () {}
+                        });
+                        loadAdminMessages();
+                        loadAdminMessagesCount();
+                    }
+                    break;
                 default:
                     break;
             }
         },
         presence: function(event) {}
     });
-})
+});
 
 function loadAjaxURL(container, url){
     setTimeout(function(){
-        $("#" + container).load(url, function(){$(this).children(".ting-loader").hide();
-        }, function(error){showErrorMessage("error", error);});
+        $("#" + container).load(url, 
+            function(){$(this).children(".ting-loader").hide();}, 
+            function(error){showErrorMessage("error", error);
+        });
+    });
+}
+
+function loadAdminMessages() {
+    setTimeout(function(){
+        $("#ting-admin-messages-container").load(
+            window.__TING__URL__Load__Admin__Messages, function(){}, 
+            function(error){showErrorMessage("error", error);
+        });
+    });
+}
+
+function loadAdminMessagesCount() {
+    setTimeout(function(){
+        $.ajax({
+            type:"GET", url: window.__TING__URL__Load__Admin__Messages__Count, data: {},
+            success: function(r){
+                if(parseInt(r) !== NaN && parseInt(r) !== undefined && parseInt(r) > 0) {
+                    $("#ting-admin-messages-count").text(r).show();
+                } else { $("#ting-admin-messages-count").hide(); }
+            },
+            error: function(_, t, e){showErrorMessage("error", e)}
+        });
     });
 }

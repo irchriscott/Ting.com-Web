@@ -56,7 +56,8 @@ menus = [
 placements = [
 	{'category': 'placement', 'permission': 'can_view_placements', 	'title': 'View'},
 	{'category': 'placement', 'permission': 'can_assign_table', 	'title': 'Assign Table To Waiter'},
-	{'category': 'placement', 'permission': 'can_done_placement', 	'title': 'Done Placement'}
+	{'category': 'placement', 'permission': 'can_done_placement', 	'title': 'Done Placement'},
+	{'category': 'placement', 'permission': 'can_get_requests', 	'title': 'Get Requests'}
 ]
 
 orders = [

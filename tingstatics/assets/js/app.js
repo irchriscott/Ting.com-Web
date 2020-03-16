@@ -2939,9 +2939,7 @@ function updateProfileImage(input) {
                 $("#ting-image-icon").hide();
                 $("#ting-image-load").show();
                 $("#ting-session-profile-image-update").submit();
-            } else {
-                showErrorMessage("image", "Only jpg, png and jpeg images allowed !!!");
-            }
+            } else {showErrorMessage("image", "Only jpg, png and jpeg images allowed !!!");}
         };
         reader.readAsDataURL(input.files[0]);
     }
@@ -2995,14 +2993,9 @@ jQuery.fn.openModal = function(){
                     onApprove(){
                         if(form_id != null && form_id != ""){
                             var form = $(this).find("#" + form_id);
-                            if(form != null){
-                                form.submit();
-                            } else {
-                                showErrorMessage(randomString(12), "There Is No Form To Submit !!!")
-                            }
-                        } else {
-                            showErrorMessage(randomString(12), "Form ID Not Specified !!!")
-                        }
+                            if(form != null){form.submit();
+                            } else {showErrorMessage(randomString(12), "There Is No Form To Submit !!!")}
+                        } else {showErrorMessage(randomString(12), "Form ID Not Specified !!!")}
                         return false;
                     },
                     onShow: function(){
@@ -3037,14 +3030,9 @@ jQuery.fn.openModal = function(){
                     onApprove(){
                         if(form_id != null && form_id != ""){
                             var form = $(this).find("#" + form_id);
-                            if(form != null){
-                                form.submit();
-                            } else {
-                                showErrorMessage(randomString(12), "There Is No Form To Submit !!!")
-                            }
-                        } else {
-                            showErrorMessage(randomString(12), "Form ID Not Specified !!!")
-                        }
+                            if(form != null){form.submit();
+                            } else {showErrorMessage(randomString(12), "There Is No Form To Submit !!!")}
+                        } else {showErrorMessage(randomString(12), "Form ID Not Specified !!!")}
                         return false;
                     },
                     onShow: function(){}
@@ -3063,18 +3051,12 @@ jQuery.fn.openModal = function(){
                                     showSuccessMessage(response.type, response.message);
                                     if(hide_content != "" && hide_content != null) modal.siblings().find("#" + hide_content).hide();
                                     if(response.redirect != null) window.location = response.redirect;
-                                } else {
-                                    showErrorMessage(response.type, response.message);
-                                }
+                                } else { showErrorMessage(response.type, response.message); }
                             },
-                            error: function(_, t, e){
-                                showErrorMessage(t, e);
-                            }
+                            error: function(_, t, e){ showErrorMessage(t, e); }
                         });
                     },
-                    onDeny: function(){
-                        showInfoMessage(randomString(16), "Operation Cancelled !!!");
-                    }
+                    onDeny: function(){ showInfoMessage(randomString(16), "Operation Cancelled !!!");}
                 }).modal("show");
             } else if(type == "confirm-ajax"){
                 if(data != null && data != ""){
@@ -3101,13 +3083,9 @@ jQuery.fn.openModal = function(){
                                             showSuccessMessage(response.type, response.message);
                                             if(hide_content != "" && hide_content != null) modal.siblings().find("#" + hide_content).hide();
                                             if(response.redirect != null) window.location = response.redirect;
-                                        } else {
-                                            showErrorMessage(response.type, response.message);
-                                        }
+                                        } else {showErrorMessage(response.type, response.message);}
                                     },
-                                    error: function(_, t, e){
-                                        showErrorMessage(t, e);
-                                    }
+                                    error: function(_, t, e){showErrorMessage(t, e);}
                                 });
                             }, true],
                             ['<button>NO</button>', function (instance, toast) {
@@ -3120,9 +3098,7 @@ jQuery.fn.openModal = function(){
                             showInfoMessage(randomString(16), "Operation Cancelled !!!");
                         }
                     });
-                } else {
-                    showErrorMessage(randomString(16), "No Data To Show !!!")
-                }
+                } else {showErrorMessage(randomString(16), "No Data To Show !!!")}
             }
         } else { 
             $("[data-modal=" + $(this).attr("id") + "]").modal({

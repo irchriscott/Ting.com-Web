@@ -3,11 +3,11 @@
 	<div class="ui items">
 		{% for order in orders %}
 			<div class="item ting-side-pannel-item">
-		    	<div class="ui avatar">
+		    	<div class="ui avatar ting-open-ajax-modal" ting-modal-type="ajax" ting-data-url="{% url 'ting_wb_adm_load_user_placement_order' order.pk %}" ting-modal-target="ting-load-order">
 		      		<img src="{{order.bill.placement.user.image.url}}">
 		    	</div>
 		    	<div class="content">
-		      		<a class="header" style="color:#666666;">{{order.quantity}} - {{order.menu.name}}</a>
+		      		<a class="header ting-open-ajax-modal" ting-modal-type="ajax" ting-data-url="{% url 'ting_wb_adm_load_user_placement_order' order.pk %}" ting-modal-target="ting-load-order" style="color:#666666;">{{order.quantity}} - {{order.menu.name}}</a>
 		      		{% if admin.pk|has_p:"can_accept_orders" %}
 			      		<div class="ui right pointing dropdown item" style="position: absolute; top: 0; right: 0;">
 	                        <i class="icon chevron down"></i>
@@ -61,10 +61,10 @@
 	                        </div>
 	                    </div>
 	                {% endif %}
-		      		<div class="meta" style="margin-top: 2px;">
+		      		<div class="meta ting-open-ajax-modal" ting-modal-type="ajax" ting-data-url="{% url 'ting_wb_adm_load_user_placement_order' order.pk %}" ting-modal-target="ting-load-order" style="margin-top: 2px;">
 		        		<h1 style="font-size: 24px;">{{order.bill.placement.table.number}}</h1>
 		      		</div>
-		      		<div class="extra" style="margin-top: -2px;">
+		      		<div class="extra ting-open-ajax-modal" ting-modal-type="ajax" ting-data-url="{% url 'ting_wb_adm_load_user_placement_order' order.pk %}" ting-modal-target="ting-load-order" style="margin-top: -2px;">
 		      			{% if order.bill.placement.waiter != None %}
 		      				<div class="ui image label" style="cursor: pointer;" data-tooltip="Waiter" data-position="top left">
 							  <img src="{{order.bill.placement.waiter.image.url}}">
@@ -81,5 +81,5 @@
 		<script type="text/javascript">$(".dropdown").dropdown();$(".ting-open-ajax-modal").openModal();</script>
 	</div>
 {% else %}
-	<p class="ting-error">No Order</p>
+	<div class="ting-empty-data"><i class="icon utensils"></i><p>No Order To Show</p></div>
 {% endif %}
