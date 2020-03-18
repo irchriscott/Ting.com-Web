@@ -67,7 +67,7 @@
                                 {% if drinks.count > 0 %}
                                     {% for drink in drinks %}
                                         <tr>
-                                            <td><div class="ui ribbon label">{{drink.id}}</div></td>
+                                            <td><div class="ui ribbon label">{{forloop.counter}}</div></td>
                                             <td><img src="{{drink.images.0.image.url}}"></td>
                                             <td>{{drink.name}}</td>
                                             <td>{{drink.type_str}}</td>

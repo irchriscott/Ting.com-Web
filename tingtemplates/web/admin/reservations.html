@@ -62,7 +62,7 @@
                                 {% if bookings.count > 0 %}
                                     {% for book in bookings %}
                                         <tr>
-                                            <td><div class="ui ribbon label">{{book.pk}}</div></td>
+                                            <td><div class="ui ribbon label">{{forloop.counter}}</div></td>
                                             <td><img src="{{book.user.image.url}}"></td>
                                             <td>{{book.user.name}}</td>
                                             <td>{{book.date}} at {{book.time}}</td>

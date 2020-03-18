@@ -69,7 +69,7 @@
                                 {% if foods.count > 0 %}
                                     {% for food in foods %}
                                         <tr>
-                                            <td><div class="ui ribbon label">{{food.pk}}</div></td>
+                                            <td><div class="ui ribbon label">{{forloop.counter}}</div></td>
                                             <td><img src="{{food.images.0.image.url}}"></td>
                                             <td>{{food.name}}</td>
                                             <td>{{food.category.name}}</td>

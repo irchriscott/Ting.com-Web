@@ -3105,7 +3105,7 @@ def load_user_placement(request, placement):
 	template = 'web/admin/ajax/load_user_placement.html'
 	admin = Administrator.objects.get(pk=request.session['admin'])
 	placement = Placement.objects.get(pk=placement)
-	orders = Order.objects.filter(bill__pk=placement.bill.pk) if placement.bill != None else QuerySet([])
+	orders = Order.objects.filter(bill__pk=placement.bill.pk, is_declined=False) if placement.bill != None else QuerySet([])
 	extras = BillExtra.objects.filter(bill__placement_id=placement.pk)
 	bill = Bill.objects.filter(placement_id=placement.pk).first()
 
@@ -3183,6 +3183,21 @@ def add_bill_extra(request, placement):
 		return HttpJsonResponse(ResponseObject('success', 'Bill Extra Saved !!!', 200))
 	else:
 		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
+
+
+@check_admin_login
+@is_admin_enabled
+def delete_bill_extra(request, extra):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	extra = BillExtra.objects.get(pk=extra)
+
+	placement = Placement.objects.get(pk=extra.bill.placement_id)
+
+	if admin.restaurant.pk != placement.restaurant.pk or admin.branch.pk != placement.branch.pk:
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403))
+
+	extra.delete()
+	return HttpJsonResponse(ResponseObject('success', 'Extra Bill Deleted Successfully !!!', 200))
 
 
 @check_admin_login
@@ -3367,7 +3382,7 @@ def load_orders_dashboard(request):
 @has_admin_permissions(permission=['can_view_orders', 'can_receive_orders'])
 def load_user_placement_order(request, order):
 	template = 'web/admin/ajax/load_user_placement_order.html'
-	admin =  Administrator.objects.get(pk=request.session['pk'])
+	admin =  Administrator.objects.get(pk=request.session['admin'])
 	order = Order.objects.get(pk=order)
 
 	if order.menu.branch.pk != admin.branch.pk:

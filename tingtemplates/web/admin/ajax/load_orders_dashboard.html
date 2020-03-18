@@ -1,3 +1,4 @@
+{% load staticfiles %}
 {% load ting_tags %}
 {% if orders|length > 0 %}
 	<div class="ui items">
@@ -38,24 +39,30 @@
 			                            Decline Order
 			                        </div>
 			                        <div class="content">
-			                            <form class="ui form" id="ting-decline-order-form-{{order.pk}}" method="POST" action="{% url 'ting_wb_adm_decline_user_order' order.pk %}">
-			                            	{% csrf_token %}
-			                            	<div class="field">
-							                    <label>Enter Reasons :</label>
-							                    <textarea name="reasons" placeholder="Reasons" required></textarea>
-							                </div>
-			                            </form>
-			                        </div>
-			                        <div class="actions">
-			                            <div class="ui positive button right labeled icon">
-			                                Submit
-		                                    <i class="icon check"></i>
-			                            </div>
-			                            <div class="ui red deny button right labeled icon">
-			                                Cancel
-			                                <i class="icon times"></i>
-			                            </div>
-			                        </div>
+								        <div class="ting-search-place">
+								            <form class="ui form" id="ting-decline-order-form-{{order.pk}}" method="POST" action="{% url 'ting_wb_adm_decline_user_order' order.pk %}">
+				                            	{% csrf_token %}
+								                <div class="field">
+									                <label>Enter Reasons :</label>
+									               	<textarea name="reasons" placeholder="Reasons" required></textarea>
+									            </div>
+								                <div class="ting-action-modal">
+									                <div class="actions">
+									                    <div class="ui red deny button">
+									                        Cancel
+									                    </div>
+									                </div>
+									                <button type="submit" class="ui positive right labeled icon button">
+									                    Save
+									                    <i class="checkmark icon"></i>
+									                </button>
+									                <div class="ui right ting-loader ting-form-loader">
+									                    <img src="{% static 'imgs/loading.gif' %}">
+									                </div>
+									            </div>
+				                            </form>
+								        </div>
+    								</div>
 			                        <script type="text/javascript">$("#ting-decline-order-form-{{order.pk}}").submitFormAjax();</script>
 			                    </div>                
 	                        </div>

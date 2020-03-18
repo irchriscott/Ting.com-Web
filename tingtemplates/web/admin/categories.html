@@ -56,7 +56,7 @@
                                 {% if categories.count > 0 %}
                                     {% for category in categories %}
                                         <tr>
-                                            <td><div class="ui ribbon label">{{category.pk}}</div></td>
+                                            <td><div class="ui ribbon label">{{forloop.counter}}</div></td>
                                             <td><img src="{{category.image.url}}"></td>
                                             <td>{{category.name}}</td>
                                             <td>{{category.description|truncatechars:40}}</td>

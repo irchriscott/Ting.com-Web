@@ -20,10 +20,10 @@
                           	<p><i class="icon user outline"></i>{% if placement.waiter != None %}{{placement.waiter.name}}{% else %} - {% endif %}</p>
                           	<p><i class="icon clock"></i>{{placement.created_at|localtime}}</p>
                           	{% if admin.pk|has_p:"can_done_placement" == True and placement.is_done == False %}
-                          		<div class="ui small {% if placement.is_done == False %}blue{% else %}green{% endif %} labeled icon button {% if placement.is_done == False %}ting-open-ajax-modal{% endif %}" ting-modal-type="confirm-ajax" ting-modal-data='{ "title" : "End Placement", "message" : "Do you really want to end this placement ?", "load": true }' ting-hide-content="" ting-data-url="{% url 'ting_wb_adm_done_placement' placement.token %}" ting-modal-target="ting-end-placement-{{placement.id}}">
+                          		<div class="ui small {% if placement.is_done == False %}blue{% else %}green{% endif %} labeled icon button {% if placement.is_done == False %}ting-open-ajax-modal{% endif %}" ting-modal-type="confirm" ting-modal-data='{ "title" : "End Placement", "message" : "Do you really want to end this placement ?", "load": true }' ting-modal-callback="placement" ting-data-url="{% url 'ting_wb_adm_done_placement' placement.token %}" ting-modal-target="ting-end-placement-else-{{placement.id}}">
 	                            <i class="check icon"></i> {% if placement.is_done == False %}End{% else %}Ended{% endif %}
 		                        </div>
-		                        <div class="ui modal mini" data-modal="ting-end-placement-{{placement.id}}">
+		                        <div class="ui modal mini" data-modal="ting-end-placement-else-{{placement.id}}">
 		                            <div class="header">
 		                                End Placement
 		                            </div>
@@ -41,7 +41,6 @@
 		                                </div>
 		                            </div>
 		                        </div>
-		                        <script type="text/javascript">$(".ting-open-ajax-modal").openModal();</script>
                           	{% endif %}
                       </div>    
                   </div>         
@@ -68,15 +67,46 @@
                     {% if orders.count > 0 %}
                         {% for order in orders %}
                             <tr>
-                                <td><div class="ui ribbon label">{{order.pk}}</div></td>
+                                <td><div class="ui ribbon label">{{forloop.counter}}</div></td>
                                 <td><img src="{{order.menu.pk|menu_image}}" style="width: 40px; height: 40px;"></td>
                                 <td>{{order.menu.pk|menu_name}}</td>
                                 <td>{{order.currency}} {{order.price}}</td>
                                 <td>{{order.quantity}}</td>
                                 <td>{{order.currency}} {{order.total}}</td>
                                 <td>{{order.has_promotion|yesno}}</td>
-                                <td></td>
-                            </tr>         
+                                <td>
+                                	{% if order.is_delivered == False and order.is_declined == False %}
+                                		<span class="far fa-check-circle ting-action-icon ting-action-green ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_accept_user_order' order.pk %}" ting-modal-target="ting-accept-order-else-{{order.pk}}" ting-modal-callback="placement"></span>
+                                		<span class="far fa-times-circle ting-action-icon ting-action-red ting-open-ajax-modal" ting-modal-type="form" ting-data-url="{% url 'ting_wb_adm_decline_user_order' order.pk %}" ting-modal-form="ting-decline-order-form-else-{{order.pk}}" ting-modal-callback="placement" ting-modal-target="ting-decline-order-else-{{order.pk}}"></span>
+                                	{% else %}
+                                		{% if order.is_delivered %}
+                                			<span class="far fa-check-circle ting-action-icon ting-action-green"></span>
+                                		{% elif order.is_declined %}
+                                			<span class="far fa-times-circle ting-action-icon ting-action-red"></span>
+                                		{% endif %}
+                                	{% endif %}
+                                </td>
+                                {% if order.is_delivered == False and order.is_declined == False %}
+	                                <div class="ui modal mini" data-modal="ting-accept-order-else-{{order.pk}}">
+				                        <div class="header">
+				                            Accept Order
+				                        </div>
+				                        <div class="content">
+				                            <p>Do you really want to accept this order ?</p>
+				                        </div>
+				                        <div class="actions">
+				                            <div class="ui positive button right labeled icon">
+				                                Yes
+			                                    <i class="icon check"></i>
+				                            </div>
+				                            <div class="ui red deny button right labeled icon">
+				                                No
+				                                <i class="icon times"></i>
+				                            </div>
+				                        </div>
+				                    </div> 
+			                    {% endif %}
+                            </tr>
                         {% endfor %}
                     {% else %}
                         <tr>
@@ -87,6 +117,41 @@
                     {% endif %}
                 </tbody>
             </table>
+            {% for order in orders %}
+            	{% if order.is_delivered == False and order.is_declined == False %}
+            	<div class="ui modal mini" data-modal="ting-decline-order-else-{{order.id}}">
+				    <div class="header">
+				        Decline Order
+				    </div>
+				    <div class="content">
+						<div class="ting-search-place">
+							<form class="ui form" id="ting-decline-order-form-else-{{order.pk}}" method="POST" action="{% url 'ting_wb_adm_decline_user_order' order.pk %}" ting-form-callback="placement">
+								{% csrf_token %}
+								<div class="field">
+									<label>Enter Reasons :</label>
+									<textarea name="reasons" placeholder="Reasons" required="required"></textarea>
+								</div>
+								<div class="ting-action-modal">
+									<div class="actions">
+										<div class="ui red deny button">
+										    Cancel
+										</div>
+									</div>
+									<button type="submit" class="ui positive right labeled icon button">
+										Save
+										<i class="checkmark icon"></i>
+									</button>
+									<div class="ui right ting-loader ting-form-loader">
+										<img src="{% static 'imgs/loading.gif' %}">
+									</div>
+								</div>
+							</form>
+						</div>
+	    			</div>
+				    <script type="text/javascript">$("#ting-decline-order-form-else-{{order.pk}}").submitFormAjax();</script>
+				</div>
+				{% endif %}
+            {% endfor %}
             <br>
             <h3>Extras</h3>
 
@@ -105,13 +170,33 @@
                     {% if extras.count > 0 %}
                         {% for extra in extras %}
                             <tr>
-                                <td><div class="ui ribbon label">{{extra.pk}}</div></td>
+                                <td><div class="ui ribbon label">{{forloop.counter}}</div></td>
                                 <td>{{extra.name}}</td>
                                 <td>{{placement.bill.currency}} {{extra.price}}</td>
                                 <td>{{extra.quantity}}</td>
                                 <td>{{placement.bill.currency}} {{extra.total}}</td>
-                                <td></td>
-                            </tr>         
+                                <td>
+                                	<span class="far fa-trash-alt ting-action-icon ting-action-red ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_delete_bill_extra' extra.pk %}" ting-modal-target="ting-delete-extra-{{extra.pk}}" ting-modal-callback="placement"></span>
+                                </td>
+                            </tr>
+                            <div class="ui modal mini" data-modal="ting-delete-extra-{{extra.pk}}">
+		                        <div class="header">
+		                            Delete Extra
+		                        </div>
+		                        <div class="content">
+		                            <p>Do you really want to delete this extra item ?</p>
+		                        </div>
+		                        <div class="actions">
+		                            <div class="ui positive button right labeled icon">
+		                                Yes
+		                                <i class="icon check"></i>
+		                            </div>
+		                            <div class="ui red deny button right labeled icon">
+		                                No
+		                                <i class="icon times"></i>
+		                            </div>
+		                        </div>
+		                    </div>    
                         {% endfor %}
                     {% else %}
                         <tr>
@@ -166,9 +251,11 @@
 			    </div>
 			</div>
 			<script type="text/javascript">
+				$(".ting-open-ajax-modal").openModal();
 				$("#ting-admin-open-add-bill-extra").click(function(){
 					$("#ting-admin-add-bill-extra").modal({
 						closable: false,
+						allowMultiple: false,
 						onApprove: function () {},
 						onDeny: function(callback){
                         	callback = $.isFunction(callback) ? callback : function () { };
@@ -190,7 +277,6 @@
 					var formData = new FormData($(this)[0]);
 					var url = $(this).attr("action");
 					var method = $(this).attr("method");
-					console.log(formData);
 
 					$.ajax({
 						type: method,

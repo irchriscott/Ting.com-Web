@@ -2807,6 +2807,7 @@ jQuery.fn.submitFormAjax = function(){
         let parent = $(this).find(".modal");
         let outter_progress =  parent.find(".ting-loader");
         let multiple = $(this).attr("ting-multiple-select");
+        let callback = $(this).attr("ting-form-callback");
         
         $.ajax({
             xhr: function () {
@@ -2854,8 +2855,10 @@ jQuery.fn.submitFormAjax = function(){
                     button.removeAttr("disabled");
                     if(form != null) form.removeClass("loading");
                     if(progress != null) progress.hide();
-                    if(outter_progress != null) outter_progress.hide()
-                    if(response.redirect != null) window.location = response.redirect;
+                    if(outter_progress != null) outter_progress.hide();
+                    if(callback != "" && callback != null){ 
+                        $(".ting-load-placement").modal('show');
+                    } else { if(response.redirect != null) window.location = response.redirect; }
                 } else {
                     button.removeAttr("disabled");
                     if(loader != null) loader.hide();
@@ -2953,11 +2956,13 @@ jQuery.fn.openModal = function(){
         var form_id = $(this).attr("ting-modal-form");
         var hide_content = $(this).attr("ting-hide-content");
         var data = $(this).attr("ting-modal-data");
+        var modal_callback = $(this).attr("ting-modal-callback");
 
         if(url != null && url != ""){
             if(type == "ajax" || type == "ajax-form"){
                 
                 $("[data-modal=" + $(this).attr("ting-modal-target") + "]").modal({
+                    allowMultiple: false,
                     onVisible: function(callback){
                         callback = $.isFunction(callback) ? callback : function () { };
                         var content = $(this).find('.content');
@@ -3015,12 +3020,15 @@ jQuery.fn.openModal = function(){
                             }
                         });
                         $("#ting-datepicker-book-time").calendar({type: 'time'})
-                    }
+                    },
+                    onDeny: function() { if(modal_callback != "" && modal_callback != null){ $(".ting-load-placement").modal('show');} }
                 }).modal("show");
 
             } else if (type == "form") {
 
                 $("[data-modal=" + $(this).attr("ting-modal-target") + "]").modal({
+                    closable: false,
+                    allowMultiple: false,
                     onVisible: function(callback){
                         callback = $.isFunction(callback) ? callback : function () { };
                     },
@@ -3035,14 +3043,18 @@ jQuery.fn.openModal = function(){
                         } else {showErrorMessage(randomString(12), "Form ID Not Specified !!!")}
                         return false;
                     },
-                    onShow: function(){}
+                    onShow: function(){},
+                    onDeny: function(){ if(modal_callback != "" && modal_callback != null){ $(".ting-load-placement").modal('show');} }
                 }).modal("show");
 
             } else if (type == "confirm"){
 
                 $("[data-modal=" + $(this).attr("ting-modal-target") + "]").modal({
+                    closable: false,
+                    allowMultiple: false,
                     onApprove: function(){
                         var modal = $(this);
+                        modal.find(".positive.button").addClass("disabled");
                         $.ajax({
                             type: 'GET',
                             url: url,
@@ -3050,13 +3062,20 @@ jQuery.fn.openModal = function(){
                                 if(response.type == "success"){
                                     showSuccessMessage(response.type, response.message);
                                     if(hide_content != "" && hide_content != null) modal.siblings().find("#" + hide_content).hide();
-                                    if(response.redirect != null) window.location = response.redirect;
+                                    if(modal_callback != "" && modal_callback != null){
+                                        $(".ting-load-placement").modal('show');
+                                    } else { if(response.redirect != null) window.location = response.redirect; }
                                 } else { showErrorMessage(response.type, response.message); }
+                                modal.find(".positive.button").addClass("disabled");
                             },
-                            error: function(_, t, e){ showErrorMessage(t, e); }
+                            error: function(_, t, e){ showErrorMessage(t, e); modal.find(".positive.button").addClass("disabled");}
                         });
+                        return false;
                     },
-                    onDeny: function(){ showInfoMessage(randomString(16), "Operation Cancelled !!!");}
+                    onDeny: function(){ 
+                        if(modal_callback != "" && modal_callback != null){ $(".ting-load-placement").modal('show');}
+                        showInfoMessage(randomString(16), "Operation Cancelled !!!");
+                    }
                 }).modal("show");
             } else if(type == "confirm-ajax"){
                 if(data != null && data != ""){
@@ -3102,6 +3121,7 @@ jQuery.fn.openModal = function(){
             }
         } else { 
             $("[data-modal=" + $(this).attr("id") + "]").modal({
+                allowMultiple: false,
                 onShow: function(){
                     var today = new Date();
                     $("#ting-datepicker-start-date, #ting-datepicker-end-date").calendar({
@@ -3118,7 +3138,8 @@ jQuery.fn.openModal = function(){
                             }
                         }
                     });
-                }
+                },
+                onDeny: function() { if(modal_callback != "" && modal_callback != null){ $(".ting-load-placement").modal('show');} }
             }).modal("show");
         }
     });

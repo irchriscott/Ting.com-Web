@@ -248,6 +248,7 @@ admins = [
 	url(r'adm/orders/(?P<order>\d+)/accept/$', admin.accept_user_order, name='ting_wb_adm_accept_user_order'),
 	url(r'adm/orders/(?P<order>\d+)/decline/$', admin.decline_user_order, name='ting_wb_adm_decline_user_order'),
 	url(r'adm/orders/extras/(?P<placement>\d+)/add/$', admin.add_bill_extra, name='ting_wb_adm_add_bill_extra'),
+	url(r'adm/orders/extras/(?P<extra>\d+)/delete/$', admin.delete_bill_extra, name='ting_wb_adm_delete_bill_extra'),
 ]
 
 urlpatterns = admins + users

@@ -2058,3 +2058,18 @@ textarea{
     font-weight: 100;
     text-transform: uppercase;
 }
+
+.ting-action-icon {
+    display: inline-block;
+    margin: 0 3px;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.ting-action-green {
+    color: #21BA45;
+}
+
+.ting-action-red {
+    color: #DB2828;
+}

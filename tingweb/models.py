@@ -4215,7 +4215,7 @@ class Bill(models.Model):
 
 	@property	
 	def orders(self):
-		return Order.objects.filter(bill=self.pk).order_by('-created_at')
+		return Order.objects.filter(bill=self.pk, is_delivered=True).order_by('-created_at')
 
 	@property
 	def orders_count(self):
