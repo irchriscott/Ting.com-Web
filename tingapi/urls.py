@@ -100,4 +100,5 @@ urlpatterns = [
 	url(r'usr/po/placement/bill/complete/$', views.api_placement_bill_conplete),
 	url(r'usr/po/placement/bill/request/$', views.api_placement_bill_request),
 	url(r'usr/po/placement/request/send/$', views.api_send_waiter_request),
+	url(r'usr/po/placement/terminate/$', views.api_end_placement),
 ]

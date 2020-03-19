@@ -193,7 +193,8 @@ SOCKET_REQUEST_TYPES = [
 	'request_assign_waiter',
 	'request_table_order',
 	'request_notify_order',
-	'request_bill_request'
+	'request_bill_request',
+	'request_placement_terminated'
 ]
 
 SOCKET_RESPONSE_A_TYPES = [
@@ -202,14 +203,16 @@ SOCKET_RESPONSE_A_TYPES = [
 	'response_w_orders_updated',
 	'request_w_notify_order',
 	'request_w_bill_request',
-	'response_w_request_message'
+	'response_w_request_message',
+	'request_w_placement_terminated'
 ]
 
 SOCKET_RESPONSE_U_TYPES = [
 	'response_resto_table',
 	'response_error',
 	'response_resto_placement_done',
-	'response_resto_table_waiter'
+	'response_resto_table_waiter',
+	'response_resto_bill_paid'
 ]
 
 def get_from_tuple(data, key):

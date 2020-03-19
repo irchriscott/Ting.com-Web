@@ -4230,6 +4230,10 @@ class Bill(models.Model):
 		return BillExtra.objects.filter(bill__pk=self.pk)
 
 	@property
+	def discount_value(self):
+		return float('%.2f' % ((self.amount * self.discount) / 100))
+
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,

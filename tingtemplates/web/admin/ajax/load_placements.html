@@ -8,9 +8,7 @@
             <th>Peoples</th>
             <th>Bill No</th>
             <th>Waiter</th>
-            {% if admin.pk|has_p:"can_done_placement" == True %}
             <th>Actions</th>
-            {% endif %}
         </tr>
     </thead>
     <tbody>
@@ -75,11 +73,11 @@
                             {% else %}-{% endif %}
                         {% endif %}
                     </td>
-                    {% if admin.pk|has_p:"can_done_placement" == True %}
                     <td>
                         <div class="ui small labeled icon button ting-open-ajax-modal" ting-modal-type="ajax" ting-data-url="{% url 'ting_wb_adm_load_user_placement' placement.pk %}" ting-modal-target="ting-load-placement">
-                                <i class="dot circle icon"></i> View
-                            </div>
+                            <i class="dot circle icon"></i> View
+                        </div>
+                        {% if admin.pk|has_p:"can_done_placement" == True %}
                         <div class="ui small {% if placement.is_done == False %}blue{% else %}green{% endif %} labeled icon button {% if placement.is_done == False %}ting-open-ajax-modal{% endif %}" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_done_placement' placement.token %}" ting-modal-target="ting-end-placement-{{placement.id}}">
                             <i class="check icon"></i> {% if placement.is_done == False %}End{% else %}Ended{% endif %}
                         </div>
@@ -101,8 +99,8 @@
                                 </div>
                             </div>
                         </div>
+                        {% endif %}
                     </td>
-                    {% endif %}
                 </tr>
             {% endfor %}
         {% else %}

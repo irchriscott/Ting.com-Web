@@ -3173,6 +3173,9 @@ def add_bill_extra(request, placement):
 
 		placement = Placement.objects.get(pk=placement.pk)
 
+		if placement.bill.is_paid:
+			return HttpJsonResponse(ResponseObject('error', 'Bill Has Been Paid !!!', 405))
+
 		bill_extra = BillExtra(
 				bill=Bill.objects.get(pk=placement.bill.pk),
 				price=price,
@@ -3212,12 +3215,42 @@ def done_placement(request, token):
 		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 				reverse('ting_wb_adm_placements')))
 
+	if placement.bill != None:
+		if placement.bill.is_paid == False or placement.bill.is_complete == False:
+			messages.error(request, 'Bill Yet To Be Paid !!!')
+			return HttpJsonResponse(ResponseObject('error', 'Bill Yet To Be Paid !!!', 403, 
+				reverse('ting_wb_adm_placements')))
+
 	placement.is_done = True
 	placement.save()
 	notify_user_placement_done.now(placement.pk)
 	messages.success(request, 'Placement Ended Successfully !!!')
 	return HttpJsonResponse(ResponseObject('success', 'Placement Ended Successfully !!!', 200, 
 				reverse('ting_wb_adm_placements')))
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_done_placement')
+def mark_bill_paid(request, placement):
+	placement = Placement.objects.get(pk=placement)
+	admin = Administrator.objects.get(pk=request.session['admin'])
+
+	if admin.restaurant.pk != placement.restaurant.pk or admin.branch.pk != placement.branch.pk:
+		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403))
+
+	if placement.bill != None:
+		
+		bill = Bill.objects.get(pk=placement.bill.pk)
+		bill.is_complete = True
+		bill.is_paid = True
+		bill.paid_by = placement.user.pk
+		bill.save()
+
+		notify_user_bill_payed.now(placement.pk)
+		return HttpJsonResponse(ResponseObject('success', 'Bill Marked As Paid !!!', 200))
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'Bill Not Found !!!', 403))
 
 
 @check_admin_login
@@ -3352,6 +3385,62 @@ def notify_user_placement_waiter_assigned(placement):
 					'notification': {
 						'title': 'Your Waiter', 
 						'body': 'You will be served today by %s' % placement.waiter.name,
+					},
+					'data': {
+						'navigate': 'current_restaurant',
+						'data': placement.token
+					}
+				}
+			}
+		)
+	except Exception as e:
+		pass
+
+
+@background(schedule=60)
+def notify_user_bill_payed(placement):
+	placement = Placement.objects.get(pk=placement)
+
+	user_message = {
+		'status': 200,
+		'type': 'response_resto_bill_paid',
+		'uuid': pnconfig.uuid,
+		'sender': placement.branch.socket_data,
+		'receiver': placement.user.socket_data,
+		'message': None,
+		'args': None,
+		'data': {'token': placement.token, 'waiter': placement.waiter.socket_data }
+	}
+
+	pubnub.publish().channel(placement.user.channel).message(user_message).pn_async(ting_publish_callback)
+	
+	try:
+		pusher_client.trigger(placement.user.channel, placement.user.channel, {
+			'title': 'Bill Paid', 
+			'body': 'Your bill No %s at %s, %s has been terminated and marked as paid.' % (placement.bill.number, placement.restaurant.name, placement.branch.name),
+			'image': utils.HOST_END_POINT + placement.restaurant.logo.url,
+			'navigate': 'current_restaurant',
+			'data': placement.token
+		})
+	except Exception as e:
+		pass
+				
+	try:
+		beams_client.publish_to_interests(
+			interests=[placement.user.channel],
+			publish_body={
+				'apns': {
+					'aps': {
+						'alert': {
+							'title': 'Bill Paid', 
+							'body': 'Your bill No %s at %s, %s has been marked as paid.' % (placement.bill.number, placement.restaurant.name, placement.branch.name),
+						}
+					}
+				},
+				'fcm': {
+					'notification': {
+						'title': 'Bill Paid', 
+						'body': 'Your bill No %s at %s, %s has been marked as paid.' % (placement.bill.number, placement.restaurant.name, placement.branch.name),
 					},
 					'data': {
 						'navigate': 'current_restaurant',

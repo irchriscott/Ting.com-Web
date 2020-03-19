@@ -2073,3 +2073,14 @@ textarea{
 .ting-action-red {
     color: #DB2828;
 }
+
+.ting-placement-bill-values {
+    display: block;
+    position: relative;
+}
+
+.ting-placement-bill-values h4,
+.ting-placement-bill-values h2 {
+    margin-top: -10px;
+    margin-bottom: 18px;
+}

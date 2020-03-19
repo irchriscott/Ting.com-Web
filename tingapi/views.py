@@ -1113,6 +1113,32 @@ def api_placement_bill_request(request):
 		return HttpJsonResponse(ResponseObject('error', 'Bill Not Found !!!', 404))
 
 
+@authenticate_user(xhr='api')
+def api_end_placement(request):
+	token = request.GET.get('token')
+	placement = Placement.objects.filter(token=token).first()
+	bill = Bill.objects.filter(placement_id=placement.pk).first()
+
+	user = User.objects.get(pk=request.session['user'])
+
+	if placement.user.pk != user.pk: 
+		return HttpJsonResponse(ResponseObject('error', 'Not The Owner !!!', 403))
+
+	if placement.bill != None:
+		
+		if bill.is_complete and bill.is_paid:
+			placement.is_done = True
+			placement.save()
+			
+			notify_waiter_placement_terminated.now(placement.pk)
+			return HttpJsonResponse(ResponseObject('success', 'Placement Terminated !!!', 200))
+		else:
+			return HttpJsonResponse(ResponseObject('error', 'Bill Yet To Be Paid !!!', 200))
+	else:
+		notify_waiter_placement_terminated.now(placement.pk)
+		return HttpJsonResponse(ResponseObject('success', 'Placement Terminated !!!', 200))
+
+
 @background(schedule=60)
 def notify_waiter_bill_requested(placement):
 	placement = Placement.objects.get(pk=placement)
@@ -1140,9 +1166,36 @@ def notify_waiter_bill_requested(placement):
 			'data': {'token': placement.token, 'user': placement.user.socket_data, 'table': placement.table.number }
 		}
 		pubnub.publish().channel(placement.waiter.channel).message(waiter_message).pn_async(ting_publish_callback)
-	
-	
 
+
+@background(schedule=60)
+def notify_waiter_placement_terminated(placement):
+	placement = Placement.objects.get(pk=placement)
+	branch_message = {
+		'status': 200,
+		'type': 'request_placement_terminated',
+		'uuid': pnconfig.uuid,
+		'sender': placement.user.socket_data,
+		'receiver': placement.branch.socket_data,
+		'message': None,
+		'args': None,
+		'data': {'token': placement.token, 'user': placement.user.socket_data, 'table': placement.table.number }
+	}
+	pubnub.publish().channel(placement.branch.channel).message(branch_message).pn_async(ting_publish_callback)
+
+	if placement.waiter != None:
+		waiter_message = {
+			'status': 200,
+			'type': 'request_w_placement_terminated',
+			'uuid': pnconfig.uuid,
+			'sender': placement.user.socket_data,
+			'receiver': placement.waiter.socket_data,
+			'message': None,
+			'args': None,
+			'data': {'token': placement.token, 'user': placement.user.socket_data, 'table': placement.table.number }
+		}
+		pubnub.publish().channel(placement.waiter.channel).message(waiter_message).pn_async(ting_publish_callback)
+	
 
 @csrf_exempt
 @authenticate_user(xhr='api')

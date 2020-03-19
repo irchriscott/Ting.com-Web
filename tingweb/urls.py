@@ -243,6 +243,7 @@ admins = [
 	url(r'adm/placements/dashboard/load/all/$', admin.load_placements_dashboard, name='ting_wb_adm_load_placements_dashboard'),
 	url(r'adm/placements/(?P<token>[^/]+)/done/$', admin.done_placement, name='ting_wb_adm_done_placement'),
 	url(r'adm/placements/(?P<token>[^/]+)/assign/waiter/(?P<waiter>\d+)/$', admin.assign_waiter_placement, name='ting_wb_adm_assign_waiter_placement'),
+	url(r'adm/placements/(?P<placement>\d+)/bill/mark/paid/$', admin.mark_bill_paid, name='ting_wb_adm_mark_bill_paid'),
 	url(r'adm/orders/dashboard/load/all/$', admin.load_orders_dashboard, name='ting_wb_adm_load_orders_dashboard'),
 	url(r'adm/orders/(?P<order>\d+)/load/$', admin.load_user_placement_order, name='ting_wb_adm_load_user_placement_order'),
 	url(r'adm/orders/(?P<order>\d+)/accept/$', admin.accept_user_order, name='ting_wb_adm_accept_user_order'),
