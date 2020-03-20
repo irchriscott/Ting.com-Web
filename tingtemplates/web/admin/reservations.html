@@ -79,12 +79,9 @@
                                             </td>
                                             <td>{{book.created_at|localtime}}</td>
                                             <td> 
-                                                <div class="ui small blue labeled icon button ting-open-ajax-modal" ting-modal-type="ajax" ting-data-url="{% url 'ting_wb_adm_load_reservation' book.pk %}" ting-modal-target="ting-admin-load-reservation">
-                                                    <i class="book icon"></i> Load
-                                                </div>
                                                 {% if admin.pk|has_p:"can_accept_booking" == True or admin.pk|has_p:"can_cancel_booking" %}
                                                     {% if book.status != 6 and book.status != 5 %}
-                                                        <div class="ui right dropdown item" style="margin-top: -10px !important;">
+                                                        <div class="ui right dropdown item pointing right" style="margin-top: -10px !important; margin-right: 10px !important;">
                                                             <i class="icon chevron down"></i>
                                                             <div class="menu">
                                                                 <div class="header">Options</div>
@@ -176,6 +173,9 @@
                                                         </div>
                                                     {% endif %}
                                                 {% endif %}
+                                                <div class="ui small blue labeled icon button ting-open-ajax-modal" ting-modal-type="ajax" ting-data-url="{% url 'ting_wb_adm_load_reservation' book.pk %}" ting-modal-target="ting-admin-load-reservation">
+                                                    <i class="book icon"></i> Load
+                                                </div>
                                             </td>
                                         </tr>
                                     {% endfor %}
@@ -256,12 +256,9 @@
                                             </td>
                                             <td>{{book.created_at|localtime}}</td>
                                             <td> 
-                                                <div class="ui small blue labeled icon button ting-open-ajax-modal" ting-modal-type="ajax" ting-data-url="{% url 'ting_wb_adm_load_reservation' book.pk %}" ting-modal-target="ting-admin-load-reservation">
-                                                    <i class="book icon"></i> Load
-                                                </div>
                                                 {% if admin.pk|has_p:"can_accept_booking" == True or admin.pk|has_p:"can_cancel_booking" %}
                                                     {% if book.status != 6 and book.status != 5 %}
-                                                        <div class="ui right dropdown item" style="margin-top: -10px !important;">
+                                                        <div class="ui right dropdown item pointing right" style="margin-top: -10px !important; margin-right: 10px !important;">
                                                             <i class="icon chevron down"></i>
                                                             <div class="menu">
                                                                 <div class="header">Options</div>
@@ -353,6 +350,9 @@
                                                         </div>
                                                     {% endif %}
                                                 {% endif %}
+                                                <div class="ui small blue labeled icon button ting-open-ajax-modal" ting-modal-type="ajax" ting-data-url="{% url 'ting_wb_adm_load_reservation' book.pk %}" ting-modal-target="ting-admin-load-reservation">
+                                                    <i class="book icon"></i> Load
+                                                </div>
                                             </td>
                                         </tr>
                                     {% endfor %}

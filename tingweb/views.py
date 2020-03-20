@@ -639,10 +639,13 @@ def make_reservation(request, restaurant, branch):
         date = datetime.now() + timedelta(days=restaurant.config.days_before_reservation)
 
         if bk_date < date:
-            return HttpJsonResponse(ResponseObject('error', 'Booking date should be %s from now !!!' % str(restaurant.config.days_before_reservation), 406))
+            return HttpJsonResponse(ResponseObject('error', 'Booking date should be %s days from now !!!' % str(restaurant.config.days_before_reservation), 406))
 
-        times = re.findall(r'\d{1,2}(:\d{1,2})?(AM|PM)?', request.POST.get('time'))
-        time = datetime.strptime(request.POST.get('time'), '%I:%M %p').time()
+        if 'M' in request.POST.get('time'):
+            times = re.findall(r'\d{1,2}(:\d{1,2})?(AM|PM)?', request.POST.get('time'))
+            time = datetime.strptime(request.POST.get('time'), '%I:%M %p').time()
+        else:
+            time = datetime.strptime(request.POST.get('time'), '%H:%M').time()
 
         if time <= restaurant.opening or time >= restaurant.closing:
             return HttpJsonResponse(ResponseObject('error', 'Booking time should be between %s and %s !!!' % (restaurant.opening, restaurant.closing), 406))

@@ -248,6 +248,16 @@ def api_restaurants(request):
 	return HttpResponse(_branches, content_type='application/json')
 
 
+def api_restaurant_tables_location(request):
+	branch_id = request.GET.get('branch')
+	try:
+		branch = Branch.objects.get(pk=branch_id)
+		tables = {'locations': map(lambda t: {'id': t[0], 'name': t[1]}, utils.TABLE_LOCATION), 'tables': branch.available_table_location}
+		return HttpResponse(json.dumps(tables, default=str), content_type='application/json')
+	except Branch.DoesNotExist:
+		return HttpJsonResponse(ResponseObject('error', 'Branch Not Found', 404))
+
+
 def api_restaurant_top_menus(request, branch):
 	branch = Branch.objects.get(pk=branch)
 	return HttpResponse(json.dumps([menu.to_json_s for menu in branch.menus.random(4)], default=str), content_type='application/json')
@@ -490,6 +500,17 @@ def api_filter_restaurants(request):
 		_branches = json.dumps([], default=str)
 
 	return HttpResponse(_branches, content_type='application/json')
+
+
+@csrf_exempt
+@authenticate_user(xhr='api')
+def api_make_reservation(request):
+	branch_id = request.POST.get('branch')
+	try:
+		branch = Branch.objects.get(pk=branch_id)
+		return web.make_reservation(request, branch.restaurant.pk, branch.pk)
+	except Branch.DoesNotExist:
+		return HttpJsonResponse(ResponseObject('error', 'Branch Not Found', 404))
 
 
 # MENU

@@ -54,7 +54,9 @@ urlpatterns = [
 	url(r'usr/g/restaurants/like/toggle/(?P<branch>\d+)/$', views.api_like_restaurant, name='api_like_restaurant'),
 	url(r'usr/g/restaurants/likes/(?P<branch>\d+)/$', views.api_load_restaurant_likes, name='api_restaurant_likes'),
 	url(r'usr/g/restaurants/map/pin/(?P<branch>\d+)/$', views.api_restaurant_map_pin),
+	url(r'usr/g/restaurants/tables/locations/$', views.api_restaurant_tables_location),
 	url(r'usr/g/restaurants/filters/$', views.api_get_restaurant_filters),
+	url(r'usr/g/restaurants/book/$', views.api_make_reservation),
 
 	# MENU
 

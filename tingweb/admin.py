@@ -3003,6 +3003,7 @@ def accept_reservation(request, reservation):
 				})
 			mail.send()
 
+			notify_user_booking_status.now(book.pk, True, '')
 			messages.success(request, 'Reservation Accepted Successfully !!!')
 			return HttpJsonResponse(ResponseObject('success', 'Reservation Accepted Successfully !!!', 200, 
 					reverse('ting_wb_adm_reservations')))
@@ -3048,7 +3049,8 @@ def decline_reservation(request, reservation):
 					'link': reverse('ting_usr_bookings', kwargs={'user': book.user.pk, 'username': book.user.username})
 				})
 			mail.send()
-			
+
+			notify_user_booking_status.now(book.pk, False, request.POST.get('reasons'))
 			messages.success(request, 'Reservation Declined Successfully !!!')
 			return HttpJsonResponse(ResponseObject('success', 'Reservation Declined Successfully !!!', 200, 
 					reverse('ting_wb_adm_reservations')))
@@ -3056,6 +3058,50 @@ def decline_reservation(request, reservation):
 			return HttpJsonResponse(ResponseObject('error', 'Cannot Accept This Reservation For It Is %s !!!' % book.status_str, 406))
 	else:
 		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
+
+
+@background(schedule=60)
+def notify_user_booking_status(book, accepted, text):
+	book = Booking.objects.get(pk=book)
+	
+	try:
+		pusher_client.trigger(book.user.channel, book.user.channel, {
+			'title': 'Reservation Accepted' if accepted == True else 'Reservation Declined', 
+			'body': 'Your reservation of %s, %s at %s, %s has been %s.' % (book.date.strftime('%B %d, %Y'), book.time.strftime('%H:%I %p').upper(), book.restaurant.name, book.branch.name, "accepted" if accepted else "declined"),
+			'image': utils.HOST_END_POINT + book.restaurant.logo.url,
+			'text': text,
+			'navigate': 'booking',
+			'data': book.token
+		})
+	except Exception as e:
+		pass
+				
+	try:
+		beams_client.publish_to_interests(
+			interests=[book.user.channel],
+			publish_body={
+				'apns': {
+					'aps': {
+						'alert': {
+							'title': 'Reservation Accepted' if accepted == True else 'Reservation Declined', 
+							'body': 'Your reservation of %s, %s at %s, %s has been %s.' % (book.date, book.time, book.restaurant.name, book.branch.name, "accepted" if accepted else "declined"),
+						}
+					}
+				},
+				'fcm': {
+					'notification': {
+						'title': 'Reservation Accepted' if accepted == True else 'Reservation Declined', 
+						'body': 'Your reservation of %s, %s at %s, %s has been %s.' % (book.date, book.time, book.restaurant.name, book.branch.name, "accepted" if accepted else "declined"),
+					},
+					'data': {
+						'navigate': 'booking',
+						'data': book.token
+					}
+				}
+			}
+		)
+	except Exception as e:
+		pass
 
 
 # PLACEMENTS & ORDERS

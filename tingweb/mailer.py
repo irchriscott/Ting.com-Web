@@ -21,7 +21,7 @@ class SendAdminRegistrationMail(object):
 
 		message = EmailMultiAlternatives(self.subject, text_content, settings.EMAIL_HOST_USER, [self.email])
 		message.attach_alternative(html_content, 'text/html')
-		message.send()
+		message.send(fail_silently=True)
 
 
 class SendAdminResetPasswordMail(object):
@@ -39,7 +39,7 @@ class SendAdminResetPasswordMail(object):
 
 		message = EmailMultiAlternatives(self.subject, text_content, settings.EMAIL_HOST_USER, [self.email])
 		message.attach_alternative(html_content, 'text/html')
-		message.send()
+		message.send(fail_silently=True)
 
 
 class SendAdminSuccessResetPasswordMail(object):
@@ -57,7 +57,7 @@ class SendAdminSuccessResetPasswordMail(object):
 
 		message = EmailMultiAlternatives(self.subject, text_content, settings.EMAIL_HOST_USER, [self.email])
 		message.attach_alternative(html_content, 'text/html')
-		message.send()
+		message.send(fail_silently=True)
 
 
 class SendUserResetPasswordMail(object):
@@ -75,7 +75,7 @@ class SendUserResetPasswordMail(object):
 
 		message = EmailMultiAlternatives(self.subject, text_content, settings.EMAIL_HOST_USER, [self.email])
 		message.attach_alternative(html_content, 'text/html')
-		message.send()
+		message.send(fail_silently=True)
 
 
 class SendUserSuccessResetPasswordMail(object):
@@ -93,6 +93,7 @@ class SendUserSuccessResetPasswordMail(object):
 
 		message = EmailMultiAlternatives(self.subject, text_content, settings.EMAIL_HOST_USER, [self.email])
 		message.attach_alternative(html_content, 'text/html')
+		message.send(fail_silently=True)
 
 
 class SendUserUpdateEmailMail(object):
@@ -110,7 +111,7 @@ class SendUserUpdateEmailMail(object):
 
 		message = EmailMultiAlternatives(self.subject, text_content, settings.EMAIL_HOST_USER, [self.email])
 		message.attach_alternative(html_content, 'text/html')
-		message.send()
+		message.send(fail_silently=True)
 
 
 class SendAcceptedReservationMail(object):
@@ -128,7 +129,7 @@ class SendAcceptedReservationMail(object):
 
 		message = EmailMultiAlternatives(self.subject, text_content, settings.EMAIL_HOST_USER, [self.email])
 		message.attach_alternative(html_content, 'text/html')
-		message.send()
+		message.send(fail_silently=True)
 
 
 class SendDeclinedReservationMail(object):
@@ -146,4 +147,4 @@ class SendDeclinedReservationMail(object):
 
 		message = EmailMultiAlternatives(self.subject, text_content, settings.EMAIL_HOST_USER, [self.email])
 		message.attach_alternative(html_content, 'text/html')
-		message.send()
+		message.send(fail_silently=True)

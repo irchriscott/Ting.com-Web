@@ -77,31 +77,7 @@
                                             <td>{{dish.dish_time_str}}</td>
                                             <td>{{dish.cuisine.name}}</td>
                                             <td>
-                                                <div class="ui small labeled icon top right pointing dropdown button">
-                                                    <i class="martini glass icon"></i>
-                                                    <span class="text">{% if dish.has_drink == True %}<img src="{{dish.drink.images.0.image.url}}" class="avatar" style="width: 30px;">{{dish.drink.name}} {% else %} Drink {% endif %}</span>
-                                                    <div class="menu">
-                                                        <div class="ui search icon input">
-                                                            <i class="search icon"></i>
-                                                            <input type="text" name="search" placeholder="Search Drink...">
-                                                        </div>
-                                                        <div class="divider"></div>
-                                                        <div class="header">
-                                                            <i class="martini glass icon"></i>
-                                                            Drinks
-                                                        </div>
-                                                        {% if drinks.count > 0 %}
-                                                            {% for drink in drinks %}
-                                                                <a class="item ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_menu_dish_add_drink' dish.pk drink.pk %}" ting-modal-target="ting-add-drink-to-menu-{{dish.id}}"><img src="{{drink.images.0.image.url}}" class="avatar" style="width: 30px;">{{drink.name}}</a>
-                                                            {% endfor %}
-                                                        {% endif %}
-                                                        {% if dish.has_drink == True %}
-                                                        <div class="divider"></div>
-                                                        <a class="item ting-open-ajax-modal red" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_menu_dish_remove_drink' dish.pk %}" ting-modal-target="ting-remove-drink-to-menu-{{dish.id}}" style="color: #db2828;"><i class="icon trash outline alternate red"></i> Delete</a>
-                                                        {% endif %}
-                                                    </div>
-                                                </div>
-                                                <div class="ui right pointing dropdown item button" style="margin-top: -10px !important;">
+                                                <div class="ui right pointing dropdown item" style="margin-right: 10px !important; margin-top: -10px !important;">
                                                     <i class="icon chevron down"></i>
                                                     <div class="menu">
                                                         <div class="header">Options</div>
@@ -164,6 +140,31 @@
                                                                 {% endfor %}
                                                             </div>
                                                         </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="ui small labeled icon top right pointing dropdown button">
+                                                    <i class="martini glass icon"></i>
+                                                    <span class="text">{% if dish.has_drink == True %}<img src="{{dish.drink.images.0.image.url}}" class="avatar" style="width: 30px;">{{dish.drink.name}} {% else %} Drink {% endif %}</span>
+                                                    <div class="menu">
+                                                        <div class="ui search icon input">
+                                                            <i class="search icon"></i>
+                                                            <input type="text" name="search" placeholder="Search Drink...">
+                                                        </div>
+                                                        <div class="divider"></div>
+                                                        <div class="header">
+                                                            <i class="martini glass icon"></i>
+                                                            Drinks
+                                                        </div>
+                                                        {% if drinks.count > 0 %}
+                                                            {% for drink in drinks %}
+                                                                <a class="item ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_menu_dish_add_drink' dish.pk drink.pk %}" ting-modal-target="ting-add-drink-to-menu-{{dish.id}}"><img src="{{drink.images.0.image.url}}" class="avatar" style="width: 30px;">{{drink.name}}</a>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                        {% if dish.has_drink == True %}
+                                                        <div class="divider"></div>
+                                                        <a class="item ting-open-ajax-modal red" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_menu_dish_remove_drink' dish.pk %}" ting-modal-target="ting-remove-drink-to-menu-{{dish.id}}" style="color: #db2828;"><i class="icon trash outline alternate red"></i> Delete</a>
                                                         {% endif %}
                                                     </div>
                                                 </div>
