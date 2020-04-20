@@ -130,10 +130,10 @@ textarea{
 }
 
 .ting-admin-container{
-    padding: 50px;
-    margin-left: 15rem;
+    margin-left: 250px;
     padding-bottom: 0px;
     padding-top: 0px;
+    width: calc(100% - 250px);
 }
 
 .ting-admin-content-panel {
@@ -141,6 +141,7 @@ textarea{
     overflow-y: auto;
     padding-bottom: 50px;
     overflow-x: hidden !important;
+    padding-left: 30px !important;
 }
 
 .ting-admin-orders-panel {
@@ -171,7 +172,7 @@ textarea{
     display: block;
     position: relative;
     padding: 10px 0;
-    margin-top: 20px;
+    margin-top: 30px;
 }
 
 .ting-side-menu .ting-side-menu-items{
@@ -181,7 +182,8 @@ textarea{
 
 .ting-side-menu .ting-side-menu-items .ting-menu-item{
     display: block;
-    padding: 15px 10px;
+    padding: 15px;
+    padding-left: 30px;
     cursor: pointer;
 }
 
@@ -191,7 +193,7 @@ textarea{
 
 .ting-side-menu .ting-side-menu-items .ting-menu-item .ting-menu-icon{
     float: left;
-    margin-right: 8px;
+    margin-right: 12px;
 }
 
 .ting-side-menu .ting-side-menu-items .ting-menu-item .ting-menu-icon i{
@@ -525,6 +527,7 @@ textarea{
 
 .ting-data-container-header h1{
     font-weight: 100;
+    margin-left: 15px;
     text-transform: uppercase;
 }
 

@@ -15,9 +15,10 @@ Including another URLconf
 """
 
 from django.conf.urls import url
-from tingapi import views
+from tingapi import views, admin
 
-urlpatterns = [
+
+users = [
 
 	# AUTH & USER
 
@@ -103,4 +104,26 @@ urlpatterns = [
 	url(r'usr/po/placement/bill/request/$', views.api_placement_bill_request),
 	url(r'usr/po/placement/request/send/$', views.api_send_waiter_request),
 	url(r'usr/po/placement/terminate/$', views.api_end_placement),
+
+	# MOMENT
+
+	url(r'usr/m/moments/save/$', views.api_save_placement_moment),
+
+	# SEARCH
+
+	url(r'usr/g/search/live/$', views.api_live_search_response),
+	url(r'usr/g/search/menus/$', views.api_menus_search_response),
+	url(r'usr/g/search/restaurants/$', views.api_restaurants_search_response),
 ]
+
+admins = [
+	
+	# AUTH & USER
+
+	url(r'adm/signup/google/$', admin.api_sign_up_with_google),
+	url(r'adm/auth/login/$', admin.api_login),
+	url(r'adm/auth/password/reset/$', admin.api_submit_reset_password),
+]
+
+
+urlpatterns = users + admins

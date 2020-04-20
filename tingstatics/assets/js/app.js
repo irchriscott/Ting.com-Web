@@ -357,7 +357,7 @@ function loadtingdotcom(){
 function getaddresstype(d, t) {
     if(d.length > 0) {
         for (var i = 0; i < d.length; i++) {
-            if(d[i].types.includes(t)) { return d[i].long_name} 
+            if(d[i].types.includes(t)) { return d[i].long_name } 
         }
         return "Unknown"
     } else { return "Unknown" }
@@ -2329,7 +2329,7 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                     var _ds = new google.maps.LatLng(usa.lat, usa.lng)
                     var _de = new google.maps.LatLng(parseFloat(promo.branch.latitude), parseFloat(promo.branch.longitude))
                     promo.branch.dist = calculateDistance(_ds, _de)
-                } else {promo.branch.dist = 0.00 }
+                } else { promo.branch.dist = 0.00 }
 
                 var branch = promo.branch;
 
@@ -2857,7 +2857,7 @@ jQuery.fn.submitFormAjax = function(){
                     if(progress != null) progress.hide();
                     if(outter_progress != null) outter_progress.hide();
                     if(callback != "" && callback != null){ 
-                        $(".ting-load-placement").modal('show');
+                        $(".ting-load-" + callback).modal('show');
                     } else { if(response.redirect != null) window.location = response.redirect; }
                 } else {
                     button.removeAttr("disabled");
@@ -3021,7 +3021,7 @@ jQuery.fn.openModal = function(){
                         });
                         $("#ting-datepicker-book-time").calendar({type: 'time'})
                     },
-                    onDeny: function() { if(modal_callback != "" && modal_callback != null){ $(".ting-load-placement").modal('show');} }
+                    onDeny: function() { if(modal_callback != "" && modal_callback != null){ $(".ting-load-" + modal_callback).modal('show');} }
                 }).modal("show");
 
             } else if (type == "form") {
@@ -3044,7 +3044,7 @@ jQuery.fn.openModal = function(){
                         return false;
                     },
                     onShow: function(){},
-                    onDeny: function(){ if(modal_callback != "" && modal_callback != null){ $(".ting-load-placement").modal('show');} }
+                    onDeny: function(){ if(modal_callback != "" && modal_callback != null){ $(".ting-load-" + modal_callback).modal('show');} }
                 }).modal("show");
 
             } else if (type == "confirm"){
@@ -3063,7 +3063,7 @@ jQuery.fn.openModal = function(){
                                     showSuccessMessage(response.type, response.message);
                                     if(hide_content != "" && hide_content != null) modal.siblings().find("#" + hide_content).hide();
                                     if(modal_callback != "" && modal_callback != null){
-                                        $(".ting-load-placement").modal('show');
+                                        $(".ting-load-" + modal_callback).modal('show');
                                     } else { if(response.redirect != null) window.location = response.redirect; }
                                 } else { showErrorMessage(response.type, response.message); }
                                 modal.find(".positive.button").addClass("disabled");
@@ -3073,7 +3073,7 @@ jQuery.fn.openModal = function(){
                         return false;
                     },
                     onDeny: function(){ 
-                        if(modal_callback != "" && modal_callback != null){ $(".ting-load-placement").modal('show');}
+                        if(modal_callback != "" && modal_callback != null){ $(".ting-load-" + modal_callback).modal('show');}
                         showInfoMessage(randomString(16), "Operation Cancelled !!!");
                     }
                 }).modal("show");
@@ -3139,7 +3139,7 @@ jQuery.fn.openModal = function(){
                         }
                     });
                 },
-                onDeny: function() { if(modal_callback != "" && modal_callback != null){ $(".ting-load-placement").modal('show');} }
+                onDeny: function() { if(modal_callback != "" && modal_callback != null){ $(".ting-load-" + modal_callback).modal('show');} }
             }).modal("show");
         }
     });
@@ -3367,7 +3367,7 @@ var decodeURIparams =  function(url, params){
             }
         }
         return url;
-    } else {return url}
+    } else { return url }
 };
 
 var numerilize = function(n, t, d){
@@ -3574,9 +3574,7 @@ function initializeRestaurantMap(lat, long, addr, addr_else, place, reg, rd, con
             function toggleBounce() {
                 if (marker.getAnimation() !== null) {
                     marker.setAnimation(null);
-                } else {
-                    marker.setAnimation(google.maps.Animation.BOUNCE);
-                }
+                } else { marker.setAnimation(google.maps.Animation.BOUNCE); }
             }
             markers.push(marker);
         }
@@ -3595,9 +3593,7 @@ function initializeRestaurantMap(lat, long, addr, addr_else, place, reg, rd, con
         function toggleBounce() {
             if (marker.getAnimation() !== null) {
                 marker.setAnimation(null);
-            } else {
-                marker.setAnimation(google.maps.Animation.BOUNCE);
-            }
+            } else { marker.setAnimation(google.maps.Animation.BOUNCE); }
         }
         markers.push(marker);
     }

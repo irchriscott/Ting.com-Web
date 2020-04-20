@@ -263,7 +263,7 @@ PUSHER_BEAMS_INSTANCE		= 'f47c28dd-63ae-49c0-9f30-88560b21e061'
 
 PUSHER_BEAMS_SECRET_KEY		= '4F360544EE0422D1C115854EDA7B749B8DBD6711EA805849966BC339AB256CB3'
 
-HOST_END_POINT				= 'http://10.0.2.2:8000'
+HOST_END_POINT				= 'http://172.20.10.9:8000'
 
 
 def image_as_base64(image_file, format='png'):
@@ -291,4 +291,20 @@ def promoted_price(price, promo):
 			else:
 				return price - promo.amount
 	return price
+
+
+def query_priority(value, queries):
+	p = 0
+	q = set(map(lambda v: v.lower(), queries))
+	v = set(map(lambda v: v.lower(), value.replace(',','').split()))
+		
+	p += len(list(q & v))
+		
+	qr = q.difference(v)
+	vr = v.difference(q)
+
+	for k in qr:
+		p += len(list(filter(lambda i: k in i, vr)))
+
+	return p if len(qr) > 0 else 1000
 		

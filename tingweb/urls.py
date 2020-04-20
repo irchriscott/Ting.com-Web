@@ -16,7 +16,11 @@ Including another URLconf
 from django.conf.urls import url
 from tingweb import views, admin
 
+
 users = [
+	
+	# User Auth
+
 	url(r'usr/login/$', views.login, name='ting_usr_login'),
 	url(r'usr/signup/google/$', views.sign_up_with_google, name='ting_usr_google_sign_up'),
 	url(r'usr/signup/email/$', views.sign_up_with_email, name='ting_usr_email_sign_up'),
@@ -100,6 +104,10 @@ users = [
 ]
 
 admins = [
+	
+	# Auth & Login & Welcomw
+
+	url(r'adm/signup/$', admin.signup_restaurant, name='ting_wb_resto_signup'),
 	url(r'adm/login/$', admin.AdminLogin.as_view(), name='ting_wb_adm_login'),
 	url(r'adm/logout/$', admin.logout, name='ting_wb_adm_logout'),
 	url(r'adm/welcome/$', admin.welcome_to_ting, name='ting_wb_adm_welcome'),

@@ -7,25 +7,19 @@
 <section class="about-area">
 	<div class="container-fluid">
 		<div class="row justify-content-end align-items-center d-flex no-padding">
-			<div class="col-lg-6 about-left">
-				<h1>Register Your Restaurant</h1>
-				<p style="color: #EEE; text-align: left !important;">
-					It's not hard, It's very easy. What you need to do is just contact us, send us :
+			<div class="col-lg-6 about-left" style="padding-right: 6rem;">
+				<h1 style="text-transform: uppercase; font-weight: 200;">Register Your Restaurant</h1>
+				<br>
+				<br>
+				<p style="color: #EEE; text-align: left !important; font-size: 16px;">
+					It's not hard, It's very simple. I will take you only 10 minutes of your precious time to fill out this form and submit it.
 				</p>
-				<ul style="list-style: initial; padding-left: 40px;">
-					<li style="color: #EEE; text-align: left !important;">The name of the restaurant</li>
-					<li style="color: #EEE; text-align: left !important;">The branch (if it has any)</li>
-					<li style="color: #EEE; text-align: left !important;">The motto of the restaurant (if it has any)</li>
-					<li style="color: #EEE; text-align: left !important;">The address of the restaurant</li>
-					<li style="color: #EEE; text-align: left !important;">The email address that people use to contact you</li>
-					<li style="color: #EEE; text-align: left !important;">The telephone numbers of the restaurants</li>
-					<li style="color: #EEE; text-align: left !important;">The opening and closing hour</li>
-				</ul>
-				<p style="color: #EEE; text-align: left !important;">
-					After being registered by us, you will receive an email address containing your login credentials and the trial key. If you have an account, you can just login.
+				<p style="color: #EEE; text-align: left !important; font-size: 16px;">
+					Then, you will receive an email from us with the details of how you will proceed for you to get started and start using the system
 				</p>
+				<br>
 				<div class="buttons" style="margin-bottom: 25px;">
-					<a href="#" class="about-btn text-uppercase primary-border circle">Contact Us</a>
+					<a href="#" class="about-btn text-uppercase primary-border circle" id="ting-add-new-restaurant">Register Here</a>
 					<a href="#" id="ting-admin-login" class="about-btn text-uppercase  primary-border circle">Login</a>
 				</div>
 			</div>
@@ -157,5 +151,145 @@
         </div>
     </div>
 </div>
+
+<div class="ui modal" data-modal="ting-add-new-restaurant">
+    <div class="header">
+        Register Your Restaurant
+    </div>
+    <div class="content">
+        <div class="ting-search-place">
+            <form class="ui form" action="{% url 'ting_wb_resto_signup' %}" method="POST" id="ting-new-restaurant-form" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" id="ting-restaurant-latitude" name="latitude">
+                <input type="hidden" id="ting-restaurant-longitude" name="longitude">
+                <input type="hidden" id="ting-restaurant-country" name="country">
+                <input type="hidden" id="ting-restaurant-town" name="town">
+                <input type="hidden" id="ting-restaurant-place-id" name="place_id">
+                <div class="field">
+                    <label>Enter Restaurant Name :</label>
+                    <input type="text" name="name" placeholder="Restaurant Name" required autocomplete="off">
+                </div>
+                <div class="field">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Select Account Purpose :</label>
+                            <select class="dropdown" name="purpose">
+                                <option value="1">Advertisment</option>
+                                <option value="2">Managment</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Restaurant Type:</label>
+                            <select class="dropdown" name="restaurant_type">
+                                {% for type in types %}
+                                    <option value="{{type.id}}">{{type.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>  
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Enter Branch Name :</label>
+                    <input type="text" name="branch" placeholder="Restaurant Branch" autocomplete="off">
+                </div>
+                <div class="field">
+                    <label for="">Enter Branch Address : </label>
+                    <div class="ui action input">
+                        <input type="text" name="address" id="ting-search-location-input" placeholder="Restaurant Address" autocomplete="off">
+                        <button type="button" class="ui icon blue button" id="ting-open-add-restaurant-location">
+                            <i class="map marker alternate icon"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Enter Branch Region :</label>
+                            <input type="text" name="region" id="ting-restaurant-region" placeholder="Enter Region" required autocomplete="off">
+                        </div>
+                        <div class="field">
+                            <label>Enter Branch Road :</label>
+                            <input type="text" name="road" id="ting-restaurant-road" placeholder="Enter Road" required autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Enter Restaurant Opening Time :</label>
+                            <input type="time" placeholder="Opening Time" name="opening" required>
+                        </div>
+                        <div class="field">
+                            <label>Enter Restaurant Closing Time :</label>
+                            <input type="time" name="closing" placeholder="Closing Time" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="ting-restaurant-motto">Enter Restaurant Motto : </label>
+                    <textarea name="motto" id="ting-restaurant-motto" cols="30" rows="5" placeholder="Restaurant Motto"></textarea>
+                </div>
+                <div class="field">
+                    <label>Enter Restaurant Email :</label>
+                    <input type="email" name="email" placeholder="Restaurant Email" autocomplete="off" required>
+                </div>
+                <div class="field">
+                    <label>Enter Restaurant Phone :</label>
+                    <input type="text" name="phone" placeholder="Restaurant Phone" autocomplete="off" required>
+                </div>
+                <div class="ting-action-modal">
+                    <div class="actions">
+                        <div class="ui red deny button">
+                            Cancel
+                        </div>
+                    </div>
+                    <button type="submit" class="ui positive right labeled icon button" id="ting-save-new-restaurant">
+                        Save
+                        <i class="checkmark icon"></i>
+                    </button>
+                    <div class="ui right ting-loader ting-form-loader">
+                        <img src="{% static 'imgs/loading.gif' %}">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="ui modal" id="ting-add-restaurant-location">
+    <div class="header">
+        Add Branch Location
+    </div>
+    <div class="content">
+        <div class="ting-search-place">
+            <form class="ui form" id="ting-map-form">
+                <div class="field">
+                    <label>Enter Branch Address : </label>
+                    <div class="ui fluid icon input">
+                        <input type="text" id="ting-search-location-input-else" name="address" placeholder="Search Branch Location"
+                            autocomplete="off" autofocus="false" required>
+                        <i class="search icon"></i>
+                    </div>
+                </div>
+                <div class="ting-map-container">
+                    <div class="ting-restaurant-map-container" id="ting-restaurant-map-container"></div>
+                </div>
+                <div class="ting-action-modal">
+                    <div class="actions">
+                        <div class="ui red deny button">
+                            Cancel
+                        </div>
+                        <button type="button" class="ui positive right labeled icon button" id="ting-save-new-restaurant">
+                            Save
+                            <i class="checkmark icon"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    google.maps.event.addDomListener(window, 'load', InitializePlaces('ting-search-location-input-else'));
+</script>
 
 {% endblock %}

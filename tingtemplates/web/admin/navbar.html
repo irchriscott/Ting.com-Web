@@ -1,5 +1,5 @@
 {% load staticfiles %}
-<div class="ui secondary menu ting-no-p-right" style="border-bottom: 1px solid #DDD; padding-top: 10px;">
+<div class="ui secondary menu ting-no-p-right" style="border-bottom: 1px solid #DDD; padding-top: 10px; padding-left: 15px;">
     <div class="ui item ting-no-p-top">
         <div class="ting-profile-image-menu">
         	<img src="{{restaurant.logo.url}}" alt="{{restaurant.name}}">
@@ -39,7 +39,8 @@
 		    	<a class="item" href="{% url 'ting_wb_adm_admin_permissions' %}" style="align-self: flex-start; width: 100%"><i class="clipboard list icon"></i>Privileges</a>
 		    	<a class="item" href="{% url 'ting_wb_adm_admin_security' %}" style="align-self: flex-start; width: 100%"><i class="shield alternate icon"></i>Security</a>
 		    	<a class="item" href="#" style="align-self: flex-start; width: 100%"><i class="history icon"></i>Recent Actions</a>
-		  	</div>
+		  	    <a class="item" href="{% url 'ting_wb_adm_logout' %}" style="align-self: flex-start; width: 100%; color: red !important;"><i class="sign out alternate link icon red"></i>Logout</a>
+            </div>
 		</div>
     </div>
 </div>

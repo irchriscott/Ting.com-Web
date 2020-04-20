@@ -48,7 +48,7 @@
         </div>
     </div>
 </div>
-<div class="ui small modal" data-modal="ting-load-order">
+<div class="ui small modal ting-load-order" data-modal="ting-load-order">
     <div class="header">
         Order
     </div>
@@ -64,9 +64,17 @@
         </div>
     </div>
 </div>
-<div class="ui visible sidebar inverted vertical menu">
+<div class="ui visible sidebar inverted vertical menu" style="width: 250px;">
     <div class="ting-menu-logo" style="margin-top:40px;">
-        <h3 style="text-align: left; font-size: 24px; font-weight: bold;"><span class="ting-secondary-color">Ting</span><span class="ting-primary-color">.com</span></h3>
+        <div class="ui item ting-no-p-top">
+            <div class="ting-profile-image-menu">
+                <img src="{{restaurant.logo.url}}" alt="{{restaurant.name}}" style="width: 85px; height: 85px; margin: auto; border-width: 3px;">
+            </div>
+        </div>
+        <a href="{% url 'ting_wb_adm_restaurant' %}">
+            <p style="font-size: 20px; font-weight: bold; color: #FFF; margin-top: 10px;">{{restaurant.name}}</p>
+            <p style="color: #EEE; margin-top: -10px;">{{admin.branch.name}}</p>
+        </a>
     </div>
     <div class="ting-side-menu">
         <div class="ting-side-menu-items">
@@ -186,16 +194,6 @@
                 </a>
             </div>
             {% endif %}
-            <div class="ting-menu-item">
-                <a href="{% url 'ting_wb_adm_logout' %}">
-                    <div class="ting-menu-icon">
-                        <i class="sign out alternate link icon red"></i>
-                    </div>
-                    <div class="ting-menu-legend">
-                        <p style="color:red;">Logout</p>
-                    </div>
-                </a>
-            </div>
         </div>
     </div>
 </div>

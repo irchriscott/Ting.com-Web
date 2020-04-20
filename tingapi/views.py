@@ -20,12 +20,14 @@ from tingweb.mailer import SendUserResetPasswordMail, SendUserUpdateEmailMail, S
 from tingweb.models import (
                                 Restaurant, User, UserResetPassword, UserAddress, Branch, UserRestaurant, Menu,
                                 MenuLike, MenuReview, Promotion, PromotionInterest, RestaurantReview, Booking,
-                                Food, Drink, Dish, RestaurantTable, Placement, Order, Bill, BillExtra, PlacementMessage
+                                Food, Drink, Dish, RestaurantTable, Placement, Order, Bill, BillExtra, PlacementMessage,
+                                Moment, MomentMedia
                             )
 from tingweb.forms import (
                                 GoogleSignUpForm, UserLocationForm, EmailSignUpForm, UserImageForm, MenuReviewForm,
                                 RestaurantReviewForm, ReservationForm
                             )
+from tingapi.forms import MomentMediaForm
 from tingadmin.models import RestaurantCategory
 from pubnub.callbacks import SubscribeCallback
 from pubnub.enums import PNStatusCategory
@@ -35,6 +37,7 @@ from datetime import datetime, timedelta, date
 from background_task import background
 import tingweb.views as web
 import ting.utils as utils
+import operator
 import random
 import decimal
 import json
@@ -460,6 +463,7 @@ def api_get_restaurant_filters(request):
 	return HttpResponse(json.dumps(filters, default=str), content_type='application/json')
 
 
+# To Review about search (user token request)
 @csrf_exempt
 @authenticate_user(xhr='api')
 def api_filter_restaurants(request):
@@ -703,6 +707,12 @@ def api_get_discover_menus(request):
 def api_request_table_restaurant(request):
 	table_uuid = request.GET.get('table')
 	table = RestaurantTable.objects.filter(uuid=table_uuid).first()
+	user = User.objects.get(pk=request.session['user'])
+	placement = Placement.objects.filter(table__uuid=table.uuid, user__pk=user.pk, is_done=False).first()
+	
+	if placement != None:
+		return HttpResponse(json.dumps(placement.to_json, default=str), content_type='application/json')
+	
 	return HttpResponse(json.dumps(table.to_json, default=str), content_type='application/json') if table != None else HttpResponse(json.dumps(ResponseObject('error', 'Table Not Found', 404), default=str), content_type='application/json', status=404)
 
 
@@ -795,7 +805,7 @@ def api_place_order_menu(request):
 					number=utils.int_to_string(bill_number),
 					token=get_random_string(200),
 					placement_id=placement.pk,
-					currency=menu.currency
+					currency=placement.restaurant.config.currency
 				)
 			new_bill.save()
 
@@ -1264,3 +1274,130 @@ def notify_waiter_request_message(placement, message):
 			'data': {'token': placement.token, 'user': placement.user.socket_data, 'table': placement.table.number }
 		}
 		pubnub.publish().channel(placement.branch.channel).message(branch_message).pn_async(ting_publish_callback)
+
+
+# MOMENT
+
+@csrf_exempt
+@authenticate_user(xhr='api')
+@require_http_methods(['POST'])
+def api_save_placement_moment(request):
+	if request.method == 'POST':
+		user = User.objects.get(pk=request.session['user'])
+		token = request.POST.get('token')
+		placement = Placement.objects.filter(token=token).first()
+
+		if placement != None:
+			moment = Moment.objects.filter(placement__token=placement.token, user__pk=user.pk).first()
+			if moment == None:
+				moment =  Moment(
+						user=User.objects.get(pk=user.pk),
+						placement=Placement.objects.get(pk=placement.pk)
+					)
+				moment.save()
+
+			media = MomentMediaForm(request.POST, request.FILES, instance=MomentMedia(
+					moment=Moment.objects.get(pk=moment.pk)
+				))
+
+			if media.is_valid():
+				media.save()	
+				return HttpJsonResponse(ResponseObject('success', 'Moment Saved', 200))
+			else:
+				return HttpJsonResponse(ResponseObject('error', 'Fill All Fields With Right Data !!!', 406, msgs=form.errors.items()))
+		else:
+			return HttpJsonResponse(ResponseObject('error', 'Placement Not Found', 404))
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'Method Not Allowed', 405))
+
+
+# SEARCH
+
+
+@require_http_methods(['GET'])
+def api_live_search_response(request):
+	query = request.GET.get('query')
+	country = request.GET.get('country')
+	town = request.GET.get('town')
+
+	try:
+		queries = query.split() if query != None else []
+		queryset = reduce(operator.or_, [Q(name__icontains=q) for q in queries])
+		branch_queryset = reduce(operator.or_, [Q(restaurant__name__icontains=q) | Q(name__icontains=q) for q in queries])
+
+		branches = map(lambda branch: branch.json_search(queries), Branch.objects.filter(country=country, town=town).filter(branch_queryset).order_by('-created_at'))
+		foods = map(lambda food: food.json_search(queries), Food.objects.filter(branch__country=country, branch__town=town).filter(queryset).order_by('-created_at'))
+		drinks = map(lambda drink: drink.json_search(queries), Drink.objects.filter(branch__country=country, branch__town=town).filter(queryset).order_by('-created_at'))
+		dishes = map(lambda dish: dish.json_search(queries), Drink.objects.filter(branch__country=country, branch__town=town).filter(queryset).order_by('-created_at'))
+
+		results = branches + foods + drinks + dishes
+		response = sorted(results, key=lambda res: res['qp'], reverse=True)
+		return HttpResponse(json.dumps(response[:20], default=str), content_type='application/json')
+	except Exception:
+		return HttpResponse(json.dumps([], default=str), content_type='application/json')
+
+
+@require_http_methods(['GET'])
+def api_menus_search_response(request):
+	query = request.GET.get('query')
+	country = request.GET.get('country')
+	town = request.GET.get('town')
+
+	try:
+		queries = query.split() if query != None else []
+		queryset = reduce(operator.or_, [Q(name__icontains=q) for q in queries])
+	
+		foods = map(lambda food: food.json_search(queries), Food.objects.filter(branch__country=country, branch__town=town).filter(queryset).order_by('-created_at'))
+		drinks = map(lambda drink: drink.json_search(queries), Drink.objects.filter(branch__country=country, branch__town=town).filter(queryset).order_by('-created_at'))
+		dishes = map(lambda dish: dish.json_search(queries), Drink.objects.filter(branch__country=country, branch__town=town).filter(queryset).order_by('-created_at'))
+
+		results = foods + drinks + dishes
+		response = sorted(results, key=lambda res: res['qp'], reverse=True)
+
+		page = request.GET.get('page', 1)
+		paginator = Paginator(response, settings.PAGINATOR_ITEM_COUNT)
+
+		if paginator.num_pages >= int(page):
+			try:
+				_menus = json.dumps([menu for menu in paginator.page(page)], default=str)
+			except PageNotAnInteger:
+				_menus = json.dumps([menu for menu in paginator.page(1)], default=str)
+			except EmptyPage:
+				_menus = json.dumps([menu for menu in paginator.page(paginator.num_pages)], default=str)
+		else:
+			_menus = json.dumps([], default=str)
+
+		return HttpResponse(_menus, content_type='application/json')
+	except Exception:
+		return HttpResponse(json.dumps([], default=str), content_type='application/json')
+
+
+@require_http_methods(['GET'])
+def api_restaurants_search_response(request):
+	query = request.GET.get('query')
+	country = request.GET.get('country')
+	town = request.GET.get('town')
+
+	try:
+		queries = query.split() if query != None else []
+		branch_queryset = reduce(operator.or_, [Q(restaurant__name__icontains=q) | Q(name__icontains=q) for q in queries])
+		branches = map(lambda branch: branch.json_search(queries), Branch.objects.filter(country=country, town=town).filter(branch_queryset).order_by('-created_at'))
+
+		response = sorted(branches, key=lambda res: res['qp'], reverse=True)
+
+		page = request.GET.get('page', 1)
+		paginator = Paginator(response, settings.PAGINATOR_ITEM_COUNT)
+		
+		if paginator.num_pages >= int(page):
+			try:
+				_branches = json.dumps([branch for branch in paginator.page(page)], default=str)
+			except PageNotAnInteger:
+				_branches = json.dumps([branch for branch in paginator.page(1)], default=str)
+			except EmptyPage:
+				_branches = json.dumps([branch for branch in paginator.page(paginator.num_pages)], default=str)
+		else:
+			_branches = json.dumps([], default=str)
+
+		return HttpResponse(_branches, content_type='application/json')
+	except Exception:
+		return HttpResponse(json.dumps([], default=str), content_type='application/json')

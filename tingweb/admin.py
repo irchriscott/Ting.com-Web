@@ -31,7 +31,9 @@ from tingweb.forms import (
 							AddMenuDish, DishImageForm, EditMenuDish, AddNewBranch, RestaurantTableForm, PromotionForm,
 							PromotionEditForm, UpdateBranchProfile
 						) 
-from tingadmin.models import RestaurantCategory
+from tingadmin.forms import RestaurantFormAdmin, BranchForm
+from tingadmin.mailer import SendRestaurantRegistrationMail
+from tingadmin.models import RestaurantCategory, TingPackage, TingLicenceKey
 from pusher_push_notifications import PushNotifications
 from pubnub.callbacks import SubscribeCallback
 from pubnub.enums import PNStatusCategory
@@ -39,6 +41,7 @@ from pubnub.pnconfiguration import PNConfiguration
 from pubnub.pubnub import PubNub
 from background_task import background
 from tingweb.views import get_restaurant_map_pin_svg
+from tingadmin import views as admin
 from datetime import datetime, timedelta, date
 import ting.utils as utils
 import tingadmin.permissions as permissions
@@ -318,6 +321,130 @@ def subscribe_ting_socket(func):
 # Login & Signup
 
 
+def signup_restaurant(request):
+
+	if request.method == 'POST':
+		
+		token = get_random_string(128)
+		slug = '%s-%s' % (request.POST.get('name').replace(' ', '-').lower(), get_random_string(16))
+		email = request.POST.get('email')
+		phone = request.POST.get('phone')
+
+		# Create Restaurant
+		
+		restaurant_form = RestaurantFormAdmin(request.POST, instance=Restaurant(
+				token=token,
+				slug=slug,
+				logo=utils.DEFAULT_RESTAURANT_IMAGE
+			))
+
+		branch_form = BranchForm(request.POST, instance=Branch(
+				name=request.POST.get('branch'),
+				phone=phone,
+				email=email,
+				channel=get_random_string(64)
+			))
+
+		if restaurant_form.is_valid() and branch_form.is_valid():
+
+			restaurant = restaurant_form.save()
+			branch = branch_form.save(commit=False)
+			branch.restaurant = Restaurant.objects.get(pk=restaurant.pk)
+			branch.save()
+
+			# Create Configuration For Restaurant
+
+			config = RestaurantConfig(
+					restaurant=get_object_or_404(Restaurant, pk=restaurant.pk),
+					email=email,
+					cancel_late_booking=30,
+					phone=phone
+				)
+
+			config.save()
+
+			# Default Administrator Account
+
+			admin_token = get_random_string(128)
+			password = get_random_string(8)
+
+			admin = Administrator(
+					restaurant=Restaurant.objects.get(pk=restaurant.pk),
+					branch=Branch.objects.get(pk=branch.pk),
+					token=admin_token,
+					name=utils.DEFAULT_ADMIN_NAME,
+					username=utils.DEFAULT_ADMIN_USERNAME,
+					email=email,
+					password=make_password(password),
+					admin_type=utils.ADMIN_TYPE[0][0],
+					channel=get_random_string(64),
+					image=utils.DEFAULT_ADMIN_IMAGE,
+					phone=phone
+				)
+
+			admin.save()
+
+			# Administrator Permissions
+
+			if restaurant.purpose == 1:
+
+				_permissions = AdminPermission(
+						admin=Administrator.objects.get(pk=admin.pk),
+						permissions=','.join(permissions.admin_permissions)
+					)
+
+				_permissions.save()
+
+			elif restaurant.purpose == 2:
+				_permissions = AdminPermission(
+						admin=Administrator.objects.get(pk=admin.pk),
+						permissions=','.join(permissions.advertisment_account_permissions)
+					)
+
+				_permissions.save()
+				
+
+			# Create Trial Key
+
+			key = TingLicenceKey(
+					package=TingPackage.objects.get(pk=1),
+					admin=User.objects.get(pk=request.session['ting']),
+					key=get_random_string(20).upper(),
+					duration=14,
+					is_active=True
+				)
+
+			key.save()
+
+			keyresto = RestaurantLicenceKey(
+					restaurant=Restaurant.objects.get(pk=restaurant.pk),
+					key=TingLicenceKey.objects.get(pk=key.pk),
+					is_active=False
+				)
+
+			keyresto.save()
+
+			# Send Mail
+
+			message = SendRestaurantRegistrationMail(email=admin.email, context={
+				'restaurant': restaurant.name, 
+				'password': password, 
+				'key': key.licence_key, 
+				'email': admin.email
+			})
+
+			message.send()
+
+			messages.success(request, 'Restaurant Registered Successfully !!!')
+			return HttpJsonResponse(ResponseObject('success', 'Restaurant Registered Successfully !!!', 200, 
+                reverse('ting_wb_adm_login')))
+		else:
+			return HttpJsonResponse(
+                ResponseObject('error', 'Fill All Fields With Rignt Data, Please !!!', 400, msgs=restaurant_form.errors.items() + branch_form.errors.items()))
+	else:
+		return HttpJsonResponse(ResponseObject('error', 'Bad Request', 400))
+
+
 class AdminLogin(TemplateView):
 
 	template = 'web/admin/login.html'
@@ -328,7 +455,8 @@ class AdminLogin(TemplateView):
 		return render(request, self.template, {
 				'is_logged_in': True if 'user' in request.session else False,
 				'address_types': utils.USER_ADDRESS_TYPE,
-				'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None
+				'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
+				'types': utils.RESTAURANT_TYPES
 			})
 
 	def post(self, request, *args, **kwargs):
@@ -3151,11 +3279,12 @@ def load_user_placement(request, placement):
 	template = 'web/admin/ajax/load_user_placement.html'
 	admin = Administrator.objects.get(pk=request.session['admin'])
 	placement = Placement.objects.get(pk=placement)
-	orders = Order.objects.filter(bill__pk=placement.bill.pk, is_declined=False) if placement.bill != None else QuerySet([])
-	extras = BillExtra.objects.filter(bill__placement_id=placement.pk)
 	bill = Bill.objects.filter(placement_id=placement.pk).first()
 
 	if bill != None:
+
+		orders = Order.objects.filter(bill__pk=placement.bill.pk, is_declined=False) if placement.bill != None else QuerySet([])
+		extras = BillExtra.objects.filter(bill__placement_id=placement.pk) if placement.bill != None else QuerySet([])
 
 		total_amount = 0
 		for order in orders: 
@@ -3169,6 +3298,11 @@ def load_user_placement(request, placement):
 		bill.extras_total = extras_total
 		bill.total = total_amount + extras_total + bill.tips - ((total_amount * bill.discount) / 100)
 		bill.save()
+	
+	else:
+		
+		orders = []
+		extras = []
 
 	if placement.branch.pk != admin.branch.pk:
 		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant ', 405))

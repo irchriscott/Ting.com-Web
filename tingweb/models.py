@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.db.models import Q
 from django.utils import timezone
 from django_random_queryset import RandomManager
+from django.contrib.humanize.templatetags.humanize import intcomma
 from tingadmin.models import RestaurantCategory, TingLicenceKey, Permission
 from datetime import date, datetime
 from time import time
@@ -35,6 +36,9 @@ def category_image_path(instance, filename):
 
 def promotion_image_path(instance, filename):
 	return "promotions/%s_%s" % (str(time()).replace('.','_'), filename)
+
+def moment_file_path(instance, filename):
+	return "moments/%s_%s" % (str(time()).replace('.','_'), filename)
 
 def get_menu_name(value):
 	menu = Menu.objects.get(pk=value)
@@ -1082,6 +1086,23 @@ class Branch(models.Model):
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
+
+	def json_search(self, queries):
+		name = '%s, %s' % (self.restaurant.name, self.name)
+		return  {
+			'id': self.pk,
+			'type': 1,
+			'image': self.restaurant.logo.url,
+			'name': name,
+			'description': self.address,
+			'text': ', '.join(map(lambda c: c.category.name, self.restaurant.categories)),
+			'reviews': self.reviews_count,
+			'reviewAverage': self.review_average,
+			'qp': utils.query_priority(name, queries),
+			'apiGet': reverse('api_restaurant_get', kwargs={'branch': self.pk}),
+			'relative': reverse('ting_usr_get_restaurant_promotions', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk, 'slug': self.restaurant.slug})
+		}
+		
 
 
 class RestaurantImage(models.Model):
@@ -2265,6 +2286,21 @@ class Food(models.Model):
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	def json_search(self, queries):
+		return  {
+			'id': self.pk,
+			'type': 2,
+			'image': self.image,
+			'name': self.name,
+			'description': '%s, %s' % (self.branch.name, self.restaurant.name),
+			'text': '%s %s' % (self.currency, intcomma(self.price)),
+			'reviews': self.reviews_count,
+			'reviewAverage': self.review_average,
+			'qp': utils.query_priority(self.name, queries),
+			'apiGet': reverse('api_restaurant_menu_get', kwargs={'menu': self.menu.pk}),
+			'relative': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug})
+		}
+
 
 class FoodImage(models.Model):
 	food = models.ForeignKey(Food)
@@ -2627,6 +2663,21 @@ class Drink(models.Model):
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+	def json_search(self, queries):
+		return  {
+			'id': self.pk,
+			'type': 2,
+			'image': self.image,
+			'name': self.name,
+			'description': '%s, %s' % (self.branch.name, self.restaurant.name),
+			'text': '%s %s' % (self.currency, intcomma(self.price)),
+			'reviews': self.reviews_count,
+			'reviewAverage': self.review_average,
+			'qp': utils.query_priority(self.name, queries),
+			'apiGet': reverse('api_restaurant_menu_get', kwargs={'menu': self.menu.pk}),
+			'relative': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug})
 		}
 
 
@@ -3055,6 +3106,21 @@ class Dish(models.Model):
 			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+	def json_search(self, queries):
+		return  {
+			'id': self.pk,
+			'type': 2,
+			'image': self.image,
+			'name': self.name,
+			'description': '%s, %s' % (self.branch.name, self.restaurant.name),
+			'text': '%s %s' % (self.currency, intcomma(self.price)),
+			'reviews': self.reviews_count,
+			'reviewAverage': self.review_average,
+			'qp': utils.query_priority(self.name, queries),
+			'apiGet': reverse('api_restaurant_menu_get', kwargs={'menu': self.menu.pk}),
+			'relative': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug})
 		}
 
 
@@ -4194,7 +4260,7 @@ class Bill(models.Model):
 	number = models.CharField(max_length=20, null=False, blank=False)
 	token = models.CharField(max_length=200, null=False, blank=False, unique=True)
 	placement_id = models.IntegerField(null=True, blank=True)
-	amount = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
+	amount = models.DecimalField(max_digits=18, decimal_places=2, default=0.00)
 	discount = models.DecimalField(max_digits=18, decimal_places=2, default=0.00)
 	tips = models.DecimalField(max_digits=18, decimal_places=2, default=0.00)
 	extras_total = models.DecimalField(max_digits=18, decimal_places=2, default=0.00)
@@ -4431,3 +4497,34 @@ class Order(models.Model):
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 	
+
+
+class Moment(models.Model):
+	user = models.ForeignKey(User)
+	placement = models.ForeignKey(Placement, null=True, blank=True)
+	is_deleted = models.BooleanField(default=False)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now_add=True)
+
+	def __str__(self):
+		return self.user
+
+	def __unicode__(self):
+		return self.user
+
+
+
+class MomentMedia(models.Model):
+	moment = models.ForeignKey(Moment)
+	media_type = models.CharField(max_length=100, null=False, blank=False)
+	media = models.FileField(upload_to=moment_file_path, null=False, blank=False)
+	text = models.CharField(max_length=255, null=True, blank=True)
+	is_deleted = models.BooleanField(default=False)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now_add=True)
+
+	def __str__(self):
+		return self.moment
+
+	def __unicode__(self):
+		return self.moment

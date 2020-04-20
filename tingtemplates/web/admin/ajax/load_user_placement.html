@@ -208,7 +208,7 @@
                     {% endif %}
                 </tbody>
             </table>
-            {% if placement.bill.is_paid == False %}
+            {% if placement.bill == None or placement.bill.is_paid == False %}
             <button class="ui labeled blue icon button" id="ting-admin-open-add-bill-extra-{{placement.pk}}"><i class="add icon"></i>ADD EXTRA</button>
             <div class="ui modal tiny" id="ting-admin-add-bill-extra-{{placement.pk}}">
 			    <div class="header">
@@ -226,11 +226,11 @@
 			                	<div class="two fields">
 			                		<div class="field">
 					                    <label>Enter Extra Single Price :</label>
-					                    <input type="number" name="price" placeholder="Extra Price">
+					                    <input type="number" min="0" name="price" placeholder="Extra Price">
 					                </div>
 					                <div class="field">
 					                    <label>Enter Quantity :</label>
-					                    <input type="number" name="quantity" placeholder="Extra Quantity">
+					                    <input type="number" min="0" name="quantity" placeholder="Extra Quantity">
 					                </div>
 			                	</div>
 			                </div>
