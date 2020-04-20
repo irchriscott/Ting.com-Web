@@ -2288,7 +2288,7 @@ class Food(models.Model):
 
 	def json_search(self, queries):
 		return  {
-			'id': self.pk,
+			'id': self.menu.pk,
 			'type': 2,
 			'image': self.image,
 			'name': self.name,
@@ -2667,7 +2667,7 @@ class Drink(models.Model):
 
 	def json_search(self, queries):
 		return  {
-			'id': self.pk,
+			'id': self.menu.pk,
 			'type': 2,
 			'image': self.image,
 			'name': self.name,
@@ -3110,7 +3110,7 @@ class Dish(models.Model):
 
 	def json_search(self, queries):
 		return  {
-			'id': self.pk,
+			'id': self.menu.pk,
 			'type': 2,
 			'image': self.image,
 			'name': self.name,

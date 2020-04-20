@@ -1359,11 +1359,11 @@ def api_menus_search_response(request):
 
 		if paginator.num_pages >= int(page):
 			try:
-				_menus = json.dumps([menu for menu in paginator.page(page)], default=str)
+				_menus = json.dumps([Menu.objects.get(pk=menu['id']).to_json_s for menu in paginator.page(page)], default=str)
 			except PageNotAnInteger:
-				_menus = json.dumps([menu for menu in paginator.page(1)], default=str)
+				_menus = json.dumps([Menu.objects.get(pk=menu['id']).to_json_s for menu in paginator.page(1)], default=str)
 			except EmptyPage:
-				_menus = json.dumps([menu for menu in paginator.page(paginator.num_pages)], default=str)
+				_menus = json.dumps([Menu.objects.get(pk=menu['id']).to_json_s for menu in paginator.page(paginator.num_pages)], default=str)
 		else:
 			_menus = json.dumps([], default=str)
 
@@ -1390,11 +1390,11 @@ def api_restaurants_search_response(request):
 		
 		if paginator.num_pages >= int(page):
 			try:
-				_branches = json.dumps([branch for branch in paginator.page(page)], default=str)
+				_branches = json.dumps([Branch.objects.get(pk=branch['id']).to_json_s for branch in paginator.page(page)], default=str)
 			except PageNotAnInteger:
-				_branches = json.dumps([branch for branch in paginator.page(1)], default=str)
+				_branches = json.dumps([Branch.objects.get(pk=branch['id']).to_json_s for branch in paginator.page(1)], default=str)
 			except EmptyPage:
-				_branches = json.dumps([branch for branch in paginator.page(paginator.num_pages)], default=str)
+				_branches = json.dumps([Branch.objects.get(pk=branch['id']).to_json_s for branch in paginator.page(paginator.num_pages)], default=str)
 		else:
 			_branches = json.dumps([], default=str)
 
