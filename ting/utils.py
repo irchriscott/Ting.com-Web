@@ -57,7 +57,7 @@ FOOD_TYPE = (
 
 DRINK_TYPE = (
 		(1, 'Water'),
-		(2, 'Beverage (Tea, Coffee, Milk, Late)'),
+		(2, 'Hot Beverage'),
 		(3, 'Beer'),
 		(4, 'Alcohol'),
 		(5, 'Soda'),
@@ -102,7 +102,7 @@ PROMOTION_MENU = (
 
 PROMOTION_PERIOD = (
 		(1, 'Every Day'),
-		(2, 'Every Moday'),
+		(2, 'Every Monday'),
 		(3, 'Every Tuesday'),
 		(4, 'Every Wednesday'),
 		(5, 'Every Thursday'),
@@ -184,7 +184,7 @@ RESTAURANT_TYPES = [
 		{'id': 5, 'name': 'Coffee Shop'},
 		{'id': 6, 'name': 'Supermarket'},
 		{'id': 7, 'name': 'Food Truck'},
-		{'id': 8, 'name': 'Backery'}
+		{'id': 8, 'name': 'Bakery'}
 ]
 
 

@@ -123,6 +123,18 @@ admins = [
 	url(r'adm/signup/google/$', admin.api_sign_up_with_google),
 	url(r'adm/auth/login/$', admin.api_login),
 	url(r'adm/auth/password/reset/$', admin.api_submit_reset_password),
+	url(r'adm/auth/session/$', admin.api_get_admin_session_profile),
+
+	# GLOBAL
+
+	url(r'adm/g/permissions/all/$', admin.api_get_permission_list),
+
+	# ADMINISTRATORS
+
+	url(r'adm/admin/profile/update/image/$', admin.api_update_admin_profile_image),
+	url(r'adm/admin/security/update/password/$', admin.api_update_admin_password),
+	url(r'adm/admin/profile/update/profile/(?P<token>[^/]+)/$', admin.api_update_admin_profile),
+
 ]
 
 

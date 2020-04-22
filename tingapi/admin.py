@@ -21,7 +21,7 @@ from tingweb.mailer import (
 from tingweb.models import (
                                 Restaurant, User, Branch, UserRestaurant, Menu, MenuLike, MenuReview, Promotion, 
                                 PromotionInterest, RestaurantReview, Booking, Food, Drink, Dish, RestaurantTable, 
-                                Placement, Order, Bill, BillExtra, PlacementMessage,
+                                Placement, Order, Bill, BillExtra, PlacementMessage, Administrator
                             )
 from tingadmin.models import RestaurantCategory
 from pubnub.callbacks import SubscribeCallback
@@ -31,6 +31,7 @@ from pubnub.pubnub import PubNub
 from datetime import datetime, timedelta, date
 from background_task import background
 import tingweb.admin as admin
+import tingadmin.permissions as perm
 import ting.utils as utils
 import random
 import decimal
@@ -53,8 +54,16 @@ def ting_publish_callback(envelope, status):
 
 def check_admin_login(func):
 	def wrapper(request, *args, **kwargs):
-		if 'admin' not in request.session.keys():
-			return HttpJsonResponse(ResponseObject('error', 'Login Required !!!', 401))
+		token = request.META.get('HTTP_AUTHORIZATION')
+		try:
+			admin = Administrator.objects.filter(token=token).first()
+			if admin != None:
+				request.session['admin'] = admin.pk
+			else:
+				return HttpJsonResponse(ResponseObject('error', 'Mismatch Token !!!', 401))
+		except Administrator.DoesNotExist:
+			return HttpJsonResponse(ResponseObject('error', 'Mismatch Token !!!', 401))
+
 		return func(request, *args, **kwargs)
 	wrapper.__doc__ = func.__doc__
 	wrapper.__name__ = func.__name__
@@ -114,14 +123,14 @@ def api_sign_up_with_google(request):
 				pass
                     
 			request.session['admin'] = check_admin.pk
-			return HttpJsonResponse(ResponseObject('success', 'Administrator Logged In Successfully !!!', 200, link, user=check_admin.to_json))
+			return HttpJsonResponse(ResponseObject('success', 'Administrator Logged In Successfully !!!', 200, link, user=check_admin.to_json_admin))
 		else:
 			check_admin.token = token
 			check_admin.updated_at = timezone.now()
 			check_admin.save()
 			request.session['admin'] = check_admin.pk
                     
-			return HttpJsonResponse(ResponseObject('success', 'Administrator Logged In Successfully !!!', 200, link, user=check_admin.to_json, msgs=[]))
+			return HttpJsonResponse(ResponseObject('success', 'Administrator Logged In Successfully !!!', 200, link, user=check_admin.to_json_admin, msgs=[]))
 	
 	except Administrator.DoesNotExist:
 		return HttpJsonResponse(ResponseObject('error', 'Unknown Administrator Email', 405))
@@ -138,7 +147,7 @@ def api_login(request):
 		if auth.authenticate != None:
 			request.session['admin'] = auth.authenticate.pk
 			link = reverse('ting_wb_adm_dashboard')
-			return HttpJsonResponse(ResponseObject('success', 'Administrator Logged In Successfully !!!', 200, link, user=auth.authenticate.to_json, msgs=[]))
+			return HttpJsonResponse(ResponseObject('success', 'Administrator Logged In Successfully !!!', 200, link, user=auth.authenticate.to_json_admin, msgs=[]))
 		else:
 			return HttpJsonResponse(ResponseObject('error', 'Invalid Email or Password !!!', 404))
 	else:
@@ -148,3 +157,42 @@ def api_login(request):
 @csrf_exempt
 def api_submit_reset_password(request):
 	return admin.submit_reset_password(request)
+
+
+# ADMINISTRATOR
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_admin', xhr='ajax')
+def api_update_admin_profile(request, token):
+	return admin.update_admin_profile(request, token)
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+def api_update_admin_profile_image(request):
+	return admin.update_admin_image(request)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_admin', xhr='ajax')
+def api_get_admin_session_profile(request):
+	return HttpResponse(json.dumps(Administrator.objects.get(pk=request.session['admin']).to_json_admin, default=str), content_type='application/json')
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+def api_update_admin_password(request):
+	return admin.update_admin_password(request)
+
+
+# GLOBAL
+
+
+def api_get_permission_list(request):
+	return HttpResponse(json.dumps(perm.permissions, default=str), content_type='application/json')

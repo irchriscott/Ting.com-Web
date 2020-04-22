@@ -512,6 +512,48 @@ class Restaurant(models.Model):
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
+	def to_json_admin(self):
+		return {
+			'id': self.pk,
+			'token': self.token,
+			'name': self.name,
+			'motto': self.motto,
+			'purposeId': self.purpose,
+			'purpose': self.purpose_str,
+			'categories': {
+				'count': self.categories.count(),
+				'categories': [category.to_json for category in self.categories]
+			},
+			'logo': self.logo.url,
+			'pin': self.map_pin_svg,
+			'pinImg': self.map_pin_svg,
+			'country': self.country,
+			'town': self.town,
+			'opening': self.opening.strftime('%H:%M'),
+			'closing': self.closing.strftime('%H:%M'),
+			'branches': {
+				'count': self.branches.count()
+			},
+			'images': {
+				'count': self.images.count(),
+				'images': [image.to_json for image in self.images]
+			},
+			'tables': {
+				'count': self.tables_count
+			},
+			'likes':{
+				'count': self.likes_count
+			},
+			'foodCategories':{
+				'count': self.food_categories_count,
+				'categories': [category.to_json for category in self.food_categories]
+			},
+			'config': self.config.to_json_admin,
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
 
 class Branch(models.Model):
 	restaurant = models.ForeignKey(Restaurant)
@@ -1087,6 +1129,48 @@ class Branch(models.Model):
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	
+	@property
+	def to_json_admin(self):
+		return {
+			'id': self.pk,
+			'restaurant': self.restaurant.to_json_admin,
+			'name': self.name,
+			'country': self.country,
+			'town': self.town,
+			'region': self.region,
+			'road': self.road,
+			'address': self.address,
+			'latitude': self.latitude,
+			'longitude': self.longitude,
+			'placeId': self.place_id,
+			'email': self.email,
+			'phone': self.phone,
+			'channel': self.channel,
+			'isAvailable': self.is_available,
+			'type': self.restaurant_type,
+			'specials': self.get_specials,
+			'services': self.get_services,
+			'categories': {
+				'count': self.restaurant.categories.count(),
+				'categories': [category.category.to_json for category in self.restaurant.categories]
+			},
+			'promotions':{
+				'count': self.promotions_count
+			},
+			'reviews': {
+				'count': self.reviews_count,
+				'average': self.review_average,
+				'percents': self.review_percent
+			},
+			'likes':{
+				'count': self.likes_count
+			},
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+
 	def json_search(self, queries):
 		name = '%s, %s' % (self.restaurant.name, self.name)
 		return  {
@@ -1103,7 +1187,6 @@ class Branch(models.Model):
 			'relative': reverse('ting_usr_get_restaurant_promotions', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk, 'slug': self.restaurant.slug})
 		}
 		
-
 
 class RestaurantImage(models.Model):
 	restaurant = models.ForeignKey(Restaurant)
@@ -1243,6 +1326,26 @@ class Administrator(models.Model):
 			'name': self.name,
 			'username': self.username,
 			'type': self.admin_type_str,
+			'email': self.email,
+			'phone': self.phone,
+			'image': self.image.url,
+			'badgeNumber': self.badge_number,
+			'channel': self.channel,
+			'permissions': self.permissions,
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+
+	@property
+	def to_json_admin(self):
+		return {
+			'id': self.pk,
+			'branch': self.branch.to_json_admin,
+			'token': self.token,
+			'name': self.name,
+			'username': self.username,
+			'type': self.admin_type,
 			'email': self.email,
 			'phone': self.phone,
 			'image': self.image.url,
@@ -1401,6 +1504,25 @@ class RestaurantConfig(models.Model):
 			'bookWithAdvance': self.book_with_advance,
 			'bookingAdvance': self.booking_advance,
 			'bookingPaymentMode': self.payement_mode,
+			'bookingCancelationRefund': self.booking_cancelation_refund,
+			'bookingCancelationRefundPercent': self.booking_cancelation_refund_percent,
+			'daysBeforeReservation': self.days_before_reservation,
+			'canTakeAway': self.can_take_away,
+			'userShouldPayBefore': self.user_should_pay_before
+		}
+
+	@property
+	def to_json_admin(self):
+		return {
+			'id': self.pk,
+			'currency': self.currency,
+			'tax': self.tax,
+			'email': self.email,
+			'phone': self.phone,
+			'cancelLateBooking': self.cancel_late_booking,
+			'bookWithAdvance': self.book_with_advance,
+			'bookingAdvance': self.booking_advance,
+			'bookingPaymentMode': self.booking_payement_mode,
 			'bookingCancelationRefund': self.booking_cancelation_refund,
 			'bookingCancelationRefundPercent': self.booking_cancelation_refund_percent,
 			'daysBeforeReservation': self.days_before_reservation,
@@ -4498,7 +4620,6 @@ class Order(models.Model):
 		}
 	
 
-
 class Moment(models.Model):
 	user = models.ForeignKey(User)
 	placement = models.ForeignKey(Placement, null=True, blank=True)
@@ -4511,7 +4632,6 @@ class Moment(models.Model):
 
 	def __unicode__(self):
 		return self.user
-
 
 
 class MomentMedia(models.Model):
