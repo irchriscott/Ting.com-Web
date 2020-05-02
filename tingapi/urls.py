@@ -125,16 +125,59 @@ admins = [
 	url(r'adm/auth/password/reset/$', admin.api_submit_reset_password),
 	url(r'adm/auth/session/$', admin.api_get_admin_session_profile),
 
+	# RESTAURANT
+
+	url(r'adm/restaurant/update/profile/$', admin.api_update_restaurant_profile),
+	url(r'adm/restaurant/update/logo/$', admin.api_update_restaurant_logo),
+	url(r'adm/restaurant/update/categories/$', admin.api_update_restaurant_categories),
+	url(r'adm/restaurant/update/branch/profile/$', admin.api_update_branch_profile),
+	url(r'adm/restaurant/update/config/$', admin.api_update_restaurant_config),
+
 	# GLOBAL
 
 	url(r'adm/g/permissions/all/$', admin.api_get_permission_list),
+	url(r'adm/g/categories/all/$', admin.api_get_restaurant_categories),
 
 	# ADMINISTRATORS
 
+	url(r'adm/administrators/all/$', admin.api_administrators),
+	url(r'adm/administrators/waiters/$', admin.api_waiters),
 	url(r'adm/admin/profile/update/image/$', admin.api_update_admin_profile_image),
 	url(r'adm/admin/security/update/password/$', admin.api_update_admin_password),
+	url(r'adm/administrators/add/$', admin.api_add_new_admin),
 	url(r'adm/admin/profile/update/profile/(?P<token>[^/]+)/$', admin.api_update_admin_profile),
+	url(r'adm/admin/profile/disable/toggle/(?P<token>[^/]+)/$', admin.api_disable_admin_account_toggle),
+	url(r'adm/admin/permissions/update/(?P<token>[^/]+)/$', admin.api_update_admin_permissions),
 
+	# BRANCHES
+
+	url(r'adm/branches/all/$', admin.api_branches),
+	url(r'adm/branches/add/$', admin.api_add_new_branch),
+	url(r'adm/branches/avail/toggle/(?P<branch>\d+)/$', admin.api_avail_branch_toggle),
+	url(r'adm/branches/update/(?P<branch>\d+)/$', admin.api_update_branch),
+
+	# CATEGORIES
+
+	url(r'adm/categories/all/$', admin.api_categories),
+	url(r'adm/categories/add/new/$', admin.api_add_new_category),
+	url(r'adm/categories/delete/(?P<category>\d+)/$', admin.api_delete_category),
+	url(r'adm/categories/update/(?P<category>\d+)/$', admin.api_update_category),
+
+	# TABLES
+
+	url(r'adm/tables/all/$', admin.api_tables),
+	url(r'adm/tables/add/$', admin.api_add_new_table),
+	url(r'adm/tables/avail/toggle/(?P<table>\d+)/$', admin.api_avail_table_toggle),
+	url(r'adm/tables/update/(?P<table>\d+)/$', admin.api_update_table),
+	url(r'adm/tables/waiter/assign/(?P<waiter>\d+)/(?P<table>\d+)/$', admin.api_assign_waiter_table),
+	url(r'adm/tables/waiter/remove/(?P<table>\d+)/$', admin.api_remove_waiter_table),
+
+	# RESERVATIONS
+
+	url(r'adm/reservations/date/$', admin.api_date_reservations),
+	url(r'adm/reservations/new/$', admin.api_new_reservations),
+	url(r'adm/reservations/accept/(?P<reservation>\d+)/$', admin.api_accept_reservation),
+	url(r'adm/reservations/decline/(?P<reservation>\d+)/$', admin.api_decline_reservation),
 ]
 
 

@@ -21,7 +21,7 @@ from tingweb.mailer import (
 from tingweb.models import (
                                 Restaurant, User, Branch, UserRestaurant, Menu, MenuLike, MenuReview, Promotion, 
                                 PromotionInterest, RestaurantReview, Booking, Food, Drink, Dish, RestaurantTable, 
-                                Placement, Order, Bill, BillExtra, PlacementMessage, Administrator
+                                Placement, Order, Bill, BillExtra, PlacementMessage, Administrator, FoodCategory
                             )
 from tingadmin.models import RestaurantCategory
 from pubnub.callbacks import SubscribeCallback
@@ -159,7 +159,78 @@ def api_submit_reset_password(request):
 	return admin.submit_reset_password(request)
 
 
+# RESTAURANT
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_restaurant', xhr='ajax')
+def api_update_restaurant_profile(request):
+	return admin.update_restaurant_profile(request)
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_restaurant', xhr='ajax')
+def api_update_restaurant_logo(request):
+	return admin.update_restaurant_logo(request)
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_restaurant', xhr='ajax')
+def api_update_restaurant_categories(request):
+	return admin.update_restaurant_categories(request)
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_branch', xhr='ajax')
+def api_update_branch_profile(request):
+	return admin.update_branch_profile(request)
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_configurations', xhr='ajax')
+def api_update_restaurant_config(request):
+	return admin.update_restaurant_config(request)
+
+
 # ADMINISTRATOR
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission=['can_view_admin', 'can_view_all_admin'])
+@require_http_methods(['GET'])
+def api_administrators(request):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	administrators = Administrator.objects.filter(restaurant__pk=admin.pk).order_by('name') if admin.has_permission('can_view_all_admin') else Administrator.objects.filter(restaurant__pk=admin.pk, branch__pk=admin.branch.pk).order_by('name')
+	return HttpResponse(json.dumps([admin.to_json_admin for admin in administrators], default=str), content_type='application/json')
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission=['can_view_admin', 'can_view_all_admin'])
+@require_http_methods(['GET'])
+def api_waiters(request):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	waiters = Administrator.objects.filter(restaurant__pk=admin.pk, branch__pk=admin.branch.pk, admin_type=4).order_by('name')
+	return HttpResponse(json.dumps([waiter.to_json_s for waiter in waiters], default=str), content_type='application/json')
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_add_admin', xhr='ajax')
+def api_add_new_admin(request):
+	return admin.add_new_admin(request)
 
 
 @csrf_exempt
@@ -191,8 +262,186 @@ def api_update_admin_password(request):
 	return admin.update_admin_password(request)
 
 
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_disable_admin', xhr='ajax')
+def api_disable_admin_account_toggle(request, token):
+	return admin.disable_admin_account_toggle(request, token)
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_admin', xhr='ajax')
+def api_update_admin_permissions(request, token):
+	return admin.update_admin_permissions(request, token)
+
+
 # GLOBAL
 
 
 def api_get_permission_list(request):
 	return HttpResponse(json.dumps(perm.permissions, default=str), content_type='application/json')
+
+
+def api_get_restaurant_categories(request):
+	return HttpResponse(json.dumps([category.to_json for category in RestaurantCategory.objects.all()], default=str), content_type='application/json')
+
+
+# BRANCHES
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_branch', xhr='ajax')
+def api_branches(request):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	branches = Branch.objects.filter(restaurant__pk=admin.restaurant.pk).order_by('-created_at')
+	return HttpResponse(json.dumps([branch.to_json_admin_s for branch in branches], default=str), content_type='application/json')
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_add_branch', xhr='ajax')
+def api_add_new_branch(request):
+	return admin.add_new_branch(request)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_avail_branch', xhr='ajax')
+def api_avail_branch_toggle(request, branch):
+	return admin.avail_branch_toggle(request, branch)
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_branch', xhr='ajax')
+def api_update_branch(request, branch):
+	return admin.update_branch(request, branch)
+
+
+# CATEGORIES
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_category', xhr='ajax')
+def api_categories(request):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	categories = FoodCategory.objects.filter(restaurant__pk=admin.restaurant.pk)
+	return HttpResponse(json.dumps([category.to_json for category in categories], default=str), content_type='application/json')
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_add_category', xhr='ajax')
+def api_add_new_category(request):
+	return admin.add_new_category(request)
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_category', xhr='ajax')
+def api_update_category(request, category):
+	category = FoodCategory.objects.get(pk=category)
+	return admin.update_category(request, category.slug)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_delete_category', xhr='ajax')
+def api_delete_category(request, category):
+	category = FoodCategory.objects.get(pk=category)
+	return admin.delete_category(request, category.slug)
+
+
+# TABLES
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_table', xhr='ajax')
+def api_tables(request):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	tables = RestaurantTable.objects.filter(restaurant__pk=admin.restaurant.pk, branch__pk=admin.branch.pk)
+	return HttpResponse(json.dumps([table.to_json_admin for table in tables], default=str), content_type='application/json')
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_add_table', xhr='ajax')
+def api_add_new_table(request):
+	return admin.add_new_table(request)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_avail_table', xhr='ajax')
+def api_avail_table_toggle(request, table):
+	return admin.avail_table_toggle(request, table)
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_table', xhr='ajax')
+def api_update_table(request, table):
+	return admin.update_table(request, table)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_table', xhr='ajax')
+def api_assign_waiter_table(request, waiter, table):
+	return admin.assign_waiter_table(request, waiter, table)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_table', xhr='ajax')
+def api_remove_waiter_table(request, table):
+	return admin.remove_waiter_table(request, table)
+
+
+# RESERVATIONS
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_booking')
+def api_date_reservations(request):
+	dt = date.today() if request.GET.get('date') == None or request.GET.get('date') == '' else datetime.strptime(request.GET.get('date'), '%Y-%m-%d')
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	bookings = Booking.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, date=dt).exclude(status=1).order_by('-updated_at')
+	return HttpResponse(json.dumps([booking.to_json_admin for booking in bookings], default=str), content_type='application/json')
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_booking')
+def api_new_reservations(request):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	bookings = Booking.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, status=1).order_by('-updated_at')
+	return HttpResponse(json.dumps([booking.to_json_admin for booking in bookings], default=str), content_type='application/json')
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission=['can_accept_booking', 'can_cancel_booking'])
+def api_accept_reservation(request, reservation):
+	return admin.accept_reservation(request, reservation)
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission=['can_accept_booking', 'can_cancel_booking'])
+def api_decline_reservation(request, reservation):
+	return admin.decline_reservation(request, reservation)

@@ -705,6 +705,7 @@ def update_restaurant_profile(request):
 		password = request.POST.get('password')
 
 		if form.is_valid() and email != '' and phone != '' and password != '':
+			
 			if check_password(password, admin.password) is True:
 				
 				slug = '%s-%s' % (form.cleaned_data['name'].replace(' ', '-').lower(), get_random_string(16))
@@ -712,7 +713,6 @@ def update_restaurant_profile(request):
 				restaurant = Restaurant.objects.get(pk=admin.restaurant.pk)
 				restaurant.name = form.cleaned_data['name']
 				restaurant.slug = slug.lower()
-				restaurant.branch = form.cleaned_data['branch']
 				restaurant.motto = form.cleaned_data['motto']
 				restaurant.opening = form.cleaned_data['opening']
 				restaurant.closing = form.cleaned_data['closing']
@@ -747,6 +747,7 @@ def update_restaurant_config(request):
 		password = request.POST.get('password')
 
 		if form.is_valid() and password != '':
+			
 			if check_password(password, admin.password) == True:
 
 				config = RestaurantConfig.objects.get(restaurant=admin.restaurant.pk)
@@ -791,6 +792,7 @@ def update_branch_profile(request):
 		services = request.POST.getlist('services')
 
 		if form.is_valid() and password != '':
+			
 			if check_password(password, admin.password) is True:
 				
 				branch = Branch.objects.get(pk=admin.branch.pk)
@@ -2580,10 +2582,10 @@ def tables(request):
 
 @check_admin_login
 @is_admin_enabled
-@has_admin_permissions(permission='can_view_table', xhr='ajax')
+@has_admin_permissions(permission='can_add_table', xhr='ajax')
 def add_new_table(request):
 	if request.method == 'POST':
-		
+			
 		admin = Administrator.objects.get(pk=request.session['admin'])
 		table = RestaurantTableForm(request.POST, instance=RestaurantTable(
 				restaurant=Restaurant.objects.get(pk=admin.restaurant.pk),
@@ -2592,8 +2594,15 @@ def add_new_table(request):
 				is_available=True
 			))
 
+		waiter = request.POST.get('waiter')
+
 		if table.is_valid():
 
+			table.save(commit=False)
+
+			if waiter != None and waiter != "":
+				table.waiter = Administrator.objects.get(pk=waiter)
+			
 			table.save()
 
 			messages.success(request, 'Restaurant Table Added Successfully !!!')
@@ -2645,6 +2654,7 @@ def update_table(request, table):
 			table.location = form.cleaned_data['location']
 			table.max_people = form.cleaned_data['max_people']
 			table.chair_type = form.cleaned_data['chair_type']
+			table.description = form.cleaned_data['description']
 			table.updated_at = timezone.now()
 			table.save()
 

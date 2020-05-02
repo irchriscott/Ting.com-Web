@@ -47,6 +47,7 @@
                                     <th>Country</th>
                                     <th>Town</th>
                                     <th>Address</th>
+                                    <th>Is Available</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -59,6 +60,7 @@
                                             <td>{{branch.country}}</td>
                                             <td>{{branch.town}}</td>
                                             <td>{{branch.address}}</td>
+                                            <td>{{branch.is_available|yesno}}</td>
                                             <td>
                                                 <div class="ui right pointing dropdown item" style="margin-right: 10px !important; margin-top: -10px !important;">
                                                     <i class="icon chevron down"></i>
@@ -251,7 +253,7 @@
                         </div>
                         <div class="field">
                             <label>Enter Branch Phone :</label>
-                            <input type="text" name="phone" placeholder="Branch Name" required autocomplete="off">
+                            <input type="text" name="phone" placeholder="Branch Phone" required autocomplete="off">
                         </div>
                     </div>  
                 </div>

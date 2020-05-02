@@ -1171,6 +1171,30 @@ class Branch(models.Model):
 		}
 
 
+	@property
+	def to_json_admin_s(self):
+		return {
+			'id': self.pk,
+			'restaurant': self.restaurant.to_json_admin,
+			'name': self.name,
+			'country': self.country,
+			'town': self.town,
+			'region': self.region,
+			'road': self.road,
+			'address': self.address,
+			'latitude': self.latitude,
+			'longitude': self.longitude,
+			'placeId': self.place_id,
+			'email': self.email,
+			'phone': self.phone,
+			'channel': self.channel,
+			'isAvailable': self.is_available,
+			'type': self.restaurant_type,
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+
 	def json_search(self, queries):
 		name = '%s, %s' % (self.restaurant.name, self.name)
 		return  {
@@ -1350,6 +1374,7 @@ class Administrator(models.Model):
 			'phone': self.phone,
 			'image': self.image.url,
 			'badgeNumber': self.badge_number,
+			'isDisabled': self.is_disabled,
 			'channel': self.channel,
 			'permissions': self.permissions,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
@@ -1452,6 +1477,37 @@ class RestaurantTable(models.Model):
 			'number': self.number,
 			'location': self.location_str,
 			'chairType': self.chair_type_str,
+			'description': self.description,
+			'isAvailable': self.is_available,
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+	@property
+	def to_json_admin(self):
+		return {
+			'id': self.pk,
+			'waiter': self.waiter.to_json_s if self.waiter != None else None,
+			'uuid': self.uuid,
+			'maxPeople': self.max_people,
+			'number': self.number,
+			'location': self.location,
+			'chairType': self.chair_type,
+			'description': self.description,
+			'isAvailable': self.is_available,
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+	@property
+	def to_json_admin_s(self):
+		return {
+			'id': self.pk,
+			'uuid': self.uuid,
+			'maxPeople': self.max_people,
+			'number': self.number,
+			'location': self.location,
+			'chairType': self.chair_type,
 			'description': self.description,
 			'isAvailable': self.is_available,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
@@ -4351,10 +4407,7 @@ class Booking(models.Model):
 			'people': self.people,
 			'date': self.date,
 			'time': self.time,
-			'isComplete': self.is_complete,
-			'isCanceled': self.is_canceled,
-			'isAccepted': self. is_accepted,
-			'isRefunded': self.is_refunded,
+			'status': self.status_str,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
@@ -4367,13 +4420,27 @@ class Booking(models.Model):
 			'people': self.people,
 			'date': self.date,
 			'time': self.time,
-			'isComplete': self.is_complete,
-			'isCanceled': self.is_canceled,
-			'isAccepted': self. is_accepted,
-			'isRefunded': self.is_refunded,
+			'status': self.status_str,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
+
+	@property
+	def to_json_admin(self):
+		return {
+			'id': self.pk,
+			'user': self.user.to_json_s,
+			'table': self.table.to_json_admin_s if self.table != None else None,
+			'token': self.token,
+			'people': self.people,
+			'date': self.date,
+			'time': self.time,
+			'location': self.location,
+			'status': self.status,
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+	
 
 
 class Bill(models.Model):

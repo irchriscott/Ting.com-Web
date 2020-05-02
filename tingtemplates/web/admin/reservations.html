@@ -77,7 +77,7 @@
                                                     <div class="ui green icon label"><i class="icon check"></i> {{book.status_str}}</div>
                                                 {% endif %}
                                             </td>
-                                            <td>{{book.created_at|localtime}}</td>
+                                            <td>{{book.updated_at|localtime}}</td>
                                             <td> 
                                                 {% if admin.pk|has_p:"can_accept_booking" == True or admin.pk|has_p:"can_cancel_booking" %}
                                                     {% if book.status != 6 and book.status != 5 %}
@@ -85,13 +85,10 @@
                                                             <i class="icon chevron down"></i>
                                                             <div class="menu">
                                                                 <div class="header">Options</div>
-                                                                {% if book.status == 1 %}
+                                                                {% if book.status == 2 %}
                                                                     <a class="item" id="ting-admin-accept-reservation-{{book.pk}}">
                                                                         <i class="check icon"></i> Accept
                                                                     </a>
-                                                                    <a class="item" id="ting-admin-decline-reservation-{{book.id}}">
-                                                                        <i class="times icon"></i> Decline
-                                                                    </div>
                                                                     <div class="ui modal tiny" data-modal="ting-admin-accept-reservation-{{book.pk}}">
                                                                         <div class="header">
                                                                             Accept Reservation
@@ -126,6 +123,14 @@
                                                                             </form>
                                                                         </div>
                                                                     </div>
+
+                                                                {% endif %}
+                                                                {% if booking.status == 3 or booking.status == 4 %}
+
+                                                                    <a class="item" id="ting-admin-decline-reservation-{{book.id}}">
+                                                                        <i class="times icon"></i> Decline
+                                                                    </div>
+                                                                    
                                                                     <div class="ui modal tiny" data-modal="ting-admin-decline-reservation-{{book.id}}">
                                                                         <div class="header">
                                                                             Decline Reservation
@@ -154,10 +159,6 @@
                                                                             </form>
                                                                         </div>
                                                                     </div>
-                                                                    <script type="text/javascript">
-                                                                        $("#ting-admin-accept-reservation-{{book.id}}").openModal();$("#ting-admin-decline-reservation-{{book.id}}").openModal();
-                                                                        $("#ting-decline-reservation-form-{{book.id}}").submitFormAjax();$("#ting-accept-reservation-form-{{book.id}}").submitFormAjax();
-                                                                    </script>
                                                                 {% endif %}
                                                                 {% if book.status == 3 %}
                                                                     <a class="item" id="ting-admin-pay-reservation-{{book.id}}">
@@ -169,6 +170,10 @@
                                                                         <i class="money bill alternate outline icon"></i> Refund
                                                                     </a>
                                                                 {% endif %}
+                                                                <script type="text/javascript">
+                                                                    $("#ting-admin-accept-reservation-{{book.id}}").openModal();$("#ting-admin-decline-reservation-{{book.id}}").openModal();
+                                                                    $("#ting-decline-reservation-form-{{book.id}}").submitFormAjax();$("#ting-accept-reservation-form-{{book.id}}").submitFormAjax();
+                                                                </script>
                                                             </div>
                                                         </div>
                                                     {% endif %}
@@ -254,7 +259,7 @@
                                                     <div class="ui green icon label"><i class="icon check"></i> {{book.status_str}}</div>
                                                 {% endif %}
                                             </td>
-                                            <td>{{book.created_at|localtime}}</td>
+                                            <td>{{book.updated_at|localtime}}</td>
                                             <td> 
                                                 {% if admin.pk|has_p:"can_accept_booking" == True or admin.pk|has_p:"can_cancel_booking" %}
                                                     {% if book.status != 6 and book.status != 5 %}

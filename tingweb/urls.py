@@ -123,7 +123,7 @@ admins = [
 	
 	url(r'adm/branches/all/$', admin.branches, name='ting_wb_adm_branches'),
 	url(r'adm/branches/add/$', admin.add_new_branch, name='ting_wb_adm_add_branch'),
-	url(r'adm/branches/avail/toogle/(?P<branch>\d+)/$', admin.avail_branch_toggle, name='ting_wb_avail_branch_toggle'),
+	url(r'adm/branches/avail/toggle/(?P<branch>\d+)/$', admin.avail_branch_toggle, name='ting_wb_avail_branch_toggle'),
 	url(r'adm/branches/edit/(?P<branch>\d+)/$', admin.edit_branch, name='ting_wb_edit_branch'),
 	url(r'adm/branches/update/(?P<branch>\d+)/$', admin.update_branch, name='ting_wb_update_branch'),
 	url(r'adm/branches/load/(?P<branch>\d+)/$', admin.load_branch, name='ting_wb_load_branch'),
