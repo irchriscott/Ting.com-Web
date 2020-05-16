@@ -2464,6 +2464,33 @@ class Food(models.Model):
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
+	def to_json_admin(self):
+		return {
+			'id': self.pk,
+			'name': self.name,
+			'category': self.category.to_json,
+			'cuisine': self.cuisine.to_json,
+			'menu': self.menu.pk,
+			'type': 1,
+			'foodType' : self.food_type,
+			'description': self.description,
+			'ingredients': self.ingredients,
+			'showIngredients': self.show_ingredients,
+			'price': self.price,
+			'lastPrice': self.last_price,
+			'currency': self.currency,
+			'isCountable': self.is_countable,
+			'isAvailable': self.is_available,
+			'quantity': self.quantity,
+			'images':{
+				'count': self.images.count(),
+				'images': [image.to_json for image in self.images]
+			},
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
 	def json_search(self, queries):
 		return  {
 			'id': self.menu.pk,
@@ -2835,6 +2862,31 @@ class Drink(models.Model):
 				'count': self.likes_count,
 				'likes': self.menu.like_ids
 			},
+			'images':{
+				'count': self.images.count(),
+				'images': [image.to_json for image in self.images]
+			},
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+	@property
+	def to_json_admin(self):
+		return {
+			'id': self.pk,
+			'name': self.name,
+			'menu': self.menu.pk,
+			'type': 2,
+			'drinkType' : self.drink_type,
+			'description': self.description,
+			'ingredients': self.ingredients,
+			'showIngredients': self.show_ingredients,
+			'price': self.price,
+			'lastPrice': self.last_price,
+			'currency': self.currency,
+			'isCountable': self.is_countable,
+			'isAvailable': self.is_available,
+			'quantity': self.quantity,
 			'images':{
 				'count': self.images.count(),
 				'images': [image.to_json for image in self.images]
@@ -3278,6 +3330,35 @@ class Dish(models.Model):
 				'count': self.foods_count,
 				'foods': [food.to_json_s for food in self.foods]
 			},
+			'images':{
+				'count': self.images.count(),
+				'images': [image.to_json for image in self.images]
+			},
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+	@property
+	def to_json_admin(self):
+		return {
+			'id': self.pk,
+			'name': self.name,
+			'category': self.category.to_json,
+			'cuisine': self.cuisine.to_json,
+			'menu': self.menu.pk,
+			'type': 3,
+			'dishTime' : self.dish_time,
+			'description': self.description,
+			'ingredients': self.ingredients,
+			'showIngredients': self.show_ingredients,
+			'price': self.price,
+			'lastPrice': self.last_price,
+			'currency': self.currency,
+			'isCountable': self.is_countable,
+			'isAvailable': self.is_available,
+			'quantity': self.quantity,
+			'hasDrink': self.has_drink,
+			'drink': self.drink.to_json_admin if self.has_drink == True else None,
 			'images':{
 				'count': self.images.count(),
 				'images': [image.to_json for image in self.images]

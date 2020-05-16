@@ -3400,6 +3400,24 @@ var numerilize = function(n, t, d){
     }
 }
 
+String.prototype.htmlspecialchars = function() {
+    var escapedString = this;
+    var specialchars = [
+        [ '&', '&amp;' ],
+        [ '<', '&lt;' ],
+        [ '>', '&gt;' ],
+        [ '"', '&quot;' ]
+    ];
+    var len = specialchars.length;
+    for (var x = 0; x < len; x++) {
+        escapedString = escapedString.replace(
+            new RegExp(specialchars[x][0], 'g'),
+            specialchars[x][1]
+        );
+    }
+    return escapedString;
+};
+
 Array.prototype.shuffle = function () {
     for (var i = this.length - 1; i > 0; i--) {
         var j = Math.floor(Math.random() * (i + 1));

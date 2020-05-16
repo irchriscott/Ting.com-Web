@@ -445,3 +445,214 @@ def api_accept_reservation(request, reservation):
 @has_admin_permissions(permission=['can_accept_booking', 'can_cancel_booking'])
 def api_decline_reservation(request, reservation):
 	return admin.decline_reservation(request, reservation)
+
+
+
+# MENU FOOD
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_menu')
+def api_menu_food(request):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	foods = Food.objects.filter(restaurant__pk=admin.restaurant.pk, branch__pk=admin.branch.pk).order_by('-created_at')
+	return HttpResponse(json.dumps([food.to_json_admin for food in foods], default=str), content_type='application/json')
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_add_menu')
+def api_add_new_menu_food(request):
+	return admin.add_new_menu_food(request)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_avail_menu')
+def api_avail_menu_food_toggle(request, food):
+	return admin.avail_menu_food_toggle(request, food)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu')
+def api_move_menu_food_to_type(request, food, food_type_key):
+	return admin.move_menu_food_to_type(request, food, food_type_key)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu')
+def api_move_menu_food_to_category(request, food, category):
+	return admin.move_menu_food_to_category(request, food, category)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu')
+def api_move_menu_food_to_cuisine(request, food, category):
+	return admin.move_menu_food_to_cuisine(request, food, category)
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu')
+def api_update_menu_food(request, food):
+	return admin.update_menu_food(request, food)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu')
+def api_delete_menu_food_image(request, food, image):
+	return admin.delete_menu_food_image(request, food, image)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_delete_menu')
+def api_delete_menu_food(request, food):
+	return admin.delete_menu_food(request, food)
+
+
+# MENU DRINK
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_menu')
+def api_menu_drink(request):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	drinks = Drink.objects.filter(restaurant__pk=admin.restaurant.pk, branch__pk=admin.branch.pk).order_by('-created_at')
+	return HttpResponse(json.dumps([drink.to_json_admin for drink in drinks], default=str), content_type='application/json')
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_add_menu')
+def api_add_new_menu_drink(request):
+	return admin.add_new_menu_drink(request)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_avail_menu')
+def api_avail_menu_drink_toggle(request, drink):
+	return admin.avail_menu_drink_toggle(request, drink)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu', xhr='ajax')
+def api_move_menu_drink_to_type(request, drink, drink_type_key):
+	return admin.move_menu_drink_to_type(request, drink, drink_type_key)
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu')
+def api_update_menu_drink(request, drink):
+	return admin.update_menu_drink(request, drink)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu')
+def api_delete_menu_drink_image(request, drink, image):
+	return admin.delete_menu_drink_image(request, drink, image)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_delete_menu')
+def api_delete_menu_drink(request, drink):
+	return admin.delete_menu_drink(request, drink)
+
+
+# MENU DISH
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_menu')
+def api_menu_dish(request):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	dishes = Dish.objects.filter(restaurant__pk=admin.restaurant.pk, branch__pk=admin.branch.pk).order_by('-created_at')
+	return HttpResponse(json.dumps([dish.to_json_admin for dish in dishes], default=str), content_type='application/json')
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_add_menu')
+def api_add_new_menu_dish(request):
+	return admin.add_new_menu_dish(request)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_avail_menu')
+def api_avail_menu_dish_toggle(request, dish):
+	return admin.avail_menu_dish_toggle(request, dish)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu')
+def api_move_menu_dish_to_type(request, dish, dish_time_key):
+	return admin.move_menu_dish_to_type(request, dish, dish_time_key)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu')
+def api_move_menu_dish_to_category(request, dish, category):
+	return admin.move_menu_dish_to_category(request, dish, category)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu', xhr='ajax')
+def api_move_menu_dish_to_cuisine(request, dish, category):
+	return admin.move_menu_dish_to_cuisine(request, dish, category)
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu')
+def api_update_menu_dish(request, dish):
+	return admin.update_menu_dish(request, dish)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu')
+def api_delete_menu_dish_image(request, dish, image):
+	return admin.delete_menu_dish_image(request, dish, image)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_delete_menu')
+def api_delete_menu_dish(request, dish):
+	return admin.delete_menu_dish(request, dish)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu')
+def api_add_drink_to_menu_dish(request, dish, drink):
+	return admin.add_drink_to_menu_dish(request, dish, drink)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu', xhr='ajax')
+def api_remove_drink_to_menu_dish(request, dish):
+	return admin.remove_drink_to_menu_dish(request, dish)

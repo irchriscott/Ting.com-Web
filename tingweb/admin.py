@@ -2476,7 +2476,7 @@ def remove_drink_to_menu_dish(request, dish):
 	admin = Administrator.objects.get(pk=request.session['admin'])
 	dish = get_object_or_404(Dish, pk=dish)
 
-	if admin.restaurant.pk != dish.restaurant.pk or drink.restaurant.pk != admin.restaurant.pk or admin.branch.pk != dish.branch.pk:
+	if admin.restaurant.pk != dish.restaurant.pk or admin.branch.pk != dish.branch.pk:
 		messages.error(request, 'Data Not For This Restaurant !!!')
 		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 				reverse('ting_wb_adm_menu_dishes')))
@@ -2528,12 +2528,8 @@ def update_food_menu_for_dish_menu(request, dish):
 			return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403, 
 					reverse('ting_wb_adm_menu_dishes')))
 
-		foods_dish = DishFood.objects.filter(dish__pk=dish.pk)
+		DishFood.objects.filter(dish__pk=dish.pk).delete()
 		
-		if foods_dish.count() > 0:
-			for food in foods_dish:
-				food.delete()
-
 		if len(foods) > 0:
 			for f in foods:
 				data = f.split('-')

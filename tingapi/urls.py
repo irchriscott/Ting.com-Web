@@ -178,6 +178,42 @@ admins = [
 	url(r'adm/reservations/new/$', admin.api_new_reservations),
 	url(r'adm/reservations/accept/(?P<reservation>\d+)/$', admin.api_accept_reservation),
 	url(r'adm/reservations/decline/(?P<reservation>\d+)/$', admin.api_decline_reservation),
+
+	# MENUS FOOD
+
+	url(r'adm/menu/food/all/$', admin.api_menu_food),
+	url(r'adm/menu/food/add/new/$', admin.api_add_new_menu_food),
+	url(r'adm/menu/food/avail/toggle/(?P<food>\d+)/$', admin.api_avail_menu_food_toggle),
+	url(r'adm/menu/food/move/type/(?P<food>\d+)/to/(?P<food_type_key>\d+)/$', admin.api_move_menu_food_to_type),
+	url(r'adm/menu/food/move/category/(?P<food>\d+)/to/(?P<category>\d+)/$', admin.api_move_menu_food_to_category),
+	url(r'adm/menu/food/move/cuisine/(?P<food>\d+)/to/(?P<category>\d+)/$', admin.api_move_menu_food_to_cuisine),
+	url(r'adm/menu/food/update/(?P<food>\d+)/$', admin.api_update_menu_food),
+	url(r'adm/menu/food/update/(?P<food>\d+)/image/delete/(?P<image>\d+)/$', admin.api_delete_menu_food_image),
+	url(r'adm/menu/food/delete/(?P<food>\d+)/$', admin.api_delete_menu_food),
+
+	# MENU DRINK
+
+	url(r'adm/menu/drink/all/$', admin.api_menu_drink),
+	url(r'adm/menu/drink/add/new/$', admin.api_add_new_menu_drink),
+	url(r'adm/menu/drink/avail/toggle/(?P<drink>\d+)/$', admin.api_avail_menu_drink_toggle),
+	url(r'adm/menu/drink/update/(?P<drink>\d+)/$', admin.api_update_menu_drink),
+	url(r'adm/menu/drink/move/type/(?P<drink>\d+)/to/(?P<drink_type_key>\d+)/$', admin.api_move_menu_drink_to_type),
+	url(r'adm/menu/drink/update/(?P<drink>\d+)/image/delete/(?P<image>\d+)/$', admin.api_delete_menu_drink_image),
+	url(r'adm/menu/drink/delete/(?P<drink>\d+)/$', admin.api_delete_menu_drink),
+	url(r'adm/menu/dish/delete/(?P<dish>\d+)/$', admin.api_delete_menu_dish),
+
+	# MENU DISH
+
+	url(r'adm/menu/dish/all/$', admin.api_menu_dish),
+	url(r'adm/menu/dish/add/new/$', admin.api_add_new_menu_dish),
+	url(r'adm/menu/dish/avail/toggle/(?P<dish>\d+)/$', admin.api_avail_menu_dish_toggle),
+	url(r'adm/menu/dish/move/type/(?P<dish>\d+)/to/(?P<dish_time_key>\d+)/$', admin.api_move_menu_dish_to_type),
+	url(r'adm/menu/dish/move/category/(?P<dish>\d+)/to/(?P<category>\d+)/$', admin.api_move_menu_dish_to_category),
+	url(r'adm/menu/dish/move/cuisine/(?P<dish>\d+)/to/(?P<category>\d+)/$', admin.api_move_menu_dish_to_cuisine),
+	url(r'adm/menu/dish/update/(?P<dish>\d+)/$', admin.api_update_menu_dish),
+	url(r'adm/menu/dish/update/(?P<dish>\d+)/image/delete/(?P<image>\d+)/$', admin.api_delete_menu_dish_image),
+	url(r'adm/menu/dish/drink/(?P<dish>\d+)/add/(?P<drink>\d+)/$', admin.api_add_drink_to_menu_dish),
+	url(r'adm/menu/dish/drink/(?P<dish>\d+)/remove/$', admin.api_remove_drink_to_menu_dish),
 ]
 
 
