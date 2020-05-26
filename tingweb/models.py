@@ -3363,6 +3363,10 @@ class Dish(models.Model):
 				'count': self.images.count(),
 				'images': [image.to_json for image in self.images]
 			},
+			'foods': {
+				'count': self.foods_count,
+				'foods': [food.to_json_admin for food in self.foods]
+			},
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
@@ -3434,6 +3438,18 @@ class DishFood(models.Model):
 		return {
 			'id': self.pk,
 			'food': self.food.to_json_s,
+			'isCountable': self.is_countable,
+			'quantity': self.quantity,
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+	@property
+	def to_json_admin(self):
+		return {
+			'id': self.pk,
+			'food': self.food.pk,
+			'menu': self.food.menu.pk,
 			'isCountable': self.is_countable,
 			'quantity': self.quantity,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),

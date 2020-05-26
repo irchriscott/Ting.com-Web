@@ -214,6 +214,7 @@ admins = [
 	url(r'adm/menu/dish/update/(?P<dish>\d+)/image/delete/(?P<image>\d+)/$', admin.api_delete_menu_dish_image),
 	url(r'adm/menu/dish/drink/(?P<dish>\d+)/add/(?P<drink>\d+)/$', admin.api_add_drink_to_menu_dish),
 	url(r'adm/menu/dish/drink/(?P<dish>\d+)/remove/$', admin.api_remove_drink_to_menu_dish),
+	url(r'adm/menu/dish/food/(?P<dish>\d+)/update/$', admin.api_update_food_menu_for_dish_menu),
 ]
 
 

@@ -656,3 +656,11 @@ def api_add_drink_to_menu_dish(request, dish, drink):
 @has_admin_permissions(permission='can_update_menu', xhr='ajax')
 def api_remove_drink_to_menu_dish(request, dish):
 	return admin.remove_drink_to_menu_dish(request, dish)
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_menu', xhr='ajax')
+def api_update_food_menu_for_dish_menu(request, dish):
+	return admin.update_food_menu_for_dish_menu(request, dish)
