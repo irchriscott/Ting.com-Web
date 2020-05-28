@@ -179,6 +179,10 @@ admins = [
 	url(r'adm/reservations/accept/(?P<reservation>\d+)/$', admin.api_accept_reservation),
 	url(r'adm/reservations/decline/(?P<reservation>\d+)/$', admin.api_decline_reservation),
 
+	# MENUS ALL
+
+	url(r'adm/menus/all/$', admin.api_menus_all),
+
 	# MENUS FOOD
 
 	url(r'adm/menu/food/all/$', admin.api_menu_food),
@@ -215,6 +219,14 @@ admins = [
 	url(r'adm/menu/dish/drink/(?P<dish>\d+)/add/(?P<drink>\d+)/$', admin.api_add_drink_to_menu_dish),
 	url(r'adm/menu/dish/drink/(?P<dish>\d+)/remove/$', admin.api_remove_drink_to_menu_dish),
 	url(r'adm/menu/dish/food/(?P<dish>\d+)/update/$', admin.api_update_food_menu_for_dish_menu),
+
+	# PROMOTIONS
+
+	url(r'adm/promotions/all/$', admin.api_promotions),
+	url(r'adm/promotions/add/$', admin.api_add_new_promotion),
+	url(r'adm/promotions/update/(?P<promotion>\d+)/$', admin.api_update_promotion),
+	url(r'adm/promotions/avail/toggle/(?P<promotion>\d+)/$', admin.api_avail_promotion_toggle),	
+	url(r'adm/promotions/delete/(?P<promotion>\d+)/$', admin.api_delete_promotion),
 ]
 
 

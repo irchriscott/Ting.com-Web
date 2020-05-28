@@ -2465,6 +2465,24 @@ class Food(models.Model):
 		}
 
 	@property
+	def to_json_admin_s(self):
+		return {
+			'id': self.pk,
+			'name': self.name,
+			'foodType' : self.food_type,
+			'price': self.price,
+			'currency': self.currency,
+			'isAvailable': self.is_available,
+			'quantity': self.quantity,
+			'images':{
+				'count': self.images.count(),
+				'images': [image.to_json for image in self.images]
+			},
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+	@property
 	def to_json_admin(self):
 		return {
 			'id': self.pk,
@@ -2885,6 +2903,24 @@ class Drink(models.Model):
 			'lastPrice': self.last_price,
 			'currency': self.currency,
 			'isCountable': self.is_countable,
+			'isAvailable': self.is_available,
+			'quantity': self.quantity,
+			'images':{
+				'count': self.images.count(),
+				'images': [image.to_json for image in self.images]
+			},
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+	@property
+	def to_json_admin_s(self):
+		return {
+			'id': self.pk,
+			'name': self.name,
+			'drinkType' : self.drink_type,
+			'price': self.price,
+			'currency': self.currency,
 			'isAvailable': self.is_available,
 			'quantity': self.quantity,
 			'images':{
@@ -3371,6 +3407,24 @@ class Dish(models.Model):
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
+	def to_json_admin_s(self):
+		return {
+			'id': self.pk,
+			'name': self.name,
+			'dishTime' : self.dish_time,
+			'price': self.price,
+			'currency': self.currency,
+			'isAvailable': self.is_available,
+			'quantity': self.quantity,
+			'images':{
+				'count': self.images.count(),
+				'images': [image.to_json for image in self.images]
+			},
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
 	def json_search(self, queries):
 		return  {
 			'id': self.menu.pk,
@@ -3722,10 +3776,6 @@ class Menu(models.Model):
 					'apiReviews': reverse('api_restaurant_menu_reviews', kwargs={'menu': self.pk}),
 					'apiAddReview': reverse('api_restaurant_menu_add_review', kwargs={'menu': self.pk}),
 				},
-				'restaurant': {
-					'name': '%s, %s' % (self.restaurant.name, self.branch.name),
-					'logo': self.restaurant.logo.url
-				},
 				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
 				'menu': food.to_json_f
 			}
@@ -3888,10 +3938,6 @@ class Menu(models.Model):
 					'apiReviews': reverse('api_restaurant_menu_reviews', kwargs={'menu': self.pk}),
 					'apiAddReview': reverse('api_restaurant_menu_add_review', kwargs={'menu': self.pk}),
 				},
-				'restaurant': {
-					'name': '%s, %s' % (self.restaurant.name, self.branch.name),
-					'logo': self.restaurant.logo.url
-				},
 				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': food.slug}),
 				'menu': food.to_json_f_s
 			}
@@ -3946,6 +3992,42 @@ class Menu(models.Model):
 				},
 				'url': reverse('ting_usr_menu_get', kwargs={'menu': self.pk, 'slug': dish.slug}),
 				'menu': dish.to_json_f_s
+			}
+
+	@property
+	def to_json_admin(self):
+		if self.menu_type == 1:
+			food = Food.objects.get(pk=self.menu_id)
+			return {
+				'id': self.pk,
+				'type':{
+					'id': self.menu_type,
+					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
+				},
+				'forAllBranches': self.for_all_branches,
+				'menu': food.to_json_admin_s
+			}
+		elif self.menu_type == 2:
+			drink = Drink.objects.get(pk=self.menu_id)
+			return {
+				'id': self.pk,
+				'type':{
+					'id': self.menu_type,
+					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
+				},
+				'forAllBranches': self.for_all_branches,
+				'menu': drink.to_json_admin_s
+			}
+		elif self.menu_type == 3:
+			dish = Dish.objects.get(pk=self.menu_id)
+			return {
+				'id': self.pk,
+				'type':{
+					'id': self.menu_type,
+					'name': utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
+				},
+				'forAllBranches': self.for_all_branches,
+				'menu': dish.to_json_admin_s
 			}
 
 
@@ -4435,6 +4517,46 @@ class Promotion(models.Model):
 		}
 
 
+	@property
+	def to_json_admin(self):
+		return {
+			'id': self.pk,
+			'occasionEvent': self.occasion_event,
+			'uuid': self.uuid,
+			'uuidUrl': self.uuid_url,
+			'promotionItem': {
+				'type':{'id': self.promotion_menu_type, 'name': utils.get_from_tuple(utils.PROMOTION_MENU, self.promotion_menu_type)},
+				'category': self.category.to_json if self.promotion_menu_type == '05' else {},
+				'menu': self.menu.to_json_admin if self.promotion_menu_type == '04' else {}
+			},
+			'reduction':{
+				'hasReduction': self.has_reduction,
+				'amount': self.amount,
+				'reductionType': self.reduction_type
+			},
+			'supplement':{
+				'hasSupplement': self.has_supplement,
+				'minQuantity': self.supplement_min_quantity,
+				'isSame': self.is_supplement_same,
+				'supplement': self.supplement.to_json_admin if self.is_supplement_same == False else {},
+				'quantity': self.supplement_quantity
+			},
+			'period': {
+				'isSpecial': self.is_special,
+				'startDate': self.start_date.strftime('%Y-%m-%d %H:%M:%S') if self.start_date != None else None,
+				'endDate': self.end_date.strftime('%Y-%m-%d %H:%M:%S') if self.end_date != None else None,
+				'periods': self.promotion_period.split(',') if self.promotion_period != None else []
+			},
+			'description': self.description,
+			'posterImage': self.poster_image.url,
+			'isOn': self.is_on,
+			'isOnToday': self.is_on_today,
+			'forAllBranches': self.for_all_branches,
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+
 class PromotionInterest(models.Model):
 	promotion = models.ForeignKey(Promotion)
 	user = models.ForeignKey(User)
@@ -4538,7 +4660,6 @@ class Booking(models.Model):
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 	
-
 
 class Bill(models.Model):
 	restaurant = models.ForeignKey(Restaurant)

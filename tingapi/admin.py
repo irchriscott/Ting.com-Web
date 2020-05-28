@@ -447,6 +447,17 @@ def api_decline_reservation(request, reservation):
 	return admin.decline_reservation(request, reservation)
 
 
+# MENU ALL
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_menu')
+def api_menus_all(request):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	menus = Menu.objects.filter(restaurant__pk=admin.restaurant.pk, branch__pk=admin.branch.pk).order_by('-created_at')
+	return HttpResponse(json.dumps([menu.to_json_admin for menu in menus], default=str), content_type='application/json')
+
 
 # MENU FOOD
 
@@ -664,3 +675,45 @@ def api_remove_drink_to_menu_dish(request, dish):
 @has_admin_permissions(permission='can_update_menu', xhr='ajax')
 def api_update_food_menu_for_dish_menu(request, dish):
 	return admin.update_food_menu_for_dish_menu(request, dish)
+
+
+# PROMOTIONS
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_promotion')
+def api_promotions(request):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	promotions = Promotion.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk)
+	return HttpResponse(json.dumps([promotion.to_json_admin for promotion in promotions], default=str), content_type='application/json')
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_add_promotion', xhr='ajax')
+def api_add_new_promotion(request):
+	return admin.add_new_promotion(request)
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_update_promotion', xhr='ajax')
+def api_update_promotion(request, promotion):
+	return admin.update_promotion(request, promotion)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_avail_promotion', xhr='ajax')
+def api_avail_promotion_toggle(request, promotion):
+	return admin.avail_promotion_toggle(request, promotion)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_delete_promotion', xhr='ajax')
+def api_delete_promotion(request, promotion):
+	return admin.delete_promotion(request, promotion)

@@ -1506,7 +1506,7 @@ def add_new_menu_food(request):
 		show_ingredients = True if request.POST.get('show_ingredients') == 'on' else False
 		for_all_branches = True if request.POST.get('for_all_branches') == 'on' else False
 
-		branches = Branches.objects.filter(restaurant__pk=admin.restaurant.pk) if for_all_branches == True else Branches.objects.filter(pk=admin.branch.pk)
+		branches = Branch.objects.filter(restaurant__pk=admin.restaurant.pk) if for_all_branches == True else Branch.objects.filter(pk=admin.branch.pk)
 
 		for branch in branches:
 
@@ -1846,7 +1846,7 @@ def add_new_menu_drink(request):
 		show_ingredients = True if request.POST.get('show_ingredients') == 'on' else False
 		for_all_branches = True if request.POST.get('for_all_branches') == 'on' else False
 
-		branches = Branches.objects.filter(restaurant__pk=admin.restaurant.pk) if for_all_branches == True else Branches.objects.filter(pk=admin.branch.pk)
+		branches = Branch.objects.filter(restaurant__pk=admin.restaurant.pk) if for_all_branches == True else Branch.objects.filter(pk=admin.branch.pk)
 
 		for branch in branches:
 
@@ -2131,7 +2131,7 @@ def add_new_menu_dish(request):
 		show_ingredients = True if request.POST.get('show_ingredients') == 'on' else False
 		for_all_branches = True if request.POST.get('for_all_branches') == 'on' else False
 
-		branches = Branches.objects.filter(restaurant__pk=admin.restaurant.pk) if for_all_branches == True else Branches.objects.filter(pk=admin.branch.pk)
+		branches = Branch.objects.filter(restaurant__pk=admin.restaurant.pk) if for_all_branches == True else Branch.objects.filter(pk=admin.branch.pk)
 
 		for branch in branches:
 
@@ -2770,7 +2770,7 @@ def add_new_promotion(request):
 		admin = Administrator.objects.get(pk=request.session['admin'])
 		for_all_branches = True if request.POST.get('for_all_branches') == 'on' else False
 
-		branches = Branches.objects.filter(restaurant__pk=admin.restaurant.pk) if for_all_branches == True else Branches.objects.filter(pk=admin.branch.pk)
+		branches = Branch.objects.filter(restaurant__pk=admin.restaurant.pk) if for_all_branches == True else Branch.objects.filter(pk=admin.branch.pk)
 		is_special = True if request.POST.get('is_special') == 'on' else False
 		
 		if is_special == True:
@@ -2781,8 +2781,8 @@ def add_new_promotion(request):
 				return HttpJsonResponse(ResponseObject('error', 'Insert Valid Dates !!!', 406))
 
 		periods = request.POST.get('promotion_period')
-		start_date = datetime.strptime(request.POST.get('start_date'), '%Y-%m-%d') if request.POST.get('start_date') != None else ''
-		end_date = datetime.strptime(request.POST.get('end_date'), '%Y-%m-%d') if request.POST.get('end_date') != None else ''
+		start_date = datetime.strptime(request.POST.get('start_date'), '%Y-%m-%d') if request.POST.get('start_date') != None and request.POST.get('start_date') != '' else ''
+		end_date = datetime.strptime(request.POST.get('end_date'), '%Y-%m-%d') if request.POST.get('end_date') != None and request.POST.get('end_date') != '' else ''
 
 		if is_special == True:
 
@@ -2918,8 +2918,8 @@ def update_promotion(request, promotion):
 		if form.is_valid():
 
 			periods = request.POST.get('promotion_period')
-			start_date = datetime.strptime(request.POST.get('start_date'), '%Y-%m-%d') if request.POST.get('start_date') != None else ''
-			end_date = datetime.strptime(request.POST.get('end_date'), '%Y-%m-%d') if request.POST.get('end_date') != None else ''
+			start_date = datetime.strptime(request.POST.get('start_date'), '%Y-%m-%d') if request.POST.get('start_date') != None and request.POST.get('start_date') != '' else ''
+			end_date = datetime.strptime(request.POST.get('end_date'), '%Y-%m-%d') if request.POST.get('end_date') != None and request.POST.get('end_date') != '' else ''
 
 			if is_special == True:
 

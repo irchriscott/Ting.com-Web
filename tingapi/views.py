@@ -464,6 +464,8 @@ def api_get_restaurant_filters(request):
 
 
 # To Review about search (user token request)
+
+
 @csrf_exempt
 @authenticate_user(xhr='api')
 def api_filter_restaurants(request):
