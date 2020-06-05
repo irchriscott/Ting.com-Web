@@ -1,4 +1,8 @@
 from __future__ import unicode_literals
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.core.files import File
+from io import BytesIO
+from PIL import Image
 import os
 import base64
 
@@ -308,3 +312,12 @@ def query_priority(value, queries):
 
 	return p if len(qr) > 0 else 1000
 		
+def compress_image(image, memory):
+	img = Image.open(image)
+	img = img.convert('RGB')
+	thumb_io = BytesIO()
+	img.save(thumb_io, format='JPEG', quality=60)
+
+	return InMemoryUploadedFile(
+    	thumb_io, None, image.name, 
+        'image/jpeg', thumb_io.tell(), None) if memory == True else File(img_io, name=image.name)

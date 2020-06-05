@@ -1542,7 +1542,7 @@ def add_new_menu_food(request):
 				for image in images:
 					img = FoodImage(
 							food=Food.objects.get(pk=food.pk),
-							image=image
+							image=utils.compress_image(image, True)
 						)
 					img.save()
 
@@ -1753,7 +1753,7 @@ def update_menu_food(request, food):
 					for image in images:
 						img = FoodImage(
 								food=Food.objects.get(pk=foo.pk),
-								image=image
+								image=utils.compress_image(image, True)
 							)
 						img.save()
 
@@ -1880,7 +1880,7 @@ def add_new_menu_drink(request):
 				for image in images:
 					img = DrinkImage(
 							drink=Drink.objects.get(pk=drink.pk),
-							image=image
+							image=utils.compress_image(image, True)
 						)
 					img.save()
 
@@ -2048,7 +2048,7 @@ def update_menu_drink(request, drink):
 					for image in images:
 						img = DrinkImage(
 								drink=Drink.objects.get(pk=drin.pk),
-								image=image
+								image=utils.compress_image(image, True)
 							)
 						img.save()
 
@@ -2167,7 +2167,7 @@ def add_new_menu_dish(request):
 				for image in images:
 					img = DishImage(
 							dish=Dish.objects.get(pk=dish.pk),
-							image=image
+							image=utils.compress_image(image, True)
 						)
 					img.save()
 
@@ -2378,7 +2378,7 @@ def update_menu_dish(request, dish):
 					for image in images:
 						img = DishImage(
 								dish=Dish.objects.get(pk=dis.pk),
-								image=image
+								image=utils.compress_image(image, True)
 							)
 						img.save()
 

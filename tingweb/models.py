@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.db import models
-from django.core.files import File
 from django.conf import settings
 from django.urls import reverse
 from django.db.models import Q
@@ -11,8 +10,6 @@ from django.contrib.humanize.templatetags.humanize import intcomma
 from tingadmin.models import RestaurantCategory, TingLicenceKey, Permission
 from datetime import date, datetime
 from time import time
-from io import BytesIO
-from PIL import Image
 import ting.utils as utils
 import random
 import os
@@ -82,14 +79,6 @@ def get_menu_type(value):
 		return '%s, %s' % ('Drink', utils.get_from_tuple(utils.DISH_TIME, dish.dish_time))
 
 
-def compress(image):
-    img = Image.open(image)
-    img_io = BytesIO() 
-    img.save(img_io, 'JPEG', quality=60) 
-    new_image = File(img_io, name=image.name)
-    return new_image
-
-
 ### USER RESTAURANT
 
 
@@ -110,12 +99,6 @@ class Restaurant(models.Model):
 	updated_at = models.DateTimeField(auto_now_add=True)
 
 	objects = RandomManager()
-
-	def save(self, *args, **kwargs):
-		if self.logo != None:
-			new_image = compress(self.logo)
-			self.logo = new_image
-		super(Restaurant, self).save(self, *args, **kwargs)
 
 	def __str__(self):
 		return self.name
@@ -1235,11 +1218,6 @@ class RestaurantImage(models.Model):
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
 
-	def save(self, *args, **kwargs):
-		new_image = compress(self.image)
-		self.image = new_image
-		super(RestaurantImage, self).save(self, *args, **kwargs)
-
 	def __str__(self):
 		return self.restaurant.name
 
@@ -1292,12 +1270,6 @@ class Administrator(models.Model):
 	is_disabled = models.BooleanField(default=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
-
-	def save(self, *args, **kwargs):
-		if self.image != None:
-			new_image = compress(self.image)
-			self.image = new_image
-		super(Administrator, self).save(self, *args, **kwargs)
 
 	def __str__(self):
 		return self.name
@@ -1646,12 +1618,6 @@ class User(models.Model):
 	is_top = models.BooleanField(default=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
-
-	def save(self, *args, **kwargs):
-		if self.image != None:
-			new_image = compress(self.image)
-			self.image = new_image
-		super(User, self).save(self, *args, **kwargs)
 
 	def __str__(self):
 		return self.name
@@ -2109,12 +2075,6 @@ class FoodCategory(models.Model):
 	updated_at = models.DateTimeField(auto_now_add=True)
 
 	objects = RandomManager()
-
-	def save(self, *args, **kwargs):
-		if self.image != None:
-			new_image = compress(self.image)
-			self.image = new_image
-		super(FoodCategory, self).save(self, *args, **kwargs)
 
 	def __str__(self):
 		return self.name
@@ -2589,11 +2549,6 @@ class FoodImage(models.Model):
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
 
-	def save(self, *args, **kwargs):
-		new_image = compress(self.image)
-		self.image = new_image
-		super(FoodImage, self).save(self, *args, **kwargs)
-
 	def __str__(self):
 		return self.food
 
@@ -3015,11 +2970,6 @@ class DrinkImage(models.Model):
 	image = models.ImageField(upload_to=food_image_path, null=False, blank=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
-
-	def save(self, *args, **kwargs):
-		new_image = compress(self.image)
-		self.image = new_image
-		super(DrinkImage, self).save(self, *args, **kwargs)
 
 	def __str__(self):
 		return self.drink
@@ -3514,11 +3464,6 @@ class DishImage(models.Model):
 	image = models.ImageField(upload_to=food_image_path, null=False, blank=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
-
-	def save(self, *args, **kwargs):
-		new_image = compress(self.image)
-		self.image = new_image
-		super(DishImage, self).save(self, *args, **kwargs)
 
 	def __str__(self):
 		return self.dish
@@ -4194,12 +4139,6 @@ class Promotion(models.Model):
 	updated_at = models.DateField(auto_now_add=True)
 
 	objects = RandomManager()
-
-	def save(self, *args, **kwargs):
-		if self.poster_image != None:
-			new_image = compress(self.poster_image)
-			self.poster_image = new_image
-		super(Promotion, self).save(self, *args, **kwargs)
 
 	def __str__(self):
 		return self.occasion_event
@@ -5090,12 +5029,6 @@ class MomentMedia(models.Model):
 	is_deleted = models.BooleanField(default=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
-
-	def save(self, *args, **kwargs):
-		if self.media_type == 'image':
-			new_image = compress(self.media)
-			self.media = new_image
-		super(MomentMedia, self).save(self, *args, **kwargs)
 
 	def __str__(self):
 		return self.moment
