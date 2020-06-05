@@ -162,6 +162,11 @@ class TingSubscriptionCallback(SubscribeCallback):
 					token = response['args']['token']
 					check_placement = Placement.objects.filter(token=token, user__pk=user['id'])
 
+					send_pusher_notification(
+						'New Client Placed', 
+						'A new client has been placed on table %s' % table.number, 
+						user['image'], '', 'placement', '', table.branch.channel)
+
 					if check_placement.count() == 0:
 						
 						placement = Placement(
@@ -204,6 +209,11 @@ class TingSubscriptionCallback(SubscribeCallback):
 								}
 
 								pubnub.publish().channel(table.waiter.channel).message(waiter_message).pn_async(ting_publish_callback)
+
+								send_pusher_notification(
+										'New Table For You', 
+										'You have been assigned to the client on table %s' % placement.table.number, 
+										placement.user.image.url, '', 'placement', placement.token, table.waiter.channel)
 
 								try:
 									pusher_client.trigger(placement.user.channel, placement.user.channel, {
@@ -3257,7 +3267,7 @@ def placements(request):
 def load_placements(request):
 	template = 'web/admin/ajax/load_placements.html'
 	admin = Administrator.objects.get(pk=request.session['admin'])
-	if admin.admin_type == "4":
+	if admin.admin_type == '4':
 		placements = Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, waiter=admin.pk, is_done=False).order_by('-created_at')
 	else:
 		placements = Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, is_done=False).order_by('-created_at')
@@ -3384,6 +3394,9 @@ def delete_bill_extra(request, extra):
 
 	if admin.restaurant.pk != placement.restaurant.pk or admin.branch.pk != placement.branch.pk:
 		return HttpJsonResponse(ResponseObject('error', 'Data Not For This Restaurant !!!', 403))
+
+	if placement.is_done:
+		return HttpJsonResponse(ResponseObject('error', 'Placement Is Done !!!', 403))
 
 	extra.delete()
 	return HttpJsonResponse(ResponseObject('success', 'Extra Bill Deleted Successfully !!!', 200))
@@ -3543,6 +3556,11 @@ def notify_user_placement_waiter_assigned(placement):
 	}
 
 	pubnub.publish().channel(placement.user.channel).message(user_message).pn_async(ting_publish_callback)
+
+	send_pusher_notification(
+		'New Table For You', 
+		'You have been assigned to the client on table %s' % placement.table.number,
+		placement.user.image.url, '', 'placement', placement.token, placement.waiter.channel)
 	
 	try:
 		pusher_client.trigger(placement.user.channel, placement.user.channel, {
@@ -3873,3 +3891,31 @@ def delete_admin_message(request, message):
 	messages.success(request, 'Order Declined Successfully !!!')
 	return HttpJsonResponse(ResponseObject('success', 'Message Deleted Successfully !!!', 200, 
 				reverse('ting_wb_adm_dashboard')))
+
+
+def send_pusher_notification(title, body, image, text, navigate, data, channel):
+	try:
+		pusher_client.trigger(channel, channel, {
+			'title': title, 
+			'body': body,
+			'image': utils.HOST_END_POINT + image if image != None else "",
+			'text': text,
+			'navigate': navigate,
+			'data': data
+		})
+	except Exception as e:
+		pass
+				
+	try:
+		beams_client.publish_to_interests(
+			interests=[channel],
+			publish_body={
+				'apns': { 'aps': { 'alert': { 'title': title, 'body': body } } },
+				'fcm': {
+					'notification': { 'title': title, 'body': body },
+					'data': { 'navigate': navigate, 'data': data }
+				}
+			}
+		)
+	except Exception as e:
+		pass

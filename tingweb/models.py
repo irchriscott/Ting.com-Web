@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.db import models
+from django.core.files import File
 from django.conf import settings
 from django.urls import reverse
 from django.db.models import Q
@@ -10,6 +11,8 @@ from django.contrib.humanize.templatetags.humanize import intcomma
 from tingadmin.models import RestaurantCategory, TingLicenceKey, Permission
 from datetime import date, datetime
 from time import time
+from io import BytesIO
+from PIL import Image
 import ting.utils as utils
 import random
 import os
@@ -79,6 +82,14 @@ def get_menu_type(value):
 		return '%s, %s' % ('Drink', utils.get_from_tuple(utils.DISH_TIME, dish.dish_time))
 
 
+def compress(image):
+    img = Image.open(image)
+    img_io = BytesIO() 
+    img.save(img_io, 'JPEG', quality=60) 
+    new_image = File(img_io, name=image.name)
+    return new_image
+
+
 ### USER RESTAURANT
 
 
@@ -99,6 +110,12 @@ class Restaurant(models.Model):
 	updated_at = models.DateTimeField(auto_now_add=True)
 
 	objects = RandomManager()
+
+	def save(self, *args, **kwargs):
+		if self.logo != None:
+			new_image = compress(self.logo)
+			self.logo = new_image
+		super(Restaurant, self).save(self, *args, **kwargs)
 
 	def __str__(self):
 		return self.name
@@ -1218,6 +1235,11 @@ class RestaurantImage(models.Model):
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
 
+	def save(self, *args, **kwargs):
+		new_image = compress(self.image)
+		self.image = new_image
+		super(RestaurantImage, self).save(self, *args, **kwargs)
+
 	def __str__(self):
 		return self.restaurant.name
 
@@ -1270,6 +1292,12 @@ class Administrator(models.Model):
 	is_disabled = models.BooleanField(default=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
+
+	def save(self, *args, **kwargs):
+		if self.image != None:
+			new_image = compress(self.image)
+			self.image = new_image
+		super(Administrator, self).save(self, *args, **kwargs)
 
 	def __str__(self):
 		return self.name
@@ -1619,6 +1647,12 @@ class User(models.Model):
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
 
+	def save(self, *args, **kwargs):
+		if self.image != None:
+			new_image = compress(self.image)
+			self.image = new_image
+		super(User, self).save(self, *args, **kwargs)
+
 	def __str__(self):
 		return self.name
 
@@ -1859,6 +1893,24 @@ class User(models.Model):
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
+	def to_admin_json(self):
+		return {
+			'id': self.pk,
+			'name': self.name,
+			'username': self.username,
+			'email': self.email,
+			'image': self.image,
+			'phone': self.phone,
+			'dob': self.date_of_birth,
+			'gender': self.gender,
+			'country': self.country,
+			'town': self.town,
+			'channel': self.channel,
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
 
 class UserAddress(models.Model):
 	user = models.ForeignKey(User)
@@ -2057,6 +2109,12 @@ class FoodCategory(models.Model):
 	updated_at = models.DateTimeField(auto_now_add=True)
 
 	objects = RandomManager()
+
+	def save(self, *args, **kwargs):
+		if self.image != None:
+			new_image = compress(self.image)
+			self.image = new_image
+		super(FoodCategory, self).save(self, *args, **kwargs)
 
 	def __str__(self):
 		return self.name
@@ -2531,6 +2589,11 @@ class FoodImage(models.Model):
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
 
+	def save(self, *args, **kwargs):
+		new_image = compress(self.image)
+		self.image = new_image
+		super(FoodImage, self).save(self, *args, **kwargs)
+
 	def __str__(self):
 		return self.food
 
@@ -2952,6 +3015,11 @@ class DrinkImage(models.Model):
 	image = models.ImageField(upload_to=food_image_path, null=False, blank=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
+
+	def save(self, *args, **kwargs):
+		new_image = compress(self.image)
+		self.image = new_image
+		super(DrinkImage, self).save(self, *args, **kwargs)
 
 	def __str__(self):
 		return self.drink
@@ -3446,6 +3514,11 @@ class DishImage(models.Model):
 	image = models.ImageField(upload_to=food_image_path, null=False, blank=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
+
+	def save(self, *args, **kwargs):
+		new_image = compress(self.image)
+		self.image = new_image
+		super(DishImage, self).save(self, *args, **kwargs)
 
 	def __str__(self):
 		return self.dish
@@ -4122,6 +4195,12 @@ class Promotion(models.Model):
 
 	objects = RandomManager()
 
+	def save(self, *args, **kwargs):
+		if self.poster_image != None:
+			new_image = compress(self.poster_image)
+			self.poster_image = new_image
+		super(Promotion, self).save(self, *args, **kwargs)
+
 	def __str__(self):
 		return self.occasion_event
 
@@ -4755,6 +4834,31 @@ class Bill(models.Model):
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
 
+	@property
+	def to_json_admin(self):
+		return {
+			'id': self.pk,
+			'number': self.number,
+			'token': self.token,
+			'amount': self.amount,
+			'discount': self.discount,
+			'tips': self.tips,
+			'extrasTotal': self.extras_total,
+			'total': self.total,
+			'currency': self.currency,
+			'isRequested': self.is_requested,
+			'isPaid': self.is_paid,
+			'isComplete': self.is_complete,
+			'paidBy': self.paid_by,
+			'orders': {
+				'count': self.orders_count,
+				'orders': [order.to_admin_json for order in self.orders]
+			},
+			'extras': [extra.to_json for extra in self.extras],
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
 
 class BillExtra(models.Model):
 	bill = models.ForeignKey(Bill)
@@ -4826,6 +4930,43 @@ class Placement(models.Model):
 		}
 
 
+	@property
+	def to_admin_json(self):
+		return {
+			'id': self.pk,
+			'user': self.user.to_admin_json,
+			'table': self.table.to_json_admin_s,
+			'booking': self.booking.to_json_s if self.booking != None else None,
+			'waiter': self.waiter.to_json_s if self.waiter != None else None,
+			'bill': self.bill.to_json_s if self.bill != None and self.bill != '' else None,
+			'token': self.token,
+			'billNumber': self.bill.number if self.bill != None and self.bill != '' else None,
+			'people': self.people,
+			'isDone': self.is_done,
+			'needSomeone': self.need_someone,
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+
+	@property
+	def to_admin_json_s(self):
+		return {
+			'id': self.pk,
+			'user': self.user.to_admin_json,
+			'table': self.table.to_json_admin_s,
+			'booking': self.booking.to_json_s if self.booking != None else None,
+			'waiter': self.waiter.to_json_s if self.waiter != None else None,
+			'token': self.token,
+			'billNumber': self.bill.number if self.bill != None and self.bill != '' else None,
+			'people': self.people,
+			'isDone': self.is_done,
+			'needSomeone': self.need_someone,
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+
 class PlacementMessage(models.Model):
 	placement = models.ForeignKey(Placement)
 	message = models.TextField(null=False, blank=False)
@@ -4878,6 +5019,7 @@ class Order(models.Model):
 			'conditions': self.conditions,
 			'isAccepted': self.is_delivered,
 			'isDeclined': self.is_declined,
+			'isDelivered': self.is_delivered,
 			'reasons': self.reasons,
 			'hasPromotion': self.has_promotion,
 			'promotion': self.promotion.string_data_json if self.promotion != None else None,
@@ -4897,6 +5039,27 @@ class Order(models.Model):
 			'conditions': self.conditions,
 			'isAccepted': self.is_delivered,
 			'isDeclined': self.is_declined,
+			'isDelivered': self.is_delivered,
+			'reasons': self.reasons,
+			'hasPromotion': self.has_promotion,
+			'promotion': self.promotion.string_data_json if self.promotion != None else None,
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+	@property
+	def to_admin_json(self):
+		return {
+			'id': self.pk,
+			'menu': self.menu.to_json_admin,
+			'token': self.token,
+			'quantity': self.quantity,
+			'price': self.price,
+			'currency': self.currency,
+			'conditions': self.conditions,
+			'isAccepted': self.is_delivered,
+			'isDeclined': self.is_declined,
+			'isDelivered': self.is_delivered,
 			'reasons': self.reasons,
 			'hasPromotion': self.has_promotion,
 			'promotion': self.promotion.string_data_json if self.promotion != None else None,
@@ -4927,6 +5090,12 @@ class MomentMedia(models.Model):
 	is_deleted = models.BooleanField(default=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
+
+	def save(self, *args, **kwargs):
+		if self.media_type == 'image':
+			new_image = compress(self.media)
+			self.media = new_image
+		super(MomentMedia, self).save(self, *args, **kwargs)
 
 	def __str__(self):
 		return self.moment

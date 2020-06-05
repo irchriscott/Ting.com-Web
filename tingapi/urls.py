@@ -227,6 +227,19 @@ admins = [
 	url(r'adm/promotions/update/(?P<promotion>\d+)/$', admin.api_update_promotion),
 	url(r'adm/promotions/avail/toggle/(?P<promotion>\d+)/$', admin.api_avail_promotion_toggle),	
 	url(r'adm/promotions/delete/(?P<promotion>\d+)/$', admin.api_delete_promotion),
+
+	# PLACEMENT
+
+	url(r'adm/placements/all/$', admin.api_placements),
+	url(r'adm/placements/(?P<token>[^/]+)/get/$', admin.api_get_placement),
+	url(r'adm/placements/(?P<token>[^/]+)/done/$', admin.api_done_placement),
+	url(r'adm/placements/(?P<token>[^/]+)/assign/waiter/(?P<waiter>\d+)/$', admin.api_assign_waiter_placement),
+	url(r'adm/placements/(?P<placement>\d+)/bill/mark/paid/$', admin.api_mark_bill_paid),
+	url(r'adm/orders/placement/(?P<token>[^/]+)/all/$', admin.api_load_bill_orders),
+	url(r'adm/orders/(?P<order>\d+)/accept/$', admin.api_accept_user_order),
+	url(r'adm/orders/(?P<order>\d+)/decline/$', admin.api_decline_user_order),
+	url(r'adm/orders/extras/(?P<placement>\d+)/add/$', admin.api_add_bill_extra),
+	url(r'adm/orders/extras/(?P<extra>\d+)/delete/$', admin.api_delete_bill_extra),
 ]
 
 

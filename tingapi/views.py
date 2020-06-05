@@ -29,6 +29,7 @@ from tingweb.forms import (
                             )
 from tingapi.forms import MomentMediaForm
 from tingadmin.models import RestaurantCategory
+from pusher_push_notifications import PushNotifications
 from pubnub.callbacks import SubscribeCallback
 from pubnub.enums import PNStatusCategory
 from pubnub.pnconfiguration import PNConfiguration
@@ -42,6 +43,7 @@ import random
 import decimal
 import json
 import imgkit
+import pusher
 import os
 import re
 
@@ -52,6 +54,18 @@ pnconfig.publish_key = utils.PUBNUB_PUBLISH_KEY
 
 pubnub = PubNub(pnconfig)
 
+pusher_client = pusher.Pusher(
+	app_id=utils.PUSHER_APP_ID,
+	key=utils.PUSHER_KEY,
+	secret=utils.PUSHER_SECRET,
+	cluster=utils.PUSHER_CLUSTER,
+	ssl=True
+)
+
+beams_client = PushNotifications(
+    instance_id=utils.PUSHER_BEAMS_INSTANCE,
+    secret_key=utils.PUSHER_BEAMS_SECRET_KEY,
+)
 
 def ting_publish_callback(envelope, status):
 	pass
@@ -943,6 +957,10 @@ def notify_waiter_placed_order(placement):
 		'data': {'token': placement.token, 'user': placement.user.socket_data, 'table': placement.table.number }
 	}
 	pubnub.publish().channel(placement.branch.channel).message(branch_message).pn_async(ting_publish_callback)
+	send_pusher_notification(
+			'New Order On Table %s' % placement.table.number, 
+			'%s has placed an order on table %s' % (placement.user.name, placement.table.number), 
+			placement.user.image.url, '', '', placement.token, placement.branch.channel)
 
 	if placement.waiter != None:
 		waiter_message = {
@@ -956,6 +974,10 @@ def notify_waiter_placed_order(placement):
 			'data': {'token': placement.token, 'user': placement.user.socket_data, 'table': placement.table.number }
 		}
 		pubnub.publish().channel(placement.waiter.channel).message(waiter_message).pn_async(ting_publish_callback)
+		send_pusher_notification(
+			'New Order On Table %s' % placement.table.number, 
+			'%s has placed an order on table %s' % (placement.user.name, placement.table.number), 
+			placement.user.image.url, '', '', placement.token, placement.waiter.channel)
 
 
 @background(schedule=60)
@@ -1280,6 +1302,7 @@ def notify_waiter_request_message(placement, message):
 
 # MOMENT
 
+
 @csrf_exempt
 @authenticate_user(xhr='api')
 @require_http_methods(['POST'])
@@ -1403,3 +1426,31 @@ def api_restaurants_search_response(request):
 		return HttpResponse(_branches, content_type='application/json')
 	except Exception:
 		return HttpResponse(json.dumps([], default=str), content_type='application/json')
+
+
+def send_pusher_notification(title, body, image, text, navigate, data, channel):
+	try:
+		pusher_client.trigger(channel, channel, {
+			'title': title, 
+			'body': body,
+			'image': utils.HOST_END_POINT + image if image != None else "",
+			'text': text,
+			'navigate': navigate,
+			'data': data
+		})
+	except Exception as e:
+		pass
+				
+	try:
+		beams_client.publish_to_interests(
+			interests=[channel],
+			publish_body={
+				'apns': { 'aps': { 'alert': { 'title': title, 'body': body } } },
+				'fcm': {
+					'notification': { 'title': title, 'body': body },
+					'data': { 'navigate': navigate, 'data': data }
+				}
+			}
+		)
+	except Exception as e:
+		pass

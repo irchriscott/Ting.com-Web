@@ -52,8 +52,6 @@ $(document).ready(function() {
                             onClosing: function () {},
                             onClosed: function () {}
                         });
-                        loadAjaxURL("ting-data-placements-container", window.__TING__URL__Load__Placements);
-                        loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements);
                     }
                     break;
                 case 'request_assign_waiter':
@@ -81,8 +79,6 @@ $(document).ready(function() {
                             onClosing: function () {},
                             onClosed: function () {}
                         });
-                        loadAjaxURL("ting-data-placements-container", window.__TING__URL__Load__Placements);
-                        loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements);
                     }
                     break;
                 case 'response_w_resto_table':
@@ -104,8 +100,6 @@ $(document).ready(function() {
                         onClosing: function () {},
                         onClosed: function () {}
                     });
-                    loadAjaxURL("ting-data-placements-container", window.__TING__URL__Load__Placements);
-                    loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements);
                     break;
                 case 'request_table_order':
                     if(admin.permissions.includes('can_receive_orders')) {
@@ -127,8 +121,6 @@ $(document).ready(function() {
                             onClosing: function () {},
                             onClosed: function () {}
                         });
-                        loadAjaxURL("ting-sides-pannel-content-orders", window.__TING__URL__Load__Dash__Orders);
-                        loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements);
                     }
                     break;
                 case 'request_w_table_order':
@@ -151,8 +143,6 @@ $(document).ready(function() {
                             onClosing: function () {},
                             onClosed: function () {}
                         });
-                        loadAjaxURL("ting-sides-pannel-content-orders", window.__TING__URL__Load__Dash__Orders);
-                        loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements);
                     }
                     break;
                 case 'request_notify_order':
@@ -174,8 +164,6 @@ $(document).ready(function() {
                         onClosing: function () {},
                         onClosed: function () {}
                     });
-                    loadAjaxURL("ting-sides-pannel-content-orders", window.__TING__URL__Load__Dash__Orders);
-                    loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements);
                     break;
                 case 'request_w_notify_order':
                     if (!admin.permissions.includes('can_receive_orders')){
@@ -197,14 +185,9 @@ $(document).ready(function() {
                             onClosing: function () {},
                             onClosed: function () {}
                         });
-                        loadAjaxURL("ting-sides-pannel-content-orders", window.__TING__URL__Load__Dash__Orders);
-                        loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements);
                     }
                     break;
                 case 'response_w_orders_updated':
-                    loadAjaxURL("ting-sides-pannel-content-orders", window.__TING__URL__Load__Dash__Orders);
-                    loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements);
-                    loadAjaxURL("ting-data-placements-container", window.__TING__URL__Load__Placements);
                     break;
                 case 'request_bill_request':
                     iziToast.show({
@@ -225,8 +208,6 @@ $(document).ready(function() {
                         onClosing: function () {},
                         onClosed: function () {}
                     });
-                    loadAjaxURL("ting-sides-pannel-content-orders", window.__TING__URL__Load__Dash__Orders);
-                    loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements);
                     break;
                 case 'request_w_bill_request':
                     if (!admin.permissions.includes('can_complete_bill')){
@@ -248,8 +229,6 @@ $(document).ready(function() {
                             onClosing: function () {},
                             onClosed: function () {}
                         });
-                        loadAjaxURL("ting-sides-pannel-content-orders", window.__TING__URL__Load__Dash__Orders);
-                        loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements);
                     }
                     break;
                 case 'response_w_request_message':
@@ -295,8 +274,6 @@ $(document).ready(function() {
                         onClosing: function () {},
                         onClosed: function () {}
                     });
-                    loadAjaxURL("ting-sides-pannel-content-orders", window.__TING__URL__Load__Dash__Orders);
-                    loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements);
                     break;
                 case 'request_w_placement_terminated':
                     if (!admin.permissions.includes('can_complete_bill')){
@@ -318,13 +295,14 @@ $(document).ready(function() {
                             onClosing: function () {},
                             onClosed: function () {}
                         });
-                        loadAjaxURL("ting-sides-pannel-content-orders", window.__TING__URL__Load__Dash__Orders);
-                        loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements);
                     }
                     break;
                 default:
                     break;
             }
+            loadAjaxURL("ting-sides-pannel-content-orders", window.__TING__URL__Load__Dash__Orders);
+            loadAjaxURL("ting-sides-pannel-content-placements", window.__TING__URL__Load__Dash__Placements);
+            loadAjaxURL("ting-data-placements-container", window.__TING__URL__Load__Placements);
         },
         presence: function(event) {}
     });

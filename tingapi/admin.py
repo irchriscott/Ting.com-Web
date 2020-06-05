@@ -717,3 +717,107 @@ def api_avail_promotion_toggle(request, promotion):
 @has_admin_permissions(permission='can_delete_promotion', xhr='ajax')
 def api_delete_promotion(request, promotion):
 	return admin.delete_promotion(request, promotion)
+
+
+# PLACEMENT
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_placements', xhr='ajax')
+def api_placements(request):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	if admin.admin_type == '4':
+		placements = Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, waiter=admin.pk, is_done=False).order_by('-created_at')
+	else:
+		placements = Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, is_done=False).order_by('-created_at')
+
+	return HttpResponse(json.dumps([placement.to_admin_json_s for placement in placements], default=str), content_type='application/json')
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_done_placement', xhr='ajax')
+def api_done_placement(request, token):
+	return admin.done_placement(request, token)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_assign_table', xhr='ajax')
+def api_assign_waiter_placement(request, token, waiter):
+	return assign_waiter_placement(request, token, waiter)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_done_placement')
+def api_mark_bill_paid(request, placement):
+	return admin.mark_bill_paid(request, placement)
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_placements', xhr='ajax')
+def api_get_placement(request, token):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	placement = Placement.objects.filter(restaurant__pk=admin.restaurant.pk, branch__pk=admin.branch.pk, token=token).first()
+	bill = Bill.objects.filter(placement_id=placement.pk).first()
+
+	if bill != None:
+
+		orders = Order.objects.filter(bill__pk=placement.bill.pk, is_declined=False) if placement.bill != None else QuerySet([])
+		extras = BillExtra.objects.filter(bill__placement_id=placement.pk) if placement.bill != None else QuerySet([])
+
+		total_amount = 0
+		for order in orders: 
+			total_amount = total_amount + (order.price * order.quantity) if order.is_delivered == True else total_amount + 0
+
+		extras_total = 0
+		for extra in extras:
+			extras_total = extras_total + (extra.quantity * extra.price)
+
+		bill.amount = total_amount
+		bill.extras_total = extras_total
+		bill.total = total_amount + extras_total + bill.tips - ((total_amount * bill.discount) / 100)
+		bill.save()
+
+	return HttpResponse(json.dumps(placement.to_admin_json, default=str), content_type='application/json')
+
+
+@check_admin_login
+@is_admin_enabled
+def api_load_bill_orders(request, token):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	placement = Placement.objects.filter(restaurant__pk=admin.restaurant.pk, branch__pk=admin.branch.pk, token=token).first()
+	bill = Bill.objects.filter(placement_id=placement.pk).first()
+	return HttpResponse(json.dumps([order.to_admin_json for order in Order.objects.filter(bill__pk=bill.pk, is_declined=False)] if bill != None else [], default=str), content_type='application/json')
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_accept_orders')
+def api_accept_user_order(request, order):
+	return admin.accept_user_order(request, order)
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_accept_orders')
+def api_decline_user_order(request, order):
+	return admin.decline_user_order(request, order)
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_placements')
+def api_add_bill_extra(request, placement):
+	return admin.add_bill_extra(request, placement)
+
+
+@check_admin_login
+@is_admin_enabled
+def api_delete_bill_extra(request, extra):
+	return admin.delete_bill_extra(request, extra)

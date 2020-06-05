@@ -24,7 +24,7 @@
                           		{% endif %}
                           		{{order.menu.pk|menu_name}}
                           	</p>
-                          	<p><i class="icon tags"></i>{{order.currency}} {{order.price|intcomma}} / {% if order.menu.to_json_s.menu.isCountable == True %}{{order.menu.to_json_s.menu.quantity}} packs{% endif %}</p>
+                          	<p><i class="icon tags"></i>{{order.currency}} {{order.price|intcomma}} {% if order.menu.to_json_s.menu.isCountable == True %}/ {{order.menu.to_json_s.menu.quantity}} packs{% endif %}</p>
                           	<p><i class="icon clipboard list"></i>{{order.quantity}} packs</p>
                           	<p><i class="icon align left"></i>{% if order.conditions != None or order.condtition != "" %}{{order.conditions}}{% else %} - {% endif %}</p>
                           	<p><i class="icon star"></i>{{order.has_promotion|yesno}}</p>
