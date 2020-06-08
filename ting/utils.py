@@ -312,6 +312,7 @@ def query_priority(value, queries):
 
 	return p if len(qr) > 0 else 1000
 		
+		
 def compress_image(image, memory):
 	img = Image.open(image)
 	img = img.convert('RGB')

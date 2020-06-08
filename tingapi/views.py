@@ -960,7 +960,9 @@ def notify_waiter_placed_order(placement):
 	send_pusher_notification(
 			'New Order On Table %s' % placement.table.number, 
 			'%s has placed an order on table %s' % (placement.user.name, placement.table.number), 
-			placement.user.image.url, '', '', placement.token, placement.branch.channel)
+			placement.user.image.url, 
+			'%s has placed an order on table %s' % (placement.user.name, placement.table.number),
+			'', placement.token, placement.branch.channel)
 
 	if placement.waiter != None:
 		waiter_message = {
@@ -977,7 +979,9 @@ def notify_waiter_placed_order(placement):
 		send_pusher_notification(
 			'New Order On Table %s' % placement.table.number, 
 			'%s has placed an order on table %s' % (placement.user.name, placement.table.number), 
-			placement.user.image.url, '', '', placement.token, placement.waiter.channel)
+			placement.user.image.url, 
+			'%s has placed an order on table %s' % (placement.user.name, placement.table.number),
+			'', placement.token, placement.waiter.channel)
 
 
 @background(schedule=60)
@@ -1208,6 +1212,12 @@ def notify_waiter_bill_requested(placement):
 		'data': {'token': placement.token, 'user': placement.user.socket_data, 'table': placement.table.number }
 	}
 	pubnub.publish().channel(placement.branch.channel).message(branch_message).pn_async(ting_publish_callback)
+	send_pusher_notification(
+			'Bill Requested On Table %s' % placement.table.number, 
+			'%s has requested his bill for him to further finalize his placement.' % placement.user.name, 
+			placement.user.image.url, 
+			'%s has requested his bill for him to further finalize his placement.' % placement.user.name,
+			'', placement.token, placement.branch.channel)
 
 	if placement.waiter != None:
 		waiter_message = {
@@ -1221,6 +1231,12 @@ def notify_waiter_bill_requested(placement):
 			'data': {'token': placement.token, 'user': placement.user.socket_data, 'table': placement.table.number }
 		}
 		pubnub.publish().channel(placement.waiter.channel).message(waiter_message).pn_async(ting_publish_callback)
+		send_pusher_notification(
+			'Bill Requested On Table %s' % placement.table.number, 
+			'%s has requested his bill for him to further finalize his placement.' % placement.user.name, 
+			placement.user.image.url, 
+			'%s has requested his bill for him to further finalize his placement.' % placement.user.name,
+			'', placement.token, placement.waiter.channel)
 
 
 @background(schedule=60)
@@ -1237,6 +1253,12 @@ def notify_waiter_placement_terminated(placement):
 		'data': {'token': placement.token, 'user': placement.user.socket_data, 'table': placement.table.number }
 	}
 	pubnub.publish().channel(placement.branch.channel).message(branch_message).pn_async(ting_publish_callback)
+	send_pusher_notification(
+			'Placement Terminated On Table %s' % placement.table.number, 
+			'%s has terminated his placement and freed the space.' % placement.user.name, 
+			placement.user.image.url, 
+			'%s has terminated his placement and freed the space.' % placement.user.name,
+			'', placement.token, placement.branch.channel)
 
 	if placement.waiter != None:
 		waiter_message = {
@@ -1250,6 +1272,12 @@ def notify_waiter_placement_terminated(placement):
 			'data': {'token': placement.token, 'user': placement.user.socket_data, 'table': placement.table.number }
 		}
 		pubnub.publish().channel(placement.waiter.channel).message(waiter_message).pn_async(ting_publish_callback)
+		send_pusher_notification(
+			'Placement Terminated On Table %s' % placement.table.number, 
+			'%s has terminated his placement and freed the space.' % placement.user.name, 
+			placement.user.image.url, 
+			'%s has terminated his placement and freed the space.' % placement.user.name,
+			'', placement.token, placement.waiter.channel)
 	
 
 @csrf_exempt
@@ -1286,6 +1314,10 @@ def notify_waiter_request_message(placement, message):
 			'data': {'token': placement.token, 'user': placement.user.socket_data, 'table': placement.table.number }
 		}
 		pubnub.publish().channel(placement.waiter.channel).message(waiter_message).pn_async(ting_publish_callback)
+		send_pusher_notification(
+			'Request From %s, Table %s' % (placement.user.name, placement.table.number), 
+			message, 
+			placement.user.image.url, message, '', placement.token, placement.waiter.channel)
 	else:
 		branch_message = {
 			'status': 200,
@@ -1298,6 +1330,10 @@ def notify_waiter_request_message(placement, message):
 			'data': {'token': placement.token, 'user': placement.user.socket_data, 'table': placement.table.number }
 		}
 		pubnub.publish().channel(placement.branch.channel).message(branch_message).pn_async(ting_publish_callback)
+		send_pusher_notification(
+			'Request From %s, Table %s' % (placement.user.name, placement.table.number), 
+			message, 
+			placement.user.image.url, message, '', placement.token, placement.branch.channel)
 
 
 # MOMENT

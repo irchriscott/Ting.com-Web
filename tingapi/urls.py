@@ -235,6 +235,7 @@ admins = [
 	url(r'adm/placements/(?P<token>[^/]+)/done/$', admin.api_done_placement),
 	url(r'adm/placements/(?P<token>[^/]+)/assign/waiter/(?P<waiter>\d+)/$', admin.api_assign_waiter_placement),
 	url(r'adm/placements/(?P<placement>\d+)/bill/mark/paid/$', admin.api_mark_bill_paid),
+	url(r'adm/orders/load/all/$', admin.api_load_orders_all),
 	url(r'adm/orders/placement/(?P<token>[^/]+)/all/$', admin.api_load_bill_orders),
 	url(r'adm/orders/(?P<order>\d+)/accept/$', admin.api_accept_user_order),
 	url(r'adm/orders/(?P<order>\d+)/decline/$', admin.api_decline_user_order),

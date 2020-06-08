@@ -4,6 +4,7 @@ from django.template.context_processors import csrf
 from django.shortcuts import render, render_to_response, get_object_or_404
 from django.contrib.auth.hashers import check_password, make_password
 from django.utils.crypto import get_random_string
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import HttpResponseRedirect, HttpResponse, request
 from django.urls import reverse
 from django.utils import timezone
@@ -787,11 +788,35 @@ def api_get_placement(request, token):
 
 @check_admin_login
 @is_admin_enabled
+@has_admin_permissions(permission=['can_view_orders', 'can_receive_orders'])
+def api_load_orders_all(request):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	orders = Order.objects.filter(menu__branch__pk=admin.branch.pk, menu__restaurant__pk=admin.restaurant.pk).filter(Q(is_delivered=False) & Q(is_declined=False)).order_by('updated_at')
+	admin_orders = orders if admin.admin_type != '4' else list(filter(lambda od: od.bill.placement.waiter.pk == admin.pk, list(filter(lambda od: od.bill.placement.waiter != None, orders))))
+	
+	page = request.GET.get('page', 1)
+	paginator = Paginator(admin_orders, settings.PAGINATOR_ITEM_COUNT)
+
+	if paginator.num_pages >= int(page):
+		try:
+			_orders = json.dumps([order.to_admin_json for order in paginator.page(page)], default=str)
+		except PageNotAnInteger:
+			_orders = json.dumps([order.to_admin_json for order in paginator.page(1)], default=str)
+		finally:
+			_orders = json.dumps([order.to_admin_json for order in paginator.page(paginator.num_pages)], default=str)
+	else:
+		_orders = json.dumps([], default=str)
+
+	return HttpResponse(_orders, content_type='application/json')
+
+
+@check_admin_login
+@is_admin_enabled
 def api_load_bill_orders(request, token):
 	admin = Administrator.objects.get(pk=request.session['admin'])
 	placement = Placement.objects.filter(restaurant__pk=admin.restaurant.pk, branch__pk=admin.branch.pk, token=token).first()
 	bill = Bill.objects.filter(placement_id=placement.pk).first()
-	return HttpResponse(json.dumps([order.to_admin_json for order in Order.objects.filter(bill__pk=bill.pk, is_declined=False)] if bill != None else [], default=str), content_type='application/json')
+	return HttpResponse(json.dumps([order.to_admin_json_s for order in Order.objects.filter(bill__pk=bill.pk, is_declined=False)] if bill != None else [], default=str), content_type='application/json')
 
 
 @check_admin_login

@@ -1326,6 +1326,15 @@ class Administrator(models.Model):
 		}
 
 	@property
+	def to_data_json(self):
+		return {
+			'id': self.pk,
+			'name': self.name,
+			'email': self.email,
+			'image': self.image.url
+		}
+
+	@property
 	def to_json(self):
 		return {
 			'id': self.pk,
@@ -1713,6 +1722,15 @@ class User(models.Model):
 			'email': self.email,
 			'image': self.image.url,
 			'channel': self.channel
+		}
+
+	@property
+	def to_data_json(self):
+		return {
+			'id': self.pk,
+			'name': self.name,
+			'email': self.email,
+			'image': self.image.url
 		}
 	
 	@property
@@ -4987,11 +5005,13 @@ class Order(models.Model):
 		}
 
 	@property
-	def to_admin_json(self):
+	def to_admin_json_s(self):
 		return {
 			'id': self.pk,
 			'menu': self.menu.to_json_admin,
 			'token': self.token,
+			'billNumber': self.bill.number,
+			'tableNumber': self.bill.placement.table.number,
 			'quantity': self.quantity,
 			'price': self.price,
 			'currency': self.currency,
@@ -4999,6 +5019,33 @@ class Order(models.Model):
 			'isAccepted': self.is_delivered,
 			'isDeclined': self.is_declined,
 			'isDelivered': self.is_delivered,
+			'people': self.bill.placement.people,
+			'reasons': self.reasons,
+			'hasPromotion': self.has_promotion,
+			'promotion': self.promotion.string_data_json if self.promotion != None else None,
+			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+		}
+
+
+	@property
+	def to_admin_json(self):
+		return {
+			'id': self.pk,
+			'user': self.bill.placement.user.to_data_json,
+			'menu': self.menu.to_json_admin,
+			'waiter': self.bill.placement.waiter.to_data_json if self.bill.placement.waiter != None else None,
+			'token': self.token,
+			'billNumber': self.bill.number,
+			'tableNumber': self.bill.placement.table.number,
+			'quantity': self.quantity,
+			'price': self.price,
+			'currency': self.currency,
+			'conditions': self.conditions,
+			'isAccepted': self.is_delivered,
+			'isDeclined': self.is_declined,
+			'isDelivered': self.is_delivered,
+			'people': self.bill.placement.people,
 			'reasons': self.reasons,
 			'hasPromotion': self.has_promotion,
 			'promotion': self.promotion.string_data_json if self.promotion != None else None,
