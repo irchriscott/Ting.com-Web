@@ -1160,7 +1160,7 @@ def get_restaurant_map_pin_img(request, restaurant):
     }
 
     config = imgkit.config(wkhtmltoimage='C:\\wkhtmltopdf\\bin\\wkhtmltoimage.exe')
-    image = imgkit.from_url('{0}{1}'.format('http://localhost:8000', 
+    image = imgkit.from_url('{0}{1}'.format(utils.HOST_END_POINT, 
                                         reverse('ting_usr_restaurant_get_map_pin_html', kwargs={'restaurant':restaurant.pk})), 
                                                 '%s.png' % restaurant.name.replace(' ', '-').lower(), config=config, options=options)
 

@@ -137,6 +137,7 @@ textarea{
 }
 
 .ting-admin-content-panel {
+    margin-top: 1rem !important;
     height: calc(100vh - 73px);
     overflow-y: auto;
     padding-bottom: 50px;
@@ -148,6 +149,10 @@ textarea{
     height: calc(100vh - 73px);
     overflow: hidden !important;
     padding: 0 !important;
+}
+
+.ting-admin-orders-panel-dashboard {
+    display: none;
 }
 
 .ting-menu-logo{
@@ -482,6 +487,7 @@ textarea{
 .ting-side-orders h2{
     font-weight: 100;
     text-transform: uppercase;
+    margin-top: 1rem !important;
 }
 
 .ting-restaurant-name{
@@ -2086,4 +2092,215 @@ textarea{
 .ting-placement-bill-values h2 {
     margin-top: -10px;
     margin-bottom: 18px;
+}
+
+.ting-minimize-window {
+    display: block;
+    position: absolute !important;
+    right: 0;
+    top: 0;
+    transform: rotate(180deg);
+    cursor: pointer;
+}
+
+.ting-admin-maximize-pannel {
+    position: absolute;
+    bottom: 40px;
+    right: 0;
+}
+
+.ting-admin-maximize-pannel button {
+    width: 50px;
+    height: 50px;
+    background: var(--primaryColor);
+    border-radius: 50px;
+    margin-right: 20px;
+    outline: none;
+    box-shadow: 0px 0px 3px 2px #999999;
+    border: none;
+    cursor: pointer;
+    color: #FFFFFF;
+    display: none;
+}
+
+.ting-menu-item-dashboard {
+    display: block;
+    position: relative;
+    padding: 1.5rem;
+    padding-bottom: 1rem !important;
+    background-color: darken(#b56fe8, 5%);
+    box-shadow: 0 2px 10px var(--secondaryColor);
+    border-radius: 4px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: ease-in all 0.3s;
+    -webkit-transition: ease-in all 0.3s;
+    -moz-transition: ease-in all 0.3s;
+    -o-transition: ease-in all 0.3s;
+}
+
+.ting-menu-item-dashboard:hover {
+    background: rgba(220, 220, 220, 0.1);
+    transform: scale(1.1);
+}
+
+.ting-menu-item-dashboard h4 {
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.ting-menu-item-dashboard p {
+    font-size: 14px;
+}
+
+.ting-menu-item-dashboard h1 {
+    margin-top: 40px;
+    font-size: 36px;
+    font-weight: 200;
+}
+
+.ting-menu-item-dashboard img {
+    position: absolute;
+    right: -60px;
+    top: 0;
+    height: 100%;
+    opacity: 0.05;
+}
+
+.ting-data-charts-figure {
+    margin-bottom: 0 !important;
+}
+
+.ting-data-charts-container {
+    display: block;
+    position: relative;
+    padding: 1.5rem;
+    box-shadow: 0 2px 6px #DDD;
+    border-radius: 4px;
+}
+
+.ting-data-charts-container h4 {
+    font-weight: bold;
+    font-size: 18px;
+    padding-bottom: 6px;
+}
+
+.ting-data-charts-container .ting-data-charts-container-figure {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    display: block;
+    position: relative;
+}
+
+.ting-data-charts-container .ting-data-charts-container-figure .ting-data-charts-canvas {
+    height: 400px;
+}
+
+.ting-charts-select-type {
+    position: absolute !important;
+    top: 8px;
+    right: 1.5rem;
+}
+
+.ting-data-ordered-menus {
+    display: block;
+    position: relative;
+    height: 400px; 
+    max-height: 400px; 
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.ting-admin-menus-reports-panel {
+    height: calc(100vh - 73px);
+    overflow: hidden !important;
+    padding: 0 !important;
+}
+
+.ting-menus-items-report {
+    display: block;
+    position: relative;
+    width: calc(100% - 5px);
+    margin-left: 5px;
+}
+
+.ting-menus-items-report .ting-menus-item {
+    display: block;
+    position: relative;
+    padding: 10px;
+    border-bottom: 1px solid #DDDDDD;
+    cursor: pointer;
+}
+
+.ting-menus-items-report .ting-menus-item.active {
+    background: rgba(100, 100, 100, 0.1);
+}
+
+.ting-menus-items-report .ting-menus-item .ting-menu-icon {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    width: 45px;
+    height: 45px;
+    background: var(--secondaryColor);
+    border: 2px solid #DDDDDD;
+    text-align: center;
+    align-items: center;
+    display: flex;
+    border-radius: 50%;
+}
+
+.ting-menus-items-report .ting-menus-item .ting-menu-icon i {
+    color: #FFFFFF;
+    font-size: 18px !important;
+    text-align: center;
+    width: 100%;
+    margin-left: 3px !important;
+    margin-top: -5px !important;
+}
+
+.ting-menus-items-report .ting-menus-item .ting-menu-icon img {
+    width: 100%;
+}
+
+.ting-menus-items-report .ting-menus-item .ting-menu-content {
+    display: block;
+    position: relative;
+    height: 45px;
+    align-items: center;
+    display: flex;
+    margin-left: 55px;
+}
+
+.ting-menus-items-report .ting-menus-item .ting-menu-content h5 {
+    font-size: 15px;
+}
+
+.ting-report-amounts {
+    display: block;
+    position: relative;
+    margin-top: 2rem;
+}
+
+.ting-report-amounts p {
+    margin-bottom: 0 !important;
+}
+
+.ting-report-amounts h4 {
+    margin-bottom: 15px !important;
+}
+
+.ting-report-export-button {
+    margin-top: 2.5rem;
+    text-align: center;
+}
+
+.ting-report-export-button button {
+    height: 45px;
+    text-transform: uppercase !important;
+}
+
+.ting-report-export-button form {
+    display: inline !important;
 }

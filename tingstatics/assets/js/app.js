@@ -3,6 +3,9 @@
     Date : 23 April 2019
 */
 
+const SHOW_ORDERS = 'show_orders'
+const SHOW_PLACEMENTS = 'show_placements'
+
 let markers = [];
 
 $(document).ready(function(){
@@ -36,12 +39,12 @@ $(document).ready(function(){
     });
 
     $('.active-testimonial').owlCarousel({
-        items:2,
-        loop:true,
+        items: 2,
+        loop: true,
         margin: 20,
         dots: true,
-        autoplay:true,
-        nav:true,
+        autoplay: true,
+        nav: true,
         navText: ["<span class='lnr lnr-arrow-up'></span>", "<span class='lnr lnr-arrow-down'></span>"],        
         responsive: {
             0: { items: 1 },
@@ -195,6 +198,7 @@ $(document).ready(function(){
 
     $("select.dropdown, .dropdown").dropdown("hide");
     $("div.rating, .rating, .ui.rating").rating("disable");
+    $(".ting-popup").popup();
 
     $("#ting-new-restaurant-form").submitFormAjax();
     $("#ting-new-category-form").submitFormAjax();
@@ -218,6 +222,7 @@ $(document).ready(function(){
     $("#ting-add-promotion-form").submitFormAjax();
     $("#ting-admin-branch-profile-form").submitFormAjax();
     $("#ting-admin-edit-categories-form").submitFormAjax();
+
     $("#ting-user-registration-form").submit(function(e){
         e.preventDefault();
         var action = $(this).attr("action");
@@ -273,6 +278,7 @@ $(document).ready(function(){
             }
         });
     });
+
     $("#ting-edit-email-address-form").submitFormAjax();
     $("#ting-edit-password-form").submitFormAjax();
     $("#ting-edit-private-profile").submitFormAjax();
@@ -305,7 +311,89 @@ $(document).ready(function(){
     }, function(){$(this).find(".ting-cuisine-about").animate({"bottom": "-54px"}, 200);});
 
     $("#ting-cuisines-carousel").navigateCuisines();
+
+    if(getCookie(SHOW_PLACEMENTS) == 1) {
+        $("#ting-admin-placements-panel-dashboard").show();
+        $("#ting-maximize-placements").hide();
+    } else {
+        $("#ting-admin-placements-panel-dashboard").hide();
+        $("#ting-maximize-placements").show();
+    }
+
+    updateAdminContainer();
+
+    if(getCookie(SHOW_ORDERS) == 1) {
+        $("#ting-admin-orders-panel-dashboard").show();
+        $("#ting-maximize-orders").hide();
+    } else {
+        $("#ting-admin-orders-panel-dashboard").hide();
+        $("#ting-maximize-orders").show();
+    }
+
+    $("#ting-minimize-placements").click(function() {
+        toogleShowPlacements();
+    });
+
+    $("#ting-maximize-placements").click(function() {
+        toogleShowPlacements();
+    });
+
+    $("#ting-minimize-orders").click(function() {
+        toogleShowOrders();
+    });
+
+    $("#ting-maximize-orders").click(function() {
+        toogleShowOrders();
+    });
 });
+
+function toogleShowPlacements() {
+    if(getCookie(SHOW_PLACEMENTS) == 1) {
+        $("#ting-admin-placements-panel-dashboard").slideUp(300);
+        $("#ting-maximize-placements").fadeIn();
+        setCookie(SHOW_PLACEMENTS, 0, 30);
+    } else {
+        $("#ting-admin-placements-panel-dashboard").slideDown(300);
+        $("#ting-maximize-placements").fadeOut();
+        setCookie(SHOW_PLACEMENTS, 1, 30);
+    }
+    updateAdminContainer();
+}
+
+function toogleShowOrders() {
+    if(getCookie(SHOW_ORDERS) == 1) {
+        $("#ting-admin-orders-panel-dashboard").slideUp(300);
+        $("#ting-maximize-orders").fadeIn();
+        setCookie(SHOW_ORDERS, 0, 30);
+    } else {
+        $("#ting-admin-orders-panel-dashboard").slideDown(300);
+        $("#ting-maximize-orders").fadeOut();
+        setCookie(SHOW_ORDERS, 1, 30);
+    }
+    updateAdminContainer();
+}
+
+function updateAdminContainer() {
+    var can_show_placements = getCookie(SHOW_PLACEMENTS) == 1;
+    var can_show_orders = getCookie(SHOW_ORDERS) == 1;
+    var container = $("#ting-admin-content-panel-dashboard");
+    var order_pannels = $(".ting-admin-orders-panel");
+    if(container.length > 0) {
+        if(container.attr("data-placement").toLowerCase() != "true" && order_pannels.length < 2) {
+            if(can_show_orders) { container.removeClass("twelve").attr("class", "sixteen " + container.attr("class")); }
+            else { container.removeClass("sixteen").attr("class", "twelve " + container.attr("class")); }
+        } else {
+            if(can_show_orders && can_show_placements) {
+                container.removeClass("sixteen").removeClass("twelve").attr("class", "eight " + container.attr("class"));
+            } else if(can_show_placements || can_show_orders) {
+                container.removeClass("sixteen").removeClass("eight").attr("class", "twelve " + container.attr("class"));
+            } else if (!can_show_placements && !can_show_orders){ 
+                container.removeClass("eight").removeClass("twelve").attr("class", "sixteen " + container.attr("class")); 
+            } else {}
+        }
+        try { reflowCharts(); } catch(e) {}
+    }
+}
 
 function loadtingdotcom(){
 
@@ -2735,19 +2823,30 @@ function multipleImagesPreview(input, placeToInsertImagePreview) {
     }
 }
 
-function getCookie(name) {
+function getCookie(key) {
     var cookieValue = null;
     if (document.cookie && document.cookie !== '') {
         var cookies = document.cookie.split(';');
         for (var i = 0; i < cookies.length; i++) {
             var cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            if (cookie.substring(0, key.length + 1) === (key + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(key.length + 1));
                 break;
             }
         }
     }
     return cookieValue;
+}
+
+function setCookie(key, value, expiry) {
+    var expires = new Date();
+    expires.setTime(expires.getTime() + (expiry * 24 * 60 * 60 * 1000));
+    document.cookie = key + '=' + value + ';expires=' + expires.toUTCString();
+}
+
+function eraseCookie(key) {
+    var keyValue = getCookie(key);
+    setCookie(key, keyValue, '-1');
 }
 
 function makeMoment(time){

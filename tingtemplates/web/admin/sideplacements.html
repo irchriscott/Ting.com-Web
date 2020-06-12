@@ -1,6 +1,6 @@
 {% load staticfiles %}
 <div class="ting-side-orders">
-	<h2>{% if admin.admin_type == "4" %}My{% else %}{% endif %} Placements</h2>
+	<h2>{% if admin.admin_type == "4" %}My{% else %}{% endif %} Placements <span class="ting-minimize-window" id="ting-minimize-placements" title="Minimize"><i class="icon window minimize outline"></i></span></h2>
 	<div class="ting-sides-pannel-content" id="ting-sides-pannel-content-placements">
 		<div class="ui right ting-loader" style="margin: 60px auto; text-align: center; padding: 40px 0;">
             <img src="{% static 'imgs/loading.gif' %}">

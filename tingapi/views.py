@@ -1377,6 +1377,7 @@ def api_save_placement_moment(request):
 
 @require_http_methods(['GET'])
 def api_live_search_response(request):
+	
 	query = request.GET.get('query')
 	country = request.GET.get('country')
 	town = request.GET.get('town')
@@ -1400,6 +1401,7 @@ def api_live_search_response(request):
 
 @require_http_methods(['GET'])
 def api_menus_search_response(request):
+	
 	query = request.GET.get('query')
 	country = request.GET.get('country')
 	town = request.GET.get('town')
@@ -1435,6 +1437,7 @@ def api_menus_search_response(request):
 
 @require_http_methods(['GET'])
 def api_restaurants_search_response(request):
+	
 	query = request.GET.get('query')
 	country = request.GET.get('country')
 	town = request.GET.get('town')

@@ -1,10 +1,13 @@
 from __future__ import unicode_literals
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from datetime import datetime, timedelta, date
 from django.core.files import File
+from django.utils import timezone
 from io import BytesIO
 from PIL import Image
 import os
 import base64
+import time
 
 TING_PACKAGES = (
 		(1, 'Trial'),
@@ -322,3 +325,33 @@ def compress_image(image, memory):
 	return InMemoryUploadedFile(
     	thumb_io, None, image.name, 
         'image/jpeg', thumb_io.tell(), None) if memory == True else File(img_io, name=image.name)
+
+
+def get_month_name(month):
+	months = ['January','Febuary', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+	return months[int(month) - 1]
+
+
+def get_dates_days(days):
+	today = timezone.datetime.today()
+	return [today - timedelta(days=x) for x in range(days)]
+
+
+def get_dates_months(months):
+	today = time.localtime()
+	return [time.localtime(time.mktime((today.tm_year, today.tm_mon - n, 1, 0, 0, 0, 0, 0, 0)))[:2] for n in range(months)]
+
+
+def get_dates_years(years):
+	today = time.localtime()
+	return [today.tm_year - n for n in range(years)]
+
+
+def get_days():
+	return [n + 1 for n in range(31)]
+
+def get_months():
+	return [{'name': get_month_name(n + 1), 'month': n + 1 } for n in range(12)]
+
+def get_years():
+	return [n + 1 for n in range(2018, time.localtime().tm_year)]

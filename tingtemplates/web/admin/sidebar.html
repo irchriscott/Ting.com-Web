@@ -64,7 +64,7 @@
         </div>
     </div>
 </div>
-<div class="ui visible sidebar inverted vertical menu" style="width: 250px;">
+<div class="ui visible sidebar inverted vertical menu" style="width: 250px; overflow: visible !important;">
     <div class="ting-menu-logo" style="margin-top:40px;">
         <div class="ui item ting-no-p-top">
             <div class="ting-profile-image-menu">
@@ -192,6 +192,29 @@
                         <p>Placements</p>
                     </div>
                 </a>
+            </div>
+            {% endif %}
+            {% if admin.pk|has_p:"can_view_reports" == True %}
+            <div class="ting-menu-item ui left pointing dropdown">
+                <a href="#">
+                    <div class="ting-menu-icon">
+                        <i class="chart line link icon"></i>
+                    </div>
+                    <div class="ting-menu-legend">
+                        <p>Reports</p>
+                    </div>
+                </a>
+                <div class="menu">
+                    <div class="item">
+                        <a href="{% url 'ting_wb_adm_reports_incomes' %}" style="color: #333333;"><i class="icon clipboard outline"></i>Incomes</a>
+                    </div>
+                    <div class="item">
+                        <a href="{% url 'ting_wb_adm_reports_waiters' %}" style="color: #333333;"><i class="icon user link"></i>Waiters</a>
+                    </div>
+                    <div class="item">
+                        <a href="{% url 'ting_wb_adm_reports_menus' %}" style="color: #333333;"><i class="icon utensils link"></i>Menus</a>
+                    </div>
+                </div>
             </div>
             {% endif %}
         </div>

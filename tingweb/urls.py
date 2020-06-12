@@ -112,6 +112,8 @@ admins = [
 	url(r'adm/logout/$', admin.logout, name='ting_wb_adm_logout'),
 	url(r'adm/welcome/$', admin.welcome_to_ting, name='ting_wb_adm_welcome'),
 	url(r'adm/dashboard/$', admin.dashboard, name='ting_wb_adm_dashboard'),
+	url(r'adm/dashboard/data/charts/$', admin.dashboard_data_charts, name='ting_wb_adm_dashboard_data_charts'),
+	url(r'adm/dashboard/data/menus/$', admin.dashboard_menus_data, name='ting_wb_adm_dashboard_menus_data'),
 
 	# Admin Reset Password
 
@@ -258,6 +260,14 @@ admins = [
 	url(r'adm/orders/(?P<order>\d+)/decline/$', admin.decline_user_order, name='ting_wb_adm_decline_user_order'),
 	url(r'adm/orders/extras/(?P<placement>\d+)/add/$', admin.add_bill_extra, name='ting_wb_adm_add_bill_extra'),
 	url(r'adm/orders/extras/(?P<extra>\d+)/delete/$', admin.delete_bill_extra, name='ting_wb_adm_delete_bill_extra'),
+
+	# Reports
+
+	url(r'adm/reports/incomes/$', admin.reports_incomes, name='ting_wb_adm_reports_incomes'),
+	url(r'adm/reports/incomes/bills/load/$', admin.load_bills_income_reports, name='ting_wb_adm_load_bills_income_reports'),
+	url(r'adm/reports/incomes/bills/export/$', admin.export_bills_income_reports, name='ting_wb_adm_export_bills_income_reports'),
+	url(r'adm/reports/waiters/$', admin.reports_waiters, name='ting_wb_adm_reports_waiters'),
+	url(r'adm/reports/menus/$', admin.reports_menus, name='ting_wb_adm_reports_menus'),
 ]
 
 urlpatterns = admins + users

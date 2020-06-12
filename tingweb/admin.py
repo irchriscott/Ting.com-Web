@@ -11,12 +11,13 @@ from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Q, Count, Sum
 from django.db.models.query import QuerySet
+from django.views.decorators.csrf import csrf_exempt
 from ting.responses import ResponseObject, HttpJsonResponse
 from tingweb.models import (
 							Restaurant, Administrator, AdminPermission, RestaurantLicenceKey, RestaurantConfig,
 							Menu, Food, Drink, Dish, FoodCategory, FoodImage, AdministratorResetPassword, DrinkImage,
 							DishImage, DishFood, RestaurantTable, Branch, Promotion, User, Booking, UserNotification,
-							CategoryRestaurant, Placement, Order, PlacementMessage, BillExtra, Bill
+							CategoryRestaurant, Placement, Order, PlacementMessage, BillExtra, Bill, RestaurantReview
 						)
 from tingweb.backend import AdminAuthentication
 from tingweb.mailer import (
@@ -45,13 +46,12 @@ from tingadmin import views as admin
 from datetime import datetime, timedelta, date
 import ting.utils as utils
 import tingadmin.permissions as permissions
+import operator
 import pusher
 import pytz
 import json
-
-
-utc = pytz.UTC
-today = datetime.now().replace(tzinfo=utc)
+import csv
+import xlwt
 
 
 pnconfig = PNConfiguration()
@@ -644,16 +644,220 @@ def dashboard(request):
 	admin = Administrator.objects.get(pk=request.session['admin'])
 	key = RestaurantLicenceKey.objects.filter(restaurant=admin.restaurant.pk).last()
 
+	today = timezone.datetime.today()
+
+	date_list = utils.get_dates_days(7)
+	months_list = utils.get_dates_months(6)
+
 	if admin.restaurant.is_authenticated is False:
 		return HttpResponseRedirect(reverse('ting_wb_adm_welcome'))
 	if key.is_active == False:
 		return HttpResponseRedirect(reverse('ting_wb_adm_welcome'))
 
+	managers_types = [1, 2, 5]
+
+	placements = Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__date=today) \
+					if int(admin.admin_type) in managers_types or admin.has_permission('can_view_incomes') else \
+						Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__date=today, waiter__pk=admin.pk)
+
+	today_bookings = Booking.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, date=today)
+	bills = Bill.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__date=today, is_paid=True) \
+				if int(admin.admin_type) in managers_types or admin.has_permission('can_view_incomes') else \
+					[bill for bill in Bill.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__date=today, is_paid=True)
+							if bill.placement.waiter != None and bill.placement.waiter.pk == admin.pk]
+	
+	reviews = RestaurantReview.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk)
+	waiters = Administrator.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, admin_type=4)
+	menus = Administrator.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk)
+
+	total = 0
+	for bill in bills: total += bill.total
+
+	placements_data = []
+	incomes_data = []
+	waiters_data = []
+
+	for date in date_list:
+		placements_date = Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__date=date).count() \
+							if int(admin.admin_type) in managers_types or admin.has_permission('can_view_incomes') else \
+								Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__date=date, waiter__pk=admin.pk).count()
+		placements_data.append({'date': date.strftime('%d %B'), 'data': placements_date})
+		
+		bills_date = Bill.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__date=date, is_paid=True) \
+				if int(admin.admin_type) in managers_types or admin.has_permission('can_view_incomes') else \
+					[bill for bill in Bill.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__date=date, is_paid=True)
+							if bill.placement.waiter != None and bill.placement.waiter.pk == admin.pk]
+
+		incomes_data.append({'date': date.strftime('%d %B'), 'data': sum([bill.total for bill in bills_date])})
+
+	for waiter in waiters:
+		placements_waiter = Placement.objects.filter(branch__pk=admin.branch.pk, 
+									restaurant__pk=admin.restaurant.pk, 
+									waiter__pk=waiter.pk, created_at__date__in=date_list).count()
+
+		placements_all = Placement.objects.filter(branch__pk=admin.branch.pk, 
+									restaurant__pk=admin.restaurant.pk, 
+									created_at__date__in=date_list).count()
+			
+		waiters_data.append({'date': waiter.name, 'data': (placements_waiter * 100) / placements_all})
+
+	ordered_menus = Order.objects.filter(
+						bill__branch__pk=admin.branch.pk, 
+						bill__restaurant__pk=admin.restaurant.pk, 
+						created_at__date__in=date_list).values('menu').annotate(orders=Count('menu')).order_by('-orders')[:8]
+
 	return render(request, template, {
 			'admin': admin,
 			'restaurant': admin.restaurant,
-			'admin_json': json.dumps(admin.to_json, default=str)
+			'admin_json': json.dumps(admin.to_json, default=str),
+			'placements': len(placements),
+			'bookings': len(today_bookings),
+			'reviews': len(reviews),
+			'incomes': total,
+			'p__dt__charts': json.dumps(placements_data[::-1], default=str),
+			'i__dt__charts': json.dumps(incomes_data[::-1], default=str),
+			'w__dt__charts': json.dumps(waiters_data[::-1], default=str),
+			'ordered_menus': ordered_menus
 		})
+
+
+@check_admin_login
+@is_admin_enabled
+def dashboard_data_charts(request):
+	
+	date_type = request.GET.get('type', 1)
+
+	date_list = utils.get_dates_days(7)
+	months_list = utils.get_dates_months(6)
+	years_list = utils.get_dates_years(5)
+
+	data = []
+	managers_types = [1, 2, 5]
+
+	placements_data = []
+	incomes_data = []
+	waiters_data = []
+
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	waiters = Administrator.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, admin_type=4)
+
+	if int(date_type) == 1:
+		for date in date_list:
+			placements_date = Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__date=date).count() \
+								if int(admin.admin_type) in managers_types or admin.has_permission('can_view_incomes') else \
+									Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__date=date, waiter__pk=admin.pk).count()
+			placements_data.append({'date': date.strftime('%d %B'), 'data': placements_date})
+			
+			bills_date = Bill.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__date=date, is_paid=True) \
+					if int(admin.admin_type) in managers_types or admin.has_permission('can_view_incomes') else \
+						[bill for bill in Bill.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__date=date, is_paid=True)
+								if bill.placement.waiter != None and bill.placement.waiter.pk == admin.pk]
+
+			incomes_data.append({'date': date.strftime('%d %B'), 'data': sum([bill.total for bill in bills_date])})
+
+		for waiter in waiters:
+			placements_waiter = Placement.objects.filter(branch__pk=admin.branch.pk, 
+									restaurant__pk=admin.restaurant.pk, 
+									waiter__pk=waiter.pk, created_at__date__in=date_list).count()
+
+			placements_all = Placement.objects.filter(branch__pk=admin.branch.pk, 
+									restaurant__pk=admin.restaurant.pk, 
+									created_at__date__in=date_list).count()
+			
+			waiters_data.append({'date': waiter.name, 'data': (placements_waiter * 100) / placements_all})
+
+	elif int(date_type) == 2:
+		for date in months_list:
+			placements_date = Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__year=date[0], created_at__month=date[1]).count() \
+								if int(admin.admin_type) in managers_types or admin.has_permission('can_view_incomes') else \
+									Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__year=date[0], created_at__month=date[1], waiter__pk=admin.pk).count()
+			placements_data.append({'date': '%s %s' % (utils.get_month_name(date[1]), date[0]), 'data': placements_date})
+			
+			bills_date = Bill.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__year=date[0], created_at__month=date[1], is_paid=True) \
+					if int(admin.admin_type) in managers_types or admin.has_permission('can_view_incomes') else \
+						[bill for bill in Bill.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__year=date[0], created_at__month=date[1], is_paid=True)
+								if bill.placement.waiter != None and bill.placement.waiter.pk == admin.pk]
+
+			incomes_data.append({'date': '%s %s' % (utils.get_month_name(date[1]), date[0]), 'data': sum([bill.total for bill in bills_date])})
+			
+		for waiter in waiters:
+			placements_waiter = Placement.objects.filter(branch__pk=admin.branch.pk, 
+										restaurant__pk=admin.restaurant.pk, 
+										waiter__pk=waiter.pk, created_at__year__in=list(map(lambda x: x[0], months_list)), 
+										created_at__month__in=list(map(lambda x: x[1], months_list))).count()
+				
+			placements_all = Placement.objects.filter(branch__pk=admin.branch.pk, 
+									restaurant__pk=admin.restaurant.pk, 
+									created_at__year__in=list(map(lambda x: x[0], months_list)), 
+									created_at__month__in=list(map(lambda x: x[1], months_list))).count()
+			
+			waiters_data.append({'date': waiter.name, 'data': (placements_waiter * 100) / placements_all})
+
+	elif int(date_type) == 3:
+		for date in years_list:
+			placements_date = Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__year=date).count() \
+								if int(admin.admin_type) in managers_types or admin.has_permission('can_view_incomes') else \
+									Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__year=date, waiter__pk=admin.pk).count()
+			placements_data.append({'date': date, 'data': placements_date})
+			
+			bills_date = Bill.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__year=date, is_paid=True) \
+					if int(admin.admin_type) in managers_types or admin.has_permission('can_view_incomes') else \
+						[bill for bill in Bill.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__year=date, is_paid=True)
+								if bill.placement.waiter != None and bill.placement.waiter.pk == admin.pk]
+
+			incomes_data.append({'date': date, 'data': sum([bill.total for bill in bills_date])})
+
+		for waiter in waiters:
+			placements_waiter = Placement.objects.filter(branch__pk=admin.branch.pk, 
+										restaurant__pk=admin.restaurant.pk, 
+										waiter__pk=waiter.pk, created_at__year__in=years_list).count()
+				
+			placements_all = Placement.objects.filter(branch__pk=admin.branch.pk, 
+									restaurant__pk=admin.restaurant.pk, 
+									created_at__year__in=years_list).count()
+			
+			waiters_data.append({'date': waiter.name, 'data': (placements_waiter) * 100 / placements_all})
+
+	return HttpResponse(json.dumps([placements_data[::-1], incomes_data[::-1], waiters_data[::-1]], default=str), content_type='application/json')
+
+
+@check_admin_login
+@is_admin_enabled
+def dashboard_menus_data(request):
+	template = 'web/admin/ajax/load_dashboard_menus_data.html'
+	date_type = request.GET.get('type', 1)
+
+	admin = Administrator.objects.get(pk=request.session['admin'])
+
+	date_list = utils.get_dates_days(7)
+	months_list = utils.get_dates_months(6)
+	years_list = utils.get_dates_years(5)
+
+	managers_types = [1, 2, 5]
+
+	if int(admin.admin_type) in managers_types:
+		if int(date_type) == 1:
+			menus = Order.objects.filter(
+							bill__branch__pk=admin.branch.pk, 
+							bill__restaurant__pk=admin.restaurant.pk, 
+							created_at__date__in=date_list).values('menu').annotate(orders=Count('menu')).order_by('-orders')[:8]
+		elif int(date_type) == 2:
+			menus = Order.objects.filter(
+							bill__branch__pk=admin.branch.pk, 
+							bill__restaurant__pk=admin.restaurant.pk, 
+							created_at__year__in=list(map(lambda x: x[0], months_list)),
+							created_at__month__in=list(map(lambda x: x[1], months_list))).values('menu').annotate(orders=Count('menu')).order_by('-orders')[:8]
+		elif int (date_type) == 3:
+			menus = Order.objects.filter(
+							bill__branch__pk=admin.branch.pk, 
+							bill__restaurant__pk=admin.restaurant.pk, 
+							created_at__year__in=list(map(lambda x: years_list, years_list))).values('menu').annotate(orders=Count('menu')).order_by('-orders')[:8]
+		else:
+			menus = QuerySet([])
+	else:
+		menus = QuerySet([])
+
+	return render(request, template, {'menus': menus})
 
 
 # Restaurant And Configurations
@@ -3919,3 +4123,201 @@ def send_pusher_notification(title, body, image, text, navigate, data, channel):
 		)
 	except Exception as e:
 		pass
+
+
+
+# REPORT
+
+
+@check_admin_login
+@is_admin_enabled
+@subscribe_ting_socket
+@has_admin_permissions(permission='can_view_reports')
+def reports_incomes(request):
+	template = 'web/admin/reports_incomes.html'
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	return render(request, template,  {
+			'admin': admin,
+			'restaurant': admin.restaurant,
+			'admin_json': json.dumps(admin.to_json, default=str)
+		})
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_reports')
+def load_bills_income_reports(request):
+	template = 'web/admin/ajax/load_bills_income_reports.html'
+	admin = Administrator.objects.get(pk=request.session['admin'])
+
+	selected_year = request.GET.get('year') if request.method == 'GET' else request.POST.get('year')
+	selected_month = request.GET.get('month') if request.method == 'GET' else request.POST.get('month')
+	selected_day = request.GET.get('day') if request.method == 'GET' else request.POST.get('day')
+
+	selected_values = [selected_year, selected_month, selected_day]
+
+	if any((True for value in selected_values if value != None and value != '')) == False:
+		today = datetime.now()
+		selected_year = today.year
+		selected_month = today.month
+		selected_day = today.day
+
+	date_values = [ long(selected_year), int(selected_month), int(selected_day) ]
+
+	if any((True for value in date_values if value == 0)) == True:
+		if int(selected_day) == 0 and int(selected_month) != 0:
+			date_string = '%s, %s' % (utils.get_month_name(int(selected_month)), selected_year)
+			placements = Placement.objects.filter(restaurant__pk=admin.restaurant.pk, 
+													branch__pk=admin.branch.pk, 
+													created_at__month=int(selected_month),
+													created_at__year=int(selected_year),
+													bill__isnull=False).order_by('created_at')
+		else:
+			date_string = selected_year
+			placements = Placement.objects.filter(restaurant__pk=admin.restaurant.pk, 
+													branch__pk=admin.branch.pk, 
+													created_at__year=int(selected_year),
+													bill__isnull=False).order_by('created_at')
+	else:
+		date = datetime.strptime('-'.join(map(lambda x: str(x), date_values)), '%Y-%m-%d')
+		date_string = date.strftime('%A %d %B, %Y')
+		placements = Placement.objects.filter(restaurant__pk=admin.restaurant.pk, 
+												branch__pk=admin.branch.pk, 
+												created_at__date=date,
+												bill__isnull=False).order_by('created_at')
+
+	amounts_sum = sum(list(map(lambda placement: placement.bill.amount, placements)))
+	discounts_sum = sum(list(map(lambda placement: placement.bill.discount, placements)))
+	extras_sum = sum(list(map(lambda placement: placement.bill.extras_total, placements)))
+	tips_sum = sum(list(map(lambda placement: placement.bill.tips, placements)))
+	totals_sum = sum(list(map(lambda placement: placement.bill.total, placements)))
+	
+	return render(request, template, {
+			'admin': admin,
+			'restaurant': admin.restaurant,
+			'days': utils.get_days(),
+			'months': utils.get_months(),
+			'years': utils.get_years(),
+			'selected_day': int(selected_day),
+			'selected_month': int(selected_month),
+			'selected_year': long(selected_year),
+			'date_string': date_string,
+			'placements': placements,
+			'amounts_sum': amounts_sum,
+			'discounts_sum': discounts_sum,
+			'extras_sum': extras_sum,
+			'tips_sum': tips_sum,
+			'totals_sum': totals_sum
+		})
+
+
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_reports')
+def export_bills_income_reports(request):
+	admin = Administrator.objects.get(pk=request.session['admin'])
+
+	selected_year = request.GET.get('year') if request.method == 'GET' else request.POST.get('year')
+	selected_month = request.GET.get('month') if request.method == 'GET' else request.POST.get('month')
+	selected_day = request.GET.get('day') if request.method == 'GET' else request.POST.get('day')
+
+	selected_values = [selected_year, selected_month, selected_day]
+
+	if any((True for value in selected_values if value != None and value != '')) == False:
+		today = datetime.now()
+		selected_year = today.year
+		selected_month = today.month
+		selected_day = today.day
+
+	date_values = [ long(selected_year), int(selected_month), int(selected_day) ]
+
+	if any((True for value in date_values if value == 0)) == True:
+		if int(selected_day) == 0 and int(selected_month) != 0:
+			date_string = '%s_%s'.lower() % (utils.get_month_name(selected_month), selected_year)
+			placements = Placement.objects.filter(restaurant__pk=admin.restaurant.pk, 
+													branch__pk=admin.branch.pk, 
+													created_at__month=int(selected_month),
+													created_at__year=int(selected_year),
+													bill__isnull=False).order_by('created_at')
+		else:
+			date_string = '%s'.lower() % selected_year
+			placements = Placement.objects.filter(restaurant__pk=admin.restaurant.pk, 
+													branch__pk=admin.branch.pk, 
+													created_at__year=int(selected_year),
+													bill__isnull=False).order_by('created_at')
+	else:
+		date = datetime.strptime('-'.join(map(lambda x: str(x), date_values)), '%Y-%m-%d')
+		date_string = date.strftime('%Y_%m_%d')
+		placements = Placement.objects.filter(restaurant__pk=admin.restaurant.pk, 
+												branch__pk=admin.branch.pk, 
+												created_at__date=date,
+												bill__isnull=False).order_by('created_at')
+
+	export = request.GET.get('export') if request.method == 'GET' else request.POST.get('export')
+		
+	if export == 'csv':
+		response = HttpResponse(content_type='text/csv')
+		response['Content-Disposition'] = 'attachment; filename="placement_bills_%s.csv"' % date_string
+
+		writer = csv.writer(response)
+		writer.writerow(['Date', 'User', 'Table', 'People', 'Bill', 'Amount', 'Discount', 'Extras', 'Tips', 'Total', 'Currency'])
+
+		for placement in placements.values_list('created_at', 'user__name', 'people', 'bill__number', 'bill__amount', 'bill__discount', 'bill__extras_total', 'bill__tips', 'bill__total', 'bill__currency'):
+			writer.writerow(placement)
+
+	else:
+		response = HttpResponse(content_type='application/ms-excel')
+		response['Content-Disposition'] = 'attachment; filename="placement_bills_%s.xls"' % date_string
+
+		wb = xlwt.Workbook(encoding='utf-8')
+		ws = wb.add_sheet('Placements')
+
+		row_num = 0
+
+		font_style = xlwt.XFStyle()
+		font_style.font.bold = True
+
+		columns = ['Date', 'User', 'Table', 'People', 'Bill', 'Amount', 'Discount', 'Extras', 'Tips', 'Total', 'Currency',]
+
+		for col_num in range(len(columns)):
+			ws.write(row_num, col_num, columns[col_num], font_style)
+
+		font_style = xlwt.XFStyle()
+
+		for placement in placements.values_list('created_at', 'user__name', 'people', 'bill__number', 'bill__amount', 'bill__discount', 'bill__extras_total', 'bill__tips', 'bill__total', 'bill__currency'):
+			row_num += 1
+			for col_num in range(len(placement)):
+				ws.write(row_num, col_num, placement[col_num], font_style)
+
+		wb.save(response)
+
+	return response
+
+
+@check_admin_login
+@is_admin_enabled
+@subscribe_ting_socket
+@has_admin_permissions(permission='can_view_reports')
+def reports_waiters(request):
+	template = 'web/admin/reports_waiters.html'
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	return render(request, template,  {
+			'admin': admin,
+			'restaurant': admin.restaurant,
+			'admin_json': json.dumps(admin.to_json, default=str)
+		})
+
+
+@check_admin_login
+@is_admin_enabled
+@subscribe_ting_socket
+@has_admin_permissions(permission='can_view_reports')
+def reports_menus(request):
+	template = 'web/admin/reports_menus.html'
+	admin = Administrator.objects.get(pk=request.session['admin'])
+	return render(request, template,  {
+			'admin': admin,
+			'restaurant': admin.restaurant,
+			'admin_json': json.dumps(admin.to_json, default=str)
+		})

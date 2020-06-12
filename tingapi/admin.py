@@ -747,7 +747,7 @@ def api_done_placement(request, token):
 @is_admin_enabled
 @has_admin_permissions(permission='can_assign_table', xhr='ajax')
 def api_assign_waiter_placement(request, token, waiter):
-	return assign_waiter_placement(request, token, waiter)
+	return admin.assign_waiter_placement(request, token, waiter)
 
 
 @check_admin_login
