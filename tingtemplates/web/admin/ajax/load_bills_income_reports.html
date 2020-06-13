@@ -103,7 +103,7 @@
 			        {% else %}
 			            <tr>
 			                <th colspan="9">
-			                    <div class="ting-empty-data"><i class="icon dot circle"></i><p>No Placement To Show</p></div>
+			                    <div class="ting-empty-data"><i class="icon clipboard outline"></i><p>No Bill To Show</p></div>
 			                </th>
 			            </tr>
 			        {% endif %}
@@ -123,7 +123,7 @@
 				<h2>{{admin.restaurant.config.currency}} {{totals_sum|intcomma}}</h2>
 			</div>
 			<div class="ting-report-export-button">
-				<form action="{% url 'ting_wb_adm_export_bills_income_reports' %}" method="POST">
+				<form action="{% url 'ting_wb_adm_export_bills_income_reports_excel' %}" method="POST">
 					{% csrf_token %}
 					<input type="hidden" name="day" value="{{selected_day}}">
 					<input type="hidden" name="month" value="{{selected_month}}">
@@ -131,21 +131,118 @@
 					<button type="submit" value="csv" name="export" class="ui positive button">Export To CSV</button>
 					<button type="submit" value="exl" name="export" class="ui orange button">Export To Excel</button>
 				</form>
-				<form action="#" method="POST">
+				<form action="{% url 'ting_wb_adm_export_bills_income_reports_pdf' %}" method="POST" target="_blank">
 					{% csrf_token %}
 					<input type="hidden" name="day" value="{{selected_day}}">
 					<input type="hidden" name="month" value="{{selected_month}}">
 					<input type="hidden" name="year" value="{{selected_year}}">
-					<button class="ui blue button">Export To PDF</button>
+					<button type="button" id="ting-show-placements-report-pdf-{{random_uuid}}" class="ui blue button">Export To PDF</button>
 				</form>
 			</div>
 		</div>
 	</div>
 </div>
+<div class="ui modal large" id="ting-placements-report-pdf-{{random_uuid}}">
+    <div class="header">
+        Report
+    </div>
+    <div class="content" id="ting-incomes-report-content-{{random_uuid}}">
+    	<div class="ting-report-header">
+    		<img src="{{restaurant.logo.url}}">
+    		<h2>{{restaurant.name}}</h2>
+    		<p>{{admin.branch.name}}</p>
+    		<p class="ting-report-date">{{today}}</p>
+    	</div>
+        <div class="ting-report-title">
+        	<h2>Placements & Bill of {{ date_string }}</h2>
+        </div>
+		<table class="ui single line table small">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Table</th>
+                    <th>Image</th>
+                    <th>Name</th>
+                    {% if selected_day != 0 and selected_month != 0 %}
+                    <th>Peoples</th>
+                    {% else %}
+                    <th>Date</th>
+                    {% endif %}
+                    <th>Bill No</th>
+                    <th>Amount</th>
+                    <th>Discount</th>
+                    <th>Extras Total</th>
+                    <th>Tips</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if placements.count > 0 %}
+                    {% for placement in placements %}
+                        <tr>
+                            <td style="font-weight: bold;">{{forloop.counter}}</td>
+                            <td>{{placement.table.number}}</td>
+                            <td><img src="{{placement.user.image.url}}"></td>
+                            <td>{{placement.user.name}}</td>
+                            {% if selected_day != 0 and selected_month != 0 %}
+                            <td>{{placement.people}}</td>
+                            {% else %}
+                            <td>{{placement.created_at|date}}</td>
+                            {% endif %}
+                            <td>{{placement.bill.number}}</td>
+                            <td>{{placement.bill.currency}} {{placement.bill.amount|intcomma}}</td>
+                            <td>{{placement.bill.currency}} {{placement.bill.discount|intcomma}}</td>
+                            <td>{{placement.bill.currency}} {{placement.bill.extras_total|intcomma}}</td>
+                            <td>{{placement.bill.currency}} {{placement.bill.tips|intcomma}}</td>
+                            <td>{{placement.bill.currency}} {{placement.bill.total|intcomma}}</td>
+                        </tr>    
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <th colspan="11">
+                            <div class="ting-empty-data"><i class="icon clipboard outline"></i><p>No Bill To Show</p></div>
+                        </th>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+		<div class="ting-report-amounts small">
+			<p>Amount</p>
+			<h4>{{admin.restaurant.config.currency}} {{amounts_sum|intcomma}}</h4>
+			<p>Discount</p>
+			<h4>{{admin.restaurant.config.currency}} {{discounts_sum|intcomma}}</h4>
+			<p>Extras Total</p>
+			<h4>{{admin.restaurant.config.currency}} {{extras_sum|intcomma}}</h4>
+			<p>Tips</p>
+			<h4>{{admin.restaurant.config.currency}} {{tips_sum|intcomma}}</h4>
+			<hr>
+			<p>Total</p>
+			<h2>{{admin.restaurant.config.currency}} {{totals_sum|intcomma}}</h2>
+		</div>
+	</div>
+    <div class="actions">
+        <button type="submit" id="ting-download-report-incomes" class="ui positive button">
+            Download
+        </button>
+        <div class="ui red deny button left">
+            Close
+        </div>
+    </div>
+</div>
+
 <style type="text/css">.ui.selection.dropdown { min-width: 100% !important; }</style>
 <script type="text/javascript">
 	$(".ui.dropdown, .dropdown").dropdown();
 	$(".ting-open-ajax-modal").openModal();
+	$("#ting-show-placements-report-pdf-{{random_uuid}}").click(function(e) {
+		e.preventDefault();
+		$("#ting-placements-report-pdf-{{random_uuid}}").modal({
+			onApprove: function(){ return false; }
+		}).modal("show");
+	});
+	$("#ting-download-report-incomes").click(function() {
+		printPdf('ting-incomes-report-content-{{random_uuid}}', '{{filename_pdf}}', 6);
+	});
 	$("#ting-submit-report-bill-incomes-form").submit(function(e) {
 		e.preventDefault();
 		

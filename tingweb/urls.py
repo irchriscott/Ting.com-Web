@@ -265,7 +265,10 @@ admins = [
 
 	url(r'adm/reports/incomes/$', admin.reports_incomes, name='ting_wb_adm_reports_incomes'),
 	url(r'adm/reports/incomes/bills/load/$', admin.load_bills_income_reports, name='ting_wb_adm_load_bills_income_reports'),
-	url(r'adm/reports/incomes/bills/export/$', admin.export_bills_income_reports, name='ting_wb_adm_export_bills_income_reports'),
+	url(r'adm/reports/incomes/bills/export/excel/$', admin.export_bills_income_reports_excel, name='ting_wb_adm_export_bills_income_reports_excel'),
+	url(r'adm/reports/incomes/bills/export/pdf/$', admin.export_bills_income_reports_pdf, name='ting_wb_adm_export_bills_income_reports_pdf'),
+	url(r'adm/reports/incomes/stats/load/$', admin.load_bills_income_stats, name='ting_wb_adm_load_bills_income_stats'),
+	url(r'adm/reports/incomes/stats/export/excel/$', admin.export_bills_income_stats_excel, name='ting_wb_adm_export_bills_income_stats_excel'),
 	url(r'adm/reports/waiters/$', admin.reports_waiters, name='ting_wb_adm_reports_waiters'),
 	url(r'adm/reports/menus/$', admin.reports_menus, name='ting_wb_adm_reports_menus'),
 ]

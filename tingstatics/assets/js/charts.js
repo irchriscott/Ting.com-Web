@@ -9,7 +9,7 @@ $(document).ready(function(){
 	var charts_types = ['for the last 7 days', 'for the last 6 months', 'for the last 5 years'];
 
 	Highcharts.setOptions({
-		colors: ['#a3a1fb', '#54d8ff', '#ff9f54', '#DDDF00', '#24CBE5', '#64E572', '#FF9655', '#FFF263', '#6AF9C4']
+		colors: ['#A3A1FB', '#DDDF00', '#24CBE5', '#64E572', '#FF9655', '#9DFCFF', '#FFD59D', '#FC46FC']
 	});
 
 	if(charts.length > 0) {
@@ -195,4 +195,25 @@ jQuery.fn.loadAjax = function(url) {
             container.find(".ting-data-content").html('<div class="ui red message">' + e + '</div>');
         }
    	});
+}
+
+
+function printPdf(selector, filename, quality) {
+	var element = document.getElementById(selector);
+    var options = {
+        margin: 0.5,
+        filename: filename,
+        image: {
+            type: 'jpeg',
+            quality: 1.0
+        },
+        html2canvas: { scale: quality },
+        jsPDF: {
+            unit: 'in',
+            format: 'a4',
+            orientation: 'landscape',
+            compress: true
+        }
+   	};
+    html2pdf().from(element).set(options).save();
 }

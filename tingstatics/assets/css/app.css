@@ -52,6 +52,18 @@ textarea{
     resize: none !important;
 }
 
+table.small thead tr th,
+table.small tbody tr td{
+    font-size: 12px !important;
+}
+
+table.small tbody tr td img{
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid rgba(0, 0, 0, .1);
+}
+
 :root{
     --primaryColor: #b56fe8;
     --secondaryColor: #908ced;
@@ -2287,8 +2299,21 @@ textarea{
     margin-bottom: 0 !important;
 }
 
+.ting-report-amounts.small p {
+    font-size: 12px !important;
+}
+
 .ting-report-amounts h4 {
     margin-bottom: 15px !important;
+}
+
+.ting-report-amounts.small h4 {
+    margin-bottom: 10px !important;
+    font-size: 16px !important;
+}
+
+.ting-report-amounts.small h2 {
+    font-size: 18px !important;
 }
 
 .ting-report-export-button {
@@ -2303,4 +2328,56 @@ textarea{
 
 .ting-report-export-button form {
     display: inline !important;
+}
+
+.ting-report-title {
+    height: 50px; 
+    text-align: center; 
+    position: relative;
+}
+
+.ting-report-title h2 {
+    font-size: 18px; 
+    left: 50%;  
+    top: 20px;
+    text-align: center; 
+    border-bottom: 1px solid #DDDDDD; 
+    position: absolute; 
+    padding-bottom: 10px;
+    -webkit-transform: transform: translate(-50%,-50%);
+    -moz-transform:transform: translate(-50%,-50%);
+    -o-transform:transform: translate(-50%,-50%);
+    transform: translate(-50%,-50%);
+}
+
+.ting-report-title h2 span{
+    display: block;
+}
+
+.ting-report-title h2 span.ting-subtitle {
+    margin-top: 8px;
+    font-weight: 300;
+    font-size: 14px;
+}
+
+.ting-report-header {
+    display: block;
+    position: relative;
+}
+
+.ting-report-header img {
+    height: 100px;
+    margin-bottom: 10px;
+}
+
+.ting-report-header h2 {
+    font-size: 18px;
+}
+
+.ting-report-header .ting-report-date {
+    position: absolute;
+    font-weight: bold;
+    top: 0;
+    right: 0;
+    font-size: 12px;
 }

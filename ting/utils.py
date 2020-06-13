@@ -3,6 +3,10 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from datetime import datetime, timedelta, date
 from django.core.files import File
 from django.utils import timezone
+from django.http import HttpResponse
+from django.template.loader import get_template
+from collections import OrderedDict
+from xhtml2pdf import pisa
 from io import BytesIO
 from PIL import Image
 import os
@@ -350,8 +354,57 @@ def get_dates_years(years):
 def get_days():
 	return [n + 1 for n in range(31)]
 
+
 def get_months():
 	return [{'name': get_month_name(n + 1), 'month': n + 1 } for n in range(12)]
 
+
 def get_years():
 	return [n + 1 for n in range(2018, time.localtime().tm_year)]
+
+
+def get_dates_range(start_date, end_date):
+	delta = end_date - start_date
+	return [start_date + timedelta(days=d) for d in range(delta.days + 1)]				
+
+
+def get_months_range(start_date, end_date):
+	months = OrderedDict((((start + timedelta(_)).strftime('%Y'), None), ((start + timedelta(_)).strftime('%m'), None)) for _ in xrange((start_date - end_date).days)).keys()
+	return sorted(list(dict.fromkeys(list(map(lambda date: tuple(date.strftime('%Y-%m').split('-')), get_dates_range(start_date, end_date))))), reverse=True)
+
+
+def render_to_pdf(template_src, context_dict={}):
+	
+	template = get_template(template_src)
+	html  = template.render(context_dict)
+	
+	result = BytesIO()
+	pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
+	
+	if not pdf.err:
+		return HttpResponse(result.getvalue(), content_type='application/pdf')
+	
+	return None
+
+
+def generate_incomes_dict(date, bills, date_type, format_date=True):
+	
+	if date_type == 1:
+		date_string = date.strftime('%d %B, %Y') if format_date == True else date.strftime('%Y-%m-%d')
+	elif date_type == 2:
+		date_string = '%s, %s' % (get_month_name(date[1]), date[0]) if format_date == True else '-'.join(date)
+	else:
+		date_string = date
+
+	return {
+				'date': date_string,
+				'count': bills.count(), 
+				'amount': sum(list(map(lambda bill: bill.amount, bills))),
+				'discount': sum(list(map(lambda bill: bill.discount, bills))),
+				'count_discount': bills.filter(discount__gt=0).count(),
+				'extras': sum(list(map(lambda bill: bill.extras_total, bills))),
+				'count_extras': bills.filter(extras_total__gt=0).count(),
+				'tips': sum(list(map(lambda bill: bill.tips, bills))),
+				'count_tips': bills.filter(tips__gt=0).count(),
+				'total': sum(list(map(lambda bill: bill.total, bills)))
+			}
