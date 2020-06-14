@@ -396,7 +396,8 @@ def generate_incomes_dict(date, bills, date_type, format_date=True):
 	else:
 		date_string = date
 
-	return {
+	try:
+		return {
 				'date': date_string,
 				'count': bills.count(), 
 				'amount': sum(list(map(lambda bill: bill.amount, bills))),
@@ -406,5 +407,18 @@ def generate_incomes_dict(date, bills, date_type, format_date=True):
 				'count_extras': bills.filter(extras_total__gt=0).count(),
 				'tips': sum(list(map(lambda bill: bill.tips, bills))),
 				'count_tips': bills.filter(tips__gt=0).count(),
+				'total': sum(list(map(lambda bill: bill.total, bills)))
+			}
+	except Exception as e:
+		return {
+				'date': date_string,
+				'count': len(bills), 
+				'amount': sum(list(map(lambda bill: bill.amount, bills))),
+				'discount': sum(list(map(lambda bill: bill.discount, bills))),
+				'count_discount': 0,
+				'extras': sum(list(map(lambda bill: bill.extras_total, bills))),
+				'count_extras': 0,
+				'tips': sum(list(map(lambda bill: bill.tips, bills))),
+				'count_tips': 0,
 				'total': sum(list(map(lambda bill: bill.total, bills)))
 			}

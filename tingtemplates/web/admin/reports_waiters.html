@@ -1,0 +1,57 @@
+{% extends '../../layouts/header.html' %}
+{% load staticfiles %}
+{% load ting_tags %}
+{% load tz %}
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}">
+{% endblock %}
+{% block js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://cdn.pubnub.com/sdk/javascript/pubnub.4.21.7.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.min.js"></script>
+<script src="https://raw.githack.com/eKoopmans/html2pdf/master/dist/html2pdf.bundle.js"></script>
+<script src="{% static 'js/socket.js' %}"></script>
+<script src="{% static 'js/charts.js' %}"></script>
+{% endblock %}
+{% block title %}
+    <title>Ting.com - Admin / Waiters Reports</title>
+{% endblock %}
+{% block content %}
+{% include '../../web/admin/sidebar.html' %}
+<div class="pusher">
+    <div class="article ting-admin-container">
+        {% include '../../web/admin/navbar.html' %}
+        <div class="ui grid divided" style="margin-left: 10px;">
+            <div class="row" style="padding-top: 0 !important;">
+                <div class="four wide column ting-admin-menus-reports-panel">
+                    <div class="ting-menus-items-report">
+                        <div class="ting-menus-item-search">
+                            <i class="icon search"></i>
+                            <input type="text" placeholder="Search Waiter" id="ting-filter-menus-items">
+                        </div>
+                        {% if waiters.count > 0 %}
+                            {% for waiter in waiters %}
+                                <div class="ting-menus-item" data-query="{{waiter.name|lower}}" data-url="{% url 'ting_wb_adm_load_waiter_reports' waiter.pk %}?period_number=7&period=1">
+                                    <div class="ting-menu-icon"><img src="{{waiter.image.url}}"></div>
+                                    <div class="ting-menu-content"><div><h5>{{waiter.name}}</h5><p>{{waiter.email}}</p></div></div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p style="color: red; text-align: center; margin-top: 80px; font-weight: bold;">No Waiter To Show</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="twelve wide column ting-admin-content-panel" id="ting-admin-reports-content-panel" style="margin-top: 0 !important; padding-top: 1rem !important; padding-right: 0 !important;">
+                    <div class="ting-data-content"></div>
+                    <div class="ui right ting-loader" style="margin: 100px auto; text-align: center;">
+                        <img src="{% static 'imgs/loading.gif' %}">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -84,6 +84,7 @@ $(document).ready(function(){
 	var menus_items = $(".ting-menus-item");
 	if(menus_items.length > 0) { 
 		$("#ting-admin-reports-content-panel").loadAjax($(menus_items[0]).attr("data-url"));
+		$(menus_items[0]).addClass("active");
 	}
 
 	$(".ting-menus-item").click(function(e) {
@@ -92,6 +93,21 @@ $(document).ready(function(){
 		if(url != null && url != undefined && url != "") {
 			$(this).addClass("active").siblings().removeClass("active");
 			$("#ting-admin-reports-content-panel").loadAjax(url);
+		}
+	});
+
+	$("#ting-filter-menus-items").keyup(function() {
+		var query = $(this).val();
+
+		if(menus_items.length > 0) {
+			for (var i = 0; i < menus_items.length; i++) {
+				var item = menus_items[i];
+				var data_query = $(item).attr("data-query");
+
+				if(data_query.toLowerCase().includes(query.toLowerCase())) {
+					$(item).show();
+				} else { $(item).hide() }
+			}
 		}
 	});
 });

@@ -4418,10 +4418,10 @@ def load_bills_income_stats(request):
 
 		elif int(period) == 2:
 			date_string = 'For The Past %s Months - ( from %s to %s )' % (period_number, 
-								'%s, %s' % (utils.get_month_name(months_list[::-1][0][1]), months_list[::-1][0][1]), 
-								'%s, %s' % (utils.get_month_name(months_list[::-1][len(months_list) - 1][1]), months_list[::-1][len(months_list) - 1][1]))
-			name_string = 'from_%s_to_%s' % ('%s_%s' % (utils.get_month_name(months_list[::-1][0][1]), months_list[::-1][0][1]), 
-												'%s_%s' % (utils.get_month_name(months_list[::-1][len(months_list) - 1][1]), months_list[::-1][len(months_list) - 1][1]))
+								'%s %s' % (utils.get_month_name(months_list[::-1][0][1]), months_list[::-1][0][0]), 
+								'%s %s' % (utils.get_month_name(months_list[::-1][len(months_list) - 1][1]), months_list[::-1][len(months_list) - 1][0]))
+			name_string = 'from_%s_to_%s' % ('%s_%s' % (utils.get_month_name(months_list[::-1][0][1]), months_list[::-1][0][0]), 
+												'%s_%s' % (utils.get_month_name(months_list[::-1][len(months_list) - 1][1]), months_list[::-1][len(months_list) - 1][0]))
 			for date in months_list:
 				bills_date = Bill.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__year=date[0], created_at__month=date[1], is_paid=True)
 				incomes_data.append(utils.generate_incomes_dict(date, bills_date, int(period)))
@@ -4450,10 +4450,10 @@ def load_bills_income_stats(request):
 
 			elif int(custom_period) == 2:
 				range_months = utils.get_months_range(start_date, end_date)
-				date_string = 'From %s To %s' % ('%s, %s' % (utils.get_month_name(range_months[::-1][0][1]), range_months[::-1][0][1]), 
-													'%s, %s' % (utils.get_month_name(range_months[::-1][len(range_months) - 1][1]), range_months[::-1][len(range_months) - 1][1]))
-				name_string = 'from_%s_to_%s' % ('%s_%s' % (utils.get_month_name(range_months[::-1][0][1]), range_months[::-1][0][1]), 
-													'%s_%s' % (utils.get_month_name(range_months[::-1][len(range_months) - 1][1]), range_months[::-1][len(range_months) - 1][1]))
+				date_string = 'From %s To %s' % ('%s %s' % (utils.get_month_name(range_months[::-1][0][1]), range_months[::-1][0][0]), 
+													'%s %s' % (utils.get_month_name(range_months[::-1][len(range_months) - 1][1]), range_months[::-1][len(range_months) - 1][0]))
+				name_string = 'from_%s_to_%s' % ('%s_%s' % (utils.get_month_name(range_months[::-1][0][1]), range_months[::-1][0][0]), 
+													'%s_%s' % (utils.get_month_name(range_months[::-1][len(range_months) - 1][1]), range_months[::-1][len(range_months) - 1][0]))
 				for date in range_months:
 					bills_date = Bill.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__year=date[0], created_at__month=date[1], is_paid=True)
 					incomes_data.append(utils.generate_incomes_dict(date, bills_date, int(custom_period)))
@@ -4612,10 +4612,136 @@ def export_bills_income_stats_excel(request):
 def reports_waiters(request):
 	template = 'web/admin/reports_waiters.html'
 	admin = Administrator.objects.get(pk=request.session['admin'])
+	waiters = Administrator.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, admin_type=4)
 	return render(request, template,  {
 			'admin': admin,
 			'restaurant': admin.restaurant,
-			'admin_json': json.dumps(admin.to_json, default=str)
+			'admin_json': json.dumps(admin.to_json, default=str),
+			'waiters': waiters
+		})
+
+
+@csrf_exempt
+@check_admin_login
+@is_admin_enabled
+@has_admin_permissions(permission='can_view_reports')
+def load_waiter_reports(request, waiter):
+	template = 'web/admin/ajax/load_waiter_reports.html'
+	waiter = get_object_or_404(Administrator, pk=waiter)
+
+	admin = Administrator.objects.get(pk=request.session['admin'])
+
+	periods = [
+				{'value': 1, 'key': 'Past Days'},
+				{'value': 2, 'key': 'Past Months'},
+				{'value': 3, 'key': 'Past Years'}
+			]
+
+	incomes_data = []
+
+	custom = request.GET.get('custom') if request.method == 'GET' else request.POST.get('custom')
+	period_number = request.GET.get('period_number') if request.method == 'GET' else request.POST.get('period_number')
+	period = request.GET.get('period') if request.method == 'GET' else request.POST.get('period')
+	custom_start_date = request.GET.get('custom_start_date') if request.method == 'GET' else request.POST.get('custom_start_date')
+	custom_end_date = request.GET.get('custom_end_date') if request.method == 'GET' else request.POST.get('custom_end_date')
+	custom_period = request.GET.get('custom_period') if request.method == 'GET' else request.POST.get('custom_period')
+
+	use_custom = True if custom == 'on' else False
+
+	if use_custom == False:
+
+		date_list = utils.get_dates_days(int(period_number))
+		months_list = utils.get_dates_months(int(period_number))
+		years_list = utils.get_dates_years(int(period_number))
+
+		if int(period_number) <= 0:
+			return HttpJsonResponse(ResponseObject('error', 'Period Number Cannot Be Less or Equal To 0 !!!', 406))
+
+		if int(period) == 1:
+			date_string = 'For The Past %s Days - ( from %s to %s )' % (period_number, date_list[::-1][0].strftime('%d %b, %Y'), date_list[::-1][len(date_list) - 1].strftime('%d %b, %Y'))
+			name_string = 'from_%s_to_%s' % (date_list[::-1][0].strftime('%Y_%m_%d'), date_list[::-1][len(date_list) - 1].strftime('%Y_%m_%d'))
+			for date in date_list:
+				bills_date = list(map(lambda placement: placement.bill, Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__date=date, bill__isnull=False, waiter__isnull=False, waiter__pk=waiter.pk)))
+				incomes_data.append(utils.generate_incomes_dict(date, bills_date, int(period)))
+
+		elif int(period) == 2:
+			date_string = 'For The Past %s Months - ( from %s to %s )' % (period_number, 
+								'%s %s' % (utils.get_month_name(months_list[::-1][0][1]), months_list[::-1][0][0]), 
+								'%s %s' % (utils.get_month_name(months_list[::-1][len(months_list) - 1][1]), months_list[::-1][len(months_list) - 1][0]))
+			name_string = 'from_%s_to_%s' % ('%s_%s' % (utils.get_month_name(months_list[::-1][0][1]), months_list[::-1][0][0]), 
+												'%s_%s' % (utils.get_month_name(months_list[::-1][len(months_list) - 1][1]), months_list[::-1][len(months_list) - 1][0]))
+			for date in months_list:
+				bills_date = list(map(lambda placement: placement.bill, Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__year=date[0], created_at__month=date[1], bill__isnull=False, waiter__isnull=False, waiter__pk=waiter.pk)))
+				incomes_data.append(utils.generate_incomes_dict(date, bills_date, int(period)))
+		
+		elif int(period) == 3:
+			date_string = 'For The Past %s Years - ( from %s to %s )' % (period_number, years_list[::-1][0], years_list[::-1][len(years_list) - 1])
+			name_string = 'from_%s_to_%s' % (years_list[::-1][0], years_list[::-1][len(years_list) - 1])
+			for date in years_list:
+				bills_date = list(map(lambda placement: placement.bill, Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__year=date, bill__isnull=False, waiter__isnull=False, waiter__pk=waiter.pk)))
+				incomes_data.append(utils.generate_incomes_dict(date, bills_date, int(period)))
+	else:
+		try:
+			start_date = datetime.strptime(custom_start_date, '%Y-%m-%d')
+			end_date = datetime.strptime(custom_end_date, '%Y-%m-%d')
+
+			if start_date > end_date:
+				return HttpJsonResponse(ResponseObject('error', 'Start Date Cant Be Greater Than End Date !!!', 406))
+
+			if int(custom_period) == 1:
+				range_dates = utils.get_dates_range(start_date, end_date)
+				date_string = 'From %s To %s' % (range_dates[::-1][0].strftime('%d %b, %Y'), range_dates[::-1][len(range_dates) - 1].strftime('%d %b, %Y'))
+				name_string = 'from_%s_to_%s' % (range_dates[::-1][0].strftime('%Y_%m_%d'), range_dates[::-1][len(range_dates) - 1].strftime('%Y_%m_%d'))
+				for date in range_dates:
+					bills_date = list(map(lambda placement: placement.bill, Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__date=date, bill__isnull=False, waiter__isnull=False, waiter__pk=waiter.pk)))
+					incomes_data.append(utils.generate_incomes_dict(date, bills_date, int(custom_period)))
+
+			elif int(custom_period) == 2:
+				range_months = utils.get_months_range(start_date, end_date)
+				date_string = 'From %s To %s' % ('%s %s' % (utils.get_month_name(range_months[::-1][0][1]), range_months[::-1][0][0]), 
+													'%s %s' % (utils.get_month_name(range_months[::-1][len(range_months) - 1][1]), range_months[::-1][len(range_months) - 1][0]))
+				name_string = 'from_%s_to_%s' % ('%s_%s' % (utils.get_month_name(range_months[::-1][0][1]), range_months[::-1][0][0]), 
+													'%s_%s' % (utils.get_month_name(range_months[::-1][len(range_months) - 1][1]), range_months[::-1][len(range_months) - 1][0]))
+				for date in range_months:
+					bills_date = lis(map(lambda placement: placement.bill, Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__year=date[0], created_at__month=date[1], bill__isnull=False, waiter__isnull=False, waiter__pk=waiter.pk)))
+					incomes_data.append(utils.generate_incomes_dict(date, bills_date, int(custom_period)))
+
+		except ValueError as e:
+			return HttpJsonResponse(ResponseObject('error', 'Insert Valid Dates !!!', 406))
+
+	amounts_sum = sum(list(map(lambda income: income['amount'], incomes_data)))
+	discounts_sum = sum(list(map(lambda income: income['discount'], incomes_data)))
+	extras_sum = sum(list(map(lambda income: income['extras'], incomes_data)))
+	tips_sum = sum(list(map(lambda income: income['tips'], incomes_data)))
+	totals_sum = sum(list(map(lambda income: income['total'], incomes_data)))
+
+	series = ['Count', 'Amount', 'Tips', 'Total']
+
+	return render(request, template, {
+			'waiter': waiter,
+			'admin': admin,
+			'restaurant': admin.restaurant,
+			'random_uuid': get_random_string(10),
+			'today': datetime.now().strftime('%A %d %B, %Y'),
+			'periods': periods,
+			'use_custom': use_custom,
+			'period_number': period_number,
+			'selected_period': period,
+			'custom_start_date': custom_start_date,
+			'custom_end_date': custom_end_date,
+			'selected_custom_period': custom_period,
+			'incomes': incomes_data,
+			'i__dt__charts': json.dumps(incomes_data[::-1], default=str),
+			'i__dt__series': json.dumps(series, default=str),
+			'amounts_sum': amounts_sum,
+			'discounts_sum': discounts_sum,
+			'extras_sum': extras_sum,
+			'tips_sum': tips_sum,
+			'totals_sum': totals_sum,
+			'date_string': date_string.replace('-', ''),
+			'date_string_array': date_string.split('-'),
+			'filename_pdf_stats': '%s_incomes_report_%s_stats.pdf' % (waiter.username, name_string),
+			'filename_pdf_charts': '%s_incomes_report_%s_charts.pdf' % (waiter.username, name_string)
 		})
 
 

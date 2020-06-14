@@ -2237,6 +2237,30 @@ table.small tbody tr td img{
     margin-left: 5px;
 }
 
+.ting-menus-items-report .ting-menus-item-search {
+    display: block;
+    position: relative;
+    border-bottom: 1px solid #DDDDDD;
+    padding: 10px;
+}
+
+.ting-menus-items-report .ting-menus-item-search i {
+    font-size: 20px;
+    position: absolute;
+    left: 13px;
+    top: 20px;
+    color: #999999;
+}
+
+.ting-menus-items-report .ting-menus-item-search input {
+    border: none;
+    outline: none;
+    padding: 10px;
+    height: 40px;
+    margin-left: 30px;
+    width: calc(100% - 30px);
+}
+
 .ting-menus-items-report .ting-menus-item {
     display: block;
     position: relative;
@@ -2261,6 +2285,7 @@ table.small tbody tr td img{
     align-items: center;
     display: flex;
     border-radius: 50%;
+    overflow: hidden;
 }
 
 .ting-menus-items-report .ting-menus-item .ting-menu-icon i {
@@ -2287,6 +2312,15 @@ table.small tbody tr td img{
 
 .ting-menus-items-report .ting-menus-item .ting-menu-content h5 {
     font-size: 15px;
+    display: block;
+    width: 100%;
+}
+
+.ting-menus-items-report .ting-menus-item .ting-menu-content p {
+    font-size: 11px;
+    display: block;
+    width: 100%;
+    margin-top: -6px;
 }
 
 .ting-report-amounts {

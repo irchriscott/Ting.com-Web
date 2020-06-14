@@ -9,7 +9,7 @@
 			<h2 style="font-weight: 400 !important; text-transform: uppercase; font-size: 20px; margin-top: 14px;">Select Period</h2>
 		</div>
 		<div class="eight wide column">
-			<form class="ui form" id="ting-submit-report-stats-incomes-form" action="{% url 'ting_wb_adm_load_bills_income_stats' %}" method="GET" style="">
+			<form class="ui form" id="ting-submit-report-waiter-form-{{waiter.pk}}" action="{% url 'ting_wb_adm_load_waiter_reports' waiter.pk %}" method="GET" style="">
 		  		<div class="field" style="position: absolute; left: 0; margin-left: -160px; margin-top: 25px;">
                     <div class="ui checkbox">
                         <label style="line-height: 1.3 !important;">Custom Dates</label>
@@ -76,7 +76,30 @@
 	</div>
 	<div class="row">
 		<div class="sixteen wide column" style="padding: 1rem 3rem;">
-			<h2 style="font-size: 18px; margin-bottom: 2rem;">Income Report {{ date_string }}</h2>
+			<div class="ui grid" style="border-bottom: 1px solid #DDDDDD; padding-bottom: 1rem;">
+			    <div class="row">
+			        <div class="three wide column" style="padding-left: 1rem;">
+			            <img src="{{waiter.image.url}}" style="width: 100%;">
+			        </div>                
+			        <div class="thirteen wide column">
+			            <div class="ting-restaurant-about ting-no-p-top" style="padding-left: 0 !important;">
+			                <div class="ting-restaurant-about-data">
+			                    <p><i class="icon user"></i>{{waiter.name}}</p>
+			                    <p><i class="icon mail"></i>{{waiter.email}}</p>
+			                    <p><i class="icon phone"></i>{{waiter.phone|none}}</p>
+			                    <p><i class="icon id badge"></i>{{waiter.badge_number|none}}</p>
+			                    <p><i class="icon clock"></i>{{waiter.created_at|date}}</p>
+			                </div>    
+			            </div>         
+			        </div>            
+			    </div>
+			</div>
+			<!-- <h2 style="font-size: 20px; margin-bottom: 2rem;">Placements & Bill of {{ date_string }}</h2> -->
+		</div>
+	</div>
+	<div class="row" style="padding-top: 0 !important;">
+		<div class="sixteen wide column" style="padding: 1rem 3rem;">
+			<h2 style="font-size: 18px; margin-bottom: 2rem;">{{waiter.name}} Income Report {{ date_string }}</h2>
 			<table class="ui single line table">
 			    <thead>
 			        <tr>
@@ -133,17 +156,6 @@
 				<h2>{{admin.restaurant.config.currency}} {{totals_sum|intcomma}}</h2>
 			</div>
 			<div class="ting-report-export-button">
-				<form action="{% url 'ting_wb_adm_export_bills_income_stats_excel' %}" method="POST">
-					{% csrf_token %}
-					<input type="hidden" name="period" value="{{selected_period}}">
-					<input type="hidden" name="period_number" value="{{period_number}}">
-					<input type="hidden" name="custom" value="{{use_custom}}">
-					<input type="hidden" name="custom_end_date" value="{{custom_end_date}}">
-					<input type="hidden" name="custom_start_date" value="{{custom_start_date}}">
-					<input type="hidden" name="custom_period" value="{{selected_custom_period}}">
-					<button type="submit" value="csv" name="export" class="ui positive button">Export To CSV</button>
-					<button type="submit" value="exl" name="export" class="ui orange button">Export To Excel</button>
-				</form>
 				<button type="button" id="ting-show-incomes-report-pdf-{{random_uuid}}" class="ui blue button">Export To PDF</button>
 				<button type="button" id="ting-show-incomes-charts-pdf-{{random_uuid}}" class="ui facebook button">Show Chart</button>
 			</div>
@@ -163,7 +175,7 @@
     		<p class="ting-report-date">{{today}}</p>
     	</div>
         <div class="ting-report-title" {% if date_string_array|length > 1 %} style="height:60px;" {% endif %}>
-        	<h2><span class="ting-title">Income Report {% if date_string_array|length <= 1 %} {{ date_string }} </span> {% else %} {{date_string_array.0}}</span> <span class="ting-subtitle">{{date_string_array.1}}</span> {% endif %}</h2>
+        	<h2><span class="ting-title">{{ waiter.name }} Income Report {% if date_string_array|length <= 1 %} {{ date_string }} </span> {% else %} {{date_string_array.0}}</span> <span class="ting-subtitle">{{date_string_array.1}}</span> {% endif %}</h2>
         </div>
 		<table class="ui single line table small">
             <thead>
@@ -173,11 +185,8 @@
 			        <th>Number</th>
 			        <th>Amount</th>
 			        <th>Discount</th>
-			        <th>Discount Number</th>
 			        <th>Extras Total</th>
-			        <th>Extras Number</th>
 			        <th>Tips</th>
-			        <th>Tips Number</th>
 			        <th>Total</th>
                 </tr>
             </thead>
@@ -190,17 +199,14 @@
 			                <td>{{income.count|intcomma}}</td>
 			                <td>{{admin.restaurant.config.currency}} {{income.amount|intcomma}}</td>
 				            <td>{{admin.restaurant.config.currency}} {{income.discount|intcomma}}</td>
-				            <td>{{income.count_discount|intcomma}}</td>
 			                <td>{{admin.restaurant.config.currency}} {{income.extras|intcomma}}</td>
-			                <td>{{income.count_extras|intcomma}}</td>
 			                <td>{{admin.restaurant.config.currency}} {{income.tips|intcomma}}</td>
-			                <td>{{income.count_tips|intcomma}}</td>
 			                <td>{{admin.restaurant.config.currency}} {{income.total|intcomma}}</td>
 			            </tr>
 			        {% endfor %}
 			    {% else %}
 			        <tr>
-			            <th colspan="11">
+			            <th colspan="8">
 			                <div class="ting-empty-data"><i class="icon clipboard outline"></i><p>No Bill To Show</p></div>
 			            </th>
 			        </tr>
@@ -237,7 +243,7 @@
     </div>
     <div class="content" id="ting-incomes-report-content-charts-{{random_uuid}}">
         <div class="ting-report-title" {% if date_string_array|length > 1 %} style="height:60px; margin-top: 15px;" {% else %} style="margin-top: 15px;" {% endif %}>
-        	<h2><span class="ting-title">Income Report {% if date_string_array|length <= 1 %} {{ date_string }} </span> {% else %} {{date_string_array.0}}</span> <span class="ting-subtitle">{{date_string_array.1}}</span> {% endif %}</h2>
+        	<h2><span class="ting-title">{{waiter.name}} Income Report {% if date_string_array|length <= 1 %} {{ date_string }} </span> {% else %} {{date_string_array.0}}</span> <span class="ting-subtitle">{{date_string_array.1}}</span> {% endif %}</h2>
         </div>
         <figure class="ting-data-charts-figure" style="margin-top: 10px;">
             <div id="ting-incomes-charts-canvas" data-chart-prefix="{{admin.restaurant.config.currency}}" data-chart-suffix="" data-chart-series="Placements" data-id="1" data-chart-type="areaspline" data-chart-data='{{ i__dt__charts|safe }}' class="ting-data-charts-canvas" style="height: 500px;"></div>
@@ -253,7 +259,11 @@
     </div>
 </div>
 
-<style type="text/css">.ui.selection.dropdown { min-width: 100% !important; }</style>
+<style type="text/css">
+	.ui.selection.dropdown { min-width: 100% !important; }
+	.ting-restaurant-about-data { margin: 0 !important; }
+	.ting-restaurant-about-data p { font-size: 15px !important; margin-bottom: 0.6rem !important; }
+</style>
 <script type="text/javascript">
 	$(".ui.dropdown, .dropdown").dropdown();
 	$(".ting-open-ajax-modal").openModal();
@@ -287,7 +297,7 @@
             }
         }
     });
-	$("#ting-show-incomes-report-pdf-{{random_uuid}}").click(function(e) {
+    $("#ting-show-incomes-report-pdf-{{random_uuid}}").click(function(e) {
 		e.preventDefault();
 		$("#ting-incomes-report-pdf-{{random_uuid}}").modal({
 			onApprove: function(){ return false; }
@@ -305,7 +315,7 @@
 	$("#ting-download-report-incomes-charts").click(function() {
 		printPdf('ting-incomes-report-content-charts-{{random_uuid}}', '{{filename_pdf_charts}}', 6);
 	});
-	$("#ting-submit-report-stats-incomes-form").submit(function(e) {
+	$("#ting-submit-report-waiter-form-{{waiter.pk}}").submit(function(e) {
 		e.preventDefault();
 		
 		var container = $("body").find("#ting-admin-reports-content-panel")
@@ -336,7 +346,6 @@
             }
         });
 	});
-
 	Highcharts.setOptions({
 		colors: ['#A3A1FB', '#DDDF00', '#24CBE5', '#64E572', '#FF9655', '#9DFCFF', '#FFD59D', '#FC46FC']
 	});
