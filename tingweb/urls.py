@@ -272,6 +272,7 @@ admins = [
 	url(r'adm/reports/waiters/$', admin.reports_waiters, name='ting_wb_adm_reports_waiters'),
 	url(r'adm/reports/waiters/(?P<waiter>\d+)/load/$', admin.load_waiter_reports, name='ting_wb_adm_load_waiter_reports'),
 	url(r'adm/reports/menus/$', admin.reports_menus, name='ting_wb_adm_reports_menus'),
+	url(r'adm/reports/menus/(?P<menu>\d+)/load/$', admin.load_menu_reports, name='ting_wb_adm_load_menu_reports'),
 ]
 
 urlpatterns = admins + users

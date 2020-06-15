@@ -74,9 +74,11 @@ DRINK_TYPE = (
 		(5, 'Soda'),
 		(6, 'Juice'),
 		(7, 'Smoothie'),
-		(8, 'Cocktail'),
-		(9, 'Wine'),
-		(10, 'Other')
+		(8, 'Milkshake'),
+		(9, 'Ice Cream'),
+		(10, 'Cocktail'),
+		(11, 'Wine'),
+		(12, 'Other')
 	)
 
 DISH_TIME = (
@@ -422,3 +424,21 @@ def generate_incomes_dict(date, bills, date_type, format_date=True):
 				'count_tips': 0,
 				'total': sum(list(map(lambda bill: bill.total, bills)))
 			}
+
+
+def generate_orders_dict(date, orders, date_type, format_date=True):
+	
+	if date_type == 1:
+		date_string = date.strftime('%d %B, %Y') if format_date == True else date.strftime('%Y-%m-%d')
+	elif date_type == 2:
+		date_string = '%s, %s' % (get_month_name(date[1]), date[0]) if format_date == True else '-'.join(date)
+	else:
+		date_string = date
+
+	return {
+			'date': date_string,
+			'count': orders.count(),
+			'quantity':  sum(list(map(lambda order: order.quantity, orders))),
+			'total': sum(list(map(lambda order: order.total, orders))),
+			'price': sum(list(map(lambda order: order.price, orders))) / orders.count() if orders.count() > 0 else 0
+		}

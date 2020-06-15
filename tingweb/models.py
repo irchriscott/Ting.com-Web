@@ -3567,6 +3567,32 @@ class Menu(models.Model):
 		return self.menu_type
 
 	@property
+	def menu_type_str(self):
+		return utils.get_from_tuple(utils.MENU_TYPE, self.menu_type)
+
+	@property
+	def menu_type_icon(self):
+		if self.menu_type == 1:
+			return 'utensil spoon'
+		elif self.menu_type == 2:
+			return 'glass martini'
+		elif self.menu_type == 3:
+			return 'utensils'
+		else:
+			return ''
+
+	@property
+	def menu_type_quantifier(self):
+		if self.menu_type == 1:
+			return 'Packs / Pieces'
+		elif self.menu_type == 2:
+			return 'Bottles / Cups'
+		elif self.menu_type == 3:
+			return 'Plates / Packs'
+		else:
+			return ''
+
+	@property
 	def food(self):
 		return Food.objects.get(pk=self.menu_id)
 
@@ -3588,6 +3614,160 @@ class Menu(models.Model):
 			return self.dish
 		else:
 			return None
+
+	@property
+	def name(self):
+		if self.menu_type == 1:
+			return self.food.name
+		elif self.menu_type == 2:
+			return self.drink.name
+		elif self.menu_type == 3:
+			return self.dish.name
+		else:
+			return ''
+
+	@property
+	def slug(self):
+		if self.menu_type == 1:
+			return self.food.slug
+		elif self.menu_type == 2:
+			return self.drink.slug
+		elif self.menu_type == 3:
+			return self.dish.slug
+		else:
+			return ''
+
+	@property
+	def category(self):
+		if self.menu_type == 1:
+			return self.food.category
+		elif self.menu_type == 2:
+			return None
+		elif self.menu_type == 3:
+			return self.dish.category
+		else:
+			return None
+
+	@property
+	def cuisine(self):
+		if self.menu_type == 1:
+			return self.food.cuisine
+		elif self.menu_type == 2:
+			return None
+		elif self.menu_type == 3:
+			return self.dish.cuisine
+		else:
+			return None
+
+	@property
+	def type_str(self):
+		if self.menu_type == 1:
+			return self.food.type_str
+		elif self.menu_type == 2:
+			return drink.type_str
+		elif self.menu_type == 3:
+			return self.dish.dish_time_str
+		else:
+			return ''
+
+	@property
+	def description(self):
+		if self.menu_type == 1:
+			return self.food.description
+		elif self.menu_type == 2:
+			return self.drink.description
+		elif self.menu_type == 3:
+			return self.dish.description
+		else:
+			return ''
+
+	@property
+	def ingredients(self):
+		if self.menu_type == 1:
+			return self.food.ingredients
+		elif self.menu_type == 2:
+			return self.drink.ingredients
+		elif self.menu_type == 3:
+			return self.dish.ingredients
+		else:
+			return ''
+
+	@property
+	def show_ingredients(self):
+		if self.menu_type == 1:
+			return self.food.show_ingredients
+		elif self.menu_type == 2:
+			return self.drink.show_ingredients
+		elif self.menu_type == 3:
+			return self.dish.show_ingredients
+		else:
+			return False
+
+	@property
+	def price(self):
+		if self.menu_type == 1:
+			return self.food.price
+		elif self.menu_type == 2:
+			return self.drink.price
+		elif self.menu_type == 3:
+			return self.dish.price
+		else:
+			return 0
+
+	@property
+	def last_price(self):
+		if self.menu_type == 1:
+			return self.food.last_price
+		elif self.menu_type == 2:
+			return self.drink.last_price
+		elif self.menu_type == 3:
+			return self.dish.last_price
+		else:
+			return 0
+
+	@property
+	def currency(self):
+		if self.menu_type == 1:
+			return self.food.currency
+		elif self.menu_type == 2:
+			return self.drink.currency
+		elif self.menu_type == 3:
+			return self.dish.currency
+		else:
+			return ''
+
+	@property
+	def is_countable(self):
+		if self.menu_type == 1:
+			return self.food.is_countable
+		elif self.menu_type == 2:
+			return self.drink.is_countable
+		elif self.menu_type == 3:
+			return self.dish.is_countable
+		else:
+			return False
+
+	@property
+	def quantity(self):
+		if self.menu_type == 1:
+			return self.food.quantity
+		elif self.menu_type == 2:
+			return self.drink.quantity
+		elif self.menu_type == 3:
+			return self.dish.quantity
+		else:
+			return 0
+
+	@property
+	def is_available(self):
+		if self.menu_type == 1:
+			return self.food.is_available
+		elif self.menu_type == 2:
+			return self.drink.is_available
+		elif self.menu_type == 3:
+			return self.dish.is_available
+		else:
+			return False
 
 	@property
 	def images(self):
@@ -3624,6 +3804,44 @@ class Menu(models.Model):
 			return round(total / self.reviews_count, 1)
 		else:
 			return 0
+
+	@property
+	def review_percent(self):
+		one = self.reviews.filter(review=1).count()
+		two = self.reviews.filter(review=2).count()
+		three = self.reviews.filter(review=3).count()
+		four = self.reviews.filter(review=4).count()
+		five = self.reviews.filter(review=5).count()
+		return [
+					(one * 100) / self.reviews_count if one != 0 else 0,
+					(two * 100) / self.reviews_count if two != 0 else 0,
+					(three * 100) / self.reviews_count if three != 0 else 0,
+					(four * 100) / self.reviews_count if four != 0 else 0,
+					(five * 100) / self.reviews_count if five != 0 else 0
+				]
+
+	@property
+	def image(self):
+		return self.images[0].image.url
+
+	@property
+	def promotions(self):
+		return Promotion.objects.filter(Q(promotion_menu_type='00') | 
+				Q(promotion_menu_type='0%s' % menu.menu_type) | Q(menu__pk=self.menu.pk) ).filter(branch__pk=self.branch.pk, is_on=True).order_by('-created_at')
+
+	@property
+	def promotions_count(self):
+		return self.promotions.count()
+
+	@property
+	def today_promotion_object(self):
+		promos = list(filter(lambda p: p.is_on_today == True, self.promotions))
+		return promos[0] if len(promos) > 0 else None
+
+	@property
+	def today_promotion(self):
+		promos = list(filter(lambda p: p.is_on_today == True, self.promotions))
+		return promos[0].string_data_json if len(promos) > 0 else None
 
 	@property
 	def to_json(self):
