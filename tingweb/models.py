@@ -3779,10 +3779,18 @@ class Menu(models.Model):
 			return self.dish.images
 		else:
 			return []
+
+	@property
+	def likes(self):
+		return MenuLike.objects.filter(menu=self.pk).order_by('-created_at')
+
+	@property
+	def likes_count(self):
+		return self.likes.count()
 	
 	@property
 	def like_ids(self):
-		return [like.user.pk for like in MenuLike.objects.filter(menu__pk=self.pk)]
+		return [like.user.pk for like in self.likes]
 	
 	def has_liked(self, u):
 		return True if u in self.like_ids else False
