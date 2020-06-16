@@ -651,28 +651,29 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                     var fb__r__5000 = $(filtercbx("1001 - 5000", "100,5000", "reviews", branches.filter(function(b){return b.reviews.count > 1000 && b.reviews.count <= 5000}).length));
                     var fb__r__more = $(filtercbx("5001 -", "5000,100000000000", "reviews", branches.filter(function(b){return b.reviews.count > 5000}).length));
                     //fbc.append([fb__reviews, fb__r__100, fb__r__500, fb__r__1000, fb__r__5000, fb__r__more]);
+
+                    fbc.find(".ting-checkbox-container input").click(function(){
+                        var v = {val: $(this).val(), gval: $(this).attr("data-g-value")}
+                        var c = fbs.find(function(f){return f.val == v.val && f.gval == v.gval})
+                        if($(this).is(":checked") == true){if(fbs.includes(v) == false){fbs.push(v)}}
+                        else{if(c !== undefined){fbs = fbs.filter(function(f){return f != c})}}
+                        pag__s = 0;
+                        if($(this).is(":checked") == true){if(fb__values[v.gval].includes(v.val) == false){fb__values[v.gval].push(parseInt(v.val))}}
+                        else{fb__values[v.gval].splice(fb__values[v.gval].indexOf(parseInt(v.val), 1));}
+                        if(use_old) {
+                            branches = filterbranches(branches__else, fbs, false);
+                            branches.sort(compare);
+                            createpags(branches, true);
+                            if(branches.length > 0){getRestaurantList(branches.sort(compare).slice(parseInt(pag__p[pag__s].from), parseInt(pag__p[pag__s].to)), sloc, 1);}
+                            else {getRestaurantList(branches.sort(compare), sloc, 1);}
+                        } else { searchfilterbranches(); }
+                    });
+
+                    fc.append(fbc);
                 }
 
                 updateFilters(filters);
 
-                fbc.find(".ting-checkbox-container input").click(function(){
-                    var v = {val: $(this).val(), gval: $(this).attr("data-g-value")}
-                    var c = fbs.find(function(f){return f.val == v.val && f.gval == v.gval})
-                    if($(this).is(":checked") == true){if(fbs.includes(v) == false){fbs.push(v)}}
-                    else{if(c !== undefined){fbs = fbs.filter(function(f){return f != c})}}
-                    pag__s = 0;
-                    if($(this).is(":checked") == true){if(fb__values[v.gval].includes(v.val) == false){fb__values[v.gval].push(parseInt(v.val))}}
-                    else{fb__values[v.gval].splice(fb__values[v.gval].indexOf(parseInt(v.val), 1));}
-                    if(use_old) {
-                        branches = filterbranches(branches__else, fbs, false);
-                        branches.sort(compare);
-                        createpags(branches, true);
-                        if(branches.length > 0){getRestaurantList(branches.sort(compare).slice(parseInt(pag__p[pag__s].from), parseInt(pag__p[pag__s].to)), sloc, 1);}
-                        else {getRestaurantList(branches.sort(compare), sloc, 1);}
-                    } else { searchfilterbranches(); }
-                });
-
-                fc.append(fbc);
                 r.append(fc).append(rc);
                 g.html(r); c.html(g);
 
