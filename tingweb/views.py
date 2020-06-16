@@ -12,6 +12,7 @@ from django.conf import settings
 from django.db.models import Q, Count, Sum
 from django.views.decorators.csrf import csrf_exempt
 from django.core import serializers
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ting.responses import ResponseObject, HttpJsonResponse
 from tingweb.backend import UserAuthentication
 from tingweb.mailer import SendUserResetPasswordMail, SendUserUpdateEmailMail, SendUserSuccessResetPasswordMail
@@ -891,19 +892,89 @@ def discover_today_promotions(request):
 
 def restaurants(request):
     template = 'web/user/global_restaurants.html'
+    branches = Branch.objects.all()
+    paginator = Paginator(branches, settings.PAGINATOR_ITEM_COUNT)
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
             'address_types': utils.USER_ADDRESS_TYPE,
             'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
-            'branches': json.dumps([branch.to_json_s for branch in Branch.objects.all()], default=str),
+            'branches': json.dumps([branch.to_json_s for branch in branches], default=str),
             'countries': json.dumps(list(Branch.objects.values('country').annotate(branches=Count('country'))), default=str),
             'towns': json.dumps(list(Branch.objects.values('town', 'country').annotate(branches=Count('town'))), default=str),
             'cuisines': json.dumps([category.to_json for category in RestaurantCategory.objects.all()], default=str),
             'specials': json.dumps(utils.RESTAURANT_SPECIALS, default=str),
             'services': json.dumps(utils.RESTAURANT_SERVICES, default=str),
-            'types': json.dumps(utils.RESTAURANT_TYPES, default=str)
+            'types': json.dumps(utils.RESTAURANT_TYPES, default=str),
+            'filters': json.dumps(utils.generate_filter_data(), default=str),
+            'num_pages': paginator.num_pages
         })
+
+
+def filter_restaurants(request):
+    
+    country = request.POST.get('country', 'all') if request.method == 'POST' else 'all'
+    query = request.POST.get('query', '') if request.method == 'POST' else ''
+    
+    restaurants = Branch.objects.filter(country=country).filter(Q(restaurant__name__icontains=query) | Q(name__icontains=query)) \
+                    if country != 'all' else \
+                        Branch.objects.filter(Q(restaurant__name__icontains=query) | Q(name__icontains=query))
+
+    if request.POST.get('filters') != None:
+        
+        filters = json.loads(request.POST.get('filters'))
+
+        brs__avail = map(lambda b: int(b.pk), list(filter(lambda b: b.availability in filters['availability'], restaurants)))
+        brs__cuisines = map(lambda b: int(b.pk), list(filter(lambda b: any((True for c in filters['cuisines'] if c in map(lambda v: int(v), b.restaurant.categories_ids))), restaurants)))
+        brs__services = map(lambda b: int(b.pk), list(filter(lambda b: any((True for s in filters['services'] if s in map(lambda v: int(v), b.services_ids))), restaurants)))
+        brs__specials = map(lambda b: int(b.pk), list(filter(lambda b: any((True for s in filters['specials'] if s in map(lambda v: int(v), b.specials_ids))), restaurants)))
+        brs__types = map(lambda b: int(b.pk), list(filter(lambda b: b.restaurant_type in filters['types'], restaurants)))
+        brs__ratings = map(lambda b: int(b.pk), list(filter(lambda b: b.review_average in filters['ratings'], restaurants)))
+
+        brs__f__all = [brs__avail, brs__cuisines, brs__services, brs__specials, brs__types, brs__ratings]
+        brs__k__all = [filters['availability'], filters['cuisines'], filters['services'], filters['specials'], filters['types'], filters['ratings']]
+        
+        brs__ids__pts = [brs[0] for brs in zip(*[bs for i, bs in enumerate(brs__f__all) if len(brs__k__all[i]) != 0]) if len(set(brs)) == 1]
+        brs__ids__all = brs__ids__pts if len(list(filter(lambda b: len(b) != 0, brs__f__all))) != len(brs__f__all) else list(reduce(lambda x, y: x & y, (set(brs) for i, brs in enumerate(brs__f__all) if len(brs__k__all[i]) != 0)))
+
+        branches = restaurants.filter(pk__in=brs__ids__all) if len(list(filter(lambda f: len(f) != 0, brs__k__all))) != 0 else restaurants
+    else:
+        branches = restaurants
+    
+    page = request.POST.get('page', 1)
+    paginator = Paginator(branches, settings.PAGINATOR_ITEM_COUNT)
+    
+    if paginator.num_pages >= int(page):
+        try:
+            _branches = json.dumps([paginator.num_pages, page, [branch.to_json_s for branch in paginator.page(page)]], default=str)
+        except PageNotAnInteger:
+            _branches = json.dumps([paginator.num_pages, page, [branch.to_json_s for branch in paginator.page(1)]], default=str)
+        except EmptyPage:
+            _branches = json.dumps([paginator.num_pages, page, [branch.to_json_s for branch in paginator.page(paginator.num_pages)]], default=str)
+    else:
+        _branches = json.dumps([paginator.num_pages, page, []], default=str)
+
+    return HttpResponse(_branches, content_type='application/json')
+
+
+def filter_restaurants_search(request):
+    resto = request.POST.get('resto') if request.POST.get('resto') != None else ''
+    branch = request.POST.get('branch') if request.POST.get('branch') != None else ''
+    country = request.POST.get('country')
+
+    branches = Branch.objects.filter(
+                restaurant__name__icontains=resto, 
+                name__icontains=branch, 
+                country=country) if country != 'all' else Branch.objects.filter(
+                    restaurant__name__icontains=resto, 
+                    name__icontains=branch)
+
+    return HttpJsonResponse([branch.to_json_r for branch in branches])
+
+
+def get_filter_data(request):
+    data = utils.generate_filter_data(request.GET.get('country'), None, request.GET.get('query'))
+    return HttpResponse(json.dumps(data, default=str), content_type='application/json')
 
 
 def moments(request):
@@ -925,21 +996,6 @@ def blogs(request):
 
 
 # FOR RESTAURANTS
-
-
-def filter_restaurants_search(request):
-    resto = request.POST.get('resto') if request.POST.get('resto') != None else ''
-    branch = request.POST.get('branch') if request.POST.get('branch') != None else ''
-    country = request.POST.get('country')
-
-    branches = Branch.objects.filter(
-                restaurant__name__icontains=resto, 
-                name__icontains=branch, 
-                country=country) if country != 'all' else Branch.objects.filter(
-                    restaurant__name__icontains=resto, 
-                    name__icontains=branch)
-
-    return HttpJsonResponse([branch.to_json_r for branch in branches])
 
 
 def get_restaurant_promotions(request, restaurant, branch, slug):

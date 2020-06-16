@@ -5,6 +5,7 @@
 
 const SHOW_ORDERS = 'show_orders'
 const SHOW_PLACEMENTS = 'show_placements'
+const use_old = false;
 
 let markers = [];
 
@@ -470,7 +471,11 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                 var usl = $("#ting-user-locations");
                 usl.empty();
                 usl.append(`<option value="0">Current Location</option>`);
+
                 var fbs = [];
+
+                var fb__values = { availability: [], cuisines: [], services: [],
+                                   specials: [], types: [], ratings: [] };
 
                 var usa = {lat: lat, lng: long}; sloc = usa;
                 branches = newBranches(branches, usa);
@@ -493,7 +498,7 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                 var fcd = $(`<div class="ui ting-filter-by"></div>`);
                 var hf = `<h4 style="text-transform:uppercase; font-weight:100;">Search Restaurant</h4><hr/>`;
                 fcd.append(hf);
-                var cd = $(`<select name="country" class="ui dropdown"></select>`);
+                var cd = $(`<select name="country" id="ting-restaurant-filter-country" class="ui dropdown"></select>`);
                 cd.append(`<option value="all">All</option>`);
                 cd.append(`<option value="${cntr}">Current</option>`);
                 var cntrs = window.__TING__Countries;
@@ -501,42 +506,34 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                     
                 var f = $(`<form class="ui form" action="${window.__TING__URL_Filter_Restaurants}" method="GET"></form>`);
                 f.append(`<div class="field">
-                                <label>By Restaurant Name :</label>
-                                <input type="text" name="resto" placeholder="Restaurant Name" autocomplete="off" />
-                            </div>`);
-                f.append(`<div class="field">
-                            <label>By Branch Name :</label>
-                                <input type="text" name="branch" placeholder="Branch Name" autocomplete="off" />
+                                <label>Restaurant Or Branch Name :</label>
+                                <input type="text" id="ting-restaurant-filter-name" name="name" placeholder="Restaurant Or Branch Name" autocomplete="off" />
                             </div>`);
                 var cdc = $(`<div class="field"></div>`);
-                cdc.append(`<label>By Country</label>`);
+                cdc.append(`<label>Select Country</label>`);
                 cdc.append(cd);
                 f.append(cdc).append(`<script>$("select").dropdown()</script>`);
                 f.append(`<button class="ui button medium primary fluid" type="submit">${"Search".toUpperCase()}</button>`);
                     
-                f.submit(function(e){
-                    e.preventDefault();
-                    var _dt = new FormData($(this)[0]);
-                    _dt.append("csrfmiddlewaretoken", window.__TING__Token);
-                    var _url = $(this).attr("action");
-                    var _meth = $(this).attr("method");
-                    md.html(loader);
-                    $.ajax({
-                        type: "POST", url: _url,data: _dt,
-                        processData: false, contentType: false,
-                        success: function(r){window.__TING__Restaurants = r;
-                            branches__else = r; branches = r;
-                            pag__s = 0;createpags(r, true);r.sort(compare);
-                            if(r.length > 0){getRestaurantList(newBranches(r, sloc).sort(compare).slice(parseInt(pag__p[pag__s].from), parseInt(pag__p[pag__s].to)), sloc, 1);}
-                            else {getRestaurantList(newBranches(r, sloc).sort(compare), sloc, 1);}
-                            branchesmaps(newBranches(r, sloc), sloc, false);
-                        }, error: function(_, t, e){showErrorMessage(t, e);}
-                    });
-                });
-                    
                 fcd.append(f);fc.append(fcd).append(`<br/>`);
                 var hff = `<h4 style="text-transform:uppercase; font-weight:100;">Filter By</h4><hr/>`;
                 var fbc = $(`<div class="ui ting-filter-by"></div>`);
+
+                f.submit(function(e){ 
+                    e.preventDefault(); searchfilterbranches();
+                    $.ajax({
+                        type: "GET", url: window.__TING__URL_Load_Filters_Data,
+                        data: {
+                            query: $("body").find("#ting-restaurant-filter-name").val(),
+                            country: $("body").find("#ting-restaurant-filter-country").val() 
+                        },
+                        success: function(res){
+                            fbc.empty();
+                            window.__TING__Filters = res;
+                            updateFilters(res);
+                        }, error: function(_, t, e){showErrorMessage(t, e);}
+                    })
+                });
 
                 var filtercbx = function(t, v, gv, q){
                     return `<label class="ting-checkbox-container">
@@ -548,94 +545,115 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                 };
 
                 var fb__hr = `<hr>`; var fb__h5__st = `style="font-size:15px; margin-bottom:1rem !important; text-transform: uppercase;"`;
-                
-                var fb__availability = `<h5 ${fb__h5__st}>Availability</h5>`;
-                var fb__a__a = $(filtercbx("Not Available", false, "avail", branches.filter(function(b){return b.isAvailable == false}).length));
-                var fb__a__b = $(filtercbx("Opened", "opened", "avail", branches.filter(function(b){
-                    if(b.isAvailable == true){
-                        var s = statusWorkTime(b.restaurant.opening, b.restaurant.closing);
-                        return s.st == "opened";
-                    }
-                    return false
-                }).length));
-                var fb__a__c = $(filtercbx("Closed", "closed", "avail",  branches.filter(function(b){
-                    if(b.isAvailable == true){
-                        var s = statusWorkTime(b.restaurant.opening, b.restaurant.closing);
-                        return s.st == "closed";
-                    }
-                    return false
-                }).length));
-                fbc.append(hff).append([fb__availability, fb__a__a, fb__a__b, fb__a__c, fb__hr]);
 
-                var fb__distance = `<h5 ${fb__h5__st}>Distance From Location</h5>`;
-                var fb__d__1 = $(filtercbx("Less than 1 Km", 1, "dist", branches.filter(function(b){return b.dist <= 1}).length));
-                var fb__d__3 = $(filtercbx("Less than 3 Km", 3, "dist", branches.filter(function(b){return b.dist <= 3}).length));
-                var fb__d__5 = $(filtercbx("Less than 5 Km", 5, "dist", branches.filter(function(b){return b.dist <= 5}).length));
-                var fb__d__10 = $(filtercbx("Less than 10 Km", 10, "dist", branches.filter(function(b){return b.dist <= 10}).length));
-                fbc.append([fb__distance, fb__d__1, fb__d__3, fb__d__5, fb__d__10, fb__hr]);
+                var filters = window.__TING__Filters;
 
-                var fb__cuisine =  `<h5 ${fb__h5__st}>Cuisines</h5>`;
-                fbc.append(fb__cuisine);
-                var r_cuisine = window.__TING__Cuisines;
-                r_cuisine.forEach(function(c) {
-                    fbc.append($(filtercbx(c.name, c.id, "cuis", branches.filter(function(b){ return b.categories.categories.filter(function(ct){ return ct.id == c.id }).length > 0 }).length)))
-                });
-                fbc.append(fb__hr);
-                
-                var fb__service =  `<h5 ${fb__h5__st}>Services</h5>`;
-                fbc.append(fb__service);
-                var r_sers = window.__TING__Services;
-                r_sers.forEach(function(s) {
-                    fbc.append($(filtercbx(s.name, s.id, "serv", branches.filter(function(b){return b.services.filter(function(sv){ return sv.id == s.id }).length > 0 }).length)))
-                });
-                fbc.append(fb__hr);
+                function updateFilters(filters) {
+                    
+                    fbc.append(hff)
 
-                var fb__specials =  `<h5 ${fb__h5__st}>Specials</h5>`;
-                fbc.append(fb__specials);
-                var r_specs = window.__TING__Specials;
-                r_specs.forEach(function(s) {
-                    fbc.append($(filtercbx(s.name, s.id, "spec", branches.filter(function(b){return b.specials.filter(function(sv){ return sv.id == s.id }).length > 0 }).length)))
-                });
-                fbc.append(fb__hr);
+                    var fb__availability = `<h5 ${fb__h5__st}>Availability</h5>`;
+                    var fb__a__a = $(filtercbx("Not Available", false, "avail", branches.filter(function(b){return b.isAvailable == false}).length));
+                    var fb__a__b = $(filtercbx("Opened", "opened", "avail", branches.filter(function(b){
+                        if(b.isAvailable == true){
+                            var s = statusWorkTime(b.restaurant.opening, b.restaurant.closing);
+                            return s.st == "opened";
+                        }
+                        return false
+                    }).length));
+                    var fb__a__c = $(filtercbx("Closed", "closed", "avail",  branches.filter(function(b){
+                        if(b.isAvailable == true){
+                            var s = statusWorkTime(b.restaurant.opening, b.restaurant.closing);
+                            return s.st == "closed";
+                        }
+                        return false
+                    }).length));
+                    //fbc.append([fb__availability, fb__a__a, fb__a__b, fb__a__c, fb__hr]);
 
-                var fb__types = `<h5 ${fb__h5__st}>Types</h5>`
-                fbc.append(fb__types);
-                var r_types = window.__TING__Types;
-                r_types.forEach(function(t) {
-                    fbc.append($(filtercbx(t.name, t.id, "typ", branches.filter(function(b){return b.type.id == t.id}).length)))
-                });
-                fbc.append(fb__hr);
+                    fbc.append(fb__availability);
+                    filters.availability.forEach(function(a) {
+                        fbc.append($(filtercbx(a.title, a.id, "availability", a.count)))
+                    });
+                    fbc.append(fb__hr);
 
-                var fb__chair_type = `<h5 ${fb__h5__st}>Chair Type</h5>`;
-                var fb__ct__iron = $(filtercbx("Iron", "iron", "chairt", branches.filter(function(b){return b.tables.iron > 0}).length));
-                var fb__ct__wooden = $(filtercbx("Wooden", "wooden", "chairt", branches.filter(function(b){return b.tables.wooden > 0}).length));
-                var fb__ct__plastic = $(filtercbx("Plastic", "plastic", "chairt", branches.filter(function(b){return b.tables.plastic > 0}).length));
-                var fb__ct__couch = $(filtercbx("Couch", "couch", "chairt", branches.filter(function(b){return b.tables.couch > 0}).length));
-                var fb__ct__mixture = $(filtercbx("Mixture", "mix", "chairt", branches.filter(function(b){return b.tables.mixture > 0}).length));
-                //fbc.append([fb__chair_type, fb__ct__iron, fb__ct__wooden, fb__ct__plastic, fb__ct__couch, fb__ct__mixture, fb__hr]);
-                
-                var fb__table_location = `<h5 ${fb__h5__st}>Table Location</h5>`;
-                var fb__t__inside = $(filtercbx("Inside", "inside", "tabloc", branches.filter(function(b){return b.tables.inside > 0}).length));
-                var fb__t__outside = $(filtercbx("Outside", "outside", "tabloc", branches.filter(function(b){return b.tables.outside > 0}).length));
-                var fb__t__balcony = $(filtercbx("Balcony", "balcony", "tabloc", branches.filter(function(b){return b.tables.balcony > 0}).length));
-                var fb__t__rooftop = $(filtercbx("Rooftop", "rooftop", "tabloc", branches.filter(function(b){return b.tables.rooftop > 0}).length));
-                //fbc.append([fb__table_location, fb__t__inside, fb__t__outside, fb__t__balcony, fb__t__rooftop, fb__hr]);
+                    var fb__distance = `<h5 ${fb__h5__st}>Distance From Location</h5>`;
+                    var fb__d__1 = $(filtercbx("Less than 1 Km", 1, "dist", branches.filter(function(b){return b.dist <= 1}).length));
+                    var fb__d__3 = $(filtercbx("Less than 3 Km", 3, "dist", branches.filter(function(b){return b.dist <= 3}).length));
+                    var fb__d__5 = $(filtercbx("Less than 5 Km", 5, "dist", branches.filter(function(b){return b.dist <= 5}).length));
+                    var fb__d__10 = $(filtercbx("Less than 10 Km", 10, "dist", branches.filter(function(b){return b.dist <= 10}).length));
+                    fbc.append([fb__distance, fb__d__1, fb__d__3, fb__d__5, fb__d__10, fb__hr]);
 
-                var fb__star_rating = `<h5 ${fb__h5__st}>Ratings</h5>`;
-                var fb__s__1 = $(filtercbx("1 Star", "-1,1.5", "star", branches.filter(function(b){return b.reviews.average <= 1.5}).length));
-                var fb__s__2 = $(filtercbx("2 Stars", "1.5,2", "star", branches.filter(function(b){return b.reviews.average > 1.5 && b.reviews.average <= 2.5}).length));
-                var fb__s__3 = $(filtercbx("3 Stars", "2.5,3.5", "star", branches.filter(function(b){return b.reviews.average > 2.5 && b.reviews.average <= 3.5}).length));
-                var fb__s__4 = $(filtercbx("4 Stars", "3.5,4.5", "star", branches.filter(function(b){return b.reviews.average > 3.5 && b.reviews.average <= 4.5}).length));
-                var fb__s__5 = $(filtercbx("5 Stars", "4.5,5", "star", branches.filter(function(b){return b.reviews.average > 4.5}).length));
-                fbc.append([fb__star_rating, fb__s__1, fb__s__2, fb__s__3, fb__s__4, fb__s__5, fb__hr]);
+                    var fb__cuisine =  `<h5 ${fb__h5__st}>Cuisines</h5>`;
+                    fbc.append(fb__cuisine);
+                    var r_cuisine = window.__TING__Cuisines;
+                    filters.cuisines.forEach(function(c) {
+                        fbc.append($(filtercbx(c.title, c.id, "cuisines", c.count)))
+                    });
+                    fbc.append(fb__hr);
+                    
+                    var fb__service =  `<h5 ${fb__h5__st}>Services</h5>`;
+                    fbc.append(fb__service);
+                    var r_sers = window.__TING__Services;
+                    filters.services.forEach(function(s) {
+                        fbc.append($(filtercbx(s.title, s.id, "services", s.count)))
+                    });
+                    fbc.append(fb__hr);
 
-                var fb__reviews = `<h5 ${fb__h5__st}>Reviews</h5>`;
-                var fb__r__100 = $(filtercbx("- 100", "-1,100", "reviews", branches.filter(function(b){return b.reviews.count <= 100}).length));
-                var fb__r__500 = $(filtercbx("101 - 500", "100,500", "reviews", branches.filter(function(b){return b.reviews.count > 100 && b.reviews.count <= 500}).length));
-                var fb__r__1000 = $(filtercbx("501 - 1000", "500,1000", "reviews", branches.filter(function(b){return b.reviews.count > 500 && b.reviews.count <= 1000}).length));
-                var fb__r__5000 = $(filtercbx("1001 - 5000", "100,5000", "reviews", branches.filter(function(b){return b.reviews.count > 1000 && b.reviews.count <= 5000}).length));
-                var fb__r__more = $(filtercbx("5001 -", "5000,100000000000", "reviews", branches.filter(function(b){return b.reviews.count > 5000}).length));
-                //fbc.append([fb__reviews, fb__r__100, fb__r__500, fb__r__1000, fb__r__5000, fb__r__more]);
+                    var fb__specials =  `<h5 ${fb__h5__st}>Specials</h5>`;
+                    fbc.append(fb__specials);
+                    var r_specs = window.__TING__Specials;
+                    filters.specials.forEach(function(s) {
+                        fbc.append($(filtercbx(s.title, s.id, "specials", s.count)))
+                    });
+                    fbc.append(fb__hr);
+
+                    var fb__types = `<h5 ${fb__h5__st}>Types</h5>`
+                    fbc.append(fb__types);
+                    var r_types = window.__TING__Types;
+                    filters.types.forEach(function(t) {
+                        fbc.append($(filtercbx(t.title, t.id, "types", t.count)))
+                    });
+                    fbc.append(fb__hr);
+
+                    var fb__chair_type = `<h5 ${fb__h5__st}>Chair Type</h5>`;
+                    var fb__ct__iron = $(filtercbx("Iron", "iron", "chairt", branches.filter(function(b){return b.tables.iron > 0}).length));
+                    var fb__ct__wooden = $(filtercbx("Wooden", "wooden", "chairt", branches.filter(function(b){return b.tables.wooden > 0}).length));
+                    var fb__ct__plastic = $(filtercbx("Plastic", "plastic", "chairt", branches.filter(function(b){return b.tables.plastic > 0}).length));
+                    var fb__ct__couch = $(filtercbx("Couch", "couch", "chairt", branches.filter(function(b){return b.tables.couch > 0}).length));
+                    var fb__ct__mixture = $(filtercbx("Mixture", "mix", "chairt", branches.filter(function(b){return b.tables.mixture > 0}).length));
+                    //fbc.append([fb__chair_type, fb__ct__iron, fb__ct__wooden, fb__ct__plastic, fb__ct__couch, fb__ct__mixture, fb__hr]);
+                    
+                    var fb__table_location = `<h5 ${fb__h5__st}>Table Location</h5>`;
+                    var fb__t__inside = $(filtercbx("Inside", "inside", "tabloc", branches.filter(function(b){return b.tables.inside > 0}).length));
+                    var fb__t__outside = $(filtercbx("Outside", "outside", "tabloc", branches.filter(function(b){return b.tables.outside > 0}).length));
+                    var fb__t__balcony = $(filtercbx("Balcony", "balcony", "tabloc", branches.filter(function(b){return b.tables.balcony > 0}).length));
+                    var fb__t__rooftop = $(filtercbx("Rooftop", "rooftop", "tabloc", branches.filter(function(b){return b.tables.rooftop > 0}).length));
+                    //fbc.append([fb__table_location, fb__t__inside, fb__t__outside, fb__t__balcony, fb__t__rooftop, fb__hr]);
+
+                    var fb__star_rating = `<h5 ${fb__h5__st}>Ratings</h5>`;
+                    var fb__s__1 = $(filtercbx("1 Star", "-1,1.5", "star", branches.filter(function(b){return b.reviews.average <= 1.5}).length));
+                    var fb__s__2 = $(filtercbx("2 Stars", "1.5,2", "star", branches.filter(function(b){return b.reviews.average > 1.5 && b.reviews.average <= 2.5}).length));
+                    var fb__s__3 = $(filtercbx("3 Stars", "2.5,3.5", "star", branches.filter(function(b){return b.reviews.average > 2.5 && b.reviews.average <= 3.5}).length));
+                    var fb__s__4 = $(filtercbx("4 Stars", "3.5,4.5", "star", branches.filter(function(b){return b.reviews.average > 3.5 && b.reviews.average <= 4.5}).length));
+                    var fb__s__5 = $(filtercbx("5 Stars", "4.5,5", "star", branches.filter(function(b){return b.reviews.average > 4.5}).length));
+                    //fbc.append([fb__star_rating, fb__s__1, fb__s__2, fb__s__3, fb__s__4, fb__s__5, fb__hr]);
+
+                    fbc.append(fb__star_rating);
+                    filters.ratings.forEach(function(r) {
+                        fbc.append($(filtercbx(r.title, r.id, "ratings", r.count)))
+                    });
+                    fbc.append(fb__hr);
+
+                    var fb__reviews = `<h5 ${fb__h5__st}>Reviews</h5>`;
+                    var fb__r__100 = $(filtercbx("- 100", "-1,100", "reviews", branches.filter(function(b){return b.reviews.count <= 100}).length));
+                    var fb__r__500 = $(filtercbx("101 - 500", "100,500", "reviews", branches.filter(function(b){return b.reviews.count > 100 && b.reviews.count <= 500}).length));
+                    var fb__r__1000 = $(filtercbx("501 - 1000", "500,1000", "reviews", branches.filter(function(b){return b.reviews.count > 500 && b.reviews.count <= 1000}).length));
+                    var fb__r__5000 = $(filtercbx("1001 - 5000", "100,5000", "reviews", branches.filter(function(b){return b.reviews.count > 1000 && b.reviews.count <= 5000}).length));
+                    var fb__r__more = $(filtercbx("5001 -", "5000,100000000000", "reviews", branches.filter(function(b){return b.reviews.count > 5000}).length));
+                    //fbc.append([fb__reviews, fb__r__100, fb__r__500, fb__r__1000, fb__r__5000, fb__r__more]);
+                }
+
+                updateFilters(filters);
 
                 fbc.find(".ting-checkbox-container input").click(function(){
                     var v = {val: $(this).val(), gval: $(this).attr("data-g-value")}
@@ -643,11 +661,15 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                     if($(this).is(":checked") == true){if(fbs.includes(v) == false){fbs.push(v)}}
                     else{if(c !== undefined){fbs = fbs.filter(function(f){return f != c})}}
                     pag__s = 0;
-                    branches = filterbranches(branches__else, fbs, false);
-                    branches.sort(compare);
-                    createpags(branches, true);
-                    if(branches.length > 0){getRestaurantList(branches.sort(compare).slice(parseInt(pag__p[pag__s].from), parseInt(pag__p[pag__s].to)), sloc, 1);}
-                    else {getRestaurantList(branches.sort(compare), sloc, 1);}
+                    if($(this).is(":checked") == true){if(fb__values[v.gval].includes(v.val) == false){fb__values[v.gval].push(parseInt(v.val))}}
+                    else{fb__values[v.gval].splice(fb__values[v.gval].indexOf(parseInt(v.val), 1));}
+                    if(use_old) {
+                        branches = filterbranches(branches__else, fbs, false);
+                        branches.sort(compare);
+                        createpags(branches, true);
+                        if(branches.length > 0){getRestaurantList(branches.sort(compare).slice(parseInt(pag__p[pag__s].from), parseInt(pag__p[pag__s].to)), sloc, 1);}
+                        else {getRestaurantList(branches.sort(compare), sloc, 1);}
+                    } else { searchfilterbranches(); }
                 });
 
                 fc.append(fbc);
@@ -671,45 +693,95 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                     usa = {lat: parseFloat(_sa.latitude), lng: parseFloat(_sa.longitude)};}
                     sloc = usa;
                     pag__s = 0;
-                    branches = newBranches(branches__else, usa);
-                    createpags(branches, true);
-                    branches.sort(compare);
-                    if(branches.length > 0){getRestaurantList(branches.sort(compare).slice(parseInt(pag__p[pag__s].from), parseInt(pag__p[pag__s].to)), usa, 1);}
-                    else {getRestaurantList(branches.sort(compare), usa, 1);}
+                    branches = newBranches(branches__else, usa, use_old);
+                    if(use_old) {
+                        createpags(branches, true);
+                        branches.sort(compare);
+                        if(branches.length > 0){getRestaurantList(branches.sort(compare).slice(parseInt(pag__p[pag__s].from), parseInt(pag__p[pag__s].to)), usa, 1);}
+                        else {getRestaurantList(branches.sort(compare), usa, 1);}
+                    } else { getRestaurantList(branches.sort(compare), usa, 1); }
                     branchesmaps(branches, usa, false);
                 });
 
-                createpags(branches, false);
+                createpags(branches, false, window.__TING__Num_Pages, 1);
                 branches.sort(compare);
-                if(branches.length > 0){getRestaurantList(branches.sort(compare).slice(parseInt(pag__p[pag__s].from), parseInt(pag__p[pag__s].to)), usa, 1);}
-                else {getRestaurantList(branches.sort(compare), usa, 1);}
+                if(use_old){
+                    if(branches.length > 0){getRestaurantList(branches.sort(compare).slice(parseInt(pag__p[pag__s].from), parseInt(pag__p[pag__s].to)), usa, 1);}
+                    else {getRestaurantList(branches.sort(compare), usa, 1);}
+                } else { searchfilterbranches(); }
                 branchesmaps(branches, usa, false);
 
-                function createpags(brchs, ev){
-                    if(brchs.length > 0){
-                        var pag__n = Math.floor(brchs.length / pag__m);
-                        var pag__l = brchs.length - (pag__n * pag__m);
-                        pag__cont.empty().show();
-                        pag__p = [];
-                        if(pag__l > 0){pag__n++}
-                        var pag__c = 0;
-                        for(var p = 0; p < pag__n; p++){pag__p.push({from: pag__c, to: pag__c + pag__m, pos: p}); pag__c += pag__m}
-                        if(pag__s != 0){ pag__cont.append(`<a class="item" data-position="prev"><i class="left chevron icon"></i></a>`)}
-                        if(pag__p.length > 1){
-                            for(var p = 0; p < pag__p.length; p++){
-                                pag__cont.append(`<a class="item" data-from="${pag__p[p].from}" data-to="${pag__p[p].to}" data-position="${pag__p[p].pos}">${pag__p[p].pos + 1}</a>`)
-                            }
-                        } else { pag__cont.hide() }
-                        if(pag__p.length > 1 && pag__s != pag__p.length - 1){pag__cont.append(`<a class="icon item" data-position="next"><i class="right chevron icon"></i></a>`)}
-                        pag__cont.find("a").click(function(){
-                            var p = $(this).attr("data-position");
-                            if(p == "next"){pag__s++} else if(p == "prev"){pag__s--;} else {pag__s = p;}
-                            createpags(brchs, true);
-                            brchs.sort(compare);
-                            getRestaurantList(brchs.sort(compare).slice(parseInt(pag__p[pag__s].from), parseInt(pag__p[pag__s].to)), usa, 1);
-                        });
-                        pag__cont.find("a[data-position="+pag__s+"]").addClass("active").siblings().removeClass("active");
-                    } else { pag__p = []; pag__cont.empty().hide(); }
+                function searchfilterbranches(page=0){
+                    var _dt = new FormData();
+                    _dt.append("query", $("body").find("#ting-restaurant-filter-name").val())
+                    _dt.append("country", $("body").find("#ting-restaurant-filter-country").val())
+                    _dt.append("csrfmiddlewaretoken", window.__TING__Token);
+                    _dt.append("filters", JSON.stringify(fb__values));
+                    var _url = window.__TING__URL_Filter_Restaurants;
+                    md.html(loader);
+                    $.ajax({
+                        type: "POST", url: _url, data: _dt,
+                        processData: false, contentType: false,
+                        success: function(res){var r = res[2];
+                            window.__TING__Restaurants = r;
+                            window.__TING__Num_Pages = r[0];
+                            branches__else = r; branches = r;
+                            if(use_old){
+                                pag__s = 0;createpags(r, true);r.sort(compare);
+                                if(r.length > 0){getRestaurantList(newBranches(r, sloc, use_old).sort(compare).slice(parseInt(pag__p[pag__s].from), parseInt(pag__p[pag__s].to)), sloc, 1);}
+                                else {getRestaurantList(newBranches(r, sloc, use_old).sort(compare), sloc, 1);}
+                            } else { createpags(r, true, r[0], r[1]); getRestaurantList(newBranches(r, sloc, use_old).sort(compare), sloc, 1); }
+                            branchesmaps(newBranches(r, sloc, use_old), sloc, false);
+                            updateFilters(window.__TING__Filters);
+                        }, error: function(_, t, e){showErrorMessage(t, e);}
+                    });
+                }
+
+                function createpags(brchs, ev, pgs=0, spg=0){
+                    if(use_old) {
+                        if(brchs.length > 0){
+                            var pag__n = Math.floor(brchs.length / pag__m);
+                            var pag__l = brchs.length - (pag__n * pag__m);
+                            pag__cont.empty().show();
+                            pag__p = [];
+                            if(pag__l > 0){pag__n++}
+                            var pag__c = 0;
+                            for(var p = 0; p < pag__n; p++){pag__p.push({from: pag__c, to: pag__c + pag__m, pos: p}); pag__c += pag__m}
+                            if(pag__s != 0){ pag__cont.append(`<a class="item" data-position="prev"><i class="left chevron icon"></i></a>`)}
+                            if(pag__p.length > 1){
+                                for(var p = 0; p < pag__p.length; p++){
+                                    pag__cont.append(`<a class="item" data-from="${pag__p[p].from}" data-to="${pag__p[p].to}" data-position="${pag__p[p].pos}">${pag__p[p].pos + 1}</a>`)
+                                }
+                            } else { pag__cont.hide() }
+                            if(pag__p.length > 1 && pag__s != pag__p.length - 1){pag__cont.append(`<a class="icon item" data-position="next"><i class="right chevron icon"></i></a>`)}
+                            pag__cont.find("a").click(function(){
+                                var p = $(this).attr("data-position");
+                                if(p == "next"){pag__s++} else if(p == "prev"){pag__s--;} else {pag__s = p;}
+                                createpags(brchs, true);
+                                brchs.sort(compare);
+                                getRestaurantList(brchs.sort(compare).slice(parseInt(pag__p[pag__s].from), parseInt(pag__p[pag__s].to)), usa, 1);
+                            });
+                            pag__cont.find("a[data-position="+pag__s+"]").addClass("active").siblings().removeClass("active");
+                        } else { pag__p = []; pag__cont.empty().hide(); }
+                    } else {
+                        if(pgs > 0) {
+                            var s__pg = spg;
+                            pag__cont.empty().show();
+                            if(s__pg != 1){ pag__cont.append(`<a class="item" data-position="prev"><i class="left chevron icon"></i></a>`)}
+                            if(pgs > 1){
+                                for(var p = 0; p < papgs; p++){
+                                    pag__cont.append(`<a class="item" data-position="${p + 1}">${p + 1}</a>`)
+                                }
+                            } else { pag__cont.hide() }
+                            if(pgs > 1 && s__pg != pgs - 1){pag__cont.append(`<a class="icon item" data-position="next"><i class="right chevron icon"></i></a>`)}
+                            pag__cont.find("a").click(function(){
+                                var p = $(this).attr("data-position");
+                                if(p == "next"){s__pg++} else if(p == "prev"){s__pg--;} else {s__pg = p;}
+                                searchfilterbranches(s__pg);
+                            });
+                            pag__cont.find("a[data-position="+s__pg+"]").addClass("active").siblings().removeClass("active");
+                        } else { pag__cont.empty().hide(); }
+                    }
                 }
 
                 function filterbranches(brs, fb){
@@ -1128,10 +1200,10 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                                     var dtt = JSON.parse($(this).attr("data-tab"));
                                     var cdtt = ctn.find("#ting-menus-list-item-" + dtt.id).empty();
                                     var brt = res[dtt.pos];
-                                    var loadurl =  decodeURIparams(window.__TING_URL_Load_Menu_Rand, {"branch": brt.id})  
+                                    var loadurl =  decodeURIparams(window.__TING__URL_Load_Menu_Rand, {"branch": brt.id})  
                                     
                                     var sploader = `<div style="width: 100%; height: 55px; text-align: center;">
-                                                        <img src="${window.__TING_URL_Loader_Image}" style="width: 20px; height: 20px; margin-top: 17px;"/>
+                                                        <img src="${window.__TING__URL_Loader_Image}" style="width: 20px; height: 20px; margin-top: 17px;"/>
                                                     </div>`;
 
                                     cdtt.html(sploader);
@@ -1905,7 +1977,7 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                                         <div class="ting-price-promo" style="height:46px;">
                                             <div class="ting-menu-promo" id="ting-menu-promo-${menus[i].id}">
                                                 <div style="width: 100%; height: 55px; text-align: center;">
-                                                    <img src="${window.__TING_URL_Loader_Image}" style="width: 20px; height: 20px; margin-top: 17px;"/>
+                                                    <img src="${window.__TING__URL_Loader_Image}" style="width: 20px; height: 20px; margin-top: 17px;"/>
                                                 </div>
                                             </div>
                                             <div class="ting-menu-price" ${m.isCountable == false ? `style="margin-top:13px;"` : ``}>

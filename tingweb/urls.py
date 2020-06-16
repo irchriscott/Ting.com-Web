@@ -59,7 +59,8 @@ users = [
 	url(r'usr/g/discovery/cuisine/r/(?P<cuisine>\d+)-(?P<slug>[^/]+)/$', views.discover_cuisine_restaurants, name='ting_usr_global_discover_r_cuisine'),
 	url(r'usr/g/discovery/cuisine/m/(?P<cuisine>\d+)-(?P<slug>[^/]+)/$', views.discover_cuisine_menus, name='ting_usr_global_discover_m_cuisine'),
 	url(r'usr/g/restaurants/$', views.restaurants, name='ting_usr_global_restaurants'),
-	url(r'usr/g/restaurants/filter/$', views.filter_restaurants_search, name='ting_usr_global_restaurants_filter'),
+	url(r'usr/g/restaurants/filter/$', views.filter_restaurants, name='ting_usr_global_restaurants_filter'),
+	url(r'usr/g/restaurants/filters/data/$', views.get_filter_data, name='ting_usr_global_restaurants_get_filters_data'),
 	url(r'usr/g/moments/$', views.moments, name='ting_usr_global_moments'),
 	url(r'usr/g/blogs/$', views.blogs, name='ting_usr_global_blogs'),
 

@@ -1,17 +1,23 @@
 from __future__ import unicode_literals
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from datetime import datetime, timedelta, date
+from django.db.models import Q, Count, Sum
 from django.core.files import File
 from django.utils import timezone
 from django.http import HttpResponse
 from django.template.loader import get_template
+from datetime import datetime, timedelta, date
 from collections import OrderedDict
 from xhtml2pdf import pisa
 from io import BytesIO
 from PIL import Image
+import tingweb
+import tingadmin
 import os
 import base64
 import time
+import math
+
+
 
 TING_PACKAGES = (
 		(1, 'Trial'),
@@ -442,3 +448,57 @@ def generate_orders_dict(date, orders, date_type, format_date=True):
 			'total': sum(list(map(lambda order: order.total, orders))),
 			'price': sum(list(map(lambda order: order.price, orders))) / orders.count() if orders.count() > 0 else 0
 		}
+
+
+def generate_filter_data(country=None, town=None, query=None):
+	
+	filters = {}
+	
+	if town != None:
+		_branches = tingweb.models.Branch.objects.filter(country=country, town=town)
+	elif country != None and country != 'all':
+		_branches = tingweb.models.Branch.objects.filter(country=country)
+	else:
+		_branches = tingweb.models.Branch.objects.all()
+
+	branches = _branches if query == None else _branches.filter(Q(restaurant__name__icontains=query) | Q(name__icontains=query))
+
+	availability = []
+
+	for avail in RESTAURANT_AVAILABILITY:
+		availability.append({'id': int(avail['id']), 'title': avail['title'], 'count': len(list(filter(lambda b: b.availability == int(avail['id']), branches)))})
+
+	cuisines = []
+
+	for cuisine in tingadmin.models.RestaurantCategory.objects.all():
+		cuisines.append({'id': cuisine.pk, 'title': cuisine.name, 'count': len(list(filter(lambda b: cuisine.pk in map(lambda v: int(v), b.restaurant.categories_ids), branches)))})
+
+	services = []
+
+	for service in RESTAURANT_SERVICES:
+		services.append({'id': int(service['id']), 'title': service['name'], 'count': len([b.pk for b in branches if int(service['id']) in list(map(lambda v: int(v), b.services_ids))])})
+
+	specials = []
+
+	for special in RESTAURANT_SPECIALS:
+		specials.append({'id': int(special['id']), 'title': special['name'], 'count': len([b.pk for b in branches if int(special['id']) in list(map(lambda v: int(v), b.specials_ids))])})
+
+	types = []
+
+	for t in RESTAURANT_TYPES:
+		types.append({'id': int(t['id']), 'title': t['name'], 'count': len(list(filter(lambda b: b.restaurant_type == int(t['id']), branches)))})
+
+	ratings = []
+
+	for rating in RESTAURANT_RATINGS:
+		ratings.append({'id': int(rating['id']), 'title': rating['title'], 'count': len(list(filter(lambda b: math.floor(b.review_average) == int(rating['id']), branches)))})
+
+
+	filters['availability'] = availability
+	filters['cuisines'] = cuisines
+	filters['services'] = services
+	filters['specials'] = specials
+	filters['types'] = types
+	filters['ratings'] = ratings
+
+	return filters

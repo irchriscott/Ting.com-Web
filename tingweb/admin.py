@@ -701,7 +701,7 @@ def dashboard(request):
 									restaurant__pk=admin.restaurant.pk, 
 									created_at__date__in=date_list).count()
 			
-		waiters_data.append({'date': waiter.name, 'data': (placements_waiter * 100) / placements_all})
+		waiters_data.append({'date': waiter.name, 'data': (placements_waiter * 100) / placements_all if placements_all != 0 else 0})
 
 	ordered_menus = Order.objects.filter(
 						bill__branch__pk=admin.branch.pk, 
@@ -853,7 +853,7 @@ def dashboard_menus_data(request):
 			menus = Order.objects.filter(
 							bill__branch__pk=admin.branch.pk, 
 							bill__restaurant__pk=admin.restaurant.pk, 
-							created_at__year__in=list(map(lambda x: years_list, years_list))).values('menu').annotate(orders=Count('menu')).order_by('-orders')[:8]
+							created_at__year__in=years_list).values('menu').annotate(orders=Count('menu')).order_by('-orders')[:8]
 		else:
 			menus = QuerySet([])
 	else:

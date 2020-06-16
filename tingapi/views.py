@@ -492,7 +492,7 @@ def api_filter_restaurants(request):
 	filters = json.loads(request.POST.get('filters'))
 
 	brs__avail = map(lambda b: int(b.pk), list(filter(lambda b: b.availability in filters['availability'], restaurants)))
-	brs__cuisines = map(lambda b: int(b.pk), list(filter(lambda b: any((True for c in filters['cuisines'] if c in list(map(lambda i: i.pk, b.restaurant.categories)))), restaurants)))
+	brs__cuisines = map(lambda b: int(b.pk), list(filter(lambda b: any((True for c in filters['cuisines'] if c in map(lambda v: int(v), b.restaurant.categories_ids))), restaurants)))
 	brs__services = map(lambda b: int(b.pk), list(filter(lambda b: any((True for s in filters['services'] if s in map(lambda v: int(v), b.services_ids))), restaurants)))
 	brs__specials = map(lambda b: int(b.pk), list(filter(lambda b: any((True for s in filters['specials'] if s in map(lambda v: int(v), b.specials_ids))), restaurants)))
 	brs__types = map(lambda b: int(b.pk), list(filter(lambda b: b.restaurant_type in filters['types'], restaurants)))
