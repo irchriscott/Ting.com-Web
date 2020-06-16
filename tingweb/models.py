@@ -1207,6 +1207,7 @@ class Branch(models.Model):
 			'reviews': self.reviews_count,
 			'reviewAverage': self.review_average,
 			'qp': utils.query_priority(name, queries),
+			'coords': {'lat': self.latitude, 'lng': self.longitude},
 			'apiGet': reverse('api_restaurant_get', kwargs={'branch': self.pk}),
 			'relative': reverse('ting_usr_get_restaurant_promotions', kwargs={'restaurant': self.restaurant.pk, 'branch': self.pk, 'slug': self.restaurant.slug})
 		}
@@ -2556,6 +2557,7 @@ class Food(models.Model):
 			'reviews': self.reviews_count,
 			'reviewAverage': self.review_average,
 			'qp': utils.query_priority(self.name, queries),
+			'coords': {'lat': self.branch.latitude, 'lng': self.branch.longitude},
 			'apiGet': reverse('api_restaurant_menu_get', kwargs={'menu': self.menu.pk}),
 			'relative': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug})
 		}
@@ -2978,6 +2980,7 @@ class Drink(models.Model):
 			'reviews': self.reviews_count,
 			'reviewAverage': self.review_average,
 			'qp': utils.query_priority(self.name, queries),
+			'coords': {'lat': self.branch.latitude, 'lng': self.branch.longitude},
 			'apiGet': reverse('api_restaurant_menu_get', kwargs={'menu': self.menu.pk}),
 			'relative': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug})
 		}
@@ -3472,6 +3475,7 @@ class Dish(models.Model):
 			'reviews': self.reviews_count,
 			'reviewAverage': self.review_average,
 			'qp': utils.query_priority(self.name, queries),
+			'coords': {'lat': self.branch.latitude, 'lng': self.branch.longitude},
 			'apiGet': reverse('api_restaurant_menu_get', kwargs={'menu': self.menu.pk}),
 			'relative': reverse('ting_usr_menu_get', kwargs={'menu': self.menu.pk, 'slug': self.slug})
 		}

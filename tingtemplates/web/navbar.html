@@ -28,7 +28,7 @@
 					<li><a href="{% url 'ting_usr_global_restaurants' %}">Restaurants</a></li>
 					<li><a href="{% url 'ting_usr_global_blogs' %}">Blogs</a></li>
 					<li>
-						<a href="#" class="ting-menu-icon">
+						<a href="#" id="ting-seach-toggle" class="ting-menu-icon">
 							<i class="lnr lnr-magnifier"></i>
 						</a>
 					</li>
@@ -294,6 +294,27 @@
 </script>
 {% endif %}
 <main>{% block body %}{% endblock %}</main>
+<section class="ting-search-overlay" id="ting-search-overlay"></section>
+<section class="ting-search-container" id="ting-search-container">
+    <div class="ting-search-container-sub container" id="ting-search-container-sub">
+        <div class="ting-search-form">
+        <div class="ting-search-form-content">
+            <form method="get" action="{% url 'ting_usr_global_live_search_response' %}" id="ting-live-search">
+                <div class="ting-search-form-icon">
+                    <span><i class="lnr lnr-magnifier"></i></span>
+                </div>
+                <div class="ting-search-form-input">
+                    <input type="text" name="q" placeholder="Search here at ting.com" autocomplete="off">
+                </div>
+                <div class="ting-search-form-spinner" id="ting-search-form-spinner">
+                    <span><img src="{% static 'imgs/loading.gif' %}" /></span>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="ting-search-result" id="ting-search-result"></div>
+    </div>
+</section>
 <footer style="background: #222222; padding:30px 0;">
 	<div class="container">
 		<div class="row d-flex justify-content-between">

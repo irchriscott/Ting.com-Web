@@ -69,6 +69,10 @@ table.small tbody tr td img{
     --secondaryColor: #908ced;
 }
 
+.ting-hide-sb{
+    overflow: hidden !important;
+}
+
 .ting-app-name,
 .ting-app-name * {
     font-size: 24px;
@@ -2414,4 +2418,167 @@ table.small tbody tr td img{
     top: 0;
     right: 0;
     font-size: 12px;
+}
+
+.ting-search-overlay{
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    background: rgba(0,0,0,.7);
+    z-index: 1100;
+    display: none;
+}
+
+.ting-search-container{
+    position: fixed;
+    top: 5vh;
+    height: auto;
+    max-height: 90vh;
+    width: 100%;
+    z-index: 1200;
+    overflow: hidden;
+    display: none;
+}
+
+.ting-search-container-sub {
+    background: #FFF;
+    height: auto;
+    max-height: 90vh;
+    border-radius: 6px;
+    padding: 0 !important;
+}
+
+.ting-search-container .ting-search-form{
+    display: block;
+    position: relative;
+}
+
+.ting-search-container .ting-search-form .ting-search-form-content{
+    display: block;
+    position: relative;
+    padding: 0.5rem 1.5rem;
+}
+
+.ting-search-container .ting-search-form .ting-search-form-content .ting-search-form-icon{
+    float: left;
+    margin-right: 1rem;
+    height: 50px;
+    line-height: 62px;
+}
+
+.ting-search-container .ting-search-form .ting-search-form-content .ting-search-form-icon span i{
+    font-size: 25px;
+}
+
+.ting-search-container .ting-search-form .ting-search-form-content .ting-search-form-input input{
+    height: 50px;
+    font-size: 22px;
+    border: none !important;
+    padding: 0 !important;
+    width: calc(100% - 2.5rem - 42px);
+}
+
+.ting-search-container .ting-search-form .ting-search-form-content .ting-search-form-input input:focus{
+    box-shadow: none !important;
+}
+
+.ting-search-container .ting-search-form .ting-search-form-content .ting-search-form-spinner{
+    height: 50px;
+    float: right;
+    line-height: 55px;
+    margin-top: -50px;
+    display: none;
+}
+
+.ting-search-container .ting-search-form .ting-search-form-content .ting-search-form-spinner img{
+    width:22px;
+    margin-left: 1.5rem;
+}
+
+.ting-search-container .ting-search-result{
+    display: none;
+    border-top: 1px solid rgba(0,0,0,.1);
+    height: auto;
+    max-height: calc(90vh - 1rem - 50px);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.ting-search-container .ting-search-result .ting-search-data,
+.ting-search-results-all .ting-search-data{
+    display: block;
+    position: relative;
+    border-bottom: 1px solid rgba(0,0,0,.1);
+    background: #FFF;
+    padding: 1rem;
+    cursor: pointer;
+    float: left;
+    width: 100%;
+}
+
+.ting-search-container .ting-search-result .ting-search-data .ting-search-data-image,
+.ting-search-results-all .ting-search-data .ting-search-data-image{
+    float: left;
+    width: 70px;
+    margin-right: 1rem;
+}
+
+.ting-search-container .ting-search-result .ting-search-data .ting-search-data-image img,
+.ting-search-results-all .ting-search-data .ting-search-data-image img{
+    width: 100%;
+    border-radius: 4px;
+}
+
+.ting-search-container .ting-search-result .ting-search-data .ting-search-data-description,
+.ting-search-results-all .ting-search-data .ting-search-data-description{
+    display: block;
+    position: relative;
+    margin-left: calc(70px + 1rem);
+}
+
+.ting-search-container .ting-search-result .ting-search-data .ting-search-data-description h4,
+.ting-search-container .ting-search-result .ting-search-data .ting-search-data-description h3,
+.ting-search-results-all .ting-search-data .ting-search-data-description h3,
+.ting-search-results-all .ting-search-data .ting-search-data-description h4{
+    margin-top: 0px;
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+.ting-search-container .ting-search-result .ting-search-data .ting-search-data-description p,
+.ting-search-results-all .ting-search-data .ting-search-data-description p{
+    margin-bottom: 0;
+    margin-top: 2px;
+}
+
+.ting-search-container .ting-search-result .ting-search-data .ting-search-data-description .ting-location,
+.ting-search-container .ting-search-result .ting-search-data .ting-search-data-description .ting-price,
+.ting-search-results-all .ting-search-data .ting-search-data-description .ting-price,
+.ting-search-results-all .ting-search-data .ting-search-data-description .ting-location,
+.ting-search-results-all .ting-search-data .ting-search-data-description .ting-price span{
+    font-size: 13px;
+    color: #666666;
+}
+
+.ting-search-container .ting-search-result .ting-search-data .ting-search-data-description .ting-date,
+.ting-search-results-all .ting-search-data .ting-search-data-description .ting-date,
+.ting-search-results-all .ting-search-data .ting-search-data-description .ting-date span{
+    font-size: 12px;
+    color: #999999;
+}
+
+.ting-search-container .ting-search-result .ting-search-data.active,
+.ting-search-results-all .ting-search-data:hover{
+    background: var(--primaryColor);
+}
+
+.ting-search-container .ting-search-result .ting-search-data.active *,
+.ting-search-results-all .ting-search-data:hover *{
+    color: #FFF !important;
+}
+
+.ting-search-results-all .ting-search-data{
+    overflow: hidden;
 }

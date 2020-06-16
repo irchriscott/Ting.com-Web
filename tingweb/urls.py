@@ -64,6 +64,10 @@ users = [
 	url(r'usr/g/moments/$', views.moments, name='ting_usr_global_moments'),
 	url(r'usr/g/blogs/$', views.blogs, name='ting_usr_global_blogs'),
 
+	# Search
+
+	url(r'usr/g/search/live/$', views.live_search_response, name='ting_usr_global_live_search_response'),
+
 	# Restaurant & Branch
 
 	url(r'usr/restaurant/get/map/pin/(?P<restaurant>\d+)/html/$', views.get_restaurant_map_pin_html, name='ting_usr_restaurant_get_map_pin_html'),

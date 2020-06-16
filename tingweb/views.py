@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.conf import settings
 from django.db.models import Q, Count, Sum
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 from django.core import serializers
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from ting.responses import ResponseObject, HttpJsonResponse
@@ -28,6 +29,7 @@ from tingweb.forms import (
 from tingadmin.models import RestaurantCategory
 import ting.utils as utils
 from datetime import datetime, timedelta
+import operator
 import json
 import imgkit
 import os
@@ -1450,3 +1452,30 @@ def load_menu_today_promotion(request, menu):
     today_menu_promotions = today_type + today_category + today_menu
     promotion = random.choice(today_menu_promotions) if len(today_menu_promotions) > 0 else None
     return render(request, template,{'promotion': promotion, 'menu': menu})
+
+
+# SEARCH
+
+
+@require_http_methods(['GET'])
+def live_search_response(request):
+    
+    query = request.GET.get('query')
+    country = request.GET.get('country')
+    town = request.GET.get('town')
+
+    try:
+        queries = query.split() if query != None else []
+        queryset = reduce(operator.or_, [Q(name__icontains=q) for q in queries])
+        branch_queryset = reduce(operator.or_, [Q(restaurant__name__icontains=q) | Q(name__icontains=q) for q in queries])
+
+        branches = map(lambda branch: branch.json_search(queries), Branch.objects.filter(country=country, town=town).filter(branch_queryset).order_by('-created_at'))
+        foods = map(lambda food: food.json_search(queries), Food.objects.filter(branch__country=country, branch__town=town).filter(queryset).order_by('-created_at'))
+        drinks = map(lambda drink: drink.json_search(queries), Drink.objects.filter(branch__country=country, branch__town=town).filter(queryset).order_by('-created_at'))
+        dishes = map(lambda dish: dish.json_search(queries), Drink.objects.filter(branch__country=country, branch__town=town).filter(queryset).order_by('-created_at'))
+
+        results = branches + foods + drinks + dishes
+        response = sorted(results, key=lambda res: res['qp'], reverse=True)
+        return HttpResponse(json.dumps(response[:20], default=str), content_type='application/json')
+    except Exception:
+        return HttpResponse(json.dumps([], default=str), content_type='application/json')

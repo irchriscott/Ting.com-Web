@@ -346,6 +346,35 @@ $(document).ready(function(){
     $("#ting-maximize-orders").click(function() {
         toogleShowOrders();
     });
+
+    $(document).on("keyup", function(e){
+        if(e.keyCode === 27) {
+            $("#ting-search-overlay, #ting-search-container, #ting-search-form-spinner").hide();
+            $("html, body").removeClass("ting-hide-sb");
+        }
+        if((e.shiftKey || e.altKey) && e.keyCode === 83){
+            $("#ting-search-overlay, #ting-search-container").show().find("input").focus();
+            $("html, body").addClass("ting-hide-sb");
+        }
+    });
+
+    $("#ting-seach-toggle").click(function(e){
+        e.stopPropagation();
+        e.preventDefault();
+        $("#ting-search-overlay, #ting-search-container").show().find("input").focus();
+        $("html, body").addClass("ting-hide-sb");
+    });
+    $("#ting-search-container-sub").click(function(e) {
+        e.stopPropagation();
+    });
+    $("#ting-search-overlay, #ting-search-container").click(function(e){
+        e.preventDefault();
+        $("#ting-search-overlay").hide();
+        $("#ting-search-container, #ting-search-form-spinner").hide();
+        $("html, body").removeClass("ting-hide-sb");
+    });
+     $("#ting-live-search").tingLiveSeacrh();
+    $(".ting-search-results-all .ting-search-data").click(function(){window.location = $(this).attr("data-url");});
 });
 
 function toogleShowPlacements() {
@@ -3511,6 +3540,118 @@ jQuery.fn.navigateCuisines = function() {
         if(counter <= 0) { prev.hide(); }
         if(maxCount > counter) { next.show() }
     });
+}
+
+jQuery.fn.tingLiveSeacrh = function(){
+
+    let form = $(this);
+    let url = $(this).attr("action");
+    let input = form.find("input");
+    let spinner = $("#ting-search-form-spinner");
+    let results = $("#ting-search-result");
+    let dissallowed = [13, 38, 40];
+    let index = -1;
+
+    let country = $("#ting-country").val();
+    let town = $("#ting-town").val();
+
+    if(country == '' || country == null || country == undefined) {
+        var session = window.__TING__Session;
+        if(!isObjEmpty(session)) { country = session.country; town = session.town }
+        else { country = 'Uganda'; town = 'Kampala'; }
+    }
+
+    input.keyup(function(e){
+        spinner.show();
+        results.show().focus();
+        let query = $(this).val();
+        let active = results.find(".active");
+        let responses = results.find(".ting-search-data");
+        let resultsHeight = results.height();
+        if(e.keyCode === 13){
+            e.preventDefault();
+            if(active.length > 0){window.location = active.attr("data-url")} 
+            else { window.location = url + "?q=" + query}
+        }
+        if(e.keyCode === 38){
+            e.preventDefault();
+            if(responses.length > 0){
+                if(index <= 0) {index = responses.length; resultsHeight = results.height(); results.scrollTop(0)}
+                if(index >= responses.length){results.scrollTop(results.height())}
+                index--;
+                if(index <= 0) {}
+                $(responses[index]).addClass("active").siblings().removeClass("active");
+                input.val($(responses[index]).attr("data-name"));
+                if(index > 3 && index < responses.length - 3) { resultsHeight += 100; results.scrollTop(resultsHeight) }
+                if(index < 3) { resultsHeight = results.height(); results.scrollTop(0) }
+            }
+        }
+        if(e.keyCode === 40){
+            e.preventDefault();
+            if(responses.length > 0){
+                index++;
+                if(index == 0) {resultsHeight = results.height(); results.scrollTop(0)}
+                $(responses[index]).addClass("active").siblings().removeClass("active");
+                input.val($(responses[index]).attr("data-name"));
+                if(index > 3) { resultsHeight -= 100; results.scrollTop(resultsHeight) }
+                if(index >= responses.length - 1) {index = -1; results.scrollTop(results.height())}
+            }  
+        }
+        if(query == "" || query == null) {spinner.hide(); results.hide()}
+        if(!dissallowed.includes(e.keyCode)){
+            $.ajax({
+                type: "GET",
+                url: url,
+                data: {query: query, town: town, country: country},
+                success: function(response){
+                    let data = response;
+                    console.log(response);
+                    if(data.length > 0){
+                        results.empty();
+                        index = -1;
+                        data.forEach((dt) => {
+                            var dist = 0.0;
+                            let lat = $("#ting-lat").val();
+                            let lng = $("#ting-long").val();
+                            if(lat != '' && lng != '' && lat != null && lng != null) {
+                                var _ds = new google.maps.LatLng(parseFloat(lat), parseFloat(lng));
+                                var _de = new google.maps.LatLng(parseFloat(dt.coords.lat), parseFloat(dt.coords.lng))
+                                dist = calculateDistance(_ds, _de);
+                            }
+                            let template = $(resultSearchTemplate(dt, dist));
+                            template.click(function(){
+                                window.location = $(this).attr("data-url")
+                            }); 
+                            template.hover(function(){
+                                let resps = results.find(".ting-search-data");
+                                $(this).addClass("active").siblings().removeClass("active");
+                                input.val($(this).attr("data-name"));
+                                index = data.indexOf(dt) + 1;
+                            });
+                            results.append(template).focus();
+                        });
+                    } else { results.html('<p class="ting-error">NO RESULT FOUND</p>'); }
+                },
+                error: function(_, t, e){ showErrorMessage(t, e); }
+            });
+        }
+    });
+}
+
+function resultSearchTemplate(data, dist){
+    return `
+            <div class="ting-search-data" data-url="${data.relative}" data-name="${data.name}">
+                <div class="ting-search-data-image">
+                    <img src="${data.image}">
+                </div>
+                <div class="ting-search-data-description">
+                    <h4>${data.name}</h4>
+                    <p class="ting-price"><i class="icon map marker alternate"></i> ${data.description}</p>
+                    <p class="ting-location">${data.type == 1 ? `<i class="icon boxes"></i>` : `<i class="icon tag"></i>`} ${data.text}</p>
+                    <p class="ting-date">${dist} km from your location</p>
+                </div>
+            </div>
+        `;
 }
 
 var animateButton = function(e) {
