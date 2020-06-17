@@ -564,11 +564,11 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                     })
                 });
 
-                var filtercbx = function(t, v, gv, q){
+                var filtercbx = function(t, v, gv, q, c=false){
                     return `<label class="ting-checkbox-container">
                                 ${t}
                                 <span class="ting-checkbox-quantity">${numerilize(q, gv, 0)}</span>
-                                <input type="checkbox" value="${v}" data-g-value="${gv}">
+                                <input type="checkbox" value="${v}" data-g-value="${gv}" ${c ? `checked` : ``}>
                                 <span class="ting-checkbox-checkmark"></span>
                             </label>`;
                 };
@@ -601,7 +601,7 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
 
                     fbc.append(fb__availability);
                     filters.availability.forEach(function(a) {
-                        fbc.append($(filtercbx(a.title, a.id, "availability", a.count)))
+                        fbc.append($(filtercbx(a.title, a.id, "availability", a.count, fb__values.availability.includes(a.id))))
                     });
                     fbc.append(fb__hr);
 
@@ -616,7 +616,7 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                     fbc.append(fb__cuisine);
                     var r_cuisine = window.__TING__Cuisines;
                     filters.cuisines.forEach(function(c) {
-                        fbc.append($(filtercbx(c.title, c.id, "cuisines", c.count)))
+                        fbc.append($(filtercbx(c.title, c.id, "cuisines", c.count, fb__values.cuisines.includes(c.id))))
                     });
                     fbc.append(fb__hr);
                     
@@ -624,7 +624,7 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                     fbc.append(fb__service);
                     var r_sers = window.__TING__Services;
                     filters.services.forEach(function(s) {
-                        fbc.append($(filtercbx(s.title, s.id, "services", s.count)))
+                        fbc.append($(filtercbx(s.title, s.id, "services", s.count, fb__values.services.includes(s.id))))
                     });
                     fbc.append(fb__hr);
 
@@ -632,7 +632,7 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                     fbc.append(fb__specials);
                     var r_specs = window.__TING__Specials;
                     filters.specials.forEach(function(s) {
-                        fbc.append($(filtercbx(s.title, s.id, "specials", s.count)))
+                        fbc.append($(filtercbx(s.title, s.id, "specials", s.count, fb__values.specials.includes(s.id))))
                     });
                     fbc.append(fb__hr);
 
@@ -640,7 +640,7 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
                     fbc.append(fb__types);
                     var r_types = window.__TING__Types;
                     filters.types.forEach(function(t) {
-                        fbc.append($(filtercbx(t.title, t.id, "types", t.count)))
+                        fbc.append($(filtercbx(t.title, t.id, "types", t.count, fb__values.types.includes(t.id))))
                     });
                     fbc.append(fb__hr);
 
@@ -669,7 +669,7 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
 
                     fbc.append(fb__star_rating);
                     filters.ratings.forEach(function(r) {
-                        fbc.append($(filtercbx(r.title, r.id, "ratings", r.count)))
+                        fbc.append($(filtercbx(r.title, r.id, "ratings", r.count, fb__values.ratings.includes(r.id))))
                     });
                     fbc.append(fb__hr);
 
@@ -3605,7 +3605,6 @@ jQuery.fn.tingLiveSeacrh = function(){
                 data: {query: query, town: town, country: country},
                 success: function(response){
                     let data = response;
-                    console.log(response);
                     if(data.length > 0){
                         results.empty();
                         index = -1;
