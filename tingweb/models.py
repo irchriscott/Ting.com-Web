@@ -590,9 +590,9 @@ class Branch(models.Model):
 
 	@property
 	def is_opened(self):
-		now = datetime.strptime('1970-1-1 {0}'.format(datetime.strftime(datetime.now(), '%H:%M')), '%Y-%m-%d %H:%M')
-		opening = datetime.strptime('1970-1-1 {0}'.format(self.restaurant.opening_str), '%Y-%m-%d %H:%M')
-		closing = datetime.strptime('1970-1-1 {0}'.format(self.restaurant.closing_str), '%Y-%m-%d %H:%M')
+		now = datetime.strptime('1970-01-01 {0}'.format(datetime.strftime(datetime.now(), '%H:%M')), '%Y-%m-%d %H:%M')
+		opening = datetime.strptime('1970-01-01 {0}'.format(self.restaurant.opening_str), '%Y-%m-%d %H:%M')
+		closing = datetime.strptime('1970-01-01 {0}'.format(self.restaurant.closing_str), '%Y-%m-%d %H:%M')
 		return True if now >= opening and closing > now else False
 
 	@property
