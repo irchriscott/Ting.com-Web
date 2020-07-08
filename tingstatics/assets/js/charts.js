@@ -141,7 +141,7 @@ function setupHighcharts(canvas, data, labels, raw_data) {
 		},
 		credits: { enabled: false },
 		plotOptions: {
-			areaspline: { fillOpacity: 0.5 },  
+			areaspline: { fillOpacity: 0.5, pointPlacement: 'on' },  
 			marker: { symbol: 'circle' },
 			column: {
 				pointPadding: 0.2,

@@ -579,6 +579,7 @@ function tingdotcom(lat, long, addr, cntr, twn, reg, rd){
 
                 function updateFilters(filters) {
                     
+                    fbc.empty();
                     fbc.append(hff)
 
                     var fb__availability = `<h5 ${fb__h5__st}>Availability</h5>`;
