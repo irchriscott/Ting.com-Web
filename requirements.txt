@@ -15,7 +15,6 @@ enum34==1.1.6
 gunicorn==19.10.0
 html5lib==1.0.1
 idna==2.8
-imagekit==1.0.6
 imgkit==1.0.2
 ipaddress==1.0.23
 kombu==4.5.0

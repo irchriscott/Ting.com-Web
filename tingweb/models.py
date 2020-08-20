@@ -317,7 +317,7 @@ class Restaurant(models.Model):
 			'purpose': self.purpose_str,
 			'categories': {
 				'count': self.categories.count(),
-				'categories': [category.to_json for category in self.categories]
+				'categories': [category.category.to_json for category in self.categories]
 			},
 			'logo': self.logo.url,
 			'pin': self.map_pin_svg,
@@ -376,7 +376,7 @@ class Restaurant(models.Model):
 			'purpose': self.purpose_str,
 			'categories': {
 				'count': self.categories.count(),
-				'categories': [category.to_json for category in self.categories]
+				'categories': [category.category.to_json for category in self.categories]
 			},
 			'logo': self.logo.url,
 			'pin': self.map_pin_svg,
@@ -432,7 +432,7 @@ class Restaurant(models.Model):
 			'purpose': self.purpose_str,
 			'categories': {
 				'count': self.categories.count(),
-				'categories': [category.to_json for category in self.categories]
+				'categories': [category.category.to_json for category in self.categories]
 			},
 			'logo': self.logo.url,
 			'pin': self.map_pin_svg,
@@ -481,7 +481,7 @@ class Restaurant(models.Model):
 			'purpose': self.purpose_str,
 			'categories': {
 				'count': self.categories.count(),
-				'categories': [category.to_json for category in self.categories]
+				'categories': [category.category.to_json for category in self.categories]
 			},
 			'logo': self.logo.url,
 			'pin': self.map_pin_svg,
@@ -523,7 +523,7 @@ class Restaurant(models.Model):
 			'purpose': self.purpose_str,
 			'categories': {
 				'count': self.categories.count(),
-				'categories': [category.to_json for category in self.categories]
+				'categories': [category.category.to_json for category in self.categories]
 			},
 			'logo': self.logo.url,
 			'pin': self.map_pin_svg,

@@ -694,7 +694,21 @@ def api_get_today_promotions_all(request):
 	town = request.GET.get('town') if request.GET.get('town') != None else user.town
 	promotions = Promotion.objects.filter(branch__country=country, branch__town=town, is_on=True)
 	today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))
-	return HttpResponse(json.dumps([promo.to_json_s for promo in today_promos], default=str), content_type='application/json')
+
+	page = request.GET.get('page', 1)
+	paginator = Paginator(today_promos, settings.PAGINATOR_ITEM_COUNT)
+
+	if paginator.num_pages >= int(page):
+		try:
+			_promotions = json.dumps([promo.to_json_s for promo in paginator.page(page)], default=str)
+		except PageNotAnInteger:
+			_promotions = json.dumps([promo.to_json_s for promo in paginator.page(1)], default=str)
+		except EmptyPage:
+			_promotions = json.dumps([promo.to_json_s for promo in paginator.page(paginator.num_pages)], default=str)
+	else:
+		_promotions = json.dumps([], default=str)
+
+	return HttpResponse(_promotions, content_type='application/json')
 
 
 @authenticate_user(xhr='api')
