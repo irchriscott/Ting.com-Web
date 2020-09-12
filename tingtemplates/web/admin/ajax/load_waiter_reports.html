@@ -5,10 +5,10 @@
 
 <div class="ui grid">
 	<div class="row" style="border-bottom: 1px solid #DDDDDD; padding-bottom: 0 !important;">
-		<div class="eight wide column">
-			<h2 style="font-weight: 400 !important; text-transform: uppercase; font-size: 20px; margin-top: 14px;">Select Period</h2>
+		<div class="five wide column">
+			<h2 style="font-weight: 400 !important; text-transform: uppercase; font-size: 16px; margin-top: 14px;">Select Period</h2>
 		</div>
-		<div class="eight wide column">
+		<div class="eleven wide column">
 			<form class="ui form" id="ting-submit-report-waiter-form-{{waiter.pk}}" action="{% url 'ting_wb_adm_load_waiter_reports' waiter.pk %}" method="GET" style="">
 		  		<div class="field" style="position: absolute; left: 0; margin-left: -160px; margin-top: 25px;">
                     <div class="ui checkbox">
@@ -98,7 +98,7 @@
 	</div>
 	<div class="row" style="padding-top: 0 !important;">
 		<div class="sixteen wide column" style="padding: 1rem 3rem;">
-			<h2 style="font-size: 18px; margin-bottom: 2rem;">{{waiter.name}} Income Report {{ date_string }}</h2>
+			<h2 style="font-size: 16px; margin-bottom: 2rem;">{{waiter.name}} Income Report {{ date_string }}</h2>
 			<table class="ui single line table">
 			    <thead>
 			        <tr>

@@ -3558,7 +3558,7 @@ jQuery.fn.tingLiveSeacrh = function(){
 
     if(country == '' || country == null || country == undefined) {
         var session = window.__TING__Session;
-        if(!isObjEmpty(session)) { country = session.country; town = session.town }
+        if(session != null && !isObjEmpty(session)) { country = session.country; town = session.town }
         else { country = 'Uganda'; town = 'Kampala'; }
     }
 
