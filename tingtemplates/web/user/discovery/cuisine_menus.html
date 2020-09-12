@@ -150,6 +150,25 @@
 		            {% endfor %}
 		        	</div>
 		       	</div>
+                {% if menus.paginator.num_pages > 1 %}
+                    <div class="ui right floated pagination menu">
+                        {% if menus.has_previous %}
+                            <a href="?page={{ menus.previous_page_number }}" class="icon item">
+                                <i class="left chevron icon"></i>
+                            </a>
+                            <a href="?page=1" class="item">1</a>
+                        {% endif %}
+                        
+                        <a class="item active">{{ menus.number }}</a>
+                        {% if menus.paginator.num_pages > 2 %}
+                            <a class="item">...</a>
+                        {% endif %}
+                        {% if menus.has_next %}        
+                            <a class="item" href="?page={{ menus.paginator.num_pages }}">{{ menus.paginator.num_pages }}</a>
+                            <a class="icon item" href="?page={{ menus.next_page_number }}"><i class="right chevron icon"></i></a>
+                        {% endif %}
+                    </div>
+                {% endif %}
 		    {% else %}
 		    	<div class="ting-empty-data"><i class="icon utensils"></i><p>No Menu To Show</p></div>
 		    {% endif %}

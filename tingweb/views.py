@@ -840,14 +840,25 @@ def discovery(request):
 def discover_cuisine_restaurants(request, cuisine, slug):
     template = 'web/user/discovery/cuisine_restaurants.html'
     cuisine = RestaurantCategory.objects.get(pk=cuisine)
-    branches = sorted(set(cuisine.restaurants), key=lambda branch: branch.review_average, reverse=True)
+    branches = list(sorted(set(cuisine.restaurants), key=lambda branch: branch.review_average, reverse=True))
+
+    page = request.GET.get('page', 1)
+    paginator = Paginator(branches, settings.PAGINATOR_ITEM_COUNT)
+
+    try:
+        branches_all = paginator.page(page)
+    except PageNotAnInteger:
+        branches_all = paginator.page(1)
+    except EmptyPage:
+        branches_all = paginator.page(paginator.num_pages)
+
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
             'address_types': utils.USER_ADDRESS_TYPE,
             'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
             'cuisine': cuisine,
-            'branches': branches,
+            'branches': branches_all,
             'cuisines': RestaurantCategory.objects.exclude(pk=cuisine.pk).random(4)
         })
 
@@ -857,14 +868,27 @@ def discover_cuisine_menus(request, cuisine, slug):
     cuisine = RestaurantCategory.objects.get(pk=cuisine)
     foods = [food.menu for food in Food.objects.filter(cuisine__pk=cuisine.pk)]
     dishes = [dish.menu for dish in Dish.objects.filter(cuisine__pk=cuisine.pk)]
-    menus = foods + dishes
+    _menus = foods + dishes
+
+    menus = list(sorted(set(_menus), key=lambda menu: menu.to_json['menu']['reviews']['average'], reverse=True))
+
+    page = request.GET.get('page', 1)
+    paginator = Paginator(menus, settings.PAGINATOR_ITEM_COUNT)
+
+    try:
+        menus_all = paginator.page(page)
+    except PageNotAnInteger:
+        menus_all = paginator.page(1)
+    except EmptyPage:
+        menus_all = paginator.page(paginator.num_pages)
+
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
             'address_types': utils.USER_ADDRESS_TYPE,
             'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
             'cuisine': cuisine,
-            'menus': sorted(set(menus), key=lambda menu: menu.to_json['menu']['reviews']['average'], reverse=True),
+            'menus': menus_all,
             'cuisines': RestaurantCategory.objects.exclude(pk=cuisine.pk).random(4)
         })
 
@@ -881,14 +905,24 @@ def discover_today_promotions(request):
         promotions = Promotion.objects.filter(is_on=True)
         today_promos = list(filter(lambda promo: promo.is_on_today == True, promotions))
 
+    page = request.GET.get('page', 1)
+    paginator = Paginator(today_promos, settings.PAGINATOR_ITEM_COUNT)
+
+    try:
+        promos = paginator.page(page)
+    except PageNotAnInteger:
+        promos = paginator.page(1)
+    except EmptyPage:
+        promos = paginator.page(paginator.num_pages)
+
     return render(request, template, {
             'is_logged_in': True if 'user' in request.session else False,
             'session': User.objects.get(pk=request.session['user']) if 'user' in request.session else None,
             'address_types': utils.USER_ADDRESS_TYPE,
             'session_json': json.dumps(User.objects.get(pk=request.session['user']).to_json, default=str)  if 'user' in request.session else {},
-            'promotions_json': json.dumps([promo.to_json for promo in today_promos], default=str),
-            'promotions': today_promos,
-            'menus': Menu.objects.random(len(today_promos) + 2)
+            'promotions_json': json.dumps([promo.to_json for promo in promos], default=str),
+            'promotions': promos,
+            'menus': Menu.objects.random(len(promos) + 2)
         })
 
 

@@ -24,81 +24,159 @@
 					<div class="ting-restaurants-list" id="ting-restaurants-list">
 						{% if promotions|length > 0 %}
 							<div class="ui items">
-							{% for p in promotions %}
-								<div class='item ting-resto-item'>
-									<div class="ui medium image">
-										<a href="{% url 'ting_usr_promotion_get' p.pk p.uuid_url %}">
-			                            	<img src="{{p.poster_image.url}}">
-			                        	</a>
-			                        </div>
-			                        <div class="ui content">
-			                            <a class="header" href="{% url 'ting_usr_promotion_get' p.pk p.uuid_url %}" style="font-size:19px; font-weight:500;">{{p.occasion_event}}</a>
-			                            <div class="ting-like-restaurant">
-			                            	{% if is_logged_in %}
-			                            		<button class="ting-like-restaurant ting-btn-animate {% if p.pk|has_interest:session.pk %} liked {% endif %}" id="ting-interest-promo-{{p.pk}}" data-like='{"resto":"{{p.branch.restaurant.id}}", "tkn":"{{p.branch.restaurant.token}}", "id":"{{p.pk}}", "promo": "{{p.id}}", "typ":"link", "url":"{{p.interess_url}}"}'>
-			                            			{% if p.pk|has_interest:session.pk %}
-			                            			<i class="icon star" style="color:#b56fe8;"></i>
-			                            			{% else %}
-			                            			<i class="icon star outline"></i>
-			                            			{% endif %}
-			                            		</button>
-			                            	{% else %}
-			                            		<button class="ting-like-restaurant ting-btn-animate" id="ting-interest-promo-{{p.id}}" data-like='{"resto":"{{p.branch.restaurant.id}}", "tkn":"{{p.branch.restaurant.token}}", "id":"{{p.pk}}", "promo": "{{p.id}}", "typ":"link", "url":"{{p.interess_url}}"}'><i class="icon star outline"></i></button>
-			                            	{% endif %}
-			                            </div>
-			                            <div class="extra">
-			                                <div class="ui label">
-			                            	<i class="icon star"></i>
-			                                    Promotion On {{p.promo_type}}
-			                                </div>
-			                                {% if p.promotion_menu_type == '05' %} 
-			                                    <div class="ui image label">
-			                                        <img src="{{p.category.image.url}}" />
-			                                        Promotion On {{p.category.name}}
-			                                    </div>
-			                                {% elif p.promotion_menu_type == '04' %}
-			                                    {% if p.menu.menu_type == 1 %}
-			                                    	<div class="ui image label" onclick="window.open(`{% url 'ting_usr_menu_get' p.menu.pk p.menu.food.slug %}`, '_blank')">
-				                                        <img src="{{p.menu.food.images.0.image.url}}" />
-				                                        Promotion On {{p.menu.food.name}}
+								{% for p in promotions %}
+									<div class='item ting-resto-item'>
+										<div class="ui medium image">
+											<a href="{% url 'ting_usr_promotion_get' p.pk p.uuid_url %}">
+				                            	<img src="{{p.poster_image.url}}">
+				                        	</a>
+				                        </div>
+				                        <div class="ui content">
+				                            <a class="header" href="{% url 'ting_usr_promotion_get' p.pk p.uuid_url %}" style="font-size:19px; font-weight:500;">{{p.occasion_event}}</a>
+				                            <div class="ting-like-restaurant">
+				                            	{% if is_logged_in %}
+				                            		<button class="ting-like-restaurant ting-btn-animate {% if p.pk|has_interest:session.pk %} liked {% endif %}" id="ting-interest-promo-{{p.pk}}" data-like='{"resto":"{{p.branch.restaurant.id}}", "tkn":"{{p.branch.restaurant.token}}", "id":"{{p.pk}}", "promo": "{{p.id}}", "typ":"link", "url":"{{p.interess_url}}"}'>
+				                            			{% if p.pk|has_interest:session.pk %}
+				                            			<i class="icon star" style="color:#b56fe8;"></i>
+				                            			{% else %}
+				                            			<i class="icon star outline"></i>
+				                            			{% endif %}
+				                            		</button>
+				                            	{% else %}
+				                            		<button class="ting-like-restaurant ting-btn-animate" id="ting-interest-promo-{{p.id}}" data-like='{"resto":"{{p.branch.restaurant.id}}", "tkn":"{{p.branch.restaurant.token}}", "id":"{{p.pk}}", "promo": "{{p.id}}", "typ":"link", "url":"{{p.interess_url}}"}'><i class="icon star outline"></i></button>
+				                            	{% endif %}
+				                            </div>
+				                            <div class="extra">
+				                                <div class="ui label">
+				                            	<i class="icon star"></i>
+				                                    Promotion On {{p.promo_type}}
+				                                </div>
+				                                {% if p.promotion_menu_type == '05' %} 
+				                                    <div class="ui image label">
+				                                        <img src="{{p.category.image.url}}" />
+				                                        Promotion On {{p.category.name}}
 				                                    </div>
-			                                    {% elif p.menu.menu_type == 2 %}
-			                                    	<div class="ui image label" onclick="window.open(`{% url 'ting_usr_menu_get' p.menu.pk p.menu.drink.slug %}`, '_blank')">
-				                                        <img src="{{p.menu.drink.images.0.image.url}}" />
-				                                        Promotion On {{p.menu.drink.name}}
+				                                {% elif p.promotion_menu_type == '04' %}
+				                                    {% if p.menu.menu_type == 1 %}
+				                                    	<div class="ui image label" onclick="window.open(`{% url 'ting_usr_menu_get' p.menu.pk p.menu.food.slug %}`, '_blank')">
+					                                        <img src="{{p.menu.food.images.0.image.url}}" />
+					                                        Promotion On {{p.menu.food.name}}
+					                                    </div>
+				                                    {% elif p.menu.menu_type == 2 %}
+				                                    	<div class="ui image label" onclick="window.open(`{% url 'ting_usr_menu_get' p.menu.pk p.menu.drink.slug %}`, '_blank')">
+					                                        <img src="{{p.menu.drink.images.0.image.url}}" />
+					                                        Promotion On {{p.menu.drink.name}}
+					                                    </div>
+				                                    {% elif p.menu.menu_type == 3 %}
+				                                    	<div class="ui image label" onclick="window.open(`{% url 'ting_usr_menu_get' p.menu.pk p.menu.dish.slug %}`, '_blank')">
+					                                        <img src="{{p.menu.dish.images.0.image.url}}" />
+					                                        Promotion On {{p.menu.dish.name}}
+					                                    </div>
+				                                    {% endif %}
+				                                {% endif %}    
+				                            </div>
+				                            <div class="meta" style="padding:0;">
+				                                {% if p.promotion_menu_type == '00' %}
+				                                	<div class="ting-menus-list-item">
+					                                    {% if p.branch.pk|rand_five_all_count > 0 %}
+					                                    	{% for m in  p.branch.pk|rand_five_all %}
+					                                    		{% if m.menu_type == 1 %}
+						                                    		<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{% url 'ting_usr_menu_get' m.pk m.food.slug %}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
+									                                    <img src="{{m.food.images.0.image.url}}" />
+									                                </div>
+									                                <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{m.pk}}">
+									                                    <div class="header">{{m.food.name}}</div>
+									                                    <div class="ui star rating disabled-rating" data-rating="{{m.food.review_average}}" data-max-rating="5" style="margin-top:5px;"></div>
+									                                    <div class="description">{{m.food.description}}</div>
+									                                    <p class="ui {% if m.food.is_available %} green {% else %} red {% endif %}" style="color: {% if m.food.is_available %} green {% else %} red {% endif %}">{% if m.food.is_available %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
+									                                    <div class="extra">
+									                                        {% if m.menu_type != 2 %}<div class="ui label"><i class="icon boxes"></i> {{m.food.category.name}}</div> {% endif %}
+									                                        {% if m.menu_type == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{m.food.type_str}}</div>{% endif %}
+									                                        {% if m.menu_type == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{m.drink.type_str}}</div>{% endif %}
+									                                        {% if m.menu_type == 3 %}<div class="ui label"><i class="icon clock"></i> {{m.dish.dish_time_str}}</div>{% endif %}
+									                                    	<div class="ui label"><i class="icon tag"></i> {{m.food.currency}} {{m.food.price|intcomma}} {% if m.food.is_countable %} ({{m.food.quantity}} pieces){% endif %}</div>
+									                                	</div>
+									                                </div>
+						                                    	{% elif m.menu_type == 2 %}
+						                                    		<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{% url 'ting_usr_menu_get' m.pk m.drink.slug %}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
+									                                    <img src="{{m.drink.images.0.image.url}}" />
+									                                </div>
+									                                <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{m.pk}}">
+									                                    <div class="header">{{m.drink.name}}</div>
+									                                    <div class="ui star rating disabled-rating" data-rating="{{m.drink.review_average}}" data-max-rating="5" style="margin-top:5px;"></div>
+									                                    <div class="description">{{m.drink.description}}</div>
+									                                    <p class="ui {% if m.drink.is_available %} green {% else %} red {% endif %}" style="color: {% if m.drink.is_available %} green {% else %} red {% endif %}">{% if m.drink.is_available %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
+									                                    <div class="extra">
+									                                        {% if m.menu_type != 2 %}<div class="ui label"><i class="icon boxes"></i> {{m.drink.category.name}}</div> {% endif %}
+									                                        {% if m.menu_type == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{m.food.type_str}}</div>{% endif %}
+									                                        {% if m.menu_type == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{m.drink.type_str}}</div>{% endif %}
+									                                        {% if m.menu_type == 3 %}<div class="ui label"><i class="icon clock"></i> {{m.dish.dish_time_str}}</div>{% endif %}
+									                                    	<div class="ui label"><i class="icon tag"></i> {{m.drink.currency}} {{m.drink.price|intcomma}} {% if m.drink.is_countable %} ({{m.drink.quantity}} pieces){% endif %}</div>
+									                                	</div>
+									                                </div>
+						                                    	{% elif m.menu_type == 3 %}
+						                                    		<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{% url 'ting_usr_menu_get' m.pk m.dish.slug %}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
+									                                    <img src="{{m.dish.images.0.image.url}}" />
+									                                </div>
+									                                <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{m.pk}}">
+									                                    <div class="header">{{m.dish.name}}</div>
+									                                    <div class="ui star rating disabled-rating" data-rating="{{m.dish.review_average}}" data-max-rating="5" style="margin-top:5px;"></div>
+									                                    <div class="description">{{m.dish.description}}</div>
+									                                    <p class="ui {% if m.dish.is_available %} green {% else %} red {% endif %}" style="color: {% if m.dish.is_available %} green {% else %} red {% endif %}">{% if m.dish.is_available %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
+									                                    <div class="extra">
+									                                        {% if m.menu_type != 2 %}<div class="ui label"><i class="icon boxes"></i> {{m.dish.category.name}}</div> {% endif %}
+									                                        {% if m.menu_type == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{m.food.type_str}}</div>{% endif %}
+									                                        {% if m.menu_type == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{m.drink.type_str}}</div>{% endif %}
+									                                        {% if m.menu_type == 3 %}<div class="ui label"><i class="icon clock"></i> {{m.dish.dish_time_str}}</div>{% endif %}
+									                                    	<div class="ui label"><i class="icon tag"></i> {{m.dish.currency}} {{m.dish.price|intcomma}} {% if m.dish.is_countable %} ({{m.dish.quantity}} pieces){% endif %}</div>
+									                                	</div>
+									                                </div>
+						                                    	{% endif %}
+								                                <script type="text/javascript">
+								                                	$(".lst-popup-{{p.pk}}-{{m.pk}}").popup({popup : ".ting-menu-popup-{{p.pk}}-{{m.pk}}", on : "hover"});
+								                                    $(".disabled-rating").rating("disable");
+								                                    $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
+								                                </script>
+					                                    	{% endfor %}
+					                                    {% else %}
+					                                    	<div class="ui red message">No Menu To Show</div>
+					                                    {% endif %}
 				                                    </div>
-			                                    {% elif p.menu.menu_type == 3 %}
-			                                    	<div class="ui image label" onclick="window.open(`{% url 'ting_usr_menu_get' p.menu.pk p.menu.dish.slug %}`, '_blank')">
-				                                        <img src="{{p.menu.dish.images.0.image.url}}" />
-				                                        Promotion On {{p.menu.dish.name}}
-				                                    </div>
-			                                    {% endif %}
-			                                {% endif %}    
-			                            </div>
-			                            <div class="meta" style="padding:0;">
-			                                {% if p.promotion_menu_type == '00' %}
-			                                	<div class="ting-menus-list-item">
-				                                    {% if p.branch.pk|rand_five_all_count > 0 %}
-				                                    	{% for m in  p.branch.pk|rand_five_all %}
-				                                    		{% if m.menu_type == 1 %}
+				                                {% elif p.promotion_menu_type == '01' %}
+				                                	<div class="ting-menus-list-item">
+					                                    {% if p.branch.pk|rand_five_type_count:"1" > 0 %}
+					                                    	{% for m in  p.branch.pk|rand_five_type:"1" %}
 					                                    		<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{% url 'ting_usr_menu_get' m.pk m.food.slug %}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
-								                                    <img src="{{m.food.images.0.image.url}}" />
-								                                </div>
-								                                <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{m.pk}}">
-								                                    <div class="header">{{m.food.name}}</div>
-								                                    <div class="ui star rating disabled-rating" data-rating="{{m.food.review_average}}" data-max-rating="5" style="margin-top:5px;"></div>
-								                                    <div class="description">{{m.food.description}}</div>
-								                                    <p class="ui {% if m.food.is_available %} green {% else %} red {% endif %}" style="color: {% if m.food.is_available %} green {% else %} red {% endif %}">{% if m.food.is_available %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
-								                                    <div class="extra">
-								                                        {% if m.menu_type != 2 %}<div class="ui label"><i class="icon boxes"></i> {{m.food.category.name}}</div> {% endif %}
-								                                        {% if m.menu_type == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{m.food.type_str}}</div>{% endif %}
-								                                        {% if m.menu_type == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{m.drink.type_str}}</div>{% endif %}
-								                                        {% if m.menu_type == 3 %}<div class="ui label"><i class="icon clock"></i> {{m.dish.dish_time_str}}</div>{% endif %}
-								                                    	<div class="ui label"><i class="icon tag"></i> {{m.food.currency}} {{m.food.price|intcomma}} {% if m.food.is_countable %} ({{m.food.quantity}} pieces){% endif %}</div>
-								                                	</div>
-								                                </div>
-					                                    	{% elif m.menu_type == 2 %}
-					                                    		<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{% url 'ting_usr_menu_get' m.pk m.drink.slug %}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
+									                                <img src="{{m.food.images.0.image.url}}" />
+									                            </div>
+									                            <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{m.pk}}">
+									                                <div class="header">{{m.food.name}}</div>
+									                                <div class="ui star rating disabled-rating" data-rating="{{m.food.review_average}}" data-max-rating="5" style="margin-top:5px;"></div>
+									                                <div class="description">{{m.food.description}}</div>
+									                                <p class="ui {% if m.food.is_available %} green {% else %} red {% endif %}" style="color: {% if m.food.is_available %} green {% else %} red {% endif %}">{% if m.food.is_available %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
+									                                <div class="extra">
+									                                    {% if m.menu_type != 2 %}<div class="ui label"><i class="icon boxes"></i> {{m.food.category.name}}</div> {% endif %}
+									                                    {% if m.menu_type == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{m.food.type_str}}</div>{% endif %}
+									                                    {% if m.menu_type == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{m.drink.type_str}}</div>{% endif %}
+									                                    {% if m.menu_type == 3 %}<div class="ui label"><i class="icon clock"></i> {{m.dish.dish_time_str}}</div>{% endif %}
+									                                	<div class="ui label"><i class="icon tag"></i> {{m.food.currency}} {{m.food.price|intcomma}} {% if m.food.is_countable %} ({{m.food.quantity}} pieces){% endif %}</div>
+									                                </div>
+									                            </div>
+								                                <script type="text/javascript">
+								                                	$(".lst-popup-{{p.pk}}-{{m.pk}}").popup({popup : ".ting-menu-popup-{{p.pk}}-{{m.pk}}", on : "hover"});
+								                                    $(".disabled-rating").rating("disable");
+								                                    $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
+								                                </script>
+					                                    	{% endfor %}
+					                                    {% else %}
+					                                    	<div class="ui red message">No Menu To Show</div>
+					                                    {% endif %}
+				                                    </div>
+				                                {% elif p.promotion_menu_type == '02' %}
+				                                	<div class="ting-menus-list-item">
+					                                	{% if p.branch.pk|rand_five_type_count:"2" > 0 %}
+						                                    {% for m in  p.branch.pk|rand_five_type:"2" %}
+						                                    	<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{% url 'ting_usr_menu_get' m.pk m.drink.slug %}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
 								                                    <img src="{{m.drink.images.0.image.url}}" />
 								                                </div>
 								                                <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{m.pk}}">
@@ -114,8 +192,21 @@
 								                                    	<div class="ui label"><i class="icon tag"></i> {{m.drink.currency}} {{m.drink.price|intcomma}} {% if m.drink.is_countable %} ({{m.drink.quantity}} pieces){% endif %}</div>
 								                                	</div>
 								                                </div>
-					                                    	{% elif m.menu_type == 3 %}
-					                                    		<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{% url 'ting_usr_menu_get' m.pk m.dish.slug %}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
+									                            <script type="text/javascript">
+									                                $(".lst-popup-{{p.pk}}-{{m.pk}}").popup({popup : ".ting-menu-popup-{{p.pk}}-{{m.pk}}", on : "hover"});
+									                                $(".disabled-rating").rating("disable");
+									                                $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
+									                            </script>
+						                                    {% endfor %}
+						                                {% else %}
+						                                    <div class="ui red message">No Menu To Show</div>
+						                                {% endif %}
+					                            	</div>
+				                                {% elif p.promotion_menu_type == '03' %}
+				                                	<div class="ting-menus-list-item">
+					                                 	{% if p.branch.pk|rand_five_type_count:"3" > 0 %}
+						                                    {% for m in  p.branch.pk|rand_five_type:"3" %}
+						                                   		<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{% url 'ting_usr_menu_get' m.pk m.dish.slug %}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
 								                                    <img src="{{m.dish.images.0.image.url}}" />
 								                                </div>
 								                                <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{m.pk}}">
@@ -131,291 +222,219 @@
 								                                    	<div class="ui label"><i class="icon tag"></i> {{m.dish.currency}} {{m.dish.price|intcomma}} {% if m.dish.is_countable %} ({{m.dish.quantity}} pieces){% endif %}</div>
 								                                	</div>
 								                                </div>
-					                                    	{% endif %}
-							                                <script type="text/javascript">
-							                                	$(".lst-popup-{{p.pk}}-{{m.pk}}").popup({popup : ".ting-menu-popup-{{p.pk}}-{{m.pk}}", on : "hover"});
-							                                    $(".disabled-rating").rating("disable");
-							                                    $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
-							                                </script>
-				                                    	{% endfor %}
-				                                    {% else %}
-				                                    	<div class="ui red message">No Menu To Show</div>
-				                                    {% endif %}
-			                                    </div>
-			                                {% elif p.promotion_menu_type == '01' %}
-			                                	<div class="ting-menus-list-item">
-				                                    {% if p.branch.pk|rand_five_type_count:"1" > 0 %}
-				                                    	{% for m in  p.branch.pk|rand_five_type:"1" %}
-				                                    		<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{% url 'ting_usr_menu_get' m.pk m.food.slug %}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
-								                                <img src="{{m.food.images.0.image.url}}" />
+									                            <script type="text/javascript">
+									                                $(".lst-popup-{{p.pk}}-{{m.pk}}").popup({popup : ".ting-menu-popup-{{p.pk}}-{{m.pk}}", on : "hover"});
+									                                $(".disabled-rating").rating("disable");
+									                                $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
+									                            </script>
+						                                    {% endfor %}
+						                                {% else %}
+						                                   	<div class="ui red message">No Menu To Show</div>
+						                                {% endif %}
+						                            </div>
+				                                {% elif p.promotion_menu_type == '04' %}
+				                                	{% if p.menu.menu_type == 1 %}
+				                                		<div class="ting-menus-list-item ting-menu-url lst-popup-{{p.pk}}-{{p.menu.pk}}" href="{% url 'ting_usr_menu_get' p.menu.pk p.menu.food.slug %}" id="ting-menus-list-item-{{p.pk}}-{{p.menu.pk}}">
+					                                        {% if p.food.images.count > 0 %}
+					                                            {% for image in p.food.images %}
+					                                            	<div class="ting-menu-image-list">
+					                                                    <img src="{{image.image.url}}" />
+					                                                </div>
+					                                            {% endfor %}
+					                                        {% else %}
+					                                        <div class="ui red message">No Images To Show</div>
+					                                        {% endif %}
+					                                    </div>
+					                                    <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{p.menu.pk}}">
+					                                        <div class="header">{{p.menu.food.name}}</div>
+								                            <div class="ui star rating disabled-rating" data-rating="{{p.menu.food.review_average}}" data-max-rating="5" style="margin-top:5px;"></div>
+								                            <div class="description">{{m.food.description}}</div>
+								                            <p class="ui {% if p.menu.food.is_available %} green {% else %} red {% endif %}" style="color: {% if p.menu.food.is_available %} green {% else %} red {% endif %}">{% if p.menu.food.is_available %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
+								                            <div class="extra">
+								                                {% if p.menu.menu_type != 2 %}<div class="ui label"><i class="icon boxes"></i> {{p.menu.food.category.name}}</div> {% endif %}
+								                               	{% if p.menu.menu_type == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{p.menu.food.type_str}}</div>{% endif %}
+								                                {% if p.menu.menu_type == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{p.menu.drink.type_str}}</div>{% endif %}
+								                                {% if p.menu.menu_type == 3 %}<div class="ui label"><i class="icon clock"></i> {{p.menu.dish.dish_time_str}}</div>{% endif %}
+								                                <div class="ui label"><i class="icon tag"></i> {{p.menu.food.currency}} {{p.menu.food.price|intcomma}} {% if p.menu.food.is_countable %} ({{p.menu.food.quantity}} pieces){% endif %}</div>
 								                            </div>
-								                            <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{m.pk}}">
-								                                <div class="header">{{m.food.name}}</div>
-								                                <div class="ui star rating disabled-rating" data-rating="{{m.food.review_average}}" data-max-rating="5" style="margin-top:5px;"></div>
-								                                <div class="description">{{m.food.description}}</div>
-								                                <p class="ui {% if m.food.is_available %} green {% else %} red {% endif %}" style="color: {% if m.food.is_available %} green {% else %} red {% endif %}">{% if m.food.is_available %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
-								                                <div class="extra">
-								                                    {% if m.menu_type != 2 %}<div class="ui label"><i class="icon boxes"></i> {{m.food.category.name}}</div> {% endif %}
-								                                    {% if m.menu_type == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{m.food.type_str}}</div>{% endif %}
-								                                    {% if m.menu_type == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{m.drink.type_str}}</div>{% endif %}
-								                                    {% if m.menu_type == 3 %}<div class="ui label"><i class="icon clock"></i> {{m.dish.dish_time_str}}</div>{% endif %}
-								                                	<div class="ui label"><i class="icon tag"></i> {{m.food.currency}} {{m.food.price|intcomma}} {% if m.food.is_countable %} ({{m.food.quantity}} pieces){% endif %}</div>
-								                                </div>
+					                                    </div>
+				                                	{% elif p.menu.menu_type == 2 %}
+				                                		<div class="ting-menus-list-item ting-menu-url lst-popup-{{p.pk}}-{{p.menu.pk}}" href="{% url 'ting_usr_menu_get' p.menu.pk p.menu.drink.slug %}" id="ting-menus-list-item-{{p.pk}}-{{p.menu.pk}}">
+					                                        {% if p.drink.images.count > 0 %}
+					                                            {% for image in p.drink.images %}
+					                                            	<div class="ting-menu-image-list">
+					                                                    <img src="{{image.image.url}}" />
+					                                                </div>
+					                                            {% endfor %}
+					                                        {% else %}
+					                                        <div class="ui red message">No Images To Show</div>
+					                                        {% endif %}
+					                                    </div>
+					                                    <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{p.menu.pk}}">
+					                                        <div class="header">{{p.menu.drink.name}}</div>
+								                            <div class="ui star rating disabled-rating" data-rating="{{p.menu.drink.review_average}}" data-max-rating="5" style="margin-top:5px;"></div>
+								                            <div class="description">{{m.drink.description}}</div>
+								                            <p class="ui {% if p.menu.drink.is_available %} green {% else %} red {% endif %}" style="color: {% if p.menu.drink.is_available %} green {% else %} red {% endif %}">{% if p.menu.drink.is_available %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
+								                            <div class="extra">
+								                                {% if p.menu.menu_type != 2 %}<div class="ui label"><i class="icon boxes"></i> {{p.menu.drink.category.name}}</div> {% endif %}
+								                               	{% if p.menu.menu_type == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{p.menu.food.type_str}}</div>{% endif %}
+								                                {% if p.menu.menu_type == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{p.menu.drink.type_str}}</div>{% endif %}
+								                                {% if p.menu.menu_type == 3 %}<div class="ui label"><i class="icon clock"></i> {{p.menu.dish.dish_time_str}}</div>{% endif %}
+								                                <div class="ui label"><i class="icon tag"></i> {{p.menu.drink.currency}} {{p.menu.drink.price|intcomma}} {% if p.menu.drink.is_countable %} ({{p.menu.drink.quantity}} pieces){% endif %}</div>
 								                            </div>
-							                                <script type="text/javascript">
-							                                	$(".lst-popup-{{p.pk}}-{{m.pk}}").popup({popup : ".ting-menu-popup-{{p.pk}}-{{m.pk}}", on : "hover"});
-							                                    $(".disabled-rating").rating("disable");
-							                                    $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
-							                                </script>
-				                                    	{% endfor %}
-				                                    {% else %}
-				                                    	<div class="ui red message">No Menu To Show</div>
-				                                    {% endif %}
-			                                    </div>
-			                                {% elif p.promotion_menu_type == '02' %}
-			                                	<div class="ting-menus-list-item">
-				                                	{% if p.branch.pk|rand_five_type_count:"2" > 0 %}
-					                                    {% for m in  p.branch.pk|rand_five_type:"2" %}
-					                                    	<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{% url 'ting_usr_menu_get' m.pk m.drink.slug %}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
-							                                    <img src="{{m.drink.images.0.image.url}}" />
-							                                </div>
-							                                <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{m.pk}}">
-							                                    <div class="header">{{m.drink.name}}</div>
-							                                    <div class="ui star rating disabled-rating" data-rating="{{m.drink.review_average}}" data-max-rating="5" style="margin-top:5px;"></div>
-							                                    <div class="description">{{m.drink.description}}</div>
-							                                    <p class="ui {% if m.drink.is_available %} green {% else %} red {% endif %}" style="color: {% if m.drink.is_available %} green {% else %} red {% endif %}">{% if m.drink.is_available %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
-							                                    <div class="extra">
-							                                        {% if m.menu_type != 2 %}<div class="ui label"><i class="icon boxes"></i> {{m.drink.category.name}}</div> {% endif %}
-							                                        {% if m.menu_type == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{m.food.type_str}}</div>{% endif %}
-							                                        {% if m.menu_type == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{m.drink.type_str}}</div>{% endif %}
-							                                        {% if m.menu_type == 3 %}<div class="ui label"><i class="icon clock"></i> {{m.dish.dish_time_str}}</div>{% endif %}
-							                                    	<div class="ui label"><i class="icon tag"></i> {{m.drink.currency}} {{m.drink.price|intcomma}} {% if m.drink.is_countable %} ({{m.drink.quantity}} pieces){% endif %}</div>
-							                                	</div>
-							                                </div>
-								                            <script type="text/javascript">
-								                                $(".lst-popup-{{p.pk}}-{{m.pk}}").popup({popup : ".ting-menu-popup-{{p.pk}}-{{m.pk}}", on : "hover"});
-								                                $(".disabled-rating").rating("disable");
-								                                $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
-								                            </script>
-					                                    {% endfor %}
-					                                {% else %}
-					                                    <div class="ui red message">No Menu To Show</div>
-					                                {% endif %}
-				                            	</div>
-			                                {% elif p.promotion_menu_type == '03' %}
-			                                	<div class="ting-menus-list-item">
-				                                 	{% if p.branch.pk|rand_five_type_count:"3" > 0 %}
-					                                    {% for m in  p.branch.pk|rand_five_type:"3" %}
-					                                   		<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{% url 'ting_usr_menu_get' m.pk m.dish.slug %}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
-							                                    <img src="{{m.dish.images.0.image.url}}" />
-							                                </div>
-							                                <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{m.pk}}">
-							                                    <div class="header">{{m.dish.name}}</div>
-							                                    <div class="ui star rating disabled-rating" data-rating="{{m.dish.review_average}}" data-max-rating="5" style="margin-top:5px;"></div>
-							                                    <div class="description">{{m.dish.description}}</div>
-							                                    <p class="ui {% if m.dish.is_available %} green {% else %} red {% endif %}" style="color: {% if m.dish.is_available %} green {% else %} red {% endif %}">{% if m.dish.is_available %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
-							                                    <div class="extra">
-							                                        {% if m.menu_type != 2 %}<div class="ui label"><i class="icon boxes"></i> {{m.dish.category.name}}</div> {% endif %}
-							                                        {% if m.menu_type == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{m.food.type_str}}</div>{% endif %}
-							                                        {% if m.menu_type == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{m.drink.type_str}}</div>{% endif %}
-							                                        {% if m.menu_type == 3 %}<div class="ui label"><i class="icon clock"></i> {{m.dish.dish_time_str}}</div>{% endif %}
-							                                    	<div class="ui label"><i class="icon tag"></i> {{m.dish.currency}} {{m.dish.price|intcomma}} {% if m.dish.is_countable %} ({{m.dish.quantity}} pieces){% endif %}</div>
-							                                	</div>
-							                                </div>
-								                            <script type="text/javascript">
-								                                $(".lst-popup-{{p.pk}}-{{m.pk}}").popup({popup : ".ting-menu-popup-{{p.pk}}-{{m.pk}}", on : "hover"});
-								                                $(".disabled-rating").rating("disable");
-								                                $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
-								                            </script>
-					                                    {% endfor %}
-					                                {% else %}
-					                                   	<div class="ui red message">No Menu To Show</div>
-					                                {% endif %}
-					                            </div>
-			                                {% elif p.promotion_menu_type == '04' %}
-			                                	{% if p.menu.menu_type == 1 %}
-			                                		<div class="ting-menus-list-item ting-menu-url lst-popup-{{p.pk}}-{{p.menu.pk}}" href="{% url 'ting_usr_menu_get' p.menu.pk p.menu.food.slug %}" id="ting-menus-list-item-{{p.pk}}-{{p.menu.pk}}">
-				                                        {% if p.food.images.count > 0 %}
-				                                            {% for image in p.food.images %}
-				                                            	<div class="ting-menu-image-list">
-				                                                    <img src="{{image.image.url}}" />
-				                                                </div>
-				                                            {% endfor %}
-				                                        {% else %}
-				                                        <div class="ui red message">No Images To Show</div>
-				                                        {% endif %}
-				                                    </div>
-				                                    <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{p.menu.pk}}">
-				                                        <div class="header">{{p.menu.food.name}}</div>
-							                            <div class="ui star rating disabled-rating" data-rating="{{p.menu.food.review_average}}" data-max-rating="5" style="margin-top:5px;"></div>
-							                            <div class="description">{{m.food.description}}</div>
-							                            <p class="ui {% if p.menu.food.is_available %} green {% else %} red {% endif %}" style="color: {% if p.menu.food.is_available %} green {% else %} red {% endif %}">{% if p.menu.food.is_available %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
-							                            <div class="extra">
-							                                {% if p.menu.menu_type != 2 %}<div class="ui label"><i class="icon boxes"></i> {{p.menu.food.category.name}}</div> {% endif %}
-							                               	{% if p.menu.menu_type == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{p.menu.food.type_str}}</div>{% endif %}
-							                                {% if p.menu.menu_type == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{p.menu.drink.type_str}}</div>{% endif %}
-							                                {% if p.menu.menu_type == 3 %}<div class="ui label"><i class="icon clock"></i> {{p.menu.dish.dish_time_str}}</div>{% endif %}
-							                                <div class="ui label"><i class="icon tag"></i> {{p.menu.food.currency}} {{p.menu.food.price|intcomma}} {% if p.menu.food.is_countable %} ({{p.menu.food.quantity}} pieces){% endif %}</div>
-							                            </div>
-				                                    </div>
-			                                	{% elif p.menu.menu_type == 2 %}
-			                                		<div class="ting-menus-list-item ting-menu-url lst-popup-{{p.pk}}-{{p.menu.pk}}" href="{% url 'ting_usr_menu_get' p.menu.pk p.menu.drink.slug %}" id="ting-menus-list-item-{{p.pk}}-{{p.menu.pk}}">
-				                                        {% if p.drink.images.count > 0 %}
-				                                            {% for image in p.drink.images %}
-				                                            	<div class="ting-menu-image-list">
-				                                                    <img src="{{image.image.url}}" />
-				                                                </div>
-				                                            {% endfor %}
-				                                        {% else %}
-				                                        <div class="ui red message">No Images To Show</div>
-				                                        {% endif %}
-				                                    </div>
-				                                    <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{p.menu.pk}}">
-				                                        <div class="header">{{p.menu.drink.name}}</div>
-							                            <div class="ui star rating disabled-rating" data-rating="{{p.menu.drink.review_average}}" data-max-rating="5" style="margin-top:5px;"></div>
-							                            <div class="description">{{m.drink.description}}</div>
-							                            <p class="ui {% if p.menu.drink.is_available %} green {% else %} red {% endif %}" style="color: {% if p.menu.drink.is_available %} green {% else %} red {% endif %}">{% if p.menu.drink.is_available %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
-							                            <div class="extra">
-							                                {% if p.menu.menu_type != 2 %}<div class="ui label"><i class="icon boxes"></i> {{p.menu.drink.category.name}}</div> {% endif %}
-							                               	{% if p.menu.menu_type == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{p.menu.food.type_str}}</div>{% endif %}
-							                                {% if p.menu.menu_type == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{p.menu.drink.type_str}}</div>{% endif %}
-							                                {% if p.menu.menu_type == 3 %}<div class="ui label"><i class="icon clock"></i> {{p.menu.dish.dish_time_str}}</div>{% endif %}
-							                                <div class="ui label"><i class="icon tag"></i> {{p.menu.drink.currency}} {{p.menu.drink.price|intcomma}} {% if p.menu.drink.is_countable %} ({{p.menu.drink.quantity}} pieces){% endif %}</div>
-							                            </div>
-				                                    </div>
-			                                	{% elif p.menu.menu_type == 3 %}
-			                                		<div class="ting-menus-list-item ting-menu-url lst-popup-{{p.pk}}-{{p.menu.pk}}" href="{% url 'ting_usr_menu_get' p.menu.pk p.menu.dish.slug %}" id="ting-menus-list-item-{{p.pk}}-{{p.menu.pk}}">
-				                                        {% if p.dish.images.count > 0 %}
-				                                            {% for image in p.dish.images %}
-				                                            	<div class="ting-menu-image-list">
-				                                                    <img src="{{image.image.url}}" />
-				                                                </div>
-				                                            {% endfor %}
-				                                        {% else %}
-				                                        <div class="ui red message">No Images To Show</div>
-				                                        {% endif %}
-				                                    </div>
-				                                    <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{p.menu.pk}}">
-				                                        <div class="header">{{p.menu.dish.name}}</div>
-							                            <div class="ui star rating disabled-rating" data-rating="{{p.menu.dish.review_average}}" data-max-rating="5" style="margin-top:5px;"></div>
-							                            <div class="description">{{m.dish.description}}</div>
-							                            <p class="ui {% if p.menu.dish.is_available %} green {% else %} red {% endif %}" style="color: {% if p.menu.dish.is_available %} green {% else %} red {% endif %}">{% if p.menu.dish.is_available %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
-							                            <div class="extra">
-							                                {% if p.menu.menu_type != 2 %}<div class="ui label"><i class="icon boxes"></i> {{p.menu.dish.category.name}}</div> {% endif %}
-							                               	{% if p.menu.menu_type == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{p.menu.food.type_str}}</div>{% endif %}
-							                                {% if p.menu.menu_type == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{p.menu.drink.type_str}}</div>{% endif %}
-							                                {% if p.menu.menu_type == 3 %}<div class="ui label"><i class="icon clock"></i> {{p.menu.dish.dish_time_str}}</div>{% endif %}
-							                                <div class="ui label"><i class="icon tag"></i> {{p.menu.dish.currency}} {{p.menu.dish.price|intcomma}} {% if p.menu.dish.is_countable %} ({{p.menu.dish.quantity}} pieces){% endif %}</div>
-							                            </div>
-				                                    </div>
-			                                	{% endif %}
-			                                    <script type="text/javascript">
-			                                    	$(".lst-popup-{{p.pk}}-{{p.menu.pk}}").popup({popup : ".ting-menu-popup-{{p.pk}}-{{p.menu.pk}}", on : "hover"});
-			                                        $(".disabled-rating").rating("disable");
-			                                        $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
-			                                    </script>
-			                                {% elif p.promotion_menu_type == '05' %}
-			                                	<div class="ting-menus-list-item">
-				                                	{% if p.branch.pk|rand_five_category_count:p.category.pk > 0 %}
-					                                    {% for m in  p.branch.pk|rand_five_category:p.category.pk %}
-					                                    	{% if m.menu_type == 1 %}
-					                                    		<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{% url 'ting_usr_menu_get' m.pk m.food.slug %}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
-								                                    <img src="{{m.food.images.0.image.url}}" />
-								                                </div>
-								                                <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{m.pk}}">
-								                                    <div class="header">{{m.food.name}}</div>
-								                                    <div class="ui star rating disabled-rating" data-rating="{{m.food.review_average}}" data-max-rating="5" style="margin-top:5px;"></div>
-								                                    <div class="description">{{m.food.description}}</div>
-								                                    <p class="ui {% if m.food.is_available %} green {% else %} red {% endif %}" style="color: {% if m.food.is_available %} green {% else %} red {% endif %}">{% if m.food.is_available %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
-								                                    <div class="extra">
-								                                        {% if m.menu_type != 2 %}<div class="ui label"><i class="icon boxes"></i> {{m.food.category.name}}</div> {% endif %}
-								                                        {% if m.menu_type == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{m.food.type_str}}</div>{% endif %}
-								                                        {% if m.menu_type == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{m.drink.type_str}}</div>{% endif %}
-								                                        {% if m.menu_type == 3 %}<div class="ui label"><i class="icon clock"></i> {{m.dish.dish_time_str}}</div>{% endif %}
-								                                    	<div class="ui label"><i class="icon tag"></i> {{m.food.currency}} {{m.food.price|intcomma}} {% if m.food.is_countable %} ({{m.food.quantity}} pieces){% endif %}</div>
-								                                	</div>
-								                                </div>
-					                                    	{% elif m.menu_type == 2 %}
-					                                    		<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{% url 'ting_usr_menu_get' m.pk m.drink.slug %}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
-								                                    <img src="{{m.drink.images.0.image.url}}" />
-								                                </div>
-								                                <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{m.pk}}">
-								                                    <div class="header">{{m.drink.name}}</div>
-								                                    <div class="ui star rating disabled-rating" data-rating="{{m.drink.review_average}}" data-max-rating="5" style="margin-top:5px;"></div>
-								                                    <div class="description">{{m.drink.description}}</div>
-								                                    <p class="ui {% if m.drink.is_available %} green {% else %} red {% endif %}" style="color: {% if m.drink.is_available %} green {% else %} red {% endif %}">{% if m.drink.is_available %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
-								                                    <div class="extra">
-								                                        {% if m.menu_type != 2 %}<div class="ui label"><i class="icon boxes"></i> {{m.drink.category.name}}</div> {% endif %}
-								                                        {% if m.menu_type == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{m.food.type_str}}</div>{% endif %}
-								                                        {% if m.menu_type == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{m.drink.type_str}}</div>{% endif %}
-								                                        {% if m.menu_type == 3 %}<div class="ui label"><i class="icon clock"></i> {{m.dish.dish_time_str}}</div>{% endif %}
-								                                    	<div class="ui label"><i class="icon tag"></i> {{m.drink.currency}} {{m.drink.price|intcomma}} {% if m.drink.is_countable %} ({{m.drink.quantity}} pieces){% endif %}</div>
-								                                	</div>
-								                                </div>
-					                                    	{% elif m.menu_type == 3 %}
-					                                    		<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{% url 'ting_usr_menu_get' m.pk m.dish.slug %}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
-								                                    <img src="{{m.dish.images.0.image.url}}" />
-								                                </div>
-								                                <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{m.pk}}">
-								                                    <div class="header">{{m.dish.name}}</div>
-								                                    <div class="ui star rating disabled-rating" data-rating="{{m.dish.review_average}}" data-max-rating="5" style="margin-top:5px;"></div>
-								                                    <div class="description">{{m.dish.description}}</div>
-								                                    <p class="ui {% if m.dish.is_available %} green {% else %} red {% endif %}" style="color: {% if m.dish.is_available %} green {% else %} red {% endif %}">{% if m.dish.is_available %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
-								                                    <div class="extra">
-								                                        {% if m.menu_type != 2 %}<div class="ui label"><i class="icon boxes"></i> {{m.dish.category.name}}</div> {% endif %}
-								                                        {% if m.menu_type == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{m.food.type_str}}</div>{% endif %}
-								                                        {% if m.menu_type == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{m.drink.type_str}}</div>{% endif %}
-								                                        {% if m.menu_type == 3 %}<div class="ui label"><i class="icon clock"></i> {{m.dish.dish_time_str}}</div>{% endif %}
-								                                    	<div class="ui label"><i class="icon tag"></i> {{m.dish.currency}} {{m.dish.price|intcomma}} {% if m.dish.is_countable %} ({{m.dish.quantity}} pieces){% endif %}</div>
-								                                	</div>
-								                                </div>
-					                                    	{% endif %}
-								                            <script type="text/javascript">
-								                                $(".lst-popup-{{p.pk}}-{{m.pk}}").popup({popup : ".ting-menu-popup-{{p.pk}}-{{m.pk}}", on : "hover"});
-								                                $(".disabled-rating").rating("disable");
-								                                $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
-								                            </script>
-					                                    {% endfor %}
-					                                {% else %}
-					                                   	<div class="ui red message">No Menu To Show</div>
-					                                {% endif %}
-					                            </div>
-				                            {% endif %}
-			                            </div>
-			                            <div class="description">
-			                                <p><i class="icon calendar alternate outline"></i> {{p.promo_period}}</p>
-			                                {% if p.has_reduction %}<p><i class="icon minus square outline"></i> Order this menu and get a {{p.amount}} {{p.reduction_type}} reduction</p> {% endif %}
-			                                {% if p.has_supplement %}
-			                                    <p>
-			                                        <i class="icon plus square outline"></i>
-			                                        Order {{p.supplement_min_quantity}} pieces or packs of this menu and get {{p.supplement_quantity}}
-			                                        {% if p.is_supplement_same %}
-			                                            more for free
-			                                        {% else %} 
-			                                            free 
-			                                            {% if p.supplement.menu_type == 1 %}
-			                                            	<a href="{% url 'ting_usr_menu_get' p.supplement.pk p.supplement.food.slug %}" target="_self">{{p.supplement.food.name}}</a>
-			                                            {% elif p.supplement.menu_type == 2 %}
-			                                            	<a href="{% url 'ting_usr_menu_get' p.supplement.pk p.supplement.drink.slug %}" target="_self">{{p.supplement.drink.name}}</a>
-			                                            {% elif p.supplement.menu_type == 3 %}
-			                                            	<a href="{% url 'ting_usr_menu_get' p.supplement.pk p.supplement.dish.slug %}" target="_self">{{p.supplement.dish.name}}</a>
-			                                            {% endif %}
-			                                    	{% endif %}
-			                                    </p> 
-			                                {% endif %}
-			                            </div>
-			                            <div class="extra">
-			                            	<div class="ui image label" onclick="window.open(`{% url 'ting_usr_get_restaurant_promotions' p.restaurant.pk p.branch.pk p.restaurant.slug %}`, '_self')">
-			                                    <img src="{{p.restaurant.logo.url}}" />
-			                                    {{p.restaurant.name}}, {{p.branch.name}}
-			                                </div>
-			                                <div class="ui label"><i class="icon clock"></i>{{p.updated_at}}</div>
-			                                <div class="ui label"><i class="icon star"></i>{{p.interests_count}}</div>
-			                            </div>
-			                        </div>
-			                        <script type="text/javascript">$("#ting-interest-promo-{{p.id}}").interestPromotion();</script>
-								</div>
-							{% endfor %}
+					                                    </div>
+				                                	{% elif p.menu.menu_type == 3 %}
+				                                		<div class="ting-menus-list-item ting-menu-url lst-popup-{{p.pk}}-{{p.menu.pk}}" href="{% url 'ting_usr_menu_get' p.menu.pk p.menu.dish.slug %}" id="ting-menus-list-item-{{p.pk}}-{{p.menu.pk}}">
+					                                        {% if p.dish.images.count > 0 %}
+					                                            {% for image in p.dish.images %}
+					                                            	<div class="ting-menu-image-list">
+					                                                    <img src="{{image.image.url}}" />
+					                                                </div>
+					                                            {% endfor %}
+					                                        {% else %}
+					                                        <div class="ui red message">No Images To Show</div>
+					                                        {% endif %}
+					                                    </div>
+					                                    <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{p.menu.pk}}">
+					                                        <div class="header">{{p.menu.dish.name}}</div>
+								                            <div class="ui star rating disabled-rating" data-rating="{{p.menu.dish.review_average}}" data-max-rating="5" style="margin-top:5px;"></div>
+								                            <div class="description">{{m.dish.description}}</div>
+								                            <p class="ui {% if p.menu.dish.is_available %} green {% else %} red {% endif %}" style="color: {% if p.menu.dish.is_available %} green {% else %} red {% endif %}">{% if p.menu.dish.is_available %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
+								                            <div class="extra">
+								                                {% if p.menu.menu_type != 2 %}<div class="ui label"><i class="icon boxes"></i> {{p.menu.dish.category.name}}</div> {% endif %}
+								                               	{% if p.menu.menu_type == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{p.menu.food.type_str}}</div>{% endif %}
+								                                {% if p.menu.menu_type == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{p.menu.drink.type_str}}</div>{% endif %}
+								                                {% if p.menu.menu_type == 3 %}<div class="ui label"><i class="icon clock"></i> {{p.menu.dish.dish_time_str}}</div>{% endif %}
+								                                <div class="ui label"><i class="icon tag"></i> {{p.menu.dish.currency}} {{p.menu.dish.price|intcomma}} {% if p.menu.dish.is_countable %} ({{p.menu.dish.quantity}} pieces){% endif %}</div>
+								                            </div>
+					                                    </div>
+				                                	{% endif %}
+				                                    <script type="text/javascript">
+				                                    	$(".lst-popup-{{p.pk}}-{{p.menu.pk}}").popup({popup : ".ting-menu-popup-{{p.pk}}-{{p.menu.pk}}", on : "hover"});
+				                                        $(".disabled-rating").rating("disable");
+				                                        $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
+				                                    </script>
+				                                {% elif p.promotion_menu_type == '05' %}
+				                                	<div class="ting-menus-list-item">
+					                                	{% if p.branch.pk|rand_five_category_count:p.category.pk > 0 %}
+						                                    {% for m in  p.branch.pk|rand_five_category:p.category.pk %}
+						                                    	{% if m.menu_type == 1 %}
+						                                    		<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{% url 'ting_usr_menu_get' m.pk m.food.slug %}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
+									                                    <img src="{{m.food.images.0.image.url}}" />
+									                                </div>
+									                                <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{m.pk}}">
+									                                    <div class="header">{{m.food.name}}</div>
+									                                    <div class="ui star rating disabled-rating" data-rating="{{m.food.review_average}}" data-max-rating="5" style="margin-top:5px;"></div>
+									                                    <div class="description">{{m.food.description}}</div>
+									                                    <p class="ui {% if m.food.is_available %} green {% else %} red {% endif %}" style="color: {% if m.food.is_available %} green {% else %} red {% endif %}">{% if m.food.is_available %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
+									                                    <div class="extra">
+									                                        {% if m.menu_type != 2 %}<div class="ui label"><i class="icon boxes"></i> {{m.food.category.name}}</div> {% endif %}
+									                                        {% if m.menu_type == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{m.food.type_str}}</div>{% endif %}
+									                                        {% if m.menu_type == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{m.drink.type_str}}</div>{% endif %}
+									                                        {% if m.menu_type == 3 %}<div class="ui label"><i class="icon clock"></i> {{m.dish.dish_time_str}}</div>{% endif %}
+									                                    	<div class="ui label"><i class="icon tag"></i> {{m.food.currency}} {{m.food.price|intcomma}} {% if m.food.is_countable %} ({{m.food.quantity}} pieces){% endif %}</div>
+									                                	</div>
+									                                </div>
+						                                    	{% elif m.menu_type == 2 %}
+						                                    		<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{% url 'ting_usr_menu_get' m.pk m.drink.slug %}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
+									                                    <img src="{{m.drink.images.0.image.url}}" />
+									                                </div>
+									                                <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{m.pk}}">
+									                                    <div class="header">{{m.drink.name}}</div>
+									                                    <div class="ui star rating disabled-rating" data-rating="{{m.drink.review_average}}" data-max-rating="5" style="margin-top:5px;"></div>
+									                                    <div class="description">{{m.drink.description}}</div>
+									                                    <p class="ui {% if m.drink.is_available %} green {% else %} red {% endif %}" style="color: {% if m.drink.is_available %} green {% else %} red {% endif %}">{% if m.drink.is_available %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
+									                                    <div class="extra">
+									                                        {% if m.menu_type != 2 %}<div class="ui label"><i class="icon boxes"></i> {{m.drink.category.name}}</div> {% endif %}
+									                                        {% if m.menu_type == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{m.food.type_str}}</div>{% endif %}
+									                                        {% if m.menu_type == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{m.drink.type_str}}</div>{% endif %}
+									                                        {% if m.menu_type == 3 %}<div class="ui label"><i class="icon clock"></i> {{m.dish.dish_time_str}}</div>{% endif %}
+									                                    	<div class="ui label"><i class="icon tag"></i> {{m.drink.currency}} {{m.drink.price|intcomma}} {% if m.drink.is_countable %} ({{m.drink.quantity}} pieces){% endif %}</div>
+									                                	</div>
+									                                </div>
+						                                    	{% elif m.menu_type == 3 %}
+						                                    		<div class="ting-menu-image-list ting-menu-url lst-popup-{{p.pk}}-{{m.pk}}" href="{% url 'ting_usr_menu_get' m.pk m.dish.slug %}" id="ting-menus-list-item-{{p.pk}}-{{m.pk}}">
+									                                    <img src="{{m.dish.images.0.image.url}}" />
+									                                </div>
+									                                <div class="ui flowing popup basic transition hidden ting-menu-popup-{{p.pk}}-{{m.pk}}">
+									                                    <div class="header">{{m.dish.name}}</div>
+									                                    <div class="ui star rating disabled-rating" data-rating="{{m.dish.review_average}}" data-max-rating="5" style="margin-top:5px;"></div>
+									                                    <div class="description">{{m.dish.description}}</div>
+									                                    <p class="ui {% if m.dish.is_available %} green {% else %} red {% endif %}" style="color: {% if m.dish.is_available %} green {% else %} red {% endif %}">{% if m.dish.is_available %} <i class="icon check"></i> Available {% else %} <i class="icon times"></i> Not Available {% endif %}</p>
+									                                    <div class="extra">
+									                                        {% if m.menu_type != 2 %}<div class="ui label"><i class="icon boxes"></i> {{m.dish.category.name}}</div> {% endif %}
+									                                        {% if m.menu_type == 1 %}<div class="ui label"><i class="icon utensils spoon"></i> {{m.food.type_str}}</div>{% endif %}
+									                                        {% if m.menu_type == 2 %}<div class="ui label"><i class="icon glass martini"></i> {{m.drink.type_str}}</div>{% endif %}
+									                                        {% if m.menu_type == 3 %}<div class="ui label"><i class="icon clock"></i> {{m.dish.dish_time_str}}</div>{% endif %}
+									                                    	<div class="ui label"><i class="icon tag"></i> {{m.dish.currency}} {{m.dish.price|intcomma}} {% if m.dish.is_countable %} ({{m.dish.quantity}} pieces){% endif %}</div>
+									                                	</div>
+									                                </div>
+						                                    	{% endif %}
+									                            <script type="text/javascript">
+									                                $(".lst-popup-{{p.pk}}-{{m.pk}}").popup({popup : ".ting-menu-popup-{{p.pk}}-{{m.pk}}", on : "hover"});
+									                                $(".disabled-rating").rating("disable");
+									                                $(".ting-menu-url").click(function(){window.open($(this).attr("href"), "_blank")})
+									                            </script>
+						                                    {% endfor %}
+						                                {% else %}
+						                                   	<div class="ui red message">No Menu To Show</div>
+						                                {% endif %}
+						                            </div>
+					                            {% endif %}
+				                            </div>
+				                            <div class="description">
+				                                <p><i class="icon calendar alternate outline"></i> {{p.promo_period}}</p>
+				                                {% if p.has_reduction %}<p><i class="icon minus square outline"></i> Order this menu and get a {{p.amount}} {{p.reduction_type}} reduction</p> {% endif %}
+				                                {% if p.has_supplement %}
+				                                    <p>
+				                                        <i class="icon plus square outline"></i>
+				                                        Order {{p.supplement_min_quantity}} pieces or packs of this menu and get {{p.supplement_quantity}}
+				                                        {% if p.is_supplement_same %}
+				                                            more for free
+				                                        {% else %} 
+				                                            free 
+				                                            {% if p.supplement.menu_type == 1 %}
+				                                            	<a href="{% url 'ting_usr_menu_get' p.supplement.pk p.supplement.food.slug %}" target="_self">{{p.supplement.food.name}}</a>
+				                                            {% elif p.supplement.menu_type == 2 %}
+				                                            	<a href="{% url 'ting_usr_menu_get' p.supplement.pk p.supplement.drink.slug %}" target="_self">{{p.supplement.drink.name}}</a>
+				                                            {% elif p.supplement.menu_type == 3 %}
+				                                            	<a href="{% url 'ting_usr_menu_get' p.supplement.pk p.supplement.dish.slug %}" target="_self">{{p.supplement.dish.name}}</a>
+				                                            {% endif %}
+				                                    	{% endif %}
+				                                    </p> 
+				                                {% endif %}
+				                            </div>
+				                            <div class="extra">
+				                            	<div class="ui image label" onclick="window.open(`{% url 'ting_usr_get_restaurant_promotions' p.restaurant.pk p.branch.pk p.restaurant.slug %}`, '_self')">
+				                                    <img src="{{p.restaurant.logo.url}}" />
+				                                    {{p.restaurant.name}}, {{p.branch.name}}
+				                                </div>
+				                                <div class="ui label"><i class="icon clock"></i>{{p.updated_at}}</div>
+				                                <div class="ui label"><i class="icon star"></i>{{p.interests_count}}</div>
+				                            </div>
+				                        </div>
+				                        <script type="text/javascript">$("#ting-interest-promo-{{p.id}}").interestPromotion();</script>
+									</div>
+								{% endfor %}
+								{% if promotions.paginator.num_pages > 1 %}
+									<div class="ui right floated pagination menu">
+					                    {% if promotions.has_previous %}
+					                        <a href="?page={{ promotions.previous_page_number }}" class="icon item">
+					                            <i class="left chevron icon"></i>
+					                        </a>
+					                        <a href="?page=1" class="item">1</a>
+					                    {% endif %}
+					                    
+					                    <a class="item active">{{ promotions.number }}</a>
+					                    {% if promotions.paginator.num_pages > 2 %}
+					                        <a class="item">...</a>
+					                    {% endif %}
+					                    {% if promotions.has_next %}        
+					                        <a class="item" href="?page={{ promotions.paginator.num_pages }}">{{ promotions.paginator.num_pages }}</a>
+					                        <a class="icon item" href="?page={{ promotions.next_page_number }}"><i class="right chevron icon"></i></a>
+					                    {% endif %}
+					                </div>
+				                {% endif %}
 							</div>
 						{% else %}
 							<div class="ting-empty-data"><i class="icon star"></i><p>No Promotion To Show</p></div>

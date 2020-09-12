@@ -172,6 +172,25 @@
 					{% endfor %}
 					</div>
 				</div>
+				{% if branches.paginator.num_pages > 1 %}
+					<div class="ui right floated pagination menu">
+	                    {% if branches.has_previous %}
+	                        <a href="?page={{ branches.previous_page_number }}" class="icon item">
+	                            <i class="left chevron icon"></i>
+	                        </a>
+	                        <a href="?page=1" class="item">1</a>
+	                    {% endif %}
+	                    
+	                    <a class="item active">{{ branches.number }}</a>
+	                    {% if branches.paginator.num_pages > 2 %}
+	                        <a class="item">...</a>
+	                    {% endif %}
+	                    {% if branches.has_next %}        
+	                        <a class="item" href="?page={{ branches.paginator.num_pages }}">{{ branches.paginator.num_pages }}</a>
+	                        <a class="icon item" href="?page={{ branches.next_page_number }}"><i class="right chevron icon"></i></a>
+	                    {% endif %}
+	                </div>
+                {% endif %}
 			{% else %}
 				<div class="ting-empty-data"><i class="icon utensils"></i><p>No Restaurant To Show</p></div>
 			{% endif %}
