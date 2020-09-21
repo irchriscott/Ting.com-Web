@@ -31,7 +31,7 @@ ALLOWED_HOSTS = ["*"]
 
 EMAIL_HOST = 'smtp.gmail.com'
 
-EMAIL_HOST_USER = 'codepipes@gmail.com'
+EMAIL_HOST_USER = 'tech.splitorange@gmail.com'
 
 EMAIL_HOST_PASSWORD = 'chrisCONS@123'
 

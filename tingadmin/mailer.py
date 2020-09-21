@@ -9,7 +9,7 @@ class SendRestaurantRegistrationMail(object):
 
 	def __init__(self, email, context):
 		self.email = email
-		self.subject = '[Ting.com] Restaurant Registration Credintials'
+		self.subject = 'Restaurant Registration Credintials'
 		self.context = context
 		self.template = 'emails/restaurant_sign_up.html'
 
@@ -18,6 +18,6 @@ class SendRestaurantRegistrationMail(object):
 		html_content = render_to_string(self.template, self.context)
 		text_content = strip_tags(html_content)
 
-		message = EmailMultiAlternatives(self.subject, text_content, settings.EMAIL_HOST_USER, [self.email])
+		message = EmailMultiAlternatives(self.subject, text_content, 'Ting.com <%s>' % settings.EMAIL_HOST_USER, [self.email])
 		message.attach_alternative(html_content, 'text/html')
 		message.send()
