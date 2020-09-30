@@ -150,8 +150,8 @@ class TingSubscriptionCallback(SubscribeCallback):
 
 	def message(self, pubnub, message):
 		
-		response = json.loads(str(message.message)) if type(message.message) == str or type(message.message) == unicode else message.message
-		
+		response = json.loads(str(message.message.replace("'", '"'))) if type(message.message) == str or type(message.message) == unicode else message.message
+
 		if response['type'] == 'request_resto_table':
 			
 			user = response['sender']

@@ -7,7 +7,7 @@
 		      		<img src="{{placement.user.image.url}}">
 		    	</div>
 		    	<div class="content">
-		      		<a class="header ting-open-ajax-modal" ting-modal-type="ajax" ting-data-url="{% url 'ting_wb_adm_load_user_placement' placement.pk %}" ting-modal-target="ting-load-placement" style="color:#666666;">{{placement.user.name}}</a>
+		      		<a class="header ting-open-ajax-modal" ting-modal-type="ajax" ting-data-url="{% url 'ting_wb_adm_load_user_placement' placement.pk %}" ting-modal-target="ting-load-placement" style="color:#666666; font-size: 14px !important;">{{placement.user.name}}</a>
 		      		{% if admin.pk|has_p:"can_done_placement" == True and placement.is_done == False %}
 			      		<div class="ui right pointing dropdown item" style="position: absolute; top: 0; right: 0;">
 	                        <i class="icon chevron down"></i>
@@ -36,7 +36,7 @@
 	                    </div>
 	                {% endif %}
 		      		<div class="meta ting-open-ajax-modal" ting-modal-type="ajax" ting-data-url="{% url 'ting_wb_adm_load_user_placement' placement.pk %}" ting-modal-target="ting-load-placement" style="margin-top: 2px; cursor: pointer;">
-		        		<h1 style="font-size: 24px;">{{placement.table.number}}</h1>
+		        		<h1 style="font-size: 18px;">{{placement.table.number}}</h1>
 		      		</div>
 		      		<div class="extra ting-open-ajax-modal" ting-modal-type="ajax" ting-data-url="{% url 'ting_wb_adm_load_user_placement' placement.pk %}" ting-modal-target="ting-load-placement" style="margin-top: -2px;">
 		      			{% if placement.waiter != None %}

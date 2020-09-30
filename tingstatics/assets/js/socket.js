@@ -25,7 +25,7 @@ $(document).ready(function() {
 
     pubnub.addListener({
         message: function(event) {
-            var message = typeof event.message === 'object' ? event.message : JSON.parse(event.message)
+            var message = typeof event.message === 'object' ? event.message : JSON.parse(event.message.replaceAll("'", '"'))
             switch(message.type) {
                 case 'request_resto_table':
                     if(admin.permissions.includes('can_assign_table')) {
