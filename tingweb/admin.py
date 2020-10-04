@@ -683,14 +683,14 @@ def dashboard(request):
 		placements_date = Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__date=date).count() \
 							if int(admin.admin_type) in managers_types or admin.has_permission('can_view_incomes') else \
 								Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__date=date, waiter__pk=admin.pk).count()
-		placements_data.append({'date': date.strftime('%d %B'), 'data': placements_date})
+		placements_data.append({'date': date.strftime('%d %b'), 'data': placements_date})
 		
 		bills_date = Bill.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__date=date, is_paid=True) \
 				if int(admin.admin_type) in managers_types or admin.has_permission('can_view_incomes') else \
 					[bill for bill in Bill.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__date=date, is_paid=True)
 							if bill.placement.waiter != None and bill.placement.waiter.pk == admin.pk]
 
-		incomes_data.append({'date': date.strftime('%d %B'), 'data': sum([bill.total for bill in bills_date])})
+		incomes_data.append({'date': date.strftime('%d %b'), 'data': sum([bill.total for bill in bills_date])})
 
 	for waiter in waiters:
 		placements_waiter = Placement.objects.filter(branch__pk=admin.branch.pk, 
@@ -748,14 +748,14 @@ def dashboard_data_charts(request):
 			placements_date = Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__date=date).count() \
 								if int(admin.admin_type) in managers_types or admin.has_permission('can_view_incomes') else \
 									Placement.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__date=date, waiter__pk=admin.pk).count()
-			placements_data.append({'date': date.strftime('%d %B'), 'data': placements_date})
+			placements_data.append({'date': date.strftime('%d %b'), 'data': placements_date})
 			
 			bills_date = Bill.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__date=date, is_paid=True) \
 					if int(admin.admin_type) in managers_types or admin.has_permission('can_view_incomes') else \
 						[bill for bill in Bill.objects.filter(branch__pk=admin.branch.pk, restaurant__pk=admin.restaurant.pk, created_at__date=date, is_paid=True)
 								if bill.placement.waiter != None and bill.placement.waiter.pk == admin.pk]
 
-			incomes_data.append({'date': date.strftime('%d %B'), 'data': sum([bill.total for bill in bills_date])})
+			incomes_data.append({'date': date.strftime('%d %b'), 'data': sum([bill.total for bill in bills_date])})
 
 		for waiter in waiters:
 			placements_waiter = Placement.objects.filter(branch__pk=admin.branch.pk, 

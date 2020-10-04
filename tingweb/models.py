@@ -3620,17 +3620,6 @@ class Menu(models.Model):
 			return None
 
 	@property
-	def name(self):
-		if self.menu_type == 1:
-			return self.food.name
-		elif self.menu_type == 2:
-			return self.drink.name
-		elif self.menu_type == 3:
-			return self.dish.name
-		else:
-			return ''
-
-	@property
 	def slug(self):
 		if self.menu_type == 1:
 			return self.food.slug
@@ -5109,7 +5098,7 @@ class Placement(models.Model):
 			'waiter': self.waiter.to_json_s if self.waiter != None else None,
 			'bill': self.bill.to_json_s if self.bill != None and self.bill != '' else None,
 			'token': self.token,
-			'people': self.people,
+			'people': int(self.people),
 			'isDone': self.is_done,
 			'needSomeone': self.need_someone,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
@@ -5128,7 +5117,7 @@ class Placement(models.Model):
 			'bill': self.bill.to_json_s if self.bill != None and self.bill != '' else None,
 			'token': self.token,
 			'billNumber': self.bill.number if self.bill != None and self.bill != '' else None,
-			'people': self.people,
+			'people': int(self.people),
 			'isDone': self.is_done,
 			'needSomeone': self.need_someone,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
@@ -5146,7 +5135,7 @@ class Placement(models.Model):
 			'waiter': self.waiter.to_json_s if self.waiter != None else None,
 			'token': self.token,
 			'billNumber': self.bill.number if self.bill != None and self.bill != '' else None,
-			'people': self.people,
+			'people': int(self.people),
 			'isDone': self.is_done,
 			'needSomeone': self.need_someone,
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),

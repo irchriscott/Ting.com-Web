@@ -32,6 +32,55 @@ $(document).ready(function(){
 
 	setTimeout(() => reflowCharts() , 500);
 
+	$("#ting-charts-select-type").change(function(e) {
+		var value = $(this).val();
+
+		var url = $(this).attr("data-url");
+		$.ajax({
+			url: url,
+			data: {type: value},
+			success: function(response) {
+				var placement_data = response[0].map(data =>  parseInt(data.data) );
+				var placement_labels = response[0].map(data => data.date);
+
+				var placement = $("#ting-data-charts-canvas-1");
+				setupHighcharts(placement, placement_data, placement_labels, response[0]);
+
+				var incomes_data = response[1].map(data =>  parseInt(data.data) );
+				var incomes_labels = response[1].map(data => data.date);
+
+				var incomes = $("#ting-data-charts-canvas-2");
+				setupHighcharts(incomes, incomes_data, incomes_labels, response[1]);
+
+				var waiters_data = response[2].map(data =>  parseInt(data.data) );
+				var waiters_labels = response[2].map(data => data.date);
+
+				var waiters = $("#ting-data-charts-canvas-3");
+				if(waiters != null && waiters != undefined && waiters.length > 0) {
+					setupHighcharts(waiters, waiters_data, waiters_labels, response[2]);
+				}
+
+				$("#ting-data-charts-label-placements").text('Placements ' + charts_types[parseInt(value) - 1]);
+				$("#ting-data-charts-label-incomes").text('Incomes ' + charts_types[parseInt(value) - 1]);
+				$("#ting-data-charts-label-waiters").text('Waiter Placements ' + charts_types[parseInt(value) - 1]);
+				$("#ting-data-charts-label-ordered").text('Most Ordered Menus ' + charts_types[parseInt(value) - 1]);
+			},
+			error: function(_, t, e) { }
+		});
+
+		var menus_container = $("#ting-data-ordered-menus");
+
+		if(menus_container != null && menus_container != undefined && menus_container.length > 0) {
+			var load_url = menus_container.attr("data-url");
+			$.ajax({
+				url: load_url,
+				data: {type: value},
+				success: function(response) { menus_container.html(response) },
+				error: function(_, t, e) { }
+			});
+		}
+	})
+
 	$("#ting-charts-select-type").dropdown({
 		onChange: function(value) {
 			var url = $(this).attr("data-url");
