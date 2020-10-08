@@ -766,7 +766,7 @@ def dashboard_data_charts(request):
 									restaurant__pk=admin.restaurant.pk, 
 									created_at__date__in=date_list).count()
 			
-			waiters_data.append({'date': waiter.name, 'data': (placements_waiter * 100) / placements_all})
+			waiters_data.append({'date': waiter.name, 'data': (placements_waiter * 100) / placements_all if placements_all != 0 else 0})
 
 	elif int(date_type) == 2:
 		for date in months_list:
