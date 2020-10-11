@@ -5061,7 +5061,7 @@ class BillExtra(models.Model):
 			'name': self.name,
 			'price': float(self.price),
 			'quantity': self.quantity,
-			'total': self.total,
+			'total': float(self.total),
 			'createdAt': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
 			'updatedAt': self.updated_at.strftime('%Y-%m-%d %H:%M:%S')
 		}
