@@ -3756,9 +3756,10 @@ def notify_user_placement_waiter_assigned(placement):
 		'uuid': pnconfig.uuid,
 		'sender': placement.branch.socket_data,
 		'receiver': placement.user.socket_data,
+		'waiter': placement.waiter.socket_data,
 		'message': None,
 		'args': None,
-		'data': {'token': placement.token, 'waiter': placement.waiter.socket_data }
+		'data': {'token': placement.token }
 	}
 
 	pubnub.publish().channel(placement.user.channel).message(user_message).pn_async(ting_publish_callback)
@@ -3817,9 +3818,10 @@ def notify_user_bill_payed(placement):
 		'uuid': pnconfig.uuid,
 		'sender': placement.branch.socket_data,
 		'receiver': placement.user.socket_data,
+		'waiter': placement.waiter.socket_data,
 		'message': None,
 		'args': None,
-		'data': {'token': placement.token, 'waiter': placement.waiter.socket_data }
+		'data': {'token': placement.token}
 	}
 
 	pubnub.publish().channel(placement.user.channel).message(user_message).pn_async(ting_publish_callback)
