@@ -976,7 +976,7 @@ def notify_waiter_placed_order(placement):
 			'%s has placed an order on table %s' % (placement.user.name, placement.table.number), 
 			placement.user.image.url, 
 			'%s has placed an order on table %s' % (placement.user.name, placement.table.number),
-			'', placement.token, placement.branch.channel, placement.user.name)
+			'', placement.token, placement.branch.channel, placement.token, placement.user.name)
 
 	if placement.waiter != None:
 		waiter_message = {
@@ -995,7 +995,7 @@ def notify_waiter_placed_order(placement):
 			'%s has placed an order on table %s' % (placement.user.name, placement.table.number), 
 			placement.user.image.url, 
 			'%s has placed an order on table %s' % (placement.user.name, placement.table.number),
-			'', placement.token, placement.waiter.channel, placement.user.name)
+			'', placement.token, placement.waiter.channel, placement.token, placement.user.name)
 
 
 @background(schedule=60)
