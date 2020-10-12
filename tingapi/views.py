@@ -976,7 +976,7 @@ def notify_waiter_placed_order(placement):
 			'%s has placed an order on table %s' % (placement.user.name, placement.table.number), 
 			placement.user.image.url, 
 			'%s has placed an order on table %s' % (placement.user.name, placement.table.number),
-			'', placement.token, placement.branch.channel)
+			'', placement.token, placement.branch.channel, placement.user.name)
 
 	if placement.waiter != None:
 		waiter_message = {
@@ -995,7 +995,7 @@ def notify_waiter_placed_order(placement):
 			'%s has placed an order on table %s' % (placement.user.name, placement.table.number), 
 			placement.user.image.url, 
 			'%s has placed an order on table %s' % (placement.user.name, placement.table.number),
-			'', placement.token, placement.waiter.channel)
+			'', placement.token, placement.waiter.channel, placement.user.name)
 
 
 @background(schedule=60)
@@ -1231,7 +1231,7 @@ def notify_waiter_bill_requested(placement):
 			'%s has requested his bill for him to further finalize his placement.' % placement.user.name, 
 			placement.user.image.url, 
 			'%s has requested his bill for him to further finalize his placement.' % placement.user.name,
-			'', placement.token, placement.branch.channel, placement.token)
+			'', placement.token, placement.branch.channel, placement.token, placement.user.name)
 
 	if placement.waiter != None:
 		waiter_message = {
@@ -1250,7 +1250,7 @@ def notify_waiter_bill_requested(placement):
 			'%s has requested his bill for him to further finalize his placement.' % placement.user.name, 
 			placement.user.image.url, 
 			'%s has requested his bill for him to further finalize his placement.' % placement.user.name,
-			'', placement.token, placement.waiter.channel, placement.token)
+			'', placement.token, placement.waiter.channel, placement.token, placement.user.name)
 
 
 @background(schedule=60)
@@ -1272,7 +1272,7 @@ def notify_waiter_placement_terminated(placement):
 			'%s has terminated his placement and freed the space.' % placement.user.name, 
 			placement.user.image.url, 
 			'%s has terminated his placement and freed the space.' % placement.user.name,
-			'', placement.token, placement.branch.channel, placement.token)
+			'', placement.token, placement.branch.channel, placement.token, placement.user.name)
 
 	if placement.waiter != None:
 		waiter_message = {
@@ -1291,7 +1291,7 @@ def notify_waiter_placement_terminated(placement):
 			'%s has terminated his placement and freed the space.' % placement.user.name, 
 			placement.user.image.url, 
 			'%s has terminated his placement and freed the space.' % placement.user.name,
-			'', placement.token, placement.waiter.channel, placement.token)
+			'', placement.token, placement.waiter.channel, placement.token, placement.user.name)
 	
 
 @csrf_exempt
@@ -1331,7 +1331,7 @@ def notify_waiter_request_message(placement, message):
 		send_pusher_notification(
 			'Request From %s, Table %s' % (placement.user.name, placement.table.number), 
 			message, 
-			placement.user.image.url, message, '', placement.token, placement.waiter.channel, placement.token)
+			placement.user.image.url, message, '', placement.token, placement.waiter.channel, placement.token, placement.user.name)
 	else:
 		branch_message = {
 			'status': 200,
@@ -1347,7 +1347,7 @@ def notify_waiter_request_message(placement, message):
 		send_pusher_notification(
 			'Request From %s, Table %s' % (placement.user.name, placement.table.number), 
 			message, 
-			placement.user.image.url, message, '', placement.token, placement.branch.channel, placement.token)
+			placement.user.image.url, message, '', placement.token, placement.branch.channel, placement.token, placement.user.name)
 
 
 # MOMENT
@@ -1481,7 +1481,7 @@ def api_restaurants_search_response(request):
 		return HttpResponse(json.dumps([], default=str), content_type='application/json')
 
 
-def send_pusher_notification(title, body, image, text, navigate, data, channel, token):
+def send_pusher_notification(title, body, image, text, navigate, data, channel, token, sender):
 	try:
 		pusher_client.trigger(channel, channel, {
 			'title': title, 
@@ -1490,6 +1490,7 @@ def send_pusher_notification(title, body, image, text, navigate, data, channel, 
 			'text': text,
 			'navigate': navigate,
 			'identifier': token,
+			'sender': sender,
 			'data': data
 		})
 	except Exception as e:

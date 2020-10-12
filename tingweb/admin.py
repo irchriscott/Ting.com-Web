@@ -167,7 +167,7 @@ class TingSubscriptionCallback(SubscribeCallback):
 					send_pusher_notification(
 						'New Client Placed', 
 						'A new client has been placed on table %s' % table.number, 
-						user['image'], '', 'placement', '', table.branch.channel, token)
+						user['image'], '', 'placement', '', table.branch.channel, token, user['name'])
 
 					if check_placement.count() == 0:
 						
@@ -215,7 +215,7 @@ class TingSubscriptionCallback(SubscribeCallback):
 								send_pusher_notification(
 										'New Table For You', 
 										'You have been assigned to the client on table %s' % placement.table.number, 
-										placement.user.image.url, '', 'placement', placement.token, table.waiter.channel, placement.token)
+										placement.user.image.url, '', 'placement', placement.token, table.waiter.channel, placement.token, placement.branch.full_name)
 
 								try:
 									pusher_client.trigger(placement.user.channel, placement.user.channel, {
@@ -224,6 +224,7 @@ class TingSubscriptionCallback(SubscribeCallback):
 											'image': utils.HOST_END_POINT + placement.waiter.image.url,
 											'navigate': 'current_restaurant',
 											'identifier': placement.token,
+											'sender': placement.branch.full_name,
 											'data': placement.token
 										})
 								except Exception as e:
@@ -3423,6 +3424,7 @@ def notify_user_booking_status(book, accepted, text):
 			'text': text,
 			'navigate': 'booking',
 			'identifier': book.token,
+			'sender': book.branch.full_name,
 			'data': book.token
 		})
 	except Exception as e:
@@ -3704,6 +3706,7 @@ def notify_user_placement_done(placement):
 			'text': 'Your placement of %s at %s, %s has been terminated' % (placement.created_at.strftime('%a %d %b, %Y'), placement.restaurant.name, placement.branch.name),
 			'navigate': 'placement_done',
 			'identifier': placement.token,
+			'sender': placement.branch.full_name,
 			'data': None
 		})
 	except Exception as e:
@@ -3770,7 +3773,7 @@ def notify_user_placement_waiter_assigned(placement):
 	send_pusher_notification(
 		'New Table For You', 
 		'You have been assigned to the client on table %s' % placement.table.number,
-		placement.user.image.url, '', 'placement', placement.token, placement.waiter.channel, placement.token)
+		placement.user.image.url, '', 'placement', placement.token, placement.waiter.channel, placement.token, placement.branch.full_name)
 	
 	try:
 		pusher_client.trigger(placement.user.channel, placement.user.channel, {
@@ -3779,6 +3782,7 @@ def notify_user_placement_waiter_assigned(placement):
 			'image': utils.HOST_END_POINT + placement.waiter.image.url,
 			'navigate': 'current_restaurant',
 			'identifier': placement.token,
+			'sender': placement.branch.full_name,
 			'data': placement.token
 		})
 	except Exception as e:
@@ -3837,6 +3841,7 @@ def notify_user_bill_payed(placement):
 			'image': utils.HOST_END_POINT + placement.restaurant.logo.url,
 			'navigate': 'current_restaurant',
 			'identifier': placement.token,
+			'sender': placement.branch.full_name,
 			'data': placement.token
 		})
 	except Exception as e:
@@ -3961,6 +3966,7 @@ def notify_user_order_accepted(placement, order):
 			'image': utils.HOST_END_POINT + order.menu.images[0].image.url,
 			'navigate': 'current_restaurant',
 			'identifier': placement.token,
+			'sender': placement.branch.full_name,
 			'data': placement.token
 		})
 	except Exception as e:
@@ -4006,6 +4012,7 @@ def notify_user_order_declined(placement, order):
 			'text': 'Reasons: %s' % order.reasons,
 			'navigate': 'current_restaurant',
 			'identifier': placement.token,
+			'sender': placement.branch.full_name,
 			'data': placement.token
 		})
 	except Exception as e:
@@ -4108,7 +4115,7 @@ def delete_admin_message(request, message):
 				reverse('ting_wb_adm_dashboard')))
 
 
-def send_pusher_notification(title, body, image, text, navigate, data, channel, token):
+def send_pusher_notification(title, body, image, text, navigate, data, channel, token, sender):
 	try:
 		pusher_client.trigger(channel, channel, {
 			'title': title, 
@@ -4117,6 +4124,7 @@ def send_pusher_notification(title, body, image, text, navigate, data, channel, 
 			'text': text,
 			'navigate': navigate,
 			'identifier': token,
+			'sender': sender,
 			'data': data
 		})
 	except Exception as e:

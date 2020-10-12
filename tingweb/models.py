@@ -589,6 +589,10 @@ class Branch(models.Model):
 		return self.name.replace(' ', '-').lower()
 
 	@property
+	def full_name(self):
+		return '%s, %s' % (self.restaurant.name, self.name)
+
+	@property
 	def is_opened(self):
 		now = datetime.strptime('1970-01-01 {0}'.format(datetime.strftime(datetime.now(), '%H:%M')), '%Y-%m-%d %H:%M')
 		opening = datetime.strptime('1970-01-01 {0}'.format(self.restaurant.opening_str), '%Y-%m-%d %H:%M')
