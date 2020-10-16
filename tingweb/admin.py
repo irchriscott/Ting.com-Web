@@ -3438,14 +3438,14 @@ def notify_user_booking_status(book, accepted, text):
 					'aps': {
 						'alert': {
 							'title': 'Reservation Accepted' if accepted == True else 'Reservation Declined', 
-							'body': 'Your reservation of %s, %s at %s, %s has been %s.' % (book.date, book.time, book.restaurant.name, book.branch.name, "accepted" if accepted else "declined"),
+							'body': 'Your reservation of %s, %s at %s, %s has been %s.' % (book.date.strftime('%B %d, %Y'), book.time.strftime('%H:%I %p').upper(), book.restaurant.name, book.branch.name, "accepted" if accepted else "declined"),
 						}
 					}
 				},
 				'fcm': {
 					'notification': {
 						'title': 'Reservation Accepted' if accepted == True else 'Reservation Declined', 
-						'body': 'Your reservation of %s, %s at %s, %s has been %s.' % (book.date, book.time, book.restaurant.name, book.branch.name, "accepted" if accepted else "declined"),
+						'body': 'Your reservation of %s, %s at %s, %s has been %s.' % (book.date.strftime('%B %d, %Y'), book.time.strftime('%H:%I %p').upper(), book.restaurant.name, book.branch.name, "accepted" if accepted else "declined"),
 					},
 					'data': {
 						'navigate': 'booking',
