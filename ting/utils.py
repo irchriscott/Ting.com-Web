@@ -27,8 +27,8 @@ TING_PACKAGES = (
 	)
 
 ACCOUNT_PURPOSE = (
-		(1, 'Advertisment'),
-		(2, 'Managment')
+		(1, 'Advertisment (Takeout)'),
+		(2, 'Managment (Restaurant)')
 	)
 
 ADMIN_TYPE = (

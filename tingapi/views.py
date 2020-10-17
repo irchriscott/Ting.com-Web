@@ -1399,7 +1399,7 @@ def api_live_search_response(request):
 	try:
 		queries = query.split() if query != None else []
 		queryset = reduce(operator.or_, [Q(name__icontains=q) for q in queries])
-		branch_queryset = reduce(operator.or_, [Q(restaurant__name__icontains=q) | Q(name__icontains=q) for q in queries])
+		branch_queryset = reduce(operator.or_, [Q(restaurant__name__icontains=q) | Q(name__icontains=q) | Q(tags__icontains=q) for q in queries])
 
 		branches = map(lambda branch: branch.json_search(queries), Branch.objects.filter(country=country, town=town).filter(branch_queryset).order_by('-created_at'))
 		foods = map(lambda food: food.json_search(queries), Food.objects.filter(branch__country=country, branch__town=town).filter(queryset).order_by('-created_at'))
@@ -1458,7 +1458,7 @@ def api_restaurants_search_response(request):
 
 	try:
 		queries = query.split() if query != None else []
-		branch_queryset = reduce(operator.or_, [Q(restaurant__name__icontains=q) | Q(name__icontains=q) for q in queries])
+		branch_queryset = reduce(operator.or_, [Q(restaurant__name__icontains=q) | Q(name__icontains=q) | Q(tags__icontains=q) for q in queries])
 		branches = map(lambda branch: branch.json_search(queries), Branch.objects.filter(country=country, town=town).filter(branch_queryset).order_by('-created_at'))
 
 		response = sorted(branches, key=lambda res: res['qp'], reverse=True)

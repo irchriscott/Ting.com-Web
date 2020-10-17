@@ -415,6 +415,10 @@
                     </div>
                 </div>
                 <div class="field">
+                    <label>Tags</label>
+                    <select class="ui fluid search dropdown" multiple="" name="tags" id="ting-branch-tags"></select>
+                </div>
+                <div class="field">
                     <label>Enter Administrator Password :</label>
                     <input type="password" name="password" placeholder="Administrator Password" autocomplete="off" required>
                 </div>
@@ -436,6 +440,13 @@
         </div>
     </div>
 </div>
+
+<script type="text/javascript">
+    $("#ting-branch-tags").dropdown({ allowAdditions: true })
+    {% if branch.tags != None %}
+        $("#ting-branch-tags").dropdown("set selected", "{{branch.tags}}".split(","))
+    {% endif %}
+</script>
 
 {% endif %}
 

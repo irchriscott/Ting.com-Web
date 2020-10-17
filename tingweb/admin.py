@@ -1008,6 +1008,7 @@ def update_branch_profile(request):
 		password = request.POST.get('password')
 		specials = request.POST.getlist('specials')
 		services = request.POST.getlist('services')
+		tags = request.POST.getlist('tags')
 
 		if form.is_valid() and password != '':
 			
@@ -1018,6 +1019,7 @@ def update_branch_profile(request):
 				branch.email = form.cleaned_data['email']
 				branch.specials = ','.join(specials)
 				branch.services = ','.join(services)
+				branch.tags = ','.join(tags)
 				branch.updated_at = timezone.now()
 				branch.save()
 
