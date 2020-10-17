@@ -571,6 +571,7 @@ class Branch(models.Model):
 	channel = models.CharField(max_length=255, null=True, blank=True)
 	specials = models.CharField(max_length=255, null=True, blank=True)
 	services = models.CharField(max_length=255, null=True, blank=True)
+	tags = models.CharField(max_length=255, null=True, blank=True)
 	restaurant_type = models.IntegerField(null=False, blank=True, default=1)
 	is_available = models.BooleanField(default=True)
 	created_at = models.DateTimeField(auto_now_add=True)
@@ -764,6 +765,10 @@ class Branch(models.Model):
 	@property
 	def get_services(self):
 		return [utils.get_from_dict(utils.RESTAURANT_SERVICES, 'id', int(s)) for s in self.services_ids]
+
+	@property
+	def get_tags(self):
+		return self.tags.split(',') if self.tags != None else []
 	
 	@property
 	def promotions(self):
@@ -805,6 +810,7 @@ class Branch(models.Model):
 			'type': self.restaurant_type_str,
 			'specials': self.get_specials,
 			'services': self.get_services,
+			'tags': self.get_tags,
 			'categories': {
 				'count': self.restaurant.categories.count(),
 				'categories': [category.category.to_json for category in self.restaurant.categories]
@@ -894,6 +900,7 @@ class Branch(models.Model):
 			'type': self.restaurant_type_str,
 			'specials': self.get_specials,
 			'services': self.get_services,
+			'tags': self.get_tags,
 			'categories': {
 				'count': self.restaurant.categories.count(),
 				'categories': [category.category.to_json for category in self.restaurant.categories]
@@ -983,6 +990,7 @@ class Branch(models.Model):
 			'type': self.restaurant_type_str,
 			'specials': self.get_specials,
 			'services': self.get_services,
+			'tags': self.get_tags,
 			'categories': {
 				'count': self.restaurant.categories.count(),
 				'categories': [category.category.to_json for category in self.restaurant.categories]
@@ -1069,6 +1077,7 @@ class Branch(models.Model):
 			'type': self.restaurant_type_str,
 			'specials': self.get_specials,
 			'services': self.get_services,
+			'tags': self.get_tags,
 			'categories': {
 				'count': self.restaurant.categories.count(),
 				'categories': [category.category.to_json for category in self.restaurant.categories]
@@ -1155,6 +1164,7 @@ class Branch(models.Model):
 			'type': self.restaurant_type,
 			'specials': self.get_specials,
 			'services': self.get_services,
+			'tags': self.get_tags,
 			'categories': {
 				'count': self.restaurant.categories.count(),
 				'categories': [category.category.to_json for category in self.restaurant.categories]
@@ -1207,6 +1217,7 @@ class Branch(models.Model):
 			'image': self.restaurant.logo.url,
 			'name': name,
 			'description': self.address,
+			'tags': self.get_tags,
 			'text': ', '.join(map(lambda c: c.category.name, self.restaurant.categories)),
 			'reviews': self.reviews_count,
 			'reviewAverage': self.review_average,
