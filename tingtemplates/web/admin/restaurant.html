@@ -443,7 +443,7 @@
 
 <script type="text/javascript">
     $("#ting-branch-tags").dropdown({ allowAdditions: true })
-    {% if branch.tags != None %}
+    {% if branch.tags != None and branch.tags != '' %}
         $("#ting-branch-tags").dropdown("set selected", "{{branch.tags}}".split(","))
     {% endif %}
 </script>
