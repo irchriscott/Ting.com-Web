@@ -1,0 +1,453 @@
+{% extends '../../layouts/header.html' %}
+{% load static %}
+{% load ting_tags %}
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}">
+{% endblock %}
+{% block js %}
+<script src="https://cdn.pubnub.com/sdk/javascript/pubnub.4.21.7.min.js"></script>
+<script src="{% static 'js/socket.js' %}"></script>
+{% endblock %}
+{% block title %}
+    <title>Ting.com - Admin / Restaurant</title>
+{% endblock %}
+{% block content %}
+{% include '../../web/admin/sidebar.html' %}
+<div class="pusher">
+    <div class="article ting-admin-container">
+        {% include '../../web/admin/navbar.html' %}
+        <div class="ui grid divided" style="margin-left: 10px;">
+            <div class="row" style="padding-top: 0 !important;">
+                <div class="twelve wide column ting-admin-content-panel">
+                    
+                    <div class="row justify-content-start align-items-center d-flex ting-restaurant-about-mini">
+                        <div class="" style="padding-left: 2rem;">
+                            <div class="ting-profile-image">
+                                <div class="ting-profile-image-container">
+                                    <div class="box ting-session-profile-image">
+                                        <div class="item light ting-session-profile-image">
+                                            <a href="#"><img class="ting-session-profile-image-img" src="{{restaurant.logo.url}}" alt="{{restaurant.name}}" class="w-full" id="ting-profile-image"></a>
+                                            {% if admin.pk|has_p:"can_update_restaurant" == True %}
+                                                <div id="ting-image-overlay" class="item-overlay black-overlay w-full">
+                                                    <a href="#" id="ting-open-profile-img-input" class="center text-md">
+                                                        <span id="ting-image-icon" class="lnr lnr-camera" style="font-size:45px; color:white;"></span>
+                                                        <span id="ting-image-load" style="display:none;"><i class="fa circle-o-notch fa-spinner" style="font-size:45px; color:white;"></i></span>
+                                                    </a>
+                                                    <form id="ting-session-profile-image-update" method="POST" action="{% url 'ting_wb_adm_restaurant_update_logo' %}" data-image="{{restaurant.logo.url}}" enctype="multipart/form-data">
+                                                        {% csrf_token %}
+                                                        <input type="file" name="logo" id="ting-profile-img-input" accept="image/jpg, image/png, image/jpeg">
+                                                    </form>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ting-restaurant-name" style="padding-left: 2rem;">
+                            <h2>{{restaurant.name}}, {{admin.branch.name}}</h2>
+                            <p style="font-weight: 100;">{{restaurant.motto}}</p>
+                            <p><i class="icon map marker alternate"></i> {{restaurant.branches.0.address}}</p>
+                        </div>
+                    </div>
+
+
+                    <div class="ting-restaurant-about">
+
+                        <div class="row justify-content-start d-flex no-padding">
+                            <div class="col-lg-6">
+                                <h3>ABOUT</h3>
+
+                                <div class="ting-restaurant-about-data">
+                                    <p><i class="icon utensils"></i>{{restaurant.name}}</p>
+                                    <p><i class="icon home"></i>{{restaurant.branches.0.name}}</p>
+                                    <p><i class="icon mail"></i>{{restaurant.config.email}}</p>
+                                    <p><i class="icon phone"></i>{{restaurant.config.phone|none}}</p>
+                                    <p><i class="icon quote right"></i>{{restaurant.motto}}</p>
+                                    <p><i class="icon map marker alternate"></i>{{restaurant.branches.0.address}}</p>
+                                    <p style="text-transform: uppercase;"><i class="icon clock"></i>{{restaurant.opening}} - {{restaurant.closing}}</p>
+                                </div>
+                                {% if admin.pk|has_p:"can_update_restaurant" == True %}
+                                <button class="large ui button left icon positive labeled" id="ting-admin-edit-restau-profile">
+                                    <i class="icon pencil"></i>
+                                    Edit Profile
+                                </button>
+                                {% endif %}
+                                {% if admin.pk|has_p:"can_update_branch" == True %}
+                                <button class="large ui button left icon positive labeled" id="ting-admin-edit-branch-profile">
+                                    <i class="icon pencil"></i>
+                                    Edit Branch
+                                </button>
+                                {% endif %}
+                            </div>
+                            <div class="col-lg-6">
+                                <h3>CONFIGURATION</h3>
+
+                                <div class="ting-restaurant-about-data">
+                                    <p><b>Default Currency : </b>{{restaurant.config.currency|none}}</p>
+                                    <p><b>Always Use Default Currency : </b>{{restaurant.config.use_default_currency|yesno}}</p>
+                                    <p><b>Tax Rate : </b></i>{{restaurant.config.tax|none}} %</p>
+                                    <p><b>Cancel Late Booking After : </b>{{restaurant.config.cancel_late_booking}} min.</p>
+                                    <p><b>Waiter Should See All Orders : </b>{{restaurant.config.waiter_see_all_orders|yesno}}</p>
+                                    <p><b>Book With Advance : </b>{{restaurant.config.book_with_advance|yesno}}</p>
+                                    <p><b>Booking Advance : </b>{{restaurant.config.booking_advance}} {{restaurant.config.currency|none}}</p>
+                                    <p><b>Refund After Cancelation : </b>{{restaurant.config.booking_cancelation_refund|yesno}}</p>
+                                    <p><b>Cancelation Refund : </b>{{restaurant.config.booking_cancelation_refund_percent}} %</p>
+                                    <p><b>Booking Payement Mode : </b>{{restaurant.config.payement_mode}}</p>
+                                    <p><b>Days Before Booking : </b>{{restaurant.config.days_before_reservation}} days</p>
+                                    <p><b>Can Take Away : </b>{{restaurant.config.can_take_away|yesno}}</p>
+                                    <p><b>Customer Should Pay Before : </b>{{restaurant.config.user_should_pay_before|yesno}}</p>
+                                </div>
+                                {% if admin.pk|has_p:"can_update_configurations" == True %}
+                                <button class="large ui button left icon positive labeled" id="ting-admin-edit-restau-config">
+                                    <i class="icon pencil"></i>
+                                    Edit Configurations
+                                </button>
+                                {% endif %}
+
+                                {% if admin.pk|has_p:"can_update_restaurant" == True %}
+                                    <button class="large ui button left icon positive labeled" id="ting-admin-edit-restau-categories">
+                                        <i class="icon pencil"></i>
+                                        Edit Categories
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+                <div class="four wide column ting-admin-orders-panel">
+                    {% include '../../web/admin/sideorders.html' %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if admin.pk|has_p:"can_update_restaurant" == True %}
+
+<div class="ui small modal" data-modal="ting-admin-edit-restau-profile">
+    <div class="header">
+        Edit Restaurant Profile
+    </div>
+    <div class="content">
+        <div class="ting-search-place">
+            <form class="ui form" action="{% url 'ting_wb_adm_restaurant_update_profile' %}" method="POST" id="ting-admin-edit-restaurant-form" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="field">
+                    <label>Enter Restaurant Name :</label>
+                    <input type="text" name="name" placeholder="Restaurant Name" value="{{restaurant.name}}" required autocomplete="off">
+                </div>
+                <div class="field">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Enter Restaurant Opening Time :</label>
+                            <input type="time" placeholder="Opening Time" name="opening" value="{{restaurant.opening_str}}" required>
+                        </div>
+                        <div class="field">
+                            <label>Enter Restaurant Closing Time :</label>
+                            <input type="time" name="closing" placeholder="Closing Time" value="{{restaurant.closing_str}}" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="ting-restaurant-motto">Enter Restaurant Motto : </label>
+                    <textarea name="motto" id="ting-restaurant-motto" cols="30" rows="5" placeholder="Restaurant Motto">{{restaurant.motto}}</textarea>
+                </div>
+                <div class="field">
+                    <label>Enter Restaurant Email :</label>
+                    <input type="email" name="email" placeholder="Restaurant Email" value="{{restaurant.config.email}}" autocomplete="off" required>
+                </div>
+                <div class="field">
+                    <label>Enter Restaurant Phone :</label>
+                    <input type="text" name="phone" placeholder="Restaurant Phone" value="{{restaurant.config.phone|none}}" autocomplete="off" required>
+                </div>
+                <div class="field">
+                    <label>Enter Administrator Password :</label>
+                    <input type="password" name="password" placeholder="Administrator Password" autocomplete="off" required>
+                </div>
+                <div class="ting-action-modal">
+                    <div class="actions">
+                        <div class="ui red deny button">
+                            Cancel
+                        </div>
+                    </div>
+                    <button type="submit" class="ui positive right labeled icon button" id="ting-save-edit-restaurant-profile">
+                        Save
+                        <i class="checkmark icon"></i>
+                    </button>
+                    <div class="ui right ting-loader ting-form-loader">
+                        <img src="{% static 'imgs/loading.gif' %}">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="ui tiny modal" data-modal="ting-admin-edit-restau-categories">
+    <div class="header">
+        Edit Restaurant Categories
+    </div>
+    <div class="content">
+        <div class="ting-search-place">
+            <form class="ui form" action="{% url 'ting_wb_adm_update_restaurant_categories' %}" method="POST" id="ting-admin-edit-categories-form">
+                {% csrf_token %}
+                <input type="hidden" name="restaurant" value="{{restaurant.id}}">
+                <div class="field">
+                    <label style="margin-bottom: 15px">Select Categories : </label>
+                    {% for category in categories %}
+                        <div class="field">
+                            <div class="ui checkbox">
+                                <input type="checkbox" name="categories" value="{{category.id}}" {% if restaurant.pk|has_category:category.id == True %} checked {% endif %}>
+                                <label style="line-height: 1.3 !important;"><img style="height: 20px; width: 20px; border-radius: 3px; margin-right: 10px;" src="{{category.image.url}}"> {{category.name}} ({{category.country}})</label>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="field">
+                    <label>Enter Administrator Password :</label>
+                    <input type="password" name="password" placeholder="Administrator Password" autocomplete="off" required>
+                </div>
+                <div class="ting-action-modal">
+                    <div class="actions">
+                        <div class="ui red deny button">
+                            Cancel
+                        </div>
+                    </div>
+                    <button type="submit" class="ui positive right labeled icon button" id="ting-save-edit-restaurant-profile">
+                        Save
+                        <i class="checkmark icon"></i>
+                    </button>
+                    <div class="ui right ting-loader ting-form-loader">
+                        <img src="{% static 'imgs/loading.gif' %}">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+
+{% if admin.pk|has_p:"can_update_configurations" == True %}
+
+<div class="ui small modal" data-modal="ting-admin-edit-restau-config">
+    <div class="header">
+        Edit Restaurant Configurations
+    </div>
+    <div class="content">
+        <div class="ting-search-place">
+            <form class="ui form" action="{% url 'ting_wb_adm_restaurant_update_config' %}" method="POST" id="ting-admin-config-restaurant-form" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="field">
+                    <label>Enter Restaurant Email :</label>
+                    <input type="email" name="email" disabled placeholder="Restaurant Email" value="{{restaurant.config.email}}" autocomplete="off" required>
+                </div>
+                <div class="field">
+                    <label>Select Default Currency To Use In The System :</label>
+                    <select class="dropdown" name="currency">
+                        {% for currency in currencies %}
+                            {% if currency.0 == restaurant.config.currency|none %}
+                                <option value="{{currency.0}}" selected>{{currency.1}}</option>
+                            {% else %}
+                                <option value="{{currency.0}}">{{currency.1}}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Always Use The Default Currency (The dropdown of currencies will not be displayed when trying to select currency) :</label>
+                    <select class="dropdown" name="use_default_currency">
+                        <option value="True" {% if restaurant.config.use_default_currency == True %} selected {% endif %}>Yes</option>
+                        <option value="False" {% if restaurant.config.use_default_currency == False %} selected {% endif %}>No</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <div class="three fields">
+                        <div class="field">
+                            <label>Tax Rate (For the account) : </label>
+                            <input type="number" name="tax" value="{{restaurant.config.tax|none}}" placeholder="Tax Rate" autocomplete="off">
+                        </div>  
+                        <div class="field">
+                            <label>Can Take Away : </label>
+                            <select class="dropdown" name="can_take_away">
+                                <option value="True" {% if restaurant.config.can_take_away == True %} selected {% endif %}>Yes</option>
+                                <option value="False" {% if restaurant.config.can_take_away == False %} selected {% endif %}>No</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Customer Should Pay Before : </label>
+                            <select class="dropdown" name="user_should_pay_before">
+                                <option value="True" {% if restaurant.config.user_should_pay_before == True %} selected {% endif %}>Yes</option>
+                                <option value="False" {% if restaurant.config.user_should_pay_before == False %} selected {% endif %}>No</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Book With Advance :</label>
+                            <select class="dropdown" name="book_with_advance">
+                                <option value="True" {% if restaurant.config.book_with_advance == True %} selected {% endif %}>Yes</option>
+                                <option value="False" {% if restaurant.config.book_with_advance == False %} selected {% endif %}>No</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Min Booking Advance :</label>
+                            <input type="number" name="booking_advance" placeholder="Closing Time" style="padding-top: .78571429em; padding-bottom: .78571429em; min-height: 2.71428571em" value="{{restaurant.config.booking_advance|none}}" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Time To Cancel Booking After It Beeing Late (in minutes) :</label>
+                    <input type="number" name="cancel_late_booking" placeholder="Cancel Late Booking Time" value="{{restaurant.config.cancel_late_booking}}" autocomplete="off" required>
+                </div>
+                <div class="field">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Refund After Cancelation Of Reservation :</label>
+                            <select class="dropdown" name="booking_cancelation_refund">
+                                <option value="True" {% if restaurant.config.booking_cancelation_refund == True %} selected {% endif %}>Yes</option>
+                                <option value="False" {% if restaurant.config.booking_cancelation_refund == False %} selected {% endif %}>No</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Cancelation Refund in Percent :</label>
+                            <input type="number" name="booking_cancelation_refund_percent" placeholder="Refund In Percent" value="{{restaurant.config.booking_cancelation_refund_percent}}" autocomplete="off" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Booking Payement Mode :</label>
+                            <select class="dropdown" name="booking_payement_mode">
+                                {% for mode in modes %}
+                                    {% if mode.0 == restaurant.config.booking_payement_mode %}
+                                        <option value="{{mode.0}}" selected>{{mode.1}}</option>
+                                    {% else %}
+                                        <option value="{{mode.0}}">{{mode.1}}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Enter Days Before Booking : </label>
+                            <input type="number" name="days_before_reservation" min="1" value="{{restaurant.config.days_before_reservation}}" placeholder="Days Before Booking" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Enter Administrator Password :</label>
+                    <input type="password" name="password" placeholder="Administrator Password" autocomplete="off" required>
+                </div>
+                <div class="ting-action-modal">
+                    <div class="actions">
+                        <div class="ui red deny button">
+                            Cancel
+                        </div>
+                    </div>
+                    <button type="submit" class="ui positive right labeled icon button" id="ting-save-edit-restaurant-config">
+                        Save
+                        <i class="checkmark icon"></i>
+                    </button>
+                    <div class="ui right ting-loader ting-form-loader">
+                        <img src="{% static 'imgs/loading.gif' %}">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+
+{% if admin.pk|has_p:"can_update_branch" == True %}
+
+<div class="ui tiny modal" data-modal="ting-admin-edit-branch-profile">
+    <div class="header">
+        Edit Restaurant Branch
+    </div>
+    <div class="content">
+        <div class="ting-search-place">
+            <form class="ui form" action="{% url 'ting_wb_adm_restaurant_update_branch_profile' %}" method="POST" id="ting-admin-branch-profile-form">
+                {% csrf_token %}
+                <div class="field">
+                    <label>Enter Branch Name :</label>
+                    <input type="text" name="name" placeholder="Branch Name" value="{{branch.name}}" autocomplete="off" required>
+                </div>
+                <div class="field">
+                    <label>Enter Branch Email :</label>
+                    <input type="email" name="email" placeholder="Branch Email" value="{{branch.email}}" autocomplete="off" required>
+                </div>
+                <div class="field">
+                    <label>Enter Branch Phone :</label>
+                    <input type="text" name="phone" placeholder="Branch Phone" value="{{branch.phone}}" autocomplete="off" required>
+                </div>
+                <div class="field">
+                    <div class="two fields">
+                        <div class="field">
+                            <label style="margin-bottom: 15px;">Specials</label>
+                            {% for special in specials %}
+                                <div class="field" style="margin-bottom: 10px;">
+                                    <div class="ui checkbox">
+                                        <input type="checkbox" name="specials" value="{{special.id}}" {% if branch.pk|has_s:special.id == True %} checked {% endif %}>
+                                        <label style="line-height: 1.3 !important;"><i class="icon {{special.icon}}"></i> {{special.name}}</label>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="field">
+                            <label style="margin-bottom: 15px;">Services</label>
+                            {% for service in services %}
+                                <div class="field" style="margin-bottom: 10px;">
+                                    <div class="ui checkbox">
+                                        <input type="checkbox" name="services" value="{{service.id}}" {% if branch.pk|has_serv:service.id == True %} checked {% endif %}>
+                                        <label style="line-height: 1.3 !important;"><i class="icon {{service.icon}}"></i> {{service.name}}</label>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>  
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Tags</label>
+                    <select class="ui fluid search dropdown" multiple="" name="tags" id="ting-branch-tags"></select>
+                </div>
+                <div class="field">
+                    <label>Enter Administrator Password :</label>
+                    <input type="password" name="password" placeholder="Administrator Password" autocomplete="off" required>
+                </div>
+                <div class="ting-action-modal">
+                    <div class="actions">
+                        <div class="ui red deny button">
+                            Cancel
+                        </div>
+                    </div>
+                    <button type="submit" class="ui positive right labeled icon button" id="ting-save-edit-restaurant-branch-profile">
+                        Save
+                        <i class="checkmark icon"></i>
+                    </button>
+                    <div class="ui right ting-loader ting-form-loader">
+                        <img src="{% static 'imgs/loading.gif' %}">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $("#ting-branch-tags").dropdown({ allowAdditions: true })
+    {% if branch.tags != None and branch.tags != '' %}
+        $("#ting-branch-tags").dropdown("set selected", "{{branch.tags}}".split(","))
+    {% endif %}
+</script>
+
+{% endif %}
+
+{% endblock %}

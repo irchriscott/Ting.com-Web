@@ -1,0 +1,404 @@
+{% load static %}
+{% load humanize %}
+{% load ting_tags %}
+{% load tz %}
+
+<div class="ui grid">
+	<div class="row" style="border-bottom: 1px solid #DDDDDD; padding-bottom: 0 !important;">
+		<div class="five wide column">
+			<h2 style="font-weight: 400 !important; text-transform: uppercase; font-size: 16px; margin-top: 14px;">Select Period</h2>
+		</div>
+		<div class="eleven wide column">
+			<form class="ui form" id="ting-submit-report-waiter-form-{{waiter.pk}}" action="{% url 'ting_wb_adm_load_waiter_reports' waiter.pk %}" method="GET" style="">
+		  		<div class="field" style="position: absolute; left: 0; margin-left: -160px; margin-top: 25px;">
+                    <div class="ui checkbox">
+                        <label style="line-height: 1.3 !important;">Custom Dates</label>
+                        <input type="checkbox" name="custom" id="ting-use-custom-dates" {% if use_custom == True %} checked {% endif %}>
+                    </div>
+                </div>
+		  		<div class="ui grid">
+		  			<div class="row">
+		  				<div class="thirteen wide column">
+			  				<div class="two fields" id="ting-period-form" {% if use_custom == True %} style="display: none;" {% endif %}>
+							    <div class="field">
+							      	<input type="number" placeholder="Enter Number" name="period_number" min="1" style="height: 46px;" value="{{period_number}}" {% if use_custom == False %} required {% endif %}>
+							    </div>
+							    <div class="field">
+							      	<select class="ui dropdown" name="period" {% if use_custom == False %} required {% endif %}>
+							      		<option value="">Select Period</option>
+							      		{% for period in periods %}
+							      			{% if selected_period|to_int == period.value %}
+							      				<option value="{{period.value}}" selected>{{period.key}}</option>
+							      			{% else %}
+							      				<option value="{{period.value}}">{{period.key}}</option>
+							      			{% endif %}
+							      		{% endfor %}
+							      	</select>
+							    </div>
+							</div>
+
+							<div class="three fields" id="ting-custom-period-form" {% if use_custom == False %} style="display: none;" {% endif %}>
+							    <div class="field">
+							    	<div class="ui calendar"  id="ting-datepicker-start-date">
+                                		<div class="ui input">
+							      			<input type="text" placeholder="Start Date" name="custom_start_date" style="height: 46px;" value="{{custom_start_date}}" autocomplete="off" {% if use_custom == True %} required {% endif %}>
+							    		</div>
+							    	</div>
+							    </div>
+							    <div class="field">
+							    	<div class="ui calendar"  id="ting-datepicker-end-date">
+                                		<div class="ui input">
+							      			<input type="text" placeholder="End Date" name="custom_end_date" style="height: 46px;" value="{{custom_end_date}}" autocomplete="off" {% if use_custom == True %} required {% endif %}>
+							    		</div>
+							    	</div>
+							    </div>
+							    <div class="field">
+							      	<select class="ui dropdown" name="custom_period" {% if use_custom == True %} required {% endif %}>
+							      		<option value="">Select Period</option>
+							      		{% for period in periods %}
+							      			{% if period.value != 3 %}
+								      			{% if selected_custom_period|to_int == period.value %}
+								      				<option value="{{period.value}}" selected>{{period.key}}</option>
+								      			{% else %}
+								      				<option value="{{period.value}}">{{period.key}}</option>
+								      			{% endif %}
+								      		{% endif %}
+							      		{% endfor %}
+							      	</select>
+							    </div>
+							</div>
+			  			</div>
+			  			<div class="three wide column" style="padding: 0 !important;"><button type="submit" class="ui positive button" style="min-height: 2.71428571em; height: 46px; width: 100%; text-transform: uppercase;">Submit</button></div>
+		  			</div>
+		  		</div>
+			</form>
+		</div>
+	</div>
+	<div class="row">
+		<div class="sixteen wide column" style="padding: 1rem 3rem;">
+			<div class="ui grid" style="border-bottom: 1px solid #DDDDDD; padding-bottom: 1rem;">
+			    <div class="row">
+			        <div class="three wide column" style="padding-left: 1rem;">
+			            <img src="{{waiter.image.url}}" style="width: 100%;">
+			        </div>                
+			        <div class="thirteen wide column">
+			            <div class="ting-restaurant-about ting-no-p-top" style="padding-left: 0 !important;">
+			                <div class="ting-restaurant-about-data">
+			                    <p><i class="icon user"></i>{{waiter.name}}</p>
+			                    <p><i class="icon mail"></i>{{waiter.email}}</p>
+			                    <p><i class="icon phone"></i>{{waiter.phone|none}}</p>
+			                    <p><i class="icon id badge"></i>{{waiter.badge_number|none}}</p>
+			                    <p><i class="icon clock"></i>{{waiter.created_at|date}}</p>
+			                </div>    
+			            </div>         
+			        </div>            
+			    </div>
+			</div>
+		</div>
+	</div>
+	<div class="row" style="padding-top: 0 !important;">
+		<div class="sixteen wide column" style="padding: 1rem 3rem;">
+			<h2 style="font-size: 16px; margin-bottom: 2rem;">{{waiter.name}} Income Report {{ date_string }}</h2>
+			<table class="ui single line table">
+			    <thead>
+			        <tr>
+			        	<th>#</th>
+			            <th>Date</th>
+			            <th>Number</th>
+			            <th>Amount</th>
+			            <th>Discount</th>
+			            <th>Extras Total</th>
+			            <th>Tips</th>
+			            <th>Total</th>
+			            <th>Actions</th>
+			        </tr>
+			    </thead>
+			    <tbody>
+			        {% if incomes.count > 0 %}
+			            {% for income in incomes %}
+			                <tr>
+			                	<td style="font-weight: bold;">{{forloop.counter}}</td>
+			                    <td>{{income.date}}</td>
+			                    <td>{{income.count|intcomma}}</td>
+			                    <td>{{admin.restaurant.config.currency}} {{income.amount|intcomma}}</td>
+					            <td>{{admin.restaurant.config.currency}} {{income.discount|intcomma}}</td>
+			                    <td>{{admin.restaurant.config.currency}} {{income.extras|intcomma}}</td>
+			                    <td>{{admin.restaurant.config.currency}} {{income.tips|intcomma}}</td>
+			                    <td>{{admin.restaurant.config.currency}} {{income.total|intcomma}}</td>
+			                    <td>
+			                        <div class="ui small labeled icon button ting-open-ajax-modal" ting-modal-type="ajax" ting-data-url="" ting-modal-target="ting-load-placement">
+			                            <i class="dot circle icon"></i> View
+			                        </div>
+			                    </td>
+			                </tr>
+			            {% endfor %}
+			        {% else %}
+			            <tr>
+			                <th colspan="9">
+			                    <div class="ting-empty-data"><i class="icon clipboard outline"></i><p>No Bill To Show</p></div>
+			                </th>
+			            </tr>
+			        {% endif %}
+			    </tbody>
+			</table>
+			<div class="ting-report-amounts">
+				<p>Amount</p>
+				<h4>{{admin.restaurant.config.currency}} {{amounts_sum|intcomma}}</h4>
+				<p>Discount</p>
+				<h4>{{admin.restaurant.config.currency}} {{discounts_sum|intcomma}}</h4>
+				<p>Extras Total</p>
+				<h4>{{admin.restaurant.config.currency}} {{extras_sum|intcomma}}</h4>
+				<p>Tips</p>
+				<h4>{{admin.restaurant.config.currency}} {{tips_sum|intcomma}}</h4>
+				<hr>
+				<p>Total</p>
+				<h2>{{admin.restaurant.config.currency}} {{totals_sum|intcomma}}</h2>
+			</div>
+			<div class="ting-report-export-button">
+				<button type="button" id="ting-show-incomes-report-pdf-{{random_uuid}}" class="ui blue button">Export To PDF</button>
+				<button type="button" id="ting-show-incomes-charts-pdf-{{random_uuid}}" class="ui facebook button">Show Chart</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="ui modal large" id="ting-incomes-report-pdf-{{random_uuid}}">
+    <div class="header">
+        Report
+    </div>
+    <div class="content" id="ting-incomes-report-content-{{random_uuid}}">
+    	<div class="ting-report-header">
+    		<img src="{{restaurant.logo.url}}">
+    		<h2>{{restaurant.name}}</h2>
+    		<p>{{admin.branch.name}}</p>
+    		<p class="ting-report-date">{{today}}</p>
+    	</div>
+        <div class="ting-report-title" {% if date_string_array|length > 1 %} style="height:60px;" {% endif %}>
+        	<h2><span class="ting-title">{{ waiter.name }} Income Report {% if date_string_array|length <= 1 %} {{ date_string }} </span> {% else %} {{date_string_array.0}}</span> <span class="ting-subtitle">{{date_string_array.1}}</span> {% endif %}</h2>
+        </div>
+		<table class="ui single line table small">
+            <thead>
+                <tr>
+                    <th>#</th>
+			        <th>Date</th>
+			        <th>Number</th>
+			        <th>Amount</th>
+			        <th>Discount</th>
+			        <th>Extras Total</th>
+			        <th>Tips</th>
+			        <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if incomes.count > 0 %}
+			        {% for income in incomes %}
+			            <tr>
+			              	<td style="font-weight: bold;">{{forloop.counter}}</td>
+			                <td>{{income.date}}</td>
+			                <td>{{income.count|intcomma}}</td>
+			                <td>{{admin.restaurant.config.currency}} {{income.amount|intcomma}}</td>
+				            <td>{{admin.restaurant.config.currency}} {{income.discount|intcomma}}</td>
+			                <td>{{admin.restaurant.config.currency}} {{income.extras|intcomma}}</td>
+			                <td>{{admin.restaurant.config.currency}} {{income.tips|intcomma}}</td>
+			                <td>{{admin.restaurant.config.currency}} {{income.total|intcomma}}</td>
+			            </tr>
+			        {% endfor %}
+			    {% else %}
+			        <tr>
+			            <th colspan="8">
+			                <div class="ting-empty-data"><i class="icon clipboard outline"></i><p>No Bill To Show</p></div>
+			            </th>
+			        </tr>
+			    {% endif %}
+            </tbody>
+        </table>
+		<div class="ting-report-amounts small">
+			<p>Amount</p>
+			<h4>{{admin.restaurant.config.currency}} {{amounts_sum|intcomma}}</h4>
+			<p>Discount</p>
+			<h4>{{admin.restaurant.config.currency}} {{discounts_sum|intcomma}}</h4>
+			<p>Extras Total</p>
+			<h4>{{admin.restaurant.config.currency}} {{extras_sum|intcomma}}</h4>
+			<p>Tips</p>
+			<h4>{{admin.restaurant.config.currency}} {{tips_sum|intcomma}}</h4>
+			<hr>
+			<p>Total</p>
+			<h2>{{admin.restaurant.config.currency}} {{totals_sum|intcomma}}</h2>
+		</div>
+	</div>
+    <div class="actions">
+        <button type="submit" id="ting-download-report-incomes" class="ui positive button">
+            Download
+        </button>
+        <div class="ui red deny button left">
+            Close
+        </div>
+    </div>
+</div>
+
+<div class="ui modal large" id="ting-incomes-charts-pdf-{{random_uuid}}">
+    <div class="header">
+        Charts
+    </div>
+    <div class="content" id="ting-incomes-report-content-charts-{{random_uuid}}">
+        <div class="ting-report-title" {% if date_string_array|length > 1 %} style="height:60px; margin-top: 15px;" {% else %} style="margin-top: 15px;" {% endif %}>
+        	<h2><span class="ting-title">{{waiter.name}} Income Report {% if date_string_array|length <= 1 %} {{ date_string }} </span> {% else %} {{date_string_array.0}}</span> <span class="ting-subtitle">{{date_string_array.1}}</span> {% endif %}</h2>
+        </div>
+        <figure class="ting-data-charts-figure" style="margin-top: 10px;">
+            <div id="ting-incomes-charts-canvas" data-chart-prefix="{{admin.restaurant.config.currency}}" data-chart-suffix="" data-chart-series="Placements" data-id="1" data-chart-type="areaspline" data-chart-data='{{ i__dt__charts|safe }}' class="ting-data-charts-canvas" style="height: 500px;"></div>
+        </figure>
+    </div>
+    <div class="actions">
+        <button type="submit" id="ting-download-report-incomes-charts" class="ui positive button">
+            Download
+        </button>
+        <div class="ui red deny button left">
+            Close
+        </div>
+    </div>
+</div>
+
+<style type="text/css">
+	.ui.selection.dropdown { min-width: 100% !important; }
+	.ting-restaurant-about-data { margin: 0 !important; }
+	.ting-restaurant-about-data p { font-size: 15px !important; margin-bottom: 0.6rem !important; }
+</style>
+<script type="text/javascript">
+	$(".ui.dropdown, .dropdown").dropdown();
+	$(".ting-open-ajax-modal").openModal();
+	$(".checkbox").checkbox({
+		onChange: function() {
+			if($(this).is(":checked") == true){
+	        	$("#ting-period-form").slideUp();
+	        	$("#ting-period-form").find("input, select").removeAttr("required");
+	        	$("#ting-custom-period-form").slideDown();
+	        	$("#ting-custom-period-form").find("input, select").attr("required", "required");
+	        } else {
+	        	$("#ting-period-form").slideDown();
+	        	$("#ting-period-form").find("input, select").attr("required", "required");
+	        	$("#ting-custom-period-form").slideUp();
+	        	$("#ting-custom-period-form").find("input, select").removeAttr("required"); 
+	        }
+		}
+	});
+	var today = new Date();
+    $("#ting-datepicker-start-date, #ting-datepicker-end-date").calendar({
+        type: 'date',
+        maxDate: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+        monthFirst: false,
+        formatter: {
+            date: function (date, settings) {
+            	if (!date) return '';
+                var day = date.getDate();
+                var month = date.getMonth() + 1;
+                var year = date.getFullYear();
+                return year + '-' + month + '-' + day;
+            }
+        }
+    });
+    $("#ting-show-incomes-report-pdf-{{random_uuid}}").click(function(e) {
+		e.preventDefault();
+		$("#ting-incomes-report-pdf-{{random_uuid}}").modal({
+			onApprove: function(){ return false; }
+		}).modal("show");
+	});
+	$("#ting-show-incomes-charts-pdf-{{random_uuid}}").click(function(e) {
+		e.preventDefault();
+		$("#ting-incomes-charts-pdf-{{random_uuid}}").modal({
+			onApprove: function(){ return false; }
+		}).modal("show");
+	});
+	$("#ting-download-report-incomes").click(function() {
+		printPdf('ting-incomes-report-content-{{random_uuid}}', '{{filename_pdf_stats}}', 6);
+	});
+	$("#ting-download-report-incomes-charts").click(function() {
+		printPdf('ting-incomes-report-content-charts-{{random_uuid}}', '{{filename_pdf_charts}}', 6);
+	});
+	$("#ting-submit-report-waiter-form-{{waiter.pk}}").submit(function(e) {
+		e.preventDefault();
+		
+		var container = $("body").find("#ting-admin-reports-content-panel")
+		container.find(".ting-loader").show();
+		container.find(".ting-data-content").empty();
+
+		var _dt = new FormData($(this)[0]);
+        var _url = $(this).attr("action");
+        var _meth = $(this).attr("method");
+
+        $.ajax({
+            type: "POST", url: _url, data: _dt,
+            processData: false, contentType: false,
+            success: function(response){
+            	if(typeof response === 'object' && response != null){
+	                if(response.type == 'error'){
+	                    container.find(".ting-loader").hide();
+	                    container.find(".ting-data-content").html('<div class="ui red message"><b>Error '+ response.status +' : </b>' + response.message + '</div>');
+	                }
+	            } else {
+	                container.find(".ting-loader").hide();                  
+	                container.find(".ting-data-content").html(response);
+	            }
+            }, 
+            error: function(_, t, e){
+            	container.find(".ting-loader").hide();
+            	container.find(".ting-data-content").html('<div class="ui red message">' + e + '</div>');
+            }
+        });
+	});
+	Highcharts.setOptions({
+		colors: ['#A3A1FB', '#DDDF00', '#24CBE5', '#64E572', '#FF9655', '#9DFCFF', '#FFD59D', '#FC46FC']
+	});
+
+	var series = {{i__dt__series|safe}}
+	var data = {{i__dt__charts|safe}}
+
+	var labels = data.map(d => d.date)
+	var series_data = series.map(serie => {
+		return {
+			name: serie,
+			data: data.map(d => parseInt(d[serie.toLowerCase()])),
+			fillColor: {
+				linearGradient: [0, 0, 0, 300],
+				stops: [
+				    [0, Highcharts.getOptions().colors[series.indexOf(serie)]],
+				    [1, Highcharts.Color(Highcharts.getOptions().colors[series.indexOf(serie)]).setOpacity(0).get('rgba')]
+				]
+			},
+			marker: { symbol: 'circle' }
+		}
+	});
+
+	var types = ['areaspline', 'column'];
+
+	var options = {
+		chart: {
+			type: 'areaspline',
+			style: { fontFamily: 'Poppins, Avenir' },
+			width: null
+		},
+		title: { text: null },
+		xAxis: { categories: labels },
+		yAxis: { title: { text: null } },
+		tooltip: {
+			shared: true,
+			valuePrefix: '{{ admin.restaurant.config.currency }} '
+		},
+		credits: { enabled: false },
+		plotOptions: {
+			areaspline: { fillOpacity: 0.5, pointPlacement: 'on' },  
+			marker: { symbol: 'circle' },
+			column: {
+				pointPadding: 0.2,
+				borderWidth: 0
+			},
+			pie: {
+	            allowPointSelect: true,
+	            cursor: 'pointer',
+	            dataLabels: { enabled: false },
+	            showInLegend: true
+	        }
+		},
+		series: series_data
+	};
+	Highcharts.chart('ting-incomes-charts-canvas', options);
+</script>

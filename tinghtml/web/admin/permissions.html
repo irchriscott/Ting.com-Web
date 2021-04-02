@@ -1,0 +1,287 @@
+{% extends '../../layouts/header.html' %}
+{% load static %}
+{% load ting_tags %}
+{% load tz %}
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}">
+{% endblock %}
+{% block title %}
+    <title>Ting.com - Admin / Session Permissions</title>
+{% endblock %}
+{% block js %}
+<script src="https://cdn.pubnub.com/sdk/javascript/pubnub.4.21.7.min.js"></script>
+<script src="{% static 'js/socket.js' %}"></script>
+{% endblock %}
+{% block content %}
+{% include '../../web/admin/sidebar.html' %}
+<div class="pusher">
+    <div class="article ting-admin-container">
+        {% include '../../web/admin/navbar.html' %}
+        <div class="ui grid divided" style="margin-left: 10px;">
+            <div class="row" style="padding-top: 0 !important;">
+                <div class="twelve wide column ting-admin-content-panel">
+                    
+                    <div class="row justify-content-start align-items-center d-flex ting-restaurant-about-mini">
+                        <div class="" style="padding-left: 2rem;">
+                            <div class="ting-profile-image">
+                                <div class="ting-profile-image-container">
+                                    <div class="box ting-session-profile-image">
+                                        <div class="item light ting-session-profile-image">
+                                            <a href="#"><img class="ting-session-profile-image-img" src="{{admin.image.url}}" alt="{{admin.username}}" class="w-full" id="ting-profile-image"></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ting-restaurant-name" style="padding-left: 2rem;">
+                            <h2>{{admin.name}}</h2>
+                            <p style="font-weight: 100;">{{admin.username}}</p>
+                            <p><i class="icon mail alternate"></i> {{admin.email}}</p>
+                        </div>
+                    </div>
+
+
+                    <div class="ting-restaurant-about">
+
+                        <div class="justify-content-start d-flex no-padding">
+                            <div class="ting-none-class">
+
+                                <h3>PERMISSIONS</h3>
+
+                                <form class="ui form ting-restaurant-about-data">
+                                    {% if restaurant.purpose == 2 %}
+                                    <div class="ui grid divided" style="margin-left: 0px;">
+                                        <div class="row">
+                                            <div class="five wide column">
+                                                <h5 style="margin-bottom: 15px;">Restaurant</h5>
+                                                {% for perm in restaurants %}
+                                                    <div class="field">
+                                                        <div class="ui read-only checkbox">
+                                                            <input type="checkbox" value="{{perm.permission}}" {% if admin.pk|has_p:perm.permission == True %} checked {% endif %}>
+                                                            <label style="line-height: 1.3 !important;">{{perm.title|prefix:"Can"}}</label>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="six wide column">
+                                                <h5 style="margin-bottom: 15px;">Bills</h5>
+                                                {% for perm in bills %}
+                                                    <div class="field">
+                                                        <div class="ui read-only checkbox">
+                                                            <input type="checkbox" name="permission" value="{{perm.permission}}" {% if admin.pk|has_p:perm.permission == True %} checked {% endif %}>
+                                                            <label style="line-height: 1.3 !important;">{{perm.title|prefix:"Can"}}</label>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="five wide column">
+                                                <h5 style="margin-bottom: 15px;">Orders</h5>
+                                                {% for perm in orders %}
+                                                    <div class="field">
+                                                        <div class="ui read-only checkbox">
+                                                            <input type="checkbox" name="permission" value="{{perm.permission}}" {% if admin.pk|has_p:perm.permission == True %} checked {% endif %}>
+                                                            <label style="line-height: 1.3 !important;">{{perm.title|prefix:"Can"}}</label>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="five wide column">
+                                                <h5 style="margin-bottom: 15px;">Administrator</h5>
+                                                {% for perm in administrators %}
+                                                    <div class="field">
+                                                        <div class="ui read-only checkbox">
+                                                            <input type="checkbox" name="permission" value="{{perm.permission}}" {% if admin.pk|has_p:perm.permission == True %} checked {% endif %}>
+                                                            <label style="line-height: 1.3 !important;">{{perm.title|prefix:"Can"}}</label>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="six wide column">
+                                                <h5 style="margin-bottom: 15px;">Booking</h5>
+                                                {% for perm in booking %}
+                                                    <div class="field">
+                                                        <div class="ui read-only checkbox">
+                                                            <input type="checkbox" name="permission" value="{{perm.permission}}" {% if admin.pk|has_p:perm.permission == True %} checked {% endif %}>
+                                                            <label style="line-height: 1.3 !important;">{{perm.title|prefix:"Can"}}</label>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="five wide column">
+                                                <h5 style="margin-bottom: 15px;">Menus</h5>
+                                                {% for perm in menus %}
+                                                    <div class="field">
+                                                        <div class="ui read-only checkbox">
+                                                            <input type="checkbox" name="permission" value="{{perm.permission}}" {% if admin.pk|has_p:perm.permission == True %} checked {% endif %}>
+                                                            <label style="line-height: 1.3 !important;">{{perm.title|prefix:"Can"}}</label>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="five wide column">
+                                                <h5 style="margin-bottom: 15px;">Tables</h5>
+                                                {% for perm in tables %}
+                                                    <div class="field">
+                                                        <div class="ui read-only checkbox">
+                                                            <input type="checkbox" name="permission" value="{{perm.permission}}" {% if admin.pk|has_p:perm.permission == True %} checked {% endif %}>
+                                                            <label style="line-height: 1.3 !important;">{{perm.title|prefix:"Can"}}</label>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="six wide column">
+                                                <h5 style="margin-bottom: 15px;">Category</h5>
+                                                {% for perm in category %}
+                                                    <div class="field">
+                                                        <div class="ui read-only checkbox">
+                                                            <input type="checkbox" name="permission" value="{{perm.permission}}" {% if admin.pk|has_p:perm.permission == True %} checked {% endif %}>
+                                                            <label style="line-height: 1.3 !important;">{{perm.title|prefix:"Can"}}</label>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="five wide column">
+                                                <h5 style="margin-bottom: 15px;">Management</h5>
+                                                {% for perm in management %}
+                                                    <div class="field">
+                                                        <div class="ui read-only checkbox">
+                                                            <input type="checkbox" name="permission" value="{{perm.permission}}" {% if admin.pk|has_p:perm.permission == True %} checked {% endif %}>
+                                                            <label style="line-height: 1.3 !important;">{{perm.title|prefix:"Can"}}</label>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="five wide column">
+                                                <h5 style="margin-bottom: 15px;">Promotion</h5>
+                                                {% for perm in promotion %}
+                                                    <div class="field">
+                                                        <div class="ui read-only checkbox">
+                                                            <input type="checkbox" name="permission" value="{{perm.permission}}" {% if admin.pk|has_p:perm.permission == True %} checked {% endif %}>
+                                                            <label style="line-height: 1.3 !important;">{{perm.title|prefix:"Can"}}</label>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="six wide column">
+                                                <h5 style="margin-bottom: 15px;">Branch</h5>
+                                                {% for perm in branch %}
+                                                    <div class="field">
+                                                        <div class="ui read-only checkbox">
+                                                            <input type="checkbox" name="permission" value="{{perm.permission}}" {% if admin.pk|has_p:perm.permission == True %} checked {% endif %}>
+                                                            <label style="line-height: 1.3 !important;">{{perm.title|prefix:"Can"}}</label>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="five wide column">
+                                                <h5 style="margin-bottom: 15px;">Placement</h5>
+                                                {% for perm in placements %}
+                                                    <div class="field">
+                                                        <div class="ui read-only checkbox">
+                                                            <input type="checkbox" name="permission" value="{{perm.permission}}" {% if admin.pk|has_p:perm.permission == True %} checked {% endif %}>
+                                                            <label style="line-height: 1.3 !important;">{{perm.title|prefix:"Can"}}</label>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {% else %}
+
+                                    <div class="ui grid divided" style="margin-left: 0px;">
+                                        <div class="row">
+                                            <div class="five wide column">
+                                                <h5 style="margin-bottom: 15px;">Administrator</h5>
+                                                {% for perm in administrators %}
+                                                    <div class="field">
+                                                        <div class="ui read-only checkbox">
+                                                            <input type="checkbox" name="permission" value="{{perm.permission}}" {% if admin.pk|has_p:perm.permission == True %} checked {% endif %}>
+                                                            <label style="line-height: 1.3 !important;">{{perm.title|prefix:"Can"}}</label>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="six wide column">
+                                                <h5 style="margin-bottom: 15px;">Restaurant</h5>
+                                                {% for perm in restaurants %}
+                                                    <div class="field">
+                                                        <div class="ui read-only checkbox">
+                                                            <input type="checkbox" value="{{perm.permission}}" {% if admin.pk|has_p:perm.permission == True %} checked {% endif %}>
+                                                            <label style="line-height: 1.3 !important;">{{perm.title|prefix:"Can"}}</label>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="five wide column">
+                                                <h5 style="margin-bottom: 15px;">Menus</h5>
+                                                {% for perm in menus %}
+                                                    <div class="field">
+                                                        <div class="ui read-only checkbox">
+                                                            <input type="checkbox" name="permission" value="{{perm.permission}}" {% if admin.pk|has_p:perm.permission == True %} checked {% endif %}>
+                                                            <label style="line-height: 1.3 !important;">{{perm.title|prefix:"Can"}}</label>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="five wide column">
+                                                <h5 style="margin-bottom: 15px;">Category</h5>
+                                                {% for perm in category %}
+                                                    <div class="field">
+                                                        <div class="ui read-only checkbox">
+                                                            <input type="checkbox" name="permission" value="{{perm.permission}}" {% if admin.pk|has_p:perm.permission == True %} checked {% endif %}>
+                                                            <label style="line-height: 1.3 !important;">{{perm.title|prefix:"Can"}}</label>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="six wide column">
+                                                <h5 style="margin-bottom: 15px;">Promotion</h5>
+                                                {% for perm in promotion %}
+                                                    <div class="field">
+                                                        <div class="ui read-only checkbox">
+                                                            <input type="checkbox" name="permission" value="{{perm.permission}}" {% if admin.pk|has_p:perm.permission == True %} checked {% endif %}>
+                                                            <label style="line-height: 1.3 !important;">{{perm.title|prefix:"Can"}}</label>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="five wide column">
+                                                <h5 style="margin-bottom: 15px;">Branch</h5>
+                                                {% for perm in branch %}
+                                                    <div class="field">
+                                                        <div class="ui read-only checkbox">
+                                                            <input type="checkbox" name="permission" value="{{perm.permission}}" {% if admin.pk|has_p:perm.permission == True %} checked {% endif %}>
+                                                            <label style="line-height: 1.3 !important;">{{perm.title|prefix:"Can"}}</label>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </form>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+                <div class="four wide column ting-admin-orders-panel">
+                    {% include '../../web/admin/sideorders.html' %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

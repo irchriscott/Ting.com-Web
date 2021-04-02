@@ -1,0 +1,260 @@
+{% extends '../navbar.html' %}
+{% load static %}
+{% load ting_tags %}
+{% load humanize %}
+{% block title %}
+<title>Ting.com - Discovery</title>
+{% endblock %}
+{% block body %}
+<section class="generic-banner relative ting-banner">		
+	<div class="container">
+		<div class="d-flex align-items-center">
+			<div class="generic-banner-content ting-banner-content">
+				<h1 class="text-white" style="text-transform:uppercase;">Discovery</h1>
+                <p class="text-white">Discover what's new Today : Restaurants, Menus, Promotions and Others</p>
+			</div>							
+        </div>
+    </div>
+</section>
+<section class="container">
+	<div class="ting-try-today">
+		<div class="blog-slider">
+		  	<div class="blog-slider__wrp swiper-wrapper">
+		  		{% for branch in recommanded_branches %}
+			    	<div class="blog-slider__item swiper-slide">
+			      		<div class="blog-slider__img">
+			        		<img src="{{branch.restaurant.logo.url}}" alt="">
+			      		</div>
+			      		<div class="blog-slider__content">
+			        		<span class="blog-slider__code">#RecommandedRestaurant</span>
+			        		<div class="blog-slider__title">{{branch.restaurant.name}}, {{branch.name}}</div>
+			        		<div class="blog-slider__rate"><div class="ui huge disabled-rating star rating" data-rating="{{branch.review_average}}" data-max-rating="5" style="margin-bottom:10px;"></div></div>
+			        		<div class="blog-slider__text"><i icon="" class="icon map marker alternate"></i> {{branch.address}}</div>
+			        		<a href="{% url 'ting_usr_get_restaurant_promotions' branch.restaurant.pk branch.pk branch.restaurant.slug %}" class="blog-slider__button">VIEW DETAILS</a>
+			      		</div>
+			    	</div>
+		    	{% endfor %}
+		  	</div>
+		  	<div class="blog-slider__pagination"></div>
+		</div>
+	</div>
+	<div class="ting-cuisines-container">
+		<h2>Cuisines</h2>
+		<div class="ting-overflow-grid">
+			<ul class="ting-overflow-row" id="ting-cuisines-carousel" data-items-count="{{cuisines.count}}">
+				{% for cuisine in cuisines %}
+					<li class="ting-over-column">
+						<div class="ting-cuisine-item">
+							<a href="{% url 'ting_usr_global_discover_r_cuisine' cuisine.pk cuisine.name|to_slug %}">
+								<img src="{{cuisine.image.url}}">
+							</a>
+							<div class="ting-cuisine-about">
+								<h5>{{cuisine.name}}</h5>
+								<p>{{cuisine.restaurants_counts|intcomma}} restaurants</p>
+								<div class="ting-cuisine-follow">
+									<i class="lnr lnr-heart"></i>
+								</div>
+							</div>
+						</div>
+					</li>
+				{% endfor %}
+			</ul>
+			<button class="ting-carousel-prev" id="ting-cuisine-prev" style="display: none;"><i class="icon chevron left"></i></button>
+			<button class="ting-carousel-next" id="ting-cuisine-next"><i class="icon chevron right"></i></button>
+		</div>
+	</div>
+	{% if recommanded_promotions|length > 0 %}
+	<div class="ting-today-promotions">
+		<h2>Today's Promotions</h2>
+		<div class="ting-promotions-container">
+			<div class="ting-promotions-wrapper swiper-wrapper">
+				{% for promotion in recommanded_promotions %}
+					<div class="ting-promotion-item swiper-slide">
+						<div class="ting-promotion-poster">
+							<img src="{{promotion.poster_image.url}}">
+						</div>
+						<div class="ting-promotion-about">
+							<h1><a href="{{promotion.to_json.urls.relative}}">{{promotion.occasion_event}}</a></h1>
+							<div style="width: 50%;"><hr style="background: rgba(255, 255, 255, 0.5); text-align: left; box-sizing: none;"></div>
+							{% if promotion.promotion_menu_type == '05' %}
+								<p>Promotion On <span class="ting-p-b">{{promotion.category.name}}</span></p>
+							{% elif promotion.promotion_menu_type == '04' %}
+								<p>Promotion On <span class="ting-p-b">{{promotion.menu.to_json.menu.name}}</span></p>
+							{% else %}
+								<p>Promotion On <span class="ting-p-b">{{promotion.promo_type}}</span></p>
+							{% endif %}
+							{% if promotion.has_supplement %}
+								<div class="ting-promotion-data">
+									<div class="icon">
+										<i class="icon plus square outline"></i>
+									</div>
+									<div class="data"><p>Buy <b>{{promotion.supplement_min_quantity}}</b>, Get <b>{{promotion.supplement_quantity}}</b> {% if promotion.is_supplement_same %} More {% else %} <a href="{{promotion.supplement.to_json.urls.url}}">{{promotion.supplement.to_json.menu.name}}</a> {% endif %} For Free</p></div>
+								</div>
+							{% endif %}
+							{% if promotion.has_reduction %}
+								<div class="ting-promotion-data">
+									<div class="icon">
+										<i class="icon minus square outline"></i>
+									</div>
+									<div class="data"><p>{{promotion.amount}} {{promotion.reduction_type}} Reduction</p></div>
+								</div>
+							{% endif %}
+						</div>
+					</div>
+				{% endfor %}
+			</div>
+			<div class="ting-promotions-pagination"></div>
+			<a href="{% url 'ting_usr_global_discovery_today_promotions' %}" class="ting-show-more-promotions">Show More</a>
+		</div>
+	</div>
+	{% endif %}
+	<div class="ting-reviewed-menus">
+		<h2>Most Reviewed Menus</h2>
+		<div class="ting-menus-container">
+			{% if menus|length > 0 %}
+				<div class="ui grid">
+					<div class="row">
+					{% for menu in menus %}
+						<div class="ui col-md-6 items" style="margin: 0 !important;">
+							<div class="ui item ting-resto-item" style="margin-bottom: 1.5rem !important; margin-top: 0 !important;">
+								<div class="ui small image">
+                                    <a href="{% url 'ting_usr_menu_get' menu.pk menu.slug %}">
+                                        <img src="{{menu.image}}">
+                                    </a>
+		                        </div>
+		                        <div class="ui content">
+                                    <a class="header" href="{% url 'ting_usr_menu_get' menu.pk menu.slug %}" style="font-size:19px; font-weight:500; white-space: nowrap; text-overflow: ellipsis; width: calc(100% - 1.5rem); overflow: hidden;">{{menu.name}}</a>
+                                    <div class="meta" style="margin-top:5px;">
+                                        <div class="ui disabled-rating star rating" data-rating="{{menu.review_average}}" data-max-rating="5" style="margin-bottom:10px;"></div>
+                                        <p style="display: block; white-space: nowrap; text-overflow: ellipsis; width: calc(100% - 1.5rem); overflow: hidden;"><i icon class="icon align left"></i> {{menu.description}}</p>
+                                        <div class="ting-price-promo" style="height: 46px;">
+                                            <div class="ting-menu-price" style="text-align: left !important; width: 100%; {% if menu.is_countable == False %} margin-top: 13px; {% endif %}">
+                                                {% if menu.is_countable %} <p>{{menu.quantity}} {{menu.menu_type_quantifier}}</p>{% endif %}
+                                                <p><span style="font-weight:500; font-size: 20px;">{{menu.currency}} {{menu.price|intcomma}}</span> {% if menu.price != menu.last_price %} <span style="font-size:14px; text-decoration: line-through;">{{menu.currency}} {{menu.last_price|intcomma}}</span>{% endif %}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% comment %}
+                                    <div class="description">
+                                        <div class="ting-menus-list-item">
+                                        	{% for image in menu.images|slice:"1:4" %}
+                                                <div class="ting-menu-image-list">
+                                                    <img src="{{image.url}}" />
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    {% endcomment %}
+                                    <div class="extra">
+                                        <div class="ui image label" onclick="window.open(`{% url 'ting_usr_get_restaurant_promotions' menu.restaurant.pk menu.branch.pk menu.restaurant.slug %}`, '_self')">
+                                            <img src="{{menu.restaurant.logo.url}}" />
+                                            {{menu.restaurant.name}}, {{menu.branch.name}}
+                                        </div>
+                                    </div>
+                                    <div class="extra">
+                                        <div class="ui label"><i class="icon boxes"></i>
+                                            {% if menu.category != None %}
+                                                {{menu.category.name}}
+                                            {% endif %}  
+                                        </div>
+                                        <div class="ui label"><i class="icon {{menu.menu_type_icon}}"></i> {{menu.type_str}}</div>
+                                        {% if menu.is_available %}
+                                        <div class="ui green label"><i class="check icon"></i> Available</div>
+                                        {% else %}
+                                        <div class="ui red label"><i class="times icon"></i> Not Available</div>
+                                        {% endif %}
+                                        <div class="ui label" style="cursor:pointer;"><i class="heart outline icon"></i>{{menu.likes_count|intcomma}}</div>
+                                        <div class="ui label ting-rate-btn-{{menu.pk}}" style="cursor:pointer;"><i class="star outline icon"></i>{{menu.reviews_count|intcomma}}</div> 
+                                    </div>
+                                    <div class="ting-like-restaurant">
+                                    	{% if is_logged_in %}
+	                                        <button class="ting-like-restaurant ting-btn-animate {% if menu.pk|has_liked_menu:session.pk %} liked {% endif %}" id="ting-like-menu-{{menu.pk}}" data-like='{"menu":"{{menu.pk}}", "pk":"{{menu.pk}}", "type": "{{menu.menu_type}}", "typ":"link"}'>
+	                                        	{% if menu.pk|has_liked_menu:session.pk %}
+	                                        		<svg height="30px" style="enable-background:new 0 0 30 30;" version="1.1" viewBox="0 0 30 30" width="30px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M11.608,20.776c-22.647-12.354-6.268-27.713,0-17.369  C17.877-6.937,34.257,8.422,11.608,20.776z" style="fill-rule:evenodd;clip-rule:evenodd;fill:#b56fe8;"/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/><g/></svg>
+	                                        	{% else %}
+	                                        		<i class="lnr lnr-heart"></i>
+	                                        	{% endif %}
+	                                        </button>
+                                    	{% else %}
+                                    		<button class="ting-like-restaurant ting-btn-animate" id="ting-like-menu-{{menu.pk}}" data-like='{"menu":"{{menu.pk}}", "pk":"{{menu.pk}}", "type": "{{menu.menu_type}}", "typ":"link"}'><i class="lnr lnr-heart"></i></button>
+                                    	{% endif %}
+                                    </div>
+                                    <div class="ui flowing popup top left transition hidden ting-rate-popup-{{menu.pk}}">
+                                        <div class="header">Rating</div>
+                                        <div class="content" style="width:300px;">
+                                            <div class="ui huge star rating disabled-rating" data-rating="{{menu.review_average}}" data-max-rating="5"></div> 
+                                            <div class="ui grid">
+                                                <div class="row" style="padding:0 !important;">
+                                                    <div class="four wide column ting-rate-average">
+                                                        <h1 style="font-weight:500; margin-top:0 !important;">{{menu.review_average}}</h1>
+                                                        <p>Out Of 5</p>
+                                                    </div>
+                                                    <div class="twelve wide column" style="padding: 0 !important;">
+                                                        <div class="ui grid">
+                                                            <div class="row" style="padding-bottom:0 !important;">
+                                                                <div class="eight wide column ting-rate-percent">
+                                                                    <div class="ting-star"><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i></div>
+                                                                    <div class="ting-star"><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i></div>
+                                                                    <div class="ting-star"><i class="star icon"></i><i class="star icon"></i><i class="star icon"></i></div>
+                                                                    <div class="ting-star"><i class="star icon"></i><i class="star icon"></i></div>
+                                                                    <div class="ting-star"><i class="star icon"></i></div>
+                                                                </div>
+                                                                <div class="eight wide column ting-rate-wrapper">
+                                                                    <div class="ting-rate-container"><div class="ting-rate-fill" style="width:{{menu.review_percent.4}}%"></div></div>
+                                                                    <div class="ting-rate-container"><div class="ting-rate-fill" style="width:{{menu.review_percent.3}}%"></div></div>
+                                                                    <div class="ting-rate-container"><div class="ting-rate-fill" style="width:{{menu.review_percent.2}}%"></div></div>
+                                                                    <div class="ting-rate-container"><div class="ting-rate-fill" style="width:{{menu.review_percent.1}}%"></div></div>
+                                                                    <div class="ting-rate-container"><div class="ting-rate-fill" style="width:{{menu.review_percent.0}}%"></div></div>
+                                                                    <div class="ting-reviews-count"><p>{{menu.reviews_count|intcomma}} reviews</p></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <script type="text/javascript">
+                                        $(".disabled-rating").rating("disable"); $("#ting-like-menu-{{menu.pk}}").likeMenu();
+                                        $(".ting-rate-btn-{{menu.pk}}").popup({popup : ".ting-rate-popup-{{menu.pk}}", on : "click"});
+                                    </script>
+                                </div>
+		                    </div>
+		                </div>
+		            {% endfor %}
+		        	</div>
+		       	</div>
+		    {% else %}
+		    	<div class="ui red message">No Menu To Show</div>
+		    {% endif %}
+		</div>
+	</div>
+</section>
+<section class="testimonial-area relative section-gap">
+	<div class="overlay overlay-bg"></div>
+	<div class="container">
+		<div class="row">
+			<div class="active-testimonial">
+				{% for review in reviews %}
+					<div class="single-testimonial item d-flex flex-row" style="min-height: 183px;">
+						<div class="thumb">
+							<img style="width: 50px !important; height: 50px !important; border-radius: 50%;" src="{{review.user.image.url}}" alt="">
+						</div>
+						<div class="desc">
+							<h4 class="mt-30">{{review.user.name}}</h4>
+							<div class="ui disabled-rating star rating" data-rating="{{review.review}}" data-max-rating="5"></div>
+							<p>{{review.comment}}</p>
+							<a href="{% url 'ting_usr_get_restaurant_reviews' review.branch.restaurant.pk review.branch.pk review.branch.restaurant.slug %}" class="genric-btn primary circle arrow">SHOW MORE<span class="lnr lnr-arrow-right"></span></a>
+						</div>
+					</div>
+				{% endfor %}							
+			</div>					
+		</div>
+	</div>	
+</section>
+<script type="text/javascript">
+	window.__TING__Session = {{session_json|safe}}
+	window.__TING__URL_Like_Menu = decodeURI("{% url 'ting_usr_menu_like' '{menu}' %}");
+	window.__TING__Link = {type: "global", name: "global"} || {};
+</script>
+{% endblock %}

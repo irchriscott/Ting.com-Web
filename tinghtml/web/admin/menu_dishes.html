@@ -1,0 +1,552 @@
+{% extends '../../layouts/header.html' %}
+{% load static %}
+{% load ting_tags %}
+{% load humanize %}
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}">
+{% endblock %}
+{% block js %}
+<script src="https://cdn.pubnub.com/sdk/javascript/pubnub.4.21.7.min.js"></script>
+<script src="{% static 'js/socket.js' %}"></script>
+{% endblock %}
+{% block title %}
+    <title>Ting.com - Admin / Menus - Dishes</title>
+{% endblock %}
+{% block content %}
+{% include '../../web/admin/sidebar.html' %}
+<div class="pusher">
+    <div class="article ting-admin-container">
+        {% include '../../web/admin/navbar.html' %}
+        <div class="ui grid divided" style="margin-left: 10px;">
+            <div class="row" style="padding-top: 0 !important;">
+                <div class="twelve wide column ting-admin-content-panel">
+                    
+                    <div class="ui grid">
+                        <div class="row ting-data-container-header">
+                            <div class="twelve wide column">
+                                <div>
+                                    <h1 style="display: inline-block;">Menus - Dishes</h1>
+                                    <div class="ui dropdown item" style="margin-top: -10px !important; margin-left: 10px;">
+                                        <i class="icon chevron down"></i>
+                                        <div class="menu">
+                                            <div class="header">Menus</div> 
+                                            <a class="item" href="{% url 'ting_wb_adm_menu_food' %}" style="align-self: flex-start; width: 100%"><i class="utensil spoon icon"></i> Food</a>
+                                            <a class="item" href="{% url 'ting_wb_adm_menu_drinks' %}" style="align-self: flex-start; width: 100%"><i class="glass martini icon"></i> Drinks</a>
+                                            <a class="item" href="{% url 'ting_wb_adm_menu_dishes' %}" style="align-self: flex-start; width: 100%"><i class="utensils icon"></i> Dishes</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% if admin.pk|has_p:"can_add_menu" == True %}
+                            <div class="four wide column ting-no-p-right">
+                                <button class="ui twitter button" style="float:right" id="ting-admin-add-new-menu-dish">
+                                <i class="plus icon"></i>
+                                    Add New Menu - Dish
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="ting-data-container">
+                        
+                        <table class="ui single line table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Image</th> 
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Type</th>
+                                    <th>Cuisine</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if dishes.count > 0 %}
+                                    {% for dish in dishes %}
+                                        <tr>
+                                            <td><div class="ui ribbon label">{{forloop.counter}}</div></td>
+                                            <td><img src="{{dish.images.0.image.url}}"></td>
+                                            <td>{{dish.name}}</td>
+                                            <td>{{dish.category.name}}</td>
+                                            <td>{{dish.price|intcomma}} {{dish.currency}}</td>
+                                            <td>{{dish.dish_time_str}}</td>
+                                            <td>{{dish.cuisine.name}}</td>
+                                            <td>
+                                                <div class="ui right pointing dropdown item" style="margin-right: 10px !important; margin-top: -10px !important;">
+                                                    <i class="icon chevron down"></i>
+                                                    <div class="menu">
+                                                        <div class="header">Options</div>
+                                                        {% if admin.pk|has_p:"can_update_menu" == True %}
+                                                        <a class="item ting-open-ajax-modal" ting-modal-type="ajax-form" ting-modal-form="ting-update-menu-dish-form" ting-data-url="{% url 'ting_wb_adm_menu_dish_edit' dish.pk %}" ting-modal-target="ting-edit-menu-dish" style="align-self: flex-start; width: 100%"><i class="pencil alternate icon"></i> Edit</a>
+                                                        {% endif %}
+                                                        {% if admin.pk|has_p:"can_avail_menu" == True %}
+                                                        <a class="item ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_menu_dish_avail_toggle' dish.pk %}" ting-modal-target="ting-dish-avail-toggle-{{dish.id}}" style="align-self: flex-start; width: 100%">
+                                                            {% if dish.is_available %}
+                                                            <i class="times icon"></i> Unavail
+                                                            {% else %}
+                                                            <i class="check icon"></i> Avail
+                                                            {% endif %}
+                                                        </a>
+                                                        {% endif %}
+                                                        {% if admin.pk|has_p:"can_delete_menu" == True %}
+                                                        <a class="item ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_menu_dish_delete' dish.pk %}" ting-modal-target="ting-delete-menu-{{dish.id}}" style="align-self: flex-start; width: 100%"><i class="trash alternate outline icon"></i>Delete</a>
+                                                        {% endif %}
+                                                        {% if admin.pk|has_p:"can_update_menu" == True %}
+                                                        <a class="item ting-open-ajax-modal" ting-modal-type="ajax-form" ting-modal-form="ting-update-menu-food-dish-form" ting-data-url="{% url 'ting_wb_adm_menu_dish_food_load' dish.pk %}" ting-modal-target="ting-add-menu-food-to-menu-dish" style="align-self: flex-start; width: 100%"><i class="plus icon"></i>Add Menu Food</a>
+                                                        <div class="item">
+                                                            <i class="dropdown icon" style="margin-top: 5px;"></i>
+                                                            <a class="text" style="align-self: flex-start; width: 100%"><i class="arrow alternate circle right outline icon"></i>Move To Type</a>
+                                                            <div class="menu">
+                                                                <div class="header">Types</div>
+                                                                {% for type in types %}
+                                                                    {% if dish.dish_time == type.0 %}
+                                                                    <a class="item ting-open-ajax-modal active selected" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_menu_dish_move_to_type' dish.pk type.0 %}" ting-modal-target="ting-move-to-type-{{dish.id}}" style="align-self: flex-start; width: 100%">{{type.1}}</a>
+                                                                    {% else %}
+                                                                    <a class="item ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_menu_dish_move_to_type' dish.pk type.0 %}" ting-modal-target="ting-move-to-type-{{dish.id}}" style="align-self: flex-start; width: 100%">{{type.1}}</a>
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                            </div>
+                                                        </div>
+                                                        <div class="item">
+                                                            <i class="dropdown icon" style="margin-top: 5px;"></i>
+                                                            <a class="item ting-open-ajax-modal" style="align-self: flex-start; width: 100%"><i class="arrow right icon"></i>Move To Category</a>
+                                                            <div class="menu">
+                                                                <div class="header">Categories</div>
+                                                                {% for category in categories %}
+                                                                    {% if dish.category.id == category.id %}
+                                                                    <a class="item ting-open-ajax-modal active selected" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_menu_dish_move_to_category' dish.pk category.pk %}" ting-modal-target="ting-move-to-category-{{dish.id}}" style="align-self: flex-start; width: 100%"><img class="ui avatar image" src="{{category.image.url}}" style="width: 30px;"> {{category.name}}</a>
+                                                                    {% else %}
+                                                                    <a class="item ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_menu_dish_move_to_category' dish.pk category.pk %}" ting-modal-target="ting-move-to-category-{{dish.id}}" style="align-self: flex-start; width: 100%"><img class="ui avatar image" src="{{category.image.url}}" style="width: 30px"> {{category.name}}</a>
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                            </div>
+                                                        </div>
+                                                        <div class="item">
+                                                            <i class="dropdown icon" style="margin-top: 5px;"></i>
+                                                            <a class="item ting-open-ajax-modal" style="align-self: flex-start; width: 100%"><i class="angle double right icon"></i>Move To Cuisine</a>
+                                                            <div class="menu">
+                                                                <div class="header">Cuisines</div>
+                                                                {% for cuisine in cuisines %}
+                                                                    {% if dish.cuisine.id == cuisine.category.id %}
+                                                                    <a class="item ting-open-ajax-modal active selected" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_menu_dish_move_to_cuisine' dish.pk cuisine.category.pk %}" ting-modal-target="ting-move-to-cuisine-{{dish.id}}" style="align-self: flex-start; width: 100%"><img class="ui avatar image" src="{{cuisine.category.image.url}}" style="width: 30px;"> {{cuisine.category.name}}</a>
+                                                                    {% else %}
+                                                                    <a class="item ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_menu_dish_move_to_cuisine' dish.pk cuisine.category.pk %}" ting-modal-target="ting-move-to-cuisine-{{dish.id}}" style="align-self: flex-start; width: 100%"><img class="ui avatar image" src="{{cuisine.category.image.url}}" style="width: 30px"> {{cuisine.category.name}}</a>
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                            </div>
+                                                        </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="ui small labeled icon top right pointing dropdown button">
+                                                    <i class="martini glass icon"></i>
+                                                    <span class="text">{% if dish.has_drink == True %}<img src="{{dish.drink.images.0.image.url}}" class="avatar" style="width: 30px;">{{dish.drink.name}} {% else %} Drink {% endif %}</span>
+                                                    <div class="menu">
+                                                        <div class="ui search icon input">
+                                                            <i class="search icon"></i>
+                                                            <input type="text" name="search" placeholder="Search Drink...">
+                                                        </div>
+                                                        <div class="divider"></div>
+                                                        <div class="header">
+                                                            <i class="martini glass icon"></i>
+                                                            Drinks
+                                                        </div>
+                                                        {% if drinks.count > 0 %}
+                                                            {% for drink in drinks %}
+                                                                <a class="item ting-open-ajax-modal" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_menu_dish_add_drink' dish.pk drink.pk %}" ting-modal-target="ting-add-drink-to-menu-{{dish.id}}"><img src="{{drink.images.0.image.url}}" class="avatar" style="width: 30px;">{{drink.name}}</a>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                        {% if dish.has_drink == True %}
+                                                        <div class="divider"></div>
+                                                        <a class="item ting-open-ajax-modal red" ting-modal-type="confirm" ting-data-url="{% url 'ting_wb_adm_menu_dish_remove_drink' dish.pk %}" ting-modal-target="ting-remove-drink-to-menu-{{dish.id}}" style="color: #db2828;"><i class="icon trash outline alternate red"></i> Delete</a>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                <div class="ui small blue labeled icon button ting-open-ajax-modal" ting-modal-type="ajax" ting-data-url="{% url 'ting_wb_adm_menu_dish_load' dish.pk %}" ting-modal-target="ting-load-menu-dish">
+                                                    <i class="utensils icon"></i> Load
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% if admin.pk|has_p:"can_avail_menu" == True %}
+                                        <div class="ui modal mini" data-modal="ting-dish-avail-toggle-{{dish.id}}">
+                                            <div class="header">
+                                                {% if dish.is_available %}
+                                                    Unavail Dish
+                                                {% else %}
+                                                    Avail Dish
+                                                {% endif %}
+                                            </div>
+                                            <div class="content">
+                                                <p>Do you really want to {% if dish.is_available %} Unavail {% else %} Avail {% endif %} this dish ?</p>
+                                            </div>
+                                            <div class="actions">
+                                                <div class="ui positive button right labeled icon">
+                                                    Yes
+                                                    <i class="icon check"></i>
+                                                </div>
+                                                <div class="ui red deny button right labeled icon">
+                                                    No
+                                                    <i class="icon times"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        {% if admin.pk|has_p:"can_update_menu" == True %}
+                                        <div class="ui modal mini" data-modal="ting-move-to-type-{{dish.id}}">
+                                            <div class="header">
+                                                Change Menu Dish Time
+                                            </div>
+                                            <div class="content">
+                                                <p>Do you really want to change this menu dish's time ?</p>
+                                            </div>
+                                            <div class="actions">
+                                                <div class="ui positive button right labeled icon">
+                                                    Yes
+                                                    <i class="icon check"></i>
+                                                </div>
+                                                <div class="ui red deny button right labeled icon">
+                                                    No
+                                                    <i class="icon times"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="ui modal mini" data-modal="ting-move-to-category-{{dish.id}}">
+                                            <div class="header">
+                                                Change Menu Dish Category
+                                            </div>
+                                            <div class="content">
+                                                <p>Do you really want to change this menu dish's category ?</p>
+                                            </div>
+                                            <div class="actions">
+                                                <div class="ui positive button right labeled icon">
+                                                    Yes
+                                                    <i class="icon check"></i>
+                                                </div>
+                                                <div class="ui red deny button right labeled icon">
+                                                    No
+                                                    <i class="icon times"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="ui modal mini" data-modal="ting-add-drink-to-menu-{{dish.id}}">
+                                            <div class="header">
+                                                Add Drink To Menu Dish
+                                            </div>
+                                            <div class="content">
+                                                <p>Do you really want to add this drink to this menu dish ?</p>
+                                            </div>
+                                            <div class="actions">
+                                                <div class="ui positive button right labeled icon">
+                                                    Yes
+                                                    <i class="icon check"></i>
+                                                </div>
+                                                <div class="ui red deny button right labeled icon">
+                                                    No
+                                                    <i class="icon times"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="ui modal mini" data-modal="ting-remove-drink-to-menu-{{dish.id}}">
+                                            <div class="header">
+                                                Remove Drink To Menu Dish
+                                            </div>
+                                            <div class="content">
+                                                <p>Do you really want to remove drink to this menu dish ?</p>
+                                            </div>
+                                            <div class="actions">
+                                                <div class="ui positive button right labeled icon">
+                                                    Yes
+                                                    <i class="icon check"></i>
+                                                </div>
+                                                <div class="ui red deny button right labeled icon">
+                                                    No
+                                                    <i class="icon times"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="ui modal mini" data-modal="ting-move-to-cuisine-{{dish.id}}">
+                                            <div class="header">
+                                                Change Menu Dish Cuisine
+                                            </div>
+                                            <div class="content">
+                                                <p>Do you really want to change this menu dish's cuisine ?</p>
+                                            </div>
+                                            <div class="actions">
+                                                <div class="ui positive button right labeled icon">
+                                                    Yes
+                                                    <i class="icon check"></i>
+                                                </div>
+                                                <div class="ui red deny button right labeled icon">
+                                                    No
+                                                    <i class="icon times"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        {% if admin.pk|has_p:"can_delete_menu" == True %}
+                                        <div class="ui modal mini" data-modal="ting-delete-menu-{{dish.id}}">
+                                            <div class="header">
+                                                Delete Menu Dish
+                                            </div>
+                                            <div class="content">
+                                                <p>Do you really want to delete this menu dish ?</p>
+                                            </div>
+                                            <div class="actions">
+                                                <div class="ui positive button right labeled icon">
+                                                    Yes
+                                                    <i class="icon check"></i>
+                                                </div>
+                                                <div class="ui red deny button right labeled icon">
+                                                    No
+                                                    <i class="icon times"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <th colspan="9">
+                                            <div class="ting-empty-data"><i class="icon utensils"></i><p>No Dish To Show</p></div>
+                                        </th>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="9">
+                                        <div class="ui right floated pagination menu">
+                                            <a class="icon item">
+                                                <i class="left chevron icon"></i>
+                                            </a>
+                                            <a class="item">1</a>
+                                            <a class="item">2</a>
+                                            <a class="item">3</a>
+                                            <a class="item">4</a>
+                                            <a class="icon item">
+                                                <i class="right chevron icon"></i>
+                                            </a>
+                                        </div>
+                                    </th>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                    </div>
+
+                </div>
+                <div class="four wide column ting-admin-orders-panel">
+                    {% include '../../web/admin/sideorders.html' %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="ui modal" data-modal="ting-load-menu-dish">
+    <div class="header">
+        Menu Dish
+    </div>
+    <div class="content">
+        <div class="ting-data-content"></div>
+        <div class="ui right ting-loader" style="margin: auto; text-align: center;">
+            <img src="{% static 'imgs/loading.gif' %}">
+        </div>
+    </div>
+    <div class="actions">
+        <div class="ui red deny button left">
+            Close
+        </div>
+    </div>
+</div>
+
+<div class="ui small modal" data-modal="ting-add-menu-food-to-menu-dish">
+    <div class="header">
+        Add Menu Food To Menu Dish
+    </div>
+    <div class="content scrolling">
+        <div class="ting-data-content"></div>
+        <div class="ui right ting-loader" style="margin: auto; text-align: center;">
+            <img src="{% static 'imgs/loading.gif' %}">
+        </div>
+    </div>
+    <div class="actions">
+        <div class="ui right ting-loader ting-form-loader-else">
+            <img src="{% static 'imgs/loading.gif' %}">
+        </div>
+        <button type="submit" class="ui positive right labeled icon button">
+            Save
+            <i class="checkmark icon"></i>
+        </button>
+        <div class="ui red deny button left">
+            Close
+        </div>
+    </div>
+</div>
+
+
+<div class="ui modal" data-modal="ting-edit-menu-dish">
+    <div class="header">
+        Edit Menu Dish
+    </div>
+    <div class="content scrolling">
+        <div class="ting-data-content"></div>
+        <div class="ui right ting-loader" style="margin: auto; text-align: center;">
+            <img src="{% static 'imgs/loading.gif' %}">
+        </div>
+    </div>
+    <div class="actions">
+        <div class="ui right ting-loader ting-form-loader-else">
+            <img src="{% static 'imgs/loading.gif' %}">
+        </div>
+        <button type="submit" class="ui positive right labeled icon button">
+            Save
+            <i class="checkmark icon"></i>
+        </button>
+        <div class="ui red deny button left">
+            Close
+        </div>
+    </div>
+</div>
+
+
+
+{% if admin.pk|has_p:"can_add_menu" == True %}
+
+<div class="ui modal" data-modal="ting-admin-add-new-menu-dish">
+    <div class="header">
+        Add Menu Dish
+    </div>
+    <div class="content">
+        <div class="ting-search-place">
+            <form class="ui form" action="{% url 'ting_wb_adm_add_menu_dish' %}" method="POST" id="ting-add-menu-dish-form" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="field">
+                    <label>Enter Dish Name :</label>
+                    <input type="text" name="name" placeholder="Dish Name" required autocomplete="off">
+                </div>
+
+                <div class="field">
+                    <div class="three fields">
+                        <div class="field">
+                            <label>Select Menu Category :</label>
+                            <select class="ui scrolling dropdown" name="category">
+                                {% for category in categories %}
+                                    <option value="{{category.id}}">{{category.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Select Dish Time :</label>
+                            <select class="ui dropdown" name="dish_time">
+                                {% for type in types %}
+                                    <option value="{{type.0}}">{{type.1}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Select Dish Cuisine :</label>
+                            <select class="ui dropdown" name="cuisine">
+                                {% for cuisine in cuisines %}
+                                    <option value="{{cuisine.category.id}}">{{cuisine.category.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Enter Dish Description :</label>
+                    <textarea name="description" required placeholder="Enter Description"></textarea>
+                </div>
+
+                <div class="field">
+                    <div class="three fields">
+                        <div class="field">
+                            <label>Enter Last Price :</label>
+                            <input type="number" name="last_price" min="0" placeholder="Enter Last Price" required>
+                        </div>
+                        <div class="field">
+                            <label>Enter Current Price :</label>
+                            <input type="number" name="price" min="0" placeholder="Enter Price" required>
+                        </div>
+                        <div class="field">
+                            <label>Select Currency :</label>
+                            <select class="ui dropdown" name="currency">
+                                {% if restaurant.config.use_default_currency == True %}
+                                    <option value="{{restaurant.config.currency}}">{{restaurant.config.currency|from_t:currencies}}</option>
+                                {% else %}
+                                    {% for currency in currencies %}
+                                        <option value="{{currency.0}}">{{currency.1}}</option>
+                                    {% endfor %}
+                                {% endif %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Enter Ingredient List :</label>
+                    <textarea required name="ingredients" class="ting-textarea-froala-editor" placeholder="Ingredient List"></textarea>
+                </div>
+                <div class="field">
+                    <div class="ui checkbox">
+                        <input type="checkbox" name="show_ingredients">
+                        <label style="line-height: 1.3 !important;">Show Ingredients To Users</label>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Enter Quantity (According to the price if countable is true. Eg: Price of 2 Plates, ... ) :</label>
+                    <input type="number" name="quantity" placeholder="Enter Quantity" min="0">
+                </div>
+                <div class="field">
+                    <div class="ui checkbox">
+                        <input type="checkbox" name="is_countable">
+                        <label style="line-height: 1.3 !important;">Is Countable</label>
+                    </div>
+                </div>
+                <div class="field ting-file-input">
+                    <span>Add Dish Images</span>
+                    <input type="file" name="image" required multiple="true" id="ting-multiple-image-input" accept=".jpg, .png, .jpeg" required>
+                </div>
+                {% if admin.admin_type|to_int == 1 %}
+                    <div class="field">
+                        <div class="ui checkbox">
+                            <input type="checkbox" name="for_all_branches">
+                            <label style="line-height: 1.3 !important;">Add For All Branches</label>
+                        </div>
+                    </div>
+                {% else %}
+                    <input type="checkbox" name="for_all_branches" style="display: none;">
+                {% endif %}
+                <div class="ting-item-images-preview"></div>
+                <div class="ui indicating progress small ting-progress-form" style="display: none;" data-value="0" data-total="100">
+                  <div class="bar"></div>
+                </div>
+                <div class="ting-action-modal" style="margin-top: 0rem">
+                    <div class="actions">
+                        <div class="ui red deny button">
+                            Cancel
+                        </div>
+                    </div>
+                    <button type="submit" class="ui positive right labeled icon button">
+                        Save
+                        <i class="checkmark icon"></i>
+                    </button>
+                    <div class="ui right ting-loader ting-form-loader">
+                        <img src="{% static 'imgs/loading.gif' %}">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+
+{% endblock %}

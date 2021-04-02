@@ -1,0 +1,80 @@
+{% load ting_tags %}
+{% load tz %}
+{% load static %}
+<div class="content">
+    <div class="content">
+        <div class="ting-search-place">
+            <div class="u form">
+                <div class="field">
+                    <label>Enter Branch Address : </label>
+                    <div class="ui fluid icon input">
+                        <input type="text" id="ting-search-location-input-else-branch" value="{{branch.address}}" name="address" placeholder="Search Branch Location"
+                            autocomplete="off" autofocus="false" required>
+                        <i class="search icon"></i>
+                    </div>
+                </div>
+                <div class="ting-map-container">
+                    <div class="ting-restaurant-map-container" id="ting-branch-map-container"></div>
+                </div>
+            </div>
+            <form class="ui form" action="{% url 'ting_wb_update_branch' branch.pk %}" method="POST" id="ting-update-branch-form">
+                {% csrf_token %}
+                <input type="hidden" id="ting-branch-latitude" name="latitude" value="{{branch.latitude}}">
+                <input type="hidden" id="ting-branch-longitude" name="longitude" value="{{branch.longitude}}">
+                <input type="hidden" id="ting-branch-country" name="country" value="{{branch.country}}">
+                <input type="hidden" id="ting-branch-town" name="town" value="{{branch.town}}">
+                <input type="hidden" id="ting-branch-place-id" name="place_id" value="{{branch.place_id}}">
+                <input type="hidden" id="ting-search-location-input-branch" name="address" value="{{branch.address}}">
+                <div class="field" style="margin-top: 15px;">
+                    <label>Enter Branch Name :</label>
+                    <input type="text" name="name" placeholder="Branch Name" value="{{branch.name}}" required autocomplete="off">
+                </div>
+                <div class="field">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Enter Branch Region :</label>
+                            <input type="text" name="region" id="ting-branch-region" placeholder="Enter Region" required autocomplete="off" value="{{branch.region}}">
+                        </div>
+                        <div class="field">
+                            <label>Enter Branch Road :</label>
+                            <input type="text" name="road" id="ting-branch-road" placeholder="Enter Road" required autocomplete="off" value="{{branch.road}}">
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Select Type: </label>
+                    <select class="ui dropdown" name="restaurant_type">
+                        {% for type in types %}
+                            {% if type.id == branch.restaurant_type %}
+                                <option value="{{type.id}}" selected="selected">{{type.name}}</option>
+                            {% else %}
+                                <option value="{{type.id}}">{{type.name}}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Enter Branch Email :</label>
+                            <input type="email" name="email" placeholder="Branch Email" value="{{branch.email}}" required autocomplete="off">
+                        </div>
+                        <div class="field">
+                            <label>Enter Branch Phone :</label>
+                            <input type="text" name="phone" placeholder="Branch Phone" value="{{branch.phone}}" required autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $("#ting-update-branch-form").submitFormAjax();
+    $("select").dropdown()
+    google.maps.event.addDomListener(window, 'load', InitializePlaces('ting-search-location-input-else-branch'));
+    setTimeout(function () {
+        initializeRestaurantMap("ting-branch-latitude", "ting-branch-longitude", "ting-search-location-input-branch", "ting-search-location-input-else-branch", "ting-branch-place-id", "ting-branch-region", "ting-branch-road", "ting-branch-map-container", true, "");
+    }, 1000);
+    $("#ting-search-location-input-else-branch").searchLocationByAddress("ting-branch-latitude", "ting-branch-longitude", "ting-search-location-input-branch", "ting-search-location-input-else-branch", "ting-branch-place-id", "ting-branch-region", "ting-branch-road", "ting-branch-map-container", true, "")
+</script>

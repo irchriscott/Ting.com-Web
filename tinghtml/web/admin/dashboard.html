@@ -1,0 +1,155 @@
+{% extends '../../layouts/header.html' %}
+{% load static %}
+{% load ting_tags %}
+{% load humanize %}
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}">
+{% endblock %}
+{% block js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://cdn.pubnub.com/sdk/javascript/pubnub.4.21.7.min.js"></script>
+<script src="{% static 'js/socket.js' %}"></script>
+<script src="{% static 'js/charts.js' %}"></script>
+{% endblock %}
+{% block title %}
+    <title>Ting.com - Admin / Dashboard</title>
+{% endblock %}
+{% block content %}
+{% include '../../web/admin/sidebar.html' %}
+<div class="pusher">
+    <div class="article ting-admin-container">
+        {% include '../../web/admin/navbar.html' %}
+        <div class="ui grid divided">
+            <div class="row" style="padding-top: 0 !important;">
+                {% if admin.restaurant.purpose == 2 %}
+                    <div class="sixteen wide column ting-admin-content-panel" data-placement="{{ admin.pk|has_p:'can_view_placements' }}" id="ting-admin-content-panel-dashboard">
+                        <div class="row" style="margin-top: 15px; margin-left: 15px; margin-right: 0px;">
+                            <div class="col-md-3">
+                                <div class="ting-menu-item-dashboard">
+                                    <h4>Today's Reservation</h4>
+                                    <p>Increased By 45% from last week</p>
+                                    <h1>{{ bookings|intcomma }}</h1>
+                                    <img src="{% static 'imgs/logo-black.png' %}">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="ting-menu-item-dashboard">
+                                    <h4>Today's Placements</h4>
+                                    <p>Increased By 62% from last month</p>
+                                    <h1>{{ placements|intcomma }}</h1>
+                                    <img src="{% static 'imgs/logo-black.png' %}">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="ting-menu-item-dashboard">
+                                    <h4>Today's Income</h4>
+                                    <p>Increased By 30% from last month</p>
+                                    <h1>{{ admin.restaurant.config.currency }} {{ incomes|intcomma }}</h1>
+                                    <img src="{% static 'imgs/logo-black.png' %}">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="ting-menu-item-dashboard">
+                                    <h4>Reviews</h4>
+                                    <p>Increased By 18%</p>
+                                    <h1>{{ admin.branch.review_average }}</h1>
+                                    <img src="{% static 'imgs/logo-black.png' %}">
+                                </div>
+                            </div>                            
+                        </div>
+                        <div class="row" style="margin-top: 45px; margin-left: 15px; margin-right: 0px;">
+                            <div class="col-md-7">
+                                <div class="ting-data-charts-container">
+                                    <h4 id="ting-data-charts-label-placements">Placements for the last 7 days</h4>
+                                    <div class="ting-charts-select-type">
+                                        <select class="ui dropdown" id="ting-charts-select-type" data-url="{% url 'ting_wb_adm_dashboard_data_charts' %}">
+                                            <option value="1">Last 7 days</option>
+                                            <option value="2">Last 6 Months</option>
+                                            <option value="3">Last 5 Years</option>
+                                        </select>
+                                    </div>
+                                    <hr>
+                                    <figure class="ting-data-charts-figure">
+                                        <div id="ting-data-charts-canvas-1" data-chart-prefix="" data-chart-suffix="People" data-chart-series="Placements" data-id="1" data-chart-type="areaspline" data-chart-data='{{ p__dt__charts|safe }}' class="ting-data-charts-canvas"></div>
+                                    </figure>
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="ting-data-charts-container">
+                                    <h4 id="ting-data-charts-label-incomes">Incomes for the last 7 days</h4>
+                                    <hr>
+                                    <figure class="ting-data-charts-figure">
+                                        <div id="ting-data-charts-canvas-2" data-chart-prefix="{{ admin.restaurant.config.currency }}" data-chart-suffix="" data-chart-series="Incomes" data-id="2" data-chart-type="column" data-chart-data='{{ i__dt__charts|safe }}' class="ting-data-charts-canvas" style="width: 100%;"></div>
+                                    </figure>
+                                </div>
+                            </div>
+                        </div>
+                        {% if admin.pk|has_p:"can_view_reports" == True %}
+                            <div class="row" style="margin-top: 45px; margin-left: 15px; margin-right: 0px;">
+                                <div class="col-md-6">
+                                    <div class="ting-data-charts-container">
+                                        <h4 id="ting-data-charts-label-waiters">Waiter Placements for the last 7 days</h4>
+                                        <hr>
+                                        <figure class="ting-data-charts-figure">
+                                            <div id="ting-data-charts-canvas-3" data-chart-prefix="" data-chart-suffix="%" data-chart-series="Waiter Placements" data-id="3" data-chart-type="pie" data-chart-data='{{ w__dt__charts|safe }}' class="ting-data-charts-canvas" style="width: 100%;"></div>
+                                        </figure>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="ting-data-charts-container">
+                                        <h4 id="ting-data-charts-label-ordered">Most Ordered Menus for the last 7 days</h4>
+                                        <hr>
+                                        <div class="ting-data-ordered-menus" id="ting-data-ordered-menus" data-url="{% url 'ting_wb_adm_dashboard_menus_data' %}">
+                                            <table class="ui striped table" style="min-height: 400px;">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="center aligned">#</th>
+                                                        <th class="center aligned">Image</th>
+                                                        <th class="left aligned" style="text-align: left !important;">Menu</th>
+                                                        <th class="right aligned" style="text-align: right !important;">Orders</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for menu in ordered_menus %}
+                                                        <tr style="background: #FFFFFF !important;">
+                                                            <td class="center aligned" style="font-weight: bold;">{{forloop.counter}}</td>
+                                                            <td class="center aligned"><img src="{{menu.menu|menu_image}}" style="width: 45px; height: 45px;"/></td>
+                                                            <td class="left aligned" style="text-align: left !important;">{{menu.menu|menu_name}}</td>
+                                                            <td class="right aligned" style="text-align: right !important;">{{menu.orders|intcomma}}</td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% if admin.admin_type == "4" or admin.pk|has_p:"can_view_placements" == True %}
+                    <div class="four wide column ting-admin-orders-panel ting-admin-orders-panel-dashboard" id="ting-admin-placements-panel-dashboard" style="display: none;">
+                        {% include '../../web/admin/sideplacements.html' %}
+                    </div>
+                    {% endif %}
+                    {% if admin.admin_type == "4" or admin.pk|has_p:"can_view_orders" == True %}
+                    <div class="four wide column ting-admin-orders-panel ting-admin-orders-panel-dashboard" id="ting-admin-orders-panel-dashboard">
+                        {% include '../../web/admin/sideorders.html' %}
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="sixteen wide column ting-admin-content-panel" id="ting-admin-content-panel-dashboard">
+                        
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="ting-admin-maximize-pannel">
+            <button id="ting-maximize-placements" data-position="top right" data-tooltip="Show Placements"><i class="dot circle icon"></i></button>
+            <button id="ting-maximize-orders" data-position="top right" data-tooltip="Show Orders"><i class="clipboard icon"></i></button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

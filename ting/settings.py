@@ -71,7 +71,7 @@ ROOT_URLCONF = 'ting.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['tingtemplates'],
+        'DIRS': ['tinghtml'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
