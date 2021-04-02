@@ -32,8 +32,8 @@ class TingPackage(models.Model):
 
 
 class TingLicenceKey(models.Model):
-	admin = models.ForeignKey(User)
-	package = models.ForeignKey(TingPackage)
+	admin = models.ForeignKey(User, on_delete=models.CASCADE)
+	package = models.ForeignKey(TingPackage, on_delete=models.CASCADE)
 	key = models.CharField(max_length=24, null=False, blank=False)
 	duration = models.IntegerField(null=False, blank=False)
 	is_active = models.BooleanField(default=True)

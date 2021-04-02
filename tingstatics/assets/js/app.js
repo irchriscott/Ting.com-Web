@@ -3550,7 +3550,7 @@ jQuery.fn.tingLiveSeacrh = function(){
     let input = form.find("input");
     let spinner = $("#ting-search-form-spinner");
     let results = $("#ting-search-result");
-    let dissallowed = [13, 38, 40];
+    let disallowed = [13, 38, 40];
     let index = -1;
 
     let country = $("#ting-country").val();
@@ -3599,7 +3599,7 @@ jQuery.fn.tingLiveSeacrh = function(){
             }  
         }
         if(query == "" || query == null) {spinner.hide(); results.hide()}
-        if(!dissallowed.includes(e.keyCode)){
+        if(!disallowed.includes(e.keyCode)){
             $.ajax({
                 type: "GET",
                 url: url,
@@ -3737,6 +3737,14 @@ Array.prototype.shuffle = function () {
         [this[i], this[j]] = [this[j], this[i]];
     }
     return this;
+}
+
+Array.prototype.join2 = function(all, last) {
+    var arr = this.slice();                   //make a copy so we don't mess with the original
+    var lastItem = arr.splice(-1);            //strip out the last element
+    arr = arr.length ? [arr.join(all)] : [];  //make an array with the non-last elements joined with our 'all' string, or make an empty array
+    arr.push(lastItem);                       //add last item back so we should have ["some string with first stuff split by 'all'", last item]; or we'll just have [lastItem] if there was only one item, or we'll have [] if there was nothing in the original array
+    return arr.join(last);                    //now we join the array with 'last'
 }
 
 function hideModal(container){ $(container).modal("hide");}
@@ -4159,7 +4167,7 @@ function HTMLMarker(lat, lng, img, map){
     this.lat = lat;
     this.lng = lng;
     this.img = img;
-    this.pos = new google.maps.LatLng(lat,lng);
+    this.pos = new google.maps.LatLng(lat, lng);
     this.setMap(map)
 }
     

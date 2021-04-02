@@ -556,7 +556,7 @@ class Restaurant(models.Model):
 
 
 class Branch(models.Model):
-	restaurant = models.ForeignKey(Restaurant)
+	restaurant = models.ForeignKey(Restaurant, on_delete=models.PROTECT)
 	name = models.CharField(max_length=200, null=False, blank=False)
 	country = models.CharField(max_length=200, null=False, blank=False)
 	town = models.CharField(max_length=255, null=False, blank=False)
@@ -768,7 +768,7 @@ class Branch(models.Model):
 
 	@property
 	def get_tags(self):
-		return self.tags.split(',') if self.tags != None else []
+		return self.tags.split(',') if self.tags != None and self.tags != '' else []
 	
 	@property
 	def promotions(self):
@@ -1229,7 +1229,7 @@ class Branch(models.Model):
 		
 
 class RestaurantImage(models.Model):
-	restaurant = models.ForeignKey(Restaurant)
+	restaurant = models.ForeignKey(Restaurant, on_delete=models.PROTECT)
 	image = models.ImageField(upload_to=restaurant_image_path, null=False, blank=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
@@ -1250,8 +1250,8 @@ class RestaurantImage(models.Model):
 
 
 class CategoryRestaurant(models.Model):
-	restaurant = models.ForeignKey(Restaurant)
-	category = models.ForeignKey(RestaurantCategory)
+	restaurant = models.ForeignKey(Restaurant, on_delete=models.PROTECT)
+	category = models.ForeignKey(RestaurantCategory, on_delete=models.PROTECT)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -1271,8 +1271,8 @@ class CategoryRestaurant(models.Model):
 
 
 class Administrator(models.Model):
-	restaurant = models.ForeignKey(Restaurant)
-	branch = models.ForeignKey(Branch)
+	restaurant = models.ForeignKey(Restaurant, on_delete=models.PROTECT)
+	branch = models.ForeignKey(Branch, on_delete=models.PROTECT)
 	token = models.TextField(null=False, blank=False)
 	name = models.CharField(max_length=200, null=False, blank=False)
 	username = models.CharField(max_length=100, null=False, blank=False, unique=True)
@@ -1408,7 +1408,7 @@ class Administrator(models.Model):
 
 
 class AdministratorResetPassword(models.Model):
-	admin = models.ForeignKey(Administrator)
+	admin = models.ForeignKey(Administrator, on_delete=models.PROTECT)
 	email = models.EmailField(max_length=200, null=False, blank=False)
 	token = models.TextField(null=False, blank=False)
 	is_active = models.BooleanField(default=True)
@@ -1423,7 +1423,7 @@ class AdministratorResetPassword(models.Model):
 
 
 class AdminPermission(models.Model):
-	admin = models.OneToOneField(Administrator)
+	admin = models.OneToOneField(Administrator, on_delete=models.PROTECT)
 	permissions = models.TextField(null=False, blank=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
@@ -1436,9 +1436,9 @@ class AdminPermission(models.Model):
 
 
 class RestaurantTable(models.Model):
-	restaurant = models.ForeignKey(Restaurant)
-	branch = models.ForeignKey(Branch)
-	waiter = models.ForeignKey(Administrator, null=True, blank=True)
+	restaurant = models.ForeignKey(Restaurant, on_delete=models.PROTECT)
+	branch = models.ForeignKey(Branch, on_delete=models.PROTECT)
+	waiter = models.ForeignKey(Administrator, null=True, blank=True, on_delete=models.PROTECT)
 	uuid = models.CharField(max_length=100, null=False, blank=False, unique=True)
 	max_people = models.IntegerField(null=False, blank=False)
 	number = models.CharField(max_length=20, null=False, blank=False)
@@ -1541,8 +1541,8 @@ class RestaurantTable(models.Model):
 
 
 class RestaurantConfig(models.Model):
-	restaurant = models.OneToOneField(Restaurant)
-	admin = models.ForeignKey(Administrator, null=True, blank=True)
+	restaurant = models.OneToOneField(Restaurant, on_delete=models.PROTECT)
+	admin = models.ForeignKey(Administrator, null=True, blank=True, on_delete=models.PROTECT)
 	currency = models.CharField(max_length=100, null=True, blank=True)
 	use_default_currency = models.BooleanField(default=False)
 	languages = models.CharField(max_length=254, blank=True, null=True)
@@ -1613,8 +1613,8 @@ class RestaurantConfig(models.Model):
 
 
 class RestaurantLicenceKey(models.Model):
-	restaurant = models.ForeignKey(Restaurant)
-	key = models.ForeignKey(TingLicenceKey)
+	restaurant = models.ForeignKey(Restaurant, on_delete=models.PROTECT)
+	key = models.ForeignKey(TingLicenceKey, on_delete=models.PROTECT)
 	is_active = models.BooleanField(default=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
@@ -1913,7 +1913,7 @@ class User(models.Model):
 
 
 class UserAddress(models.Model):
-	user = models.ForeignKey(User)
+	user = models.ForeignKey(User, on_delete=models.PROTECT)
 	type = models.CharField(null=False, blank=False, max_length=200)
 	address = models.TextField(null=False, blank=False)
 	latitude = models.CharField(max_length=200, null=False, blank=False)
@@ -1952,8 +1952,8 @@ class UserAddress(models.Model):
 
 
 class UserCategory(models.Model):
-	user = models.ForeignKey(User)
-	category = models.ForeignKey(RestaurantCategory)
+	user = models.ForeignKey(User, on_delete=models.PROTECT)
+	category = models.ForeignKey(RestaurantCategory, on_delete=models.PROTECT)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -1975,7 +1975,7 @@ class UserCategory(models.Model):
 
 
 class UserResetPassword(models.Model):
-	user = models.ForeignKey(User)
+	user = models.ForeignKey(User, on_delete=models.PROTECT)
 	email = models.EmailField(max_length=200, null=False, blank=False)
 	token = models.TextField(null=False, blank=False)
 	is_active = models.BooleanField(default=True)
@@ -1990,9 +1990,9 @@ class UserResetPassword(models.Model):
 
 
 class UserRestaurant(models.Model):
-	user = models.ForeignKey(User)
-	restaurant = models.ForeignKey(Restaurant)
-	branch = models.ForeignKey(Branch)
+	user = models.ForeignKey(User, on_delete=models.PROTECT)
+	restaurant = models.ForeignKey(Restaurant, on_delete=models.PROTECT)
+	branch = models.ForeignKey(Branch, on_delete=models.PROTECT)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -2024,9 +2024,9 @@ class UserRestaurant(models.Model):
 
 
 class RestaurantReview(models.Model):
-	user = models.ForeignKey(User)
-	restaurant = models.ForeignKey(Restaurant)
-	branch = models.ForeignKey(Branch)
+	user = models.ForeignKey(User, on_delete=models.PROTECT)
+	restaurant = models.ForeignKey(Restaurant, on_delete=models.PROTECT)
+	branch = models.ForeignKey(Branch, on_delete=models.PROTECT)
 	review = models.IntegerField(null=False, blank=False)
 	comment = models.TextField(null=True, blank=True)
 	created_at = models.DateTimeField(auto_now_add=True)
@@ -2078,7 +2078,7 @@ class RestaurantReview(models.Model):
 
 
 class UserNotification(models.Model):
-	user = models.ForeignKey(User)
+	user = models.ForeignKey(User, on_delete=models.PROTECT)
 	from_type = models.IntegerField(null=False, blank=False) # user, restaurant
 	from_id = models.IntegerField(null=False, blank=False)
 	message = models.CharField(max_length=255, null=False, blank=False)
@@ -2099,8 +2099,8 @@ class UserNotification(models.Model):
 
 
 class FoodCategory(models.Model):
-	restaurant = models.ForeignKey(Restaurant)
-	admin = models.ForeignKey(Administrator)
+	restaurant = models.ForeignKey(Restaurant, on_delete=models.PROTECT)
+	admin = models.ForeignKey(Administrator, on_delete=models.PROTECT)
 	name = models.CharField(max_length=250, null=False, blank=False)
 	slug = models.CharField(max_length=250, null=False, blank=False)
 	description = models.TextField(blank=True, null=True)
@@ -2160,13 +2160,13 @@ class FoodCategory(models.Model):
 
 
 class Food(models.Model):
-	restaurant = models.ForeignKey(Restaurant)
-	branch = models.ForeignKey(Branch)
-	admin = models.ForeignKey(Administrator)
+	restaurant = models.ForeignKey(Restaurant, on_delete=models.PROTECT)
+	branch = models.ForeignKey(Branch, on_delete=models.PROTECT)
+	admin = models.ForeignKey(Administrator, on_delete=models.PROTECT)
 	name = models.CharField(max_length=250, null=False, blank=False)
 	slug = models.CharField(max_length=250, null=False, blank=False)
-	category = models.ForeignKey(FoodCategory)
-	cuisine = models.ForeignKey(RestaurantCategory, null=True, blank=True)
+	category = models.ForeignKey(FoodCategory, on_delete=models.PROTECT)
+	cuisine = models.ForeignKey(RestaurantCategory, null=True, blank=True, on_delete=models.PROTECT)
 	food_type = models.IntegerField(null=False, blank=False)
 	description = models.TextField(blank=True, null=True)
 	ingredients = models.TextField(blank=True, null=True)
@@ -2579,7 +2579,7 @@ class Food(models.Model):
 
 
 class FoodImage(models.Model):
-	food = models.ForeignKey(Food)
+	food = models.ForeignKey(Food, on_delete=models.PROTECT)
 	image = models.ImageField(upload_to=food_image_path, null=False, blank=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
@@ -2600,9 +2600,9 @@ class FoodImage(models.Model):
 
 
 class Drink(models.Model):
-	restaurant = models.ForeignKey(Restaurant)
-	branch = models.ForeignKey(Branch)
-	admin = models.ForeignKey(Administrator)
+	restaurant = models.ForeignKey(Restaurant, on_delete=models.PROTECT)
+	branch = models.ForeignKey(Branch, on_delete=models.PROTECT)
+	admin = models.ForeignKey(Administrator, on_delete=models.PROTECT)
 	name = models.CharField(max_length=250, null=False, blank=False)
 	slug = models.CharField(max_length=250, null=False, blank=False)
 	drink_type = models.IntegerField(null=False, blank=False)
@@ -3002,7 +3002,7 @@ class Drink(models.Model):
 
 
 class DrinkImage(models.Model):
-	drink = models.ForeignKey(Drink)
+	drink = models.ForeignKey(Drink, on_delete=models.PROTECT)
 	image = models.ImageField(upload_to=food_image_path, null=False, blank=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
@@ -3023,13 +3023,13 @@ class DrinkImage(models.Model):
 
 
 class Dish(models.Model):
-	restaurant = models.ForeignKey(Restaurant)
-	branch = models.ForeignKey(Branch)
-	admin = models.ForeignKey(Administrator)
+	restaurant = models.ForeignKey(Restaurant, on_delete=models.PROTECT)
+	branch = models.ForeignKey(Branch, on_delete=models.PROTECT)
+	admin = models.ForeignKey(Administrator, on_delete=models.PROTECT)
 	name = models.CharField(max_length=250, null=False, blank=False)
 	slug = models.CharField(max_length=250, null=False, blank=False)
-	category = models.ForeignKey(FoodCategory)
-	cuisine = models.ForeignKey(RestaurantCategory, null=True, blank=True)
+	category = models.ForeignKey(FoodCategory, on_delete=models.PROTECT)
+	cuisine = models.ForeignKey(RestaurantCategory, null=True, blank=True, on_delete=models.PROTECT)
 	dish_time = models.IntegerField(null=False, blank=False)
 	description = models.TextField(blank=True, null=True)
 	ingredients = models.TextField(blank=True, null=True)
@@ -3041,7 +3041,7 @@ class Dish(models.Model):
 	quantity = models.IntegerField(default=1)
 	is_available = models.BooleanField(default=True)
 	has_drink = models.BooleanField(default=False)
-	drink = models.ForeignKey(Drink, null=True, blank=True)
+	drink = models.ForeignKey(Drink, null=True, blank=True, on_delete=models.PROTECT)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -3497,7 +3497,7 @@ class Dish(models.Model):
 
 
 class DishImage(models.Model):
-	dish = models.ForeignKey(Dish)
+	dish = models.ForeignKey(Dish, on_delete=models.PROTECT)
 	image = models.ImageField(upload_to=food_image_path, null=False, blank=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
@@ -3518,8 +3518,8 @@ class DishImage(models.Model):
 
 
 class DishFood(models.Model):
-	dish = models.ForeignKey(Dish)
-	food = models.ForeignKey(Food)
+	dish = models.ForeignKey(Dish, on_delete=models.PROTECT)
+	food = models.ForeignKey(Food, on_delete=models.PROTECT)
 	is_countable = models.BooleanField(default=False)
 	quantity = models.IntegerField(default=0)
 	created_at = models.DateTimeField(auto_now_add=True)
@@ -3567,9 +3567,9 @@ class DishFood(models.Model):
 
 
 class Menu(models.Model):
-	restaurant = models.ForeignKey(Restaurant)
-	branch = models.ForeignKey(Branch)
-	admin = models.ForeignKey(Administrator)
+	restaurant = models.ForeignKey(Restaurant, on_delete=models.PROTECT)
+	branch = models.ForeignKey(Branch, on_delete=models.PROTECT)
+	admin = models.ForeignKey(Administrator, on_delete=models.PROTECT)
 	name = models.CharField(max_length=200, null=True, blank=True)
 	menu_type = models.IntegerField(null=False, blank=False)
 	menu_id = models.IntegerField(null=False, blank=False)
@@ -4302,8 +4302,8 @@ class Menu(models.Model):
 
 
 class MenuReview(models.Model):
-	user = models.ForeignKey(User)
-	menu = models.ForeignKey(Menu)
+	user = models.ForeignKey(User, on_delete=models.PROTECT)
+	menu = models.ForeignKey(Menu, on_delete=models.PROTECT)
 	review = models.IntegerField(null=False, blank=False)
 	comment = models.TextField(null=True, blank=True)
 	created_at = models.DateTimeField(auto_now_add=True)
@@ -4341,8 +4341,8 @@ class MenuReview(models.Model):
 
 
 class MenuLike(models.Model):
-	user = models.ForeignKey(User)
-	menu = models.ForeignKey(Menu)
+	user = models.ForeignKey(User, on_delete=models.PROTECT)
+	menu = models.ForeignKey(Menu, on_delete=models.PROTECT)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -4363,21 +4363,21 @@ class MenuLike(models.Model):
 
 
 class Promotion(models.Model):
-	restaurant = models.ForeignKey(Restaurant)
-	admin = models.ForeignKey(Administrator)
-	branch = models.ForeignKey(Branch)
+	restaurant = models.ForeignKey(Restaurant, on_delete=models.PROTECT)
+	admin = models.ForeignKey(Administrator, on_delete=models.PROTECT)
+	branch = models.ForeignKey(Branch, on_delete=models.PROTECT)
 	uuid = models.CharField(max_length=100, null=False, blank=False)
 	occasion_event = models.CharField(max_length=200, null=False, blank=False)
 	promotion_menu_type = models.CharField(max_length=100, null=False, blank=False)
-	menu = models.ForeignKey(Menu, null=True, blank=True, related_name='menu')
-	category = models.ForeignKey(FoodCategory, null=True, blank=True)
+	menu = models.ForeignKey(Menu, null=True, blank=True, related_name='menu', on_delete=models.PROTECT)
+	category = models.ForeignKey(FoodCategory, null=True, blank=True, on_delete=models.PROTECT)
 	has_reduction = models.BooleanField(default=True)
 	amount = models.IntegerField(null=True, blank=True, default=0)
 	reduction_type = models.CharField(max_length=100, null=True, blank=True) # Currency Or %
 	has_supplement = models.BooleanField(default=False)
 	supplement_min_quantity = models.IntegerField(default=1, null=False, blank=False)
 	is_supplement_same = models.BooleanField(default=False)
-	supplement = models.ForeignKey(Menu, null=True, blank=True, related_name='supplement')
+	supplement = models.ForeignKey(Menu, null=True, blank=True, related_name='supplement', on_delete=models.PROTECT)
 	supplement_quantity = models.IntegerField(default=1, null=False, blank=False)
 	is_on = models.BooleanField(default=True)
 	promotion_period = models.CharField(max_length=100, null=True, blank=True)
@@ -4828,8 +4828,8 @@ class Promotion(models.Model):
 
 
 class PromotionInterest(models.Model):
-	promotion = models.ForeignKey(Promotion)
-	user = models.ForeignKey(User)
+	promotion = models.ForeignKey(Promotion, on_delete=models.PROTECT)
+	user = models.ForeignKey(User, on_delete=models.PROTECT)
 	is_interested = models.BooleanField(default=True)
 	created_at = models.DateField(auto_now_add=True)
 	updated_at = models.DateField(auto_now_add=True)
@@ -4854,10 +4854,10 @@ class PromotionInterest(models.Model):
 
 
 class Booking(models.Model):
-	restaurant = models.ForeignKey(Restaurant)
-	branch = models.ForeignKey(Branch)
-	user = models.ForeignKey(User)
-	table = models.ForeignKey(RestaurantTable, null=True, blank=True)
+	restaurant = models.ForeignKey(Restaurant, on_delete=models.PROTECT)
+	branch = models.ForeignKey(Branch, on_delete=models.PROTECT)
+	user = models.ForeignKey(User, on_delete=models.PROTECT)
+	table = models.ForeignKey(RestaurantTable, null=True, blank=True, on_delete=models.PROTECT)
 	token = models.CharField(max_length=100, null=False, blank=False, unique=True)
 	people = models.IntegerField(null=False, blank=False)
 	location = models.IntegerField(null=False, blank=False)
@@ -4932,8 +4932,8 @@ class Booking(models.Model):
 	
 
 class Bill(models.Model):
-	restaurant = models.ForeignKey(Restaurant)
-	branch = models.ForeignKey(Branch)
+	restaurant = models.ForeignKey(Restaurant, on_delete=models.PROTECT)
+	branch = models.ForeignKey(Branch, on_delete=models.PROTECT)
 	number = models.CharField(max_length=20, null=False, blank=False)
 	token = models.CharField(max_length=200, null=False, blank=False, unique=True)
 	placement_id = models.IntegerField(null=True, blank=True)
@@ -5052,7 +5052,7 @@ class Bill(models.Model):
 
 
 class BillExtra(models.Model):
-	bill = models.ForeignKey(Bill)
+	bill = models.ForeignKey(Bill, on_delete=models.PROTECT)
 	name = models.CharField(max_length=200, null=False, blank=False)
 	price = models.DecimalField(max_digits=18, decimal_places=2, default=0.00)
 	quantity = models.IntegerField(null=False, blank=False, default=1)
@@ -5083,13 +5083,13 @@ class BillExtra(models.Model):
 	
 
 class Placement(models.Model):
-	restaurant = models.ForeignKey(Restaurant)
-	branch = models.ForeignKey(Branch)
-	user = models.ForeignKey(User)
-	table = models.ForeignKey(RestaurantTable)
-	booking = models.ForeignKey(Booking, null=True, blank=True)
-	waiter = models.ForeignKey(Administrator, null=True, blank=True)
-	bill = models.ForeignKey(Bill, null=True, blank=True)
+	restaurant = models.ForeignKey(Restaurant, on_delete=models.PROTECT)
+	branch = models.ForeignKey(Branch, on_delete=models.PROTECT)
+	user = models.ForeignKey(User, on_delete=models.PROTECT)
+	table = models.ForeignKey(RestaurantTable, on_delete=models.PROTECT)
+	booking = models.ForeignKey(Booking, null=True, blank=True, on_delete=models.PROTECT)
+	waiter = models.ForeignKey(Administrator, null=True, blank=True, on_delete=models.PROTECT)
+	bill = models.ForeignKey(Bill, null=True, blank=True, on_delete=models.PROTECT)
 	token = models.CharField(max_length=200, null=False, blank=False, unique=True)
 	people = models.IntegerField(null=False, blank=False)
 	is_done = models.BooleanField(default=False)
@@ -5159,7 +5159,7 @@ class Placement(models.Model):
 
 
 class PlacementMessage(models.Model):
-	placement = models.ForeignKey(Placement)
+	placement = models.ForeignKey(Placement, on_delete=models.PROTECT)
 	message = models.TextField(null=False, blank=False)
 	is_read = models.BooleanField(default=False)
 	created_at = models.DateTimeField(auto_now_add=True)
@@ -5173,8 +5173,8 @@ class PlacementMessage(models.Model):
 
 
 class Order(models.Model):
-	bill = models.ForeignKey(Bill)
-	menu = models.ForeignKey(Menu)
+	bill = models.ForeignKey(Bill, on_delete=models.PROTECT)
+	menu = models.ForeignKey(Menu, on_delete=models.PROTECT)
 	token = models.CharField(max_length=200, null=False, blank=False, unique=True)
 	quantity = models.IntegerField(default=1)
 	price = models.DecimalField(max_digits=18, decimal_places=2, null=False, blank=False)
@@ -5184,7 +5184,7 @@ class Order(models.Model):
 	reasons = models.TextField(blank=True, null=True)
 	is_delivered = models.BooleanField(default=False)
 	has_promotion = models.BooleanField(default=False)
-	promotion = models.ForeignKey(Promotion, null=True, blank=True)
+	promotion = models.ForeignKey(Promotion, null=True, blank=True, on_delete=models.PROTECT)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -5289,8 +5289,8 @@ class Order(models.Model):
 	
 
 class Moment(models.Model):
-	user = models.ForeignKey(User)
-	placement = models.ForeignKey(Placement, null=True, blank=True)
+	user = models.ForeignKey(User, on_delete=models.PROTECT)
+	placement = models.ForeignKey(Placement, null=True, blank=True, on_delete=models.PROTECT)
 	is_deleted = models.BooleanField(default=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now_add=True)
@@ -5303,7 +5303,7 @@ class Moment(models.Model):
 
 
 class MomentMedia(models.Model):
-	moment = models.ForeignKey(Moment)
+	moment = models.ForeignKey(Moment, on_delete=models.PROTECT)
 	media_type = models.CharField(max_length=100, null=False, blank=False)
 	media = models.FileField(upload_to=moment_file_path, null=False, blank=False)
 	text = models.CharField(max_length=255, null=True, blank=True)
