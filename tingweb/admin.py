@@ -46,6 +46,7 @@ from background_task import background
 from tingweb.views import get_restaurant_map_pin_svg
 from tingadmin import views as admin
 from datetime import datetime, timedelta, date
+from functools import reduce
 import ting.utils as utils
 import tingadmin.permissions as permissions
 import operator

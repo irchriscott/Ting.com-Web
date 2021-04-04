@@ -35,6 +35,7 @@ from pubnub.enums import PNStatusCategory
 from pubnub.pnconfiguration import PNConfiguration
 from pubnub.pubnub import PubNub
 from datetime import datetime, timedelta, date
+from functools import reduce
 from background_task import background
 import tingweb.views as web
 import ting.utils as utils
@@ -491,18 +492,18 @@ def api_filter_restaurants(request):
 
 	filters = json.loads(request.POST.get('filters'))
 
-	brs__avail = map(lambda b: int(b.pk), list(filter(lambda b: b.availability in filters['availability'], restaurants)))
-	brs__cuisines = map(lambda b: int(b.pk), list(filter(lambda b: any((True for c in filters['cuisines'] if c in map(lambda v: int(v), b.restaurant.categories_ids))), restaurants)))
-	brs__services = map(lambda b: int(b.pk), list(filter(lambda b: any((True for s in filters['services'] if s in map(lambda v: int(v), b.services_ids))), restaurants)))
-	brs__specials = map(lambda b: int(b.pk), list(filter(lambda b: any((True for s in filters['specials'] if s in map(lambda v: int(v), b.specials_ids))), restaurants)))
-	brs__types = map(lambda b: int(b.pk), list(filter(lambda b: b.restaurant_type in filters['types'], restaurants)))
-	brs__ratings = map(lambda b: int(b.pk), list(filter(lambda b: b.review_average in filters['ratings'], restaurants)))
+	brs__avail = list(map(lambda b: int(b.pk), list(filter(lambda b: b.availability in filters['availability'], restaurants))))
+	brs__cuisines = list(map(lambda b: int(b.pk), list(filter(lambda b: any((True for c in filters['cuisines'] if c in map(lambda v: int(v), b.restaurant.categories_ids))), restaurants))))
+	brs__services = list(map(lambda b: int(b.pk), list(filter(lambda b: any((True for s in filters['services'] if s in map(lambda v: int(v), b.services_ids))), restaurants))))
+	brs__specials = list(map(lambda b: int(b.pk), list(filter(lambda b: any((True for s in filters['specials'] if s in map(lambda v: int(v), b.specials_ids))), restaurants))))
+	brs__types = list(map(lambda b: int(b.pk), list(filter(lambda b: b.restaurant_type in filters['types'], restaurants))))
+	brs__ratings = list(map(lambda b: int(b.pk), list(filter(lambda b: b.review_average in filters['ratings'], restaurants))))
 
 	brs__f__all = [brs__avail, brs__cuisines, brs__services, brs__specials, brs__types, brs__ratings]
 	brs__k__all = [filters['availability'], filters['cuisines'], filters['services'], filters['specials'], filters['types'], filters['ratings']]
 	
 	brs__ids__pts = [brs[0] for brs in zip(*[bs for i, bs in enumerate(brs__f__all) if len(brs__k__all[i]) != 0]) if len(set(brs)) == 1]
-	brs__ids__all = brs__ids__pts if len(list(filter(lambda b: len(b) != 0, brs__f__all))) != len(brs__f__all) else list(reduce(lambda x, y: x & y, (set(brs) for i, brs in enumerate(brs__f__all) if len(brs__k__all[i]) != 0)))
+	brs__ids__all = brs__ids__pts if len(list(filter(lambda b: len(list(b)) != 0, brs__f__all))) != len(list(brs__f__all)) else list(reduce(lambda x, y: x & y, (set(brs) for i, brs in enumerate(brs__f__all) if len(list(brs__k__all[i])) != 0)))
 
 	branches = restaurants.filter(pk__in=brs__ids__all) if len(list(filter(lambda f: len(f) != 0, brs__k__all))) != 0 else restaurants
 	
@@ -1401,10 +1402,10 @@ def api_live_search_response(request):
 		queryset = reduce(operator.or_, [Q(name__icontains=q) for q in queries])
 		branch_queryset = reduce(operator.or_, [Q(restaurant__name__icontains=q) | Q(name__icontains=q) | Q(tags__icontains=q) for q in queries])
 
-		branches = map(lambda branch: branch.json_search(queries), Branch.objects.filter(country=country, town=town).filter(branch_queryset).order_by('-created_at'))
-		foods = map(lambda food: food.json_search(queries), Food.objects.filter(branch__country=country, branch__town=town).filter(queryset).order_by('-created_at'))
-		drinks = map(lambda drink: drink.json_search(queries), Drink.objects.filter(branch__country=country, branch__town=town).filter(queryset).order_by('-created_at'))
-		dishes = map(lambda dish: dish.json_search(queries), Drink.objects.filter(branch__country=country, branch__town=town).filter(queryset).order_by('-created_at'))
+		branches = list(map(lambda branch: branch.json_search(queries), Branch.objects.filter(country=country, town=town).filter(branch_queryset).order_by('-created_at')))
+		foods = list(map(lambda food: food.json_search(queries), Food.objects.filter(branch__country=country, branch__town=town).filter(queryset).order_by('-created_at')))
+		drinks = list(map(lambda drink: drink.json_search(queries), Drink.objects.filter(branch__country=country, branch__town=town).filter(queryset).order_by('-created_at')))
+		dishes = list(map(lambda dish: dish.json_search(queries), Drink.objects.filter(branch__country=country, branch__town=town).filter(queryset).order_by('-created_at')))
 
 		results = branches + foods + drinks + dishes
 		response = sorted(results, key=lambda res: res['qp'], reverse=True)

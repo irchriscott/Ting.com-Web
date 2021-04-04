@@ -18,6 +18,7 @@ from tingadmin.mailer import SendRestaurantRegistrationMail
 import ting.utils as utils
 import datetime
 import tingadmin.permissions as permissions
+from functools import reduce
 
 # Create your views here.
 

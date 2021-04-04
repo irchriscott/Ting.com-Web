@@ -176,28 +176,15 @@ class Restaurant(models.Model):
 
 	@property
 	def review_average(self):
-		if self.reviews_count > 0:
-			total = 0
-			for review in self.reviews:
-				total += review.review
-			return round(total / self.reviews_count, 1)
-		else:
-			return 0
+		return round(sum([review.review for review in self.reviews]) / self.reviews_count, 1) if self.reviews_count > 0 else 0
+
+	def review_percent_calculation(self, stars):
+		reviews = self.reviews.filter(review=stars).count()
+		return (reviews * 100) / self.reviews_count if reviews != 0 else 0
 
 	@property
 	def review_percent(self):
-		one = self.reviews.filter(review=1).count()
-		two = self.reviews.filter(review=2).count()
-		three = self.reviews.filter(review=3).count()
-		four = self.reviews.filter(review=4).count()
-		five = self.reviews.filter(review=5).count()
-		return [
-					(one * 100) / self.reviews_count if one != 0 else 0,
-					(two * 100) / self.reviews_count if two != 0 else 0,
-					(three * 100) / self.reviews_count if three != 0 else 0,
-					(four * 100) / self.reviews_count if four != 0 else 0,
-					(five * 100) / self.reviews_count if five != 0 else 0
-				]
+		return [self.review_percent_calculation(n) for n in range(1, 6)]
 
 	@property
 	def food_categories(self):
@@ -636,28 +623,19 @@ class Branch(models.Model):
 
 	@property
 	def review_average(self):
-		if self.reviews_count > 0:
-			total = 0
-			for review in self.reviews:
-				total += review.review
-			return round(total / self.reviews_count, 1)
-		else:
-			return 0
+		return round(sum([review.review for review in self.reviews]) / self.reviews_count, 1) if self.reviews_count > 0 else 0
+
+	@property
+	def review_average(self):
+		return round(sum([review.review for review in self.reviews]) / self.reviews_count, 1) if self.reviews_count > 0 else 0
+
+	def review_percent_calculation(self, stars):
+		reviews = self.reviews.filter(review=stars).count()
+		return (reviews * 100) / self.reviews_count if reviews != 0 else 0
 
 	@property
 	def review_percent(self):
-		one = self.reviews.filter(review=1).count()
-		two = self.reviews.filter(review=2).count()
-		three = self.reviews.filter(review=3).count()
-		four = self.reviews.filter(review=4).count()
-		five = self.reviews.filter(review=5).count()
-		return [
-					(one * 100) / self.reviews_count if one != 0 else 0,
-					(two * 100) / self.reviews_count if two != 0 else 0,
-					(three * 100) / self.reviews_count if three != 0 else 0,
-					(four * 100) / self.reviews_count if four != 0 else 0,
-					(five * 100) / self.reviews_count if five != 0 else 0
-				]
+		return [self.review_percent_calculation(n) for n in range(1, 6)]
 
 	@property
 	def tables(self):
@@ -2206,28 +2184,19 @@ class Food(models.Model):
 
 	@property
 	def review_average(self):
-		if self.reviews_count > 0:
-			total = 0
-			for review in self.reviews:
-				total += review.review
-			return round(total / self.reviews_count, 1)
-		else:
-			return 0
+		return round(sum([review.review for review in self.reviews]) / self.reviews_count, 1) if self.reviews_count > 0 else 0
+
+	@property
+	def review_average(self):
+		return round(sum([review.review for review in self.reviews]) / self.reviews_count, 1) if self.reviews_count > 0 else 0
+
+	def review_percent_calculation(self, stars):
+		reviews = self.reviews.filter(review=stars).count()
+		return (reviews * 100) / self.reviews_count if reviews != 0 else 0
 
 	@property
 	def review_percent(self):
-		one = self.reviews.filter(review=1).count()
-		two = self.reviews.filter(review=2).count()
-		three = self.reviews.filter(review=3).count()
-		four = self.reviews.filter(review=4).count()
-		five = self.reviews.filter(review=5).count()
-		return [
-					(one * 100) / self.reviews_count if one != 0 else 0,
-					(two * 100) / self.reviews_count if two != 0 else 0,
-					(three * 100) / self.reviews_count if three != 0 else 0,
-					(four * 100) / self.reviews_count if four != 0 else 0,
-					(five * 100) / self.reviews_count if five != 0 else 0
-				]
+		return [self.review_percent_calculation(n) for n in range(1, 6)]
 
 	@property
 	def likes(self):
@@ -2644,28 +2613,19 @@ class Drink(models.Model):
 
 	@property
 	def review_average(self):
-		if self.reviews_count > 0:
-			total = 0
-			for review in self.reviews:
-				total += review.review
-			return round(total / self.reviews_count, 1)
-		else:
-			return 0
+		return round(sum([review.review for review in self.reviews]) / self.reviews_count, 1) if self.reviews_count > 0 else 0
+
+	@property
+	def review_average(self):
+		return round(sum([review.review for review in self.reviews]) / self.reviews_count, 1) if self.reviews_count > 0 else 0
+
+	def review_percent_calculation(self, stars):
+		reviews = self.reviews.filter(review=stars).count()
+		return (reviews * 100) / self.reviews_count if reviews != 0 else 0
 
 	@property
 	def review_percent(self):
-		one = self.reviews.filter(review=1).count()
-		two = self.reviews.filter(review=2).count()
-		three = self.reviews.filter(review=3).count()
-		four = self.reviews.filter(review=4).count()
-		five = self.reviews.filter(review=5).count()
-		return [
-					(one * 100) / self.reviews_count if one != 0 else 0,
-					(two * 100) / self.reviews_count if two != 0 else 0,
-					(three * 100) / self.reviews_count if three != 0 else 0,
-					(four * 100) / self.reviews_count if four != 0 else 0,
-					(five * 100) / self.reviews_count if five != 0 else 0
-				]
+		return [self.review_percent_calculation(n) for n in range(1, 6)]
 
 	@property
 	def likes(self):
@@ -3079,28 +3039,19 @@ class Dish(models.Model):
 
 	@property
 	def review_average(self):
-		if self.reviews_count > 0:
-			total = 0
-			for review in self.reviews:
-				total += review.review
-			return round(total / self.reviews_count, 1)
-		else:
-			return 0
+		return round(sum([review.review for review in self.reviews]) / self.reviews_count, 1) if self.reviews_count > 0 else 0
+
+	@property
+	def review_average(self):
+		return round(sum([review.review for review in self.reviews]) / self.reviews_count, 1) if self.reviews_count > 0 else 0
+
+	def review_percent_calculation(self, stars):
+		reviews = self.reviews.filter(review=stars).count()
+		return (reviews * 100) / self.reviews_count if reviews != 0 else 0
 
 	@property
 	def review_percent(self):
-		one = self.reviews.filter(review=1).count()
-		two = self.reviews.filter(review=2).count()
-		three = self.reviews.filter(review=3).count()
-		four = self.reviews.filter(review=4).count()
-		five = self.reviews.filter(review=5).count()
-		return [
-					(one * 100) / self.reviews_count if one != 0 else 0,
-					(two * 100) / self.reviews_count if two != 0 else 0,
-					(three * 100) / self.reviews_count if three != 0 else 0,
-					(four * 100) / self.reviews_count if four != 0 else 0,
-					(five * 100) / self.reviews_count if five != 0 else 0
-				]
+		return [self.review_percent_calculation(n) for n in range(1, 6)]
 
 	@property
 	def reviews_count(self):
@@ -3813,28 +3764,19 @@ class Menu(models.Model):
 
 	@property
 	def review_average(self):
-		if self.reviews_count > 0:
-			total = 0
-			for review in self.reviews:
-				total += review.review
-			return round(total / self.reviews_count, 1)
-		else:
-			return 0
+		return round(sum([review.review for review in self.reviews]) / self.reviews_count, 1) if self.reviews_count > 0 else 0
+
+	@property
+	def review_average(self):
+		return round(sum([review.review for review in self.reviews]) / self.reviews_count, 1) if self.reviews_count > 0 else 0
+
+	def review_percent_calculation(self, stars):
+		reviews = self.reviews.filter(review=stars).count()
+		return (reviews * 100) / self.reviews_count if reviews != 0 else 0
 
 	@property
 	def review_percent(self):
-		one = self.reviews.filter(review=1).count()
-		two = self.reviews.filter(review=2).count()
-		three = self.reviews.filter(review=3).count()
-		four = self.reviews.filter(review=4).count()
-		five = self.reviews.filter(review=5).count()
-		return [
-					(one * 100) / self.reviews_count if one != 0 else 0,
-					(two * 100) / self.reviews_count if two != 0 else 0,
-					(three * 100) / self.reviews_count if three != 0 else 0,
-					(four * 100) / self.reviews_count if four != 0 else 0,
-					(five * 100) / self.reviews_count if five != 0 else 0
-				]
+		return [self.review_percent_calculation(n) for n in range(1, 6)]
 
 	@property
 	def image(self):

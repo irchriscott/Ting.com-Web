@@ -20,7 +20,7 @@
         <script src="{% static 'js/jquery-2.2.4.min.js' %}"></script>
         <script src="{% static 'semantic/semantic.min.js' %}"></script>
         {% block js %}{% endblock %}
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.3.5/js/swiper.min.js"></script>
+        <script src="{% static 'swiper/swiper.min.js' %}"></script>
         <script src="{% static 'owl/owl.carousel.min.js' %}"></script>
         <script src="{% static 'froala/froala_editor.pkgd.min.js' %}"></script>
         <script src="{% static 'datepicker/calendar.min.js' %}"></script>
@@ -29,14 +29,14 @@
         <script src="{% static 'js/moment.min.js' %}"></script>
         <script src="{% static 'js/parallax.min.js' %}"></script>
         <script src="{% static 'js/app.js' %}"></script>
-        <script src="{% static 'js/tingapp.js' %}"></script>
         {% block meta %}{% endblock %}
         {% block title %}{% endblock %}
     </head>
     <body>
-        <div id="ting-app">
+        <div id="app">
             {% block content %}{% endblock %}
         </div>
         {% include '../layouts/messages.html' %}
+        {% block scripts %}{% endblock %}
     </body>
 </html>

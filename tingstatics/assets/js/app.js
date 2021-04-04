@@ -3739,7 +3739,7 @@ Array.prototype.shuffle = function () {
     return this;
 }
 
-Array.prototype.join2 = function(all, last) {
+Array.prototype.joinWith = function(all, last) {
     var arr = this.slice();                   //make a copy so we don't mess with the original
     var lastItem = arr.splice(-1);            //strip out the last element
     arr = arr.length ? [arr.join(all)] : [];  //make an array with the non-last elements joined with our 'all' string, or make an empty array
