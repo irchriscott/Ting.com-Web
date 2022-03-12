@@ -21,7 +21,7 @@ ipaddress==1.0.23
 kombu==4.5.0
 mysqlclient==2.0.3
 ndg-httpsclient==0.5.1
-Pillow==8.2.0
+Pillow==9.0.1
 pubnub==4.3.0
 pusher==2.1.4
 pusher-push-notifications==2.0.0
