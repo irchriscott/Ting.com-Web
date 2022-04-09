@@ -35,7 +35,7 @@
   "dependencies": {
     "document-ready": "^2.0.2",
     "izitoast": "^1.4.0",
-    "moment": "^2.29.1",
+    "moment": "^2.29.2",
     "postscribe": "^2.0.8",
     "vue-script-component": "^0.1.7"
   }
